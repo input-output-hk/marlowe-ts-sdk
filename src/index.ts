@@ -32,28 +32,16 @@ type TransactionEndpoint = string & {_opaque: typeof TransactionEndpoint};
 export const transactionEndpoint = (contractId: string, transactionId: string) =>
   `/contracts/${contractId}/transactions/${transactionId}` as TransactionEndpoint;
 
-export interface GetContractsRequestOptions {
-  range?: string
-}
-
 type Bech32 = string;
 
 type Version = "v1";
 
+type Metadata = Record<number, string>;
+
 // Just a stub for Marlowe Contract and State
 type Contract = "close";
 type State = any;
-
-export interface PostContractsRequest {
-  contract: Contract,
-  roles?: any // RolesConfig
-  version?: Version,
-  metadata?: Record<number, Object>,
-  minUTxODeposit: number,
-  changeAddress: Bech32,
-  addresses?: Bech32[], // When skipped we use `[changeAddress]`
-  collateralUTxOs?: Bech32[]
-}
+type Input = "input_notify";
 
 // Currently the runtime API doesn't provide any additional information
 // beside the error status code like 400, 404, 500 etc.
@@ -61,7 +49,7 @@ type ErrorResponse = number;
 
 type TxOutRef = string;
 type PolicyId = string;
-type Status = "unsigned" | "submitted" | "confirmed";
+type TxStatus = "unsigned" | "submitted" | "confirmed";
 
 interface BlockHeader {
   slotNo: number, // These should be BigInts
@@ -74,7 +62,7 @@ interface ContractHeader {
   roleTokenMintingPolicyId: PolicyId,
   version: Version,
   metadata?: Record<number, Object> // FIXME
-  status: Status
+  status: TxStatus
   blockHeader?: BlockHeader
 }
 
@@ -83,13 +71,29 @@ interface ContractHeaderItem {
   links: { contract: ContractEndpoint }
 }
 
-interface IndexResponse<Response> {
-  nextRange?: string,
-  prevRange?: string,
+declare const ContractsRange: unique symbol;
+
+type ContractsRange = string & {_opaque: typeof ContractsRange};
+
+interface IndexResponse<Response, Range> {
+  nextRange?: Range,
+  prevRange?: Range,
   items: Response[]
 }
 
-export type GetContractsResponse = IndexResponse<ContractHeaderItem>;
+export type GetContractsResponse = IndexResponse<ContractHeaderItem, ContractsRange>;
+
+export interface PostContractsRequest {
+  contract: Contract,
+  roles?: any // RolesConfig
+  version?: Version,
+  metadata?: Metadata,
+  minUTxODeposit: number,
+  changeAddress: Bech32,
+  addresses?: Bech32[], // When skipped we use `[changeAddress]`
+  collateralUTxOs?: Bech32[]
+}
+
 
 export interface PostContractsResponse {
   contractId: TxOutRef,
@@ -113,11 +117,48 @@ interface ContractState extends ContractHeader {
   txBody?: TextEnvelope
 }
 
+type ISO8601 = string;
+
+export interface PostTransactionsRequest {
+  inpts: Input[],
+  invalidBefore: ISO8601,
+  invalidHereafter: ISO8601,
+  metadata?: Metadata,
+  changeAddress: Bech32,
+  addresses?: Bech32[], // When skipped we use `[changeAddress]`
+  collateralUTxOs?: Bech32[],
+}
+
+type TxId = string;
+
+export interface TxHeader {
+  contractId: TxOutRef,
+  transactionId: TxId,
+  status: TxStatus,
+  block?: BlockHeader,
+  utxo?: TxOutRef
+}
+
+interface TxHeaderItem {
+  results: TxHeader;
+  links: { contract: TransactionEndpoint }
+}
+
+export interface GetTransactionsRequestOptions {
+  range?: string
+}
+
+declare const TransactionsRange: unique symbol;
+
+type TransactionsRange = string & {_opaque: typeof TransactionsRange};
+
+export type GetTransactionsResponse = IndexResponse<TxHeaderItem, TransactionsRange>;
+
 export interface MarloweRuntimeApi {
   contracts: {
     get: (
       route: ContractsEndpoint,
-      input?: GetContractsRequestOptions
+      range?: ContractsRange
     ) => Promise<GetContractsResponse | ErrorResponse>;
     post: (
       route: ContractsEndpoint,
@@ -127,21 +168,24 @@ export interface MarloweRuntimeApi {
   contract: {
     get: (route: ContractEndpoint) => Promise<ContractState | ErrorResponse>
     put: (route: ContractEndpoint, input: TextEnvelope) => Promise<TransactionsEndpoint | ErrorResponse>
+  },
+  transactions: {
+    get: (route: TransactionsEndpoint) => Promise<GetTransactionsResponse | ErrorResponse>
   }
 };
 
 export function MarloweRuntimeClient(request: AxiosInstance): MarloweRuntimeApi {
   return {
     contracts: {
-      get: async (route: ContractsEndpoint, input): Promise<GetContractsResponse | ErrorResponse> => {
-        const config = input?.range?{ headers: { Range: input.range } } : {};
+      get: async (route: ContractsEndpoint, range?: ContractsRange): Promise<GetContractsResponse | ErrorResponse> => {
+        const config = range?{ headers: { Range: range as string } } : {};
 
         return request.get(route as string, config)
           .then(response => {
             return {
               items: response.data.results,
-              nextRange: response.headers["next-range"],
-              prevRange: response.headers["prev-range"]
+              nextRange: response.headers["next-range"] as ContractsRange,
+              prevRange: response.headers["prev-range"] as ContractsRange
             };
           })
           .catch(error => error.status);
@@ -182,6 +226,21 @@ export function MarloweRuntimeClient(request: AxiosInstance): MarloweRuntimeApi 
           response.data.links.transactions
         ).catch(error => error.status);
       }
+    },
+    transactions: {
+      get: async (route: TransactionsEndpoint, range?: TransactionsRange): Promise<GetTransactionsResponse | ErrorResponse> => {
+        const config = range?{ headers: { Range: range as string } } : {};
+
+        return request.get(route as string, config)
+          .then(response => {
+            return {
+              items: response.data.results,
+              nextRange: response.headers["next-range"],
+              prevRange: response.headers["prev-range"]
+            };
+          })
+          .catch(error => error.status);
+      }
     }
   }
 }
@@ -210,7 +269,7 @@ const foldContracts = async (filterItem: ((item: ContractHeaderItem) => boolean)
     } else {
       result.push(...response.items.filter(filterItem))
       if (response.nextRange) {
-        await step(await client.contracts.get(contractsEndpoint, { range: response.nextRange }));
+        await step(await client.contracts.get(contractsEndpoint, response.nextRange ));
       }
     }
   }
