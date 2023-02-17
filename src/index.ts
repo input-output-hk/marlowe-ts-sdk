@@ -46,13 +46,13 @@ type State = any;
 
 export interface PostContractsRequest {
   contract: Contract,
-  roles: null, // FIXME: We ignore roles for now
-  version: Version,
-  metadata: {}, //
-  minUtXoDeposit: number, // V1.Ada
-  changeAddress: Bech32, // Bech32
-  addresses: Bech32[], // Array Bech32
-  collateralUTxOs: Bech32[], // TxOutRef
+  roles?: any // RolesConfig
+  version?: Version,
+  metadata?: Record<number, Object>,
+  minUTxODeposit: number,
+  changeAddress: Bech32,
+  addresses?: Bech32[], // When skipped we use `[changeAddress]`
+  collateralUTxOs?: Bech32[]
 }
 
 // Currently the runtime API doesn't provide any additional information
@@ -93,6 +93,7 @@ export type GetContractsResponse = IndexResponse<ContractHeaderItem>;
 
 export interface PostContractsResponse {
   contractId: TxOutRef,
+  endpoint: ContractEndpoint,
   // This contains a CBOR of the `TxBody`. The REST API gonna be extended so
   // we can also fetch a whole Transaction (CIP-30 `signTx` expects actually a whole `Tx`).
   txBody: TextEnvelope
@@ -112,7 +113,6 @@ interface ContractState extends ContractHeader {
   txBody?: TextEnvelope
 }
 
-
 export interface MarloweRuntimeApi {
   contracts: {
     get: (
@@ -128,7 +128,6 @@ export interface MarloweRuntimeApi {
     get: (route: ContractEndpoint) => Promise<ContractState | ErrorResponse>
   }
 };
-
 
 export function MarloweRuntimeClient(request: AxiosInstance): MarloweRuntimeApi {
   return {
@@ -147,16 +146,35 @@ export function MarloweRuntimeClient(request: AxiosInstance): MarloweRuntimeApi 
           .catch(error => error.status);
       },
       post: async (route: ContractsEndpoint, input: PostContractsRequest) => {
-        const config = {
-          data: input
+        const data = {
+          contract: input.contract,
+          roles: input.roles ?? null,
+          version: input.version ?? "v1",
+          metadata: input.metadata ?? {},
+          minUTxODeposit: input.minUTxODeposit,
         };
-
-        return request.post(route as string, config);
+        const config = {
+          headers: {
+            "X-Change-Address": input.changeAddress,
+            "X-Address": (input.addresses??[input.changeAddress]).join(","),
+            ... input.collateralUTxOs && { "X-Collateral-UTxOs": input.collateralUTxOs},
+          }
+        };
+        return request.post(route as string, data, config).then(response => {
+          return {
+            contractId: response.data.resource.contractId,
+            txBody: response.data.resource.txBody,
+            endpoint: response.data.links.contract
+          };
+        }).catch(error => error.status);
       }
     },
     contract: {
       get: async (route: ContractEndpoint) => {
-        return request.get(route as string)
+        return request.get(route as string).then(response => {
+          // We are getting back { links: {}, resource: contractState } here
+          return response.data.resource;
+        }).catch(error => error.status);
       }
     }
   }
@@ -178,13 +196,13 @@ const axiosRequest = axios.create({
 const client = MarloweRuntimeClient(axiosRequest);
 
 // Ugly fetcher for all the contracts
-const foldContracts = async () => {
+const foldContracts = async (filterItem: ((item: ContractHeaderItem) => boolean)) => {
   let result:ContractHeaderItem[] = [];
   let step = async function(response: GetContractsResponse | ErrorResponse) {
     if(typeof response === "number") {
       console.log("Error: ", response);
     } else {
-      result.push(...response.items)
+      result.push(...response.items.filter(filterItem))
       if (response.nextRange) {
         await step(await client.contracts.get(contractsEndpoint, { range: response.nextRange }));
       }
@@ -195,5 +213,23 @@ const foldContracts = async () => {
   return result;
 }
 
-foldContracts().then(contracts => console.log(contracts.length));
+foldContracts(() => true).then(contracts => console.log(contracts.length));
 
+let address = "addr_test1qz4y0hs2kwmlpvwc6xtyq6m27xcd3rx5v95vf89q24a57ux5hr7g3tkp68p0g099tpuf3kyd5g80wwtyhr8klrcgmhasu26qcn";
+
+client.contracts.post(
+  contractsEndpoint,
+  { contract: "close"
+  , minUTxODeposit: 2000000
+  , changeAddress: address
+  }
+).then(function(response) {
+  console.log(response);
+  if(typeof response === "number") {
+    console.log("Error: ", response);
+  } else {
+    client.contract.get(response.endpoint).then(function(response) {
+      console.log(response);
+    });
+  }
+});
