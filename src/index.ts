@@ -1,4 +1,4 @@
-import axios, { AxiosInstance, AxiosResponse } from 'axios';
+import axios, { AxiosInstance } from 'axios';
 
 // API responses brings us back URLs so we are encouraged to not construct them manually.
 // We use a opaque string to represent URLs for that.
@@ -162,8 +162,16 @@ export function MarloweRuntimeClient(request: AxiosInstance): MarloweRuntimeApi 
   }
 }
 
+// Just a temporary quick and dirty tests of the client
+const port = process.argv[2];
+
+if(!port) {
+  console.error("Please provide a runtime port number as an argument");
+  process.exit(1);
+}
+
 const axiosRequest = axios.create({
-    baseURL: 'http://0.0.0.0:49172',
+    baseURL: `http://0.0.0.0:${port}`,
     headers: { ContentType: 'application/json', Accept: 'application/json' }
 });
 
