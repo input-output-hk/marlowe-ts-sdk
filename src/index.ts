@@ -10,11 +10,27 @@ type ContractsEndpoint = string & {_opaque: typeof ContractsEndpoint};
 
 declare const ContractEndpoint: unique symbol;
 
+// It seems like overengeeniring to have a root endpoint defined like this
+// but we gonna extend the API and it gonna be served as a part of root response.
+export const contractsEndpoint = "/contracts" as ContractsEndpoint;
+
 type ContractEndpoint = string & {_opaque: typeof ContractEndpoint};
+
+// We are cheating in here a bit by hardcoding URLs ;-)
+export const contractEndpoint = (contractId: string) => `/contracts/${contractId}` as ContractEndpoint;
 
 declare const TransactionsEndpoint: unique symbol;
 
 type TransactionsEndpoint = string & {_opaque: typeof TransactionsEndpoint};
+
+export const transactionsEndpoint = (contractId: string) => `/contracts/${contractId}/transactions` as TransactionsEndpoint;
+
+declare const TransactionEndpoint: unique symbol;
+
+type TransactionEndpoint = string & {_opaque: typeof TransactionEndpoint};
+
+export const transactionEndpoint = (contractId: string, transactionId: string) =>
+  `/contracts/${contractId}/transactions/${transactionId}` as TransactionEndpoint;
 
 export interface GetContractsRequestOptions {
   range?: string
@@ -39,9 +55,9 @@ export interface PostContractsRequest {
   collateralUTxOs: Bech32[], // TxOutRef
 }
 
-export interface ErrorResponse {
-  status: "400" | "404" | "500";
-}
+// Currently the runtime API doesn't provide any additional information
+// beside the error status code like 400, 404, 500 etc.
+type ErrorResponse = number;
 
 type TxOutRef = string;
 type PolicyId = string;
@@ -63,15 +79,24 @@ interface ContractHeader {
 }
 
 interface ContractHeaderItem {
-  resource: ContractHeader;
+  results: ContractHeader;
   links: { contract: ContractEndpoint }
 }
 
-export interface GetContractsResponse {
+interface IndexResponse<Response> {
   nextRange?: string,
   prevRange?: string,
-  contracts: ContractHeaderItem[];
-};
+  items: Response[]
+}
+
+export type GetContractsResponse = IndexResponse<ContractHeaderItem>;
+
+export interface PostContractsResponse {
+  contractId: TxOutRef,
+  // This contains a CBOR of the `TxBody`. The REST API gonna be extended so
+  // we can also fetch a whole Transaction (CIP-30 `signTx` expects actually a whole `Tx`).
+  txBody: TextEnvelope
+}
 
 interface TextEnvelope {
   type: string,
@@ -88,34 +113,54 @@ interface ContractState extends ContractHeader {
 }
 
 
-
-export interface MarloweRuntime {
+export interface MarloweRuntimeApi {
   contracts: {
     get: (
+      route: ContractsEndpoint,
       input?: GetContractsRequestOptions
-    ) => Promise<AxiosResponse<GetContractsResponse | ErrorResponse>>;
-    // post: (
-    //   input: CreateBookOptions
-    // ) => Promise<AddBook201Response | ErrorResponse>;
+    ) => Promise<GetContractsResponse | ErrorResponse>;
+    post: (
+      route: ContractsEndpoint,
+      input: PostContractsRequest
+    ) => Promise<PostContractsResponse | ErrorResponse>;
   },
-  // n"/contracts/{contractId}/": {}
+  contract: {
+    get: (route: ContractEndpoint) => Promise<ContractState | ErrorResponse>
+  }
 };
 
-export function MarloweRuntimeClient(request: AxiosInstance): MarloweRuntime {
+
+export function MarloweRuntimeClient(request: AxiosInstance): MarloweRuntimeApi {
   return {
     contracts: {
-      get: (route: ContractsEndpoint, input?: GetContractsRequestOptions) => {
-        return request.get(route as string, input);
+      get: async (route: ContractsEndpoint, input) => {
+        const config = input?.range?{ headers: { Range: input.range } } : {};
+
+        return request.get(route as string, config)
+          .then(response => {
+            return {
+              items: response.data.results,
+              nextRange: response.headers["next-range"],
+              prevRange: response.headers["prev-range"]
+            };
+          })
+          .catch(error => error.status);
+      },
+      post: async (route: ContractsEndpoint, input: PostContractsRequest) => {
+        const config = {
+          data: input
+        };
+
+        return request.post(route as string, config);
       }
-      post: (route: ContractsEndpoint, input: PostContractsRequestOptions) => {
-        return request.post(route as string, input);
+    },
+    contract: {
+      get: async (route: ContractEndpoint) => {
+        return request.get(route as string)
       }
     }
   }
 }
-
-export const api = "/contracts" as ContracatsEndpoint;
-
 
 const axiosRequest = axios.create({
     baseURL: 'http://0.0.0.0:49172',
@@ -124,6 +169,23 @@ const axiosRequest = axios.create({
 
 const client = MarloweRuntimeClient(axiosRequest);
 
-client.contracts.get().then(response => {
-  console.log(response);
-});
+// Ugly fetcher for all the contracts
+const foldContracts = async () => {
+  let result:ContractHeaderItem[] = [];
+  let step = async function(response: GetContractsResponse | ErrorResponse) {
+    if(typeof response === "number") {
+      console.log("Error: ", response);
+    } else {
+      result.push(...response.items)
+      if (response.nextRange) {
+        await step(await client.contracts.get(contractsEndpoint, { range: response.nextRange }));
+      }
+    }
+  }
+  let response = await client.contracts.get(contractsEndpoint)
+  await step(response)
+  return result;
+}
+
+foldContracts().then(contracts => console.log(contracts.length));
+
