@@ -126,13 +126,14 @@ export interface MarloweRuntimeApi {
   },
   contract: {
     get: (route: ContractEndpoint) => Promise<ContractState | ErrorResponse>
+    put: (route: ContractEndpoint, input: TextEnvelope) => Promise<TransactionsEndpoint | ErrorResponse>
   }
 };
 
 export function MarloweRuntimeClient(request: AxiosInstance): MarloweRuntimeApi {
   return {
     contracts: {
-      get: async (route: ContractsEndpoint, input) => {
+      get: async (route: ContractsEndpoint, input): Promise<GetContractsResponse | ErrorResponse> => {
         const config = input?.range?{ headers: { Range: input.range } } : {};
 
         return request.get(route as string, config)
@@ -145,7 +146,7 @@ export function MarloweRuntimeClient(request: AxiosInstance): MarloweRuntimeApi 
           })
           .catch(error => error.status);
       },
-      post: async (route: ContractsEndpoint, input: PostContractsRequest) => {
+      post: async (route: ContractsEndpoint, input: PostContractsRequest): Promise<PostContractsResponse | ErrorResponse> => {
         const data = {
           contract: input.contract,
           roles: input.roles ?? null,
@@ -170,11 +171,16 @@ export function MarloweRuntimeClient(request: AxiosInstance): MarloweRuntimeApi 
       }
     },
     contract: {
-      get: async (route: ContractEndpoint) => {
+      get: async (route: ContractEndpoint): Promise<ContractState | ErrorResponse> => {
         return request.get(route as string).then(response => {
           // We are getting back { links: {}, resource: contractState } here
           return response.data.resource;
         }).catch(error => error.status);
+      },
+      put: async (route: ContractEndpoint, input: TextEnvelope): Promise<TransactionsEndpoint | ErrorResponse> => {
+        return request.post(route as string, input).then(response =>
+          response.data.links.transactions
+        ).catch(error => error.status);
       }
     }
   }
