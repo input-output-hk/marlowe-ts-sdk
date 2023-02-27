@@ -1,0 +1,16 @@
+{
+	"token": {
+		"token_name": "dollar",
+		"currency_symbol": "85bb65"
+	},
+	"to": {
+		"party": {
+			"role_token": "Ada provider"
+		}
+	},
+	"then": "close",
+	"pay": 0,
+	"from_account": {
+		"role_token": "Dollar provider"
+	}
+}

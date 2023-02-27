@@ -1,0 +1,24 @@
+ {
+		"divide": {
+		"times": {
+		  "times": {
+		  "value_of_choice": {
+			"choice_owner": {
+			"role_token": "kraken"
+			},
+			"choice_name": "inv-adausd"
+		  }
+		  },
+		  "multiply": {
+		  "value_of_choice": {
+			"choice_owner": {
+			"role_token": "kraken"
+			},
+			"choice_name": "dir-adausd"
+		  }
+		  }
+		},
+		"multiply": 0
+		},
+		"by": 10000000000000000
+}
