@@ -21,12 +21,12 @@ export type ApplyInputsPayload = TransactionCollection.PostTransactionsRequest
 
 export const initialise : 
   (client : RestAPI)
+  => (waitConfirmation : (txHash : string ) => TE.TaskEither<Error,boolean>)  
     => (signAndRetrieveOnlyHexTransactionWitnessSet : (tx :MarloweTxCBORHex) => TE.TaskEither<Error,HexTransactionWitnessSet>)
-    => (waitConfirmation : (txHash : string ) => TE.TaskEither<Error,boolean>)  
     => (walletDetails:WalletDetails) 
     => (payload : InitialisePayload)
     => TE.TaskEither<Error | DecodingError,ContractDetails> 
-  = (client) => (sign) => (waitConfirmation) => (walletDetails) => (payload) =>  
+  = (client) => (waitConfirmation) => (sign)  => (walletDetails) => (payload) =>  
       pipe( client.contracts.post( payload, walletDetails)
           , TE.chainW((contractTextEnvelope) => 
                 pipe ( sign(contractTextEnvelope.tx.cborHex)
@@ -38,13 +38,13 @@ export const initialise :
 
 export const applyInputs : 
   (client : RestAPI)
-  => (signAndRetrieveOnlyHexTransactionWitnessSet : (tx :MarloweTxCBORHex) => TE.TaskEither<Error,HexTransactionWitnessSet>)
   => (waitConfirmation : (txHash : string ) => TE.TaskEither<Error,boolean>)  
+  => (signAndRetrieveOnlyHexTransactionWitnessSet : (tx :MarloweTxCBORHex) => TE.TaskEither<Error,HexTransactionWitnessSet>)
   => (walletDetails:WalletDetails) 
   => (contractId : ContractId) 
   => ( payload : ApplyInputsPayload) 
   => TE.TaskEither<Error | DecodingError,Transaction.Details> 
-  = (client) => (sign) => (waitConfirmation) => (walletDetails) => (contractId) => (payload) =>   
+  = (client) => (waitConfirmation) =>  (sign) => (walletDetails) => (contractId) => (payload) =>   
       pipe( client.contracts.contract.transactions.post(contractId, payload, walletDetails)
           , TE.chainW((transactionTextEnvelope) => 
                 pipe ( sign(transactionTextEnvelope.tx.cborHex)

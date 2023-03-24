@@ -5,18 +5,18 @@ import { SingleAddressWallet} from '../../../src/common/wallet'
 import { pipe } from 'fp-ts/function'
 import * as Examples from '../../../src/language/core/v1/examples'
 import { addDays } from 'date-fns/fp'
-import { MarloweStateMachine } from '../../../src/runtime/stateMachine'
 import { log } from '../../../src/common/logging'
 import * as TE from 'fp-ts/TaskEither'
 import * as T from 'fp-ts/Task'
 import * as O from 'fp-ts/Option'
 import { getBankPrivateKey, getBlockfrostConfiguration, getMarloweRuntimeUrl } from '../../../src/runtime/common/configuration';
 import { token } from '../../../src/language/core/v1/semantics/contract/common/token'
-import { MarloweJSONCodec } from '../../../src/common/json'
 import { datetoTimeout } from '../../../src/language/core/v1/semantics/contract/when'
+import { applyInputs, initialise } from '../../../src/runtime/write/command'
+import { AxiosRestClient } from '../../../src/runtime/endpoints'
 
 
-describe.skip('swap', () => {
+describe('swap', () => {
   it('can execute the nominal case', async () => {
     log('#######################')
     log('# Swap : Nominal Case #')
@@ -29,8 +29,8 @@ describe.skip('swap', () => {
     const configuration = getBlockfrostConfiguration ();
 
     const tokenName = "TokenA"  
-    const adaAmountforAdaProvider = 10_000_000n
-    const adaAmountforTokenProvider = 10_000_000n
+    const adaAmountforAdaProvider = 20_000_000n
+    const adaAmountforTokenProvider = 20_000_000n
     const tokenAmountforTokenProvider = 50n
     const setup 
       = pipe( TE.Do
@@ -67,38 +67,67 @@ describe.skip('swap', () => {
             , TE.map (({adaProvider,tokenProvider,tokenAsset}) => 
                           ({ adaProvider:adaProvider
                            , tokenProvider:tokenProvider
-                           , tokenAsset:token(tokenAsset.policyId,tokenAsset.tokenName)})))                        
-    const exercise 
-      = pipe( setup              
+                           , tokenAsset:token(tokenAsset.policyId,tokenAsset.tokenName)
+                           , initialise : (wallet : SingleAddressWallet ) => 
+                                initialise
+                                  (AxiosRestClient(getMarloweRuntimeUrl())) 
+                                  (wallet.waitConfirmation)
+                                  (wallet.signMarloweTx)
+                                  ({ changeAddress: wallet.address
+                                    , usedAddresses: O.none
+                                    , collateralUTxOs: O.none})
+                           , applyInputs : (wallet : SingleAddressWallet ) => 
+                                applyInputs
+                                  (AxiosRestClient(getMarloweRuntimeUrl())) 
+                                  (wallet.waitConfirmation)
+                                  (wallet.signMarloweTx)
+                                  ({ changeAddress: wallet.address
+                                    , usedAddresses: O.none
+                                    , collateralUTxOs: O.none})
+                              })))                        
+    await 
+      pipe( setup              
             , TE.chainFirst(() => TE.of(log('############')))
             , TE.chainFirst(() => TE.of(log('# Exercise #')))
             , TE.chainFirst(() => TE.of(log('############')))
-            , TE.let (`adaDepositTimeout`,   () => pipe(Date.now(),addDays(1),datetoTimeout))
-            , TE.let (`tokenDepositTimeout`, () => pipe(Date.now(),addDays(2),datetoTimeout))
-            , TE.let (`amountOfADA`,         () => 2n)
-            , TE.let (`amountOfToken`,       () => 3n)
-            , TE.let (`marloweStateMachine`,      () => new MarloweStateMachine(getMarloweRuntimeUrl()))
-            , TE.let (`swap`, ({adaDepositTimeout,tokenDepositTimeout,amountOfADA,amountOfToken,tokenAsset}) => 
-                  Examples.swap(adaDepositTimeout,tokenDepositTimeout,amountOfADA,amountOfToken,tokenAsset))
-            , TE.bind('contractId',({marloweStateMachine,adaProvider,tokenProvider,swap}) => 
-                  marloweStateMachine.initialise
-                      ( swap
-                      , adaProvider.signMarloweTx
-                      , adaProvider.waitConfirmation  
-                      , { changeAddress : adaProvider.address
-                        , usedAddresses : O.none
-                        , collateralUTxOs : O.none}
-                      , {'Ada provider'   : adaProvider.address 
-                        ,'Token provider' : tokenProvider.address})) 
+            , TE.let (`swapRequest`,       ({tokenAsset}) => 
+                ({ adaDepositTimeout : pipe(Date.now(),addDays(1),datetoTimeout)
+                 , tokenDepositTimeout : pipe(Date.now(),addDays(2),datetoTimeout)
+                 , amountOfADA : 2n
+                 , amountOfToken : 3n
+                 , token :tokenAsset }))
+            , TE.let (`swapWithExpectedInputs`, ({swapRequest}) => 
+                  Examples.swapWithExpectedInputs(swapRequest))
+            , TE.bindW('contractId',({initialise,applyInputs,adaProvider,tokenProvider,swapWithExpectedInputs}) => 
+                  pipe( initialise 
+                          (adaProvider)
+                          ( { contract: swapWithExpectedInputs.swap
+                            , roles: {'Ada provider'   : adaProvider.address 
+                                     ,'Token provider' : tokenProvider.address}
+                            , version: 'v1'
+                            , metadata: {}
+                            , tags : {}
+                            , minUTxODeposit: 3_000_000})
+                      , TE.chainW ((contractDetails) =>       
+                          applyInputs
+                            (adaProvider)
+                            (contractDetails.contractId)
+                            ({ version : "v1"
+                              , inputs : [swapWithExpectedInputs.adaProviderInputDeposit]
+                              , metadata : {}
+                              , tags : {}}))
+                      , TE.chainW ((contractDetails) =>       
+                           applyInputs
+                              (tokenProvider)
+                              (contractDetails.contractId)
+                              ({ version : "v1"
+                                , inputs : [swapWithExpectedInputs.tokenProviderInputDeposit]
+                                , metadata : {}
+                                , tags : {}})))) 
             , TE.map (({contractId}) => ({contractId}) )
-            )
-
-    const main 
-      = await pipe( exercise 
             , TE.match(
               (e) =>  { console.log(e); },
-             (res) => { console.log(MarloweJSONCodec.encode(res)); }
-            ))();
+              (res) => { } )) ()
 
                               
   },1000_000); 

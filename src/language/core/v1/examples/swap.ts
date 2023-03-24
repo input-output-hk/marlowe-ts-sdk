@@ -6,6 +6,7 @@ import { Party, role } from "../semantics/contract/common/payee/party";
 import { ada, Token } from "../semantics/contract/common/token";
 import { Value, constant, mulValue } from "../semantics/contract/common/value";
 import { Timeout } from "../semantics/contract/when";
+import { InputDeposit } from "../semantics/contract/when/input/deposit";
 
 
 /**
@@ -16,8 +17,8 @@ import { Timeout } from "../semantics/contract/when";
 
 export const swap : ( adaDepositTimeout:Timeout
                     , tokenDepositTimeout:Timeout
-                    , amountOfADA:Value
-                    , amountOfToken:Value
+                    , amountOfADA:bigint
+                    , amountOfToken:bigint
                     , token:Token) => Contract 
   = (adaDepositTimeout, tokenDepositTimeout,amountOfADA,amountOfToken,token) => 
       ({ when :[{ case :{ party: role('Ada provider')  
@@ -50,3 +51,28 @@ export const swap : ( adaDepositTimeout:Timeout
                 , timeout_continuation : close})
         
 
+export type SwapWithExpectedInputs = 
+        { swap : Contract
+        , adaProviderInputDeposit : InputDeposit
+        , tokenProviderInputDeposit : InputDeposit} 
+
+export type SwapRequest 
+   = { adaDepositTimeout:Timeout
+     , tokenDepositTimeout:Timeout
+     , amountOfADA:bigint
+     , amountOfToken:bigint
+     , token:Token }   
+
+export const swapWithExpectedInputs 
+        : (request :SwapRequest )=> SwapWithExpectedInputs
+   = (request) =>
+        ({ swap : swap(request.adaDepositTimeout, request.tokenDepositTimeout,request.amountOfADA,request.amountOfToken,request.token)
+        , adaProviderInputDeposit : { input_from_party: role ('Ada provider')
+                                    , that_deposits: 1_000_000n * request.amountOfADA
+                                    , of_token: ada
+                                    , into_account: role('Ada provider') }
+        , tokenProviderInputDeposit : { input_from_party: role('Token provider')
+                                        , that_deposits: request.amountOfToken
+                                        , of_token: request.token
+                                        , into_account: role('Token provider') }
+        })

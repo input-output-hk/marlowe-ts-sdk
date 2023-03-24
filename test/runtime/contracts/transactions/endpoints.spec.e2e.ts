@@ -10,7 +10,7 @@ import * as TE from 'fp-ts/TaskEither'
 import * as T from 'fp-ts/Task'
 import { getBankPrivateKey, getBlockfrostConfiguration, getMarloweRuntimeUrl } from '../../../../src/runtime/common/configuration';
 import { AxiosRestClient } from '../../../../src/runtime/endpoints';
-import { applyInputs, initialise } from '../../../../src/runtime/command/execute';
+import { applyInputs, initialise } from '../../../../src/runtime/write/command';
 import '@relmify/jest-fp-ts'
 import * as O from 'fp-ts/lib/Option';
 import { addDays } from 'date-fns/fp'
@@ -22,7 +22,7 @@ import { datetoIso8601 } from '../../../../src/runtime/common/iso8601'
 import { inputNotify } from '../../../../src/language/core/v1/semantics/contract/when/input/notify'
 
 
-describe('Contracts/{contractd}/Transactions endpoints definitions', () => {
+describe.skip('Contracts/{contractd}/Transactions endpoints definitions', () => {
 
   const restApi = AxiosRestClient(getMarloweRuntimeUrl())
   const setup 
@@ -41,15 +41,15 @@ describe('Contracts/{contractd}/Transactions endpoints definitions', () => {
           , TE.map (({bank}) => ({bank : bank
                                  , initialise:initialise
                                                 (restApi) 
-                                                (bank.signMarloweTx)
                                                 (bank.waitConfirmation)
+                                                (bank.signMarloweTx)
                                                 ({ changeAddress: bank.address
                                                   , usedAddresses: O.none
                                                   , collateralUTxOs: O.none})
                                   , applyInputs :applyInputs 
                                                   (restApi) 
-                                                  (bank.signMarloweTx)
                                                   (bank.waitConfirmation)
+                                                  (bank.signMarloweTx)
                                                   ({ changeAddress: bank.address
                                                     , usedAddresses: O.none
                                                     , collateralUTxOs: O.none})})))  

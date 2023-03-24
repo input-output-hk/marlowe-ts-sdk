@@ -48,7 +48,7 @@ export const AxiosRestClient = function (baseURL: string): RestAPI {
       , transformResponse: MarloweJSONCodec.decode
     })
     
-  // curlirize(axiosInstance) -- N.B for debugging (display all the calls executed in a "curl-ish" way) 
+  curlirize(axiosInstance) // N.B for debugging (display all the calls executed in a "curl-ish" way) 
   return {
     healthcheck: () => HTTP.Get(axiosInstance)('/healthcheck'),
     withdrawals: {
