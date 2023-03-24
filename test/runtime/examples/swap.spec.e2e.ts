@@ -65,9 +65,9 @@ describe.skip('swap', () => {
                 () => log(  `   - ${tokenProviderMintedTokenBalance} ${tokenAsset.toString()}`))))
             , TE.chainFirst(({tokenProviderMintedTokenBalance}) => TE.of(expect(tokenProviderMintedTokenBalance).toBe(tokenAmountforTokenProvider)))
             , TE.map (({adaProvider,tokenProvider,tokenAsset}) => 
-                          ({adaProvider:adaProvider
-                          ,tokenProvider:tokenProvider
-                          ,tokenAsset:token(tokenAsset.policyId,tokenAsset.tokenName)})))                        
+                          ({ adaProvider:adaProvider
+                           , tokenProvider:tokenProvider
+                           , tokenAsset:token(tokenAsset.policyId,tokenAsset.tokenName)})))                        
     const exercise 
       = pipe( setup              
             , TE.chainFirst(() => TE.of(log('############')))
@@ -83,7 +83,8 @@ describe.skip('swap', () => {
             , TE.bind('contractId',({marloweStateMachine,adaProvider,tokenProvider,swap}) => 
                   marloweStateMachine.initialise
                       ( swap
-                      , adaProvider.signMarloweTx 
+                      , adaProvider.signMarloweTx
+                      , adaProvider.waitConfirmation  
                       , { changeAddress : adaProvider.address
                         , usedAddresses : O.none
                         , collateralUTxOs : O.none}

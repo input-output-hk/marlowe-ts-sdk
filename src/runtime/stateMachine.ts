@@ -6,6 +6,7 @@ import { Contract } from '../language/core/v1/semantics/contract';
 import { ContractDetails } from './contract/details';
 import { WalletDetails } from './common/wallet';
 import { HexTransactionWitnessSet, MarloweTxCBORHex } from './common/textEnvelope';
+import { initialise } from './command/execute';
 
 
 export class MarloweStateMachine {
@@ -18,20 +19,22 @@ export class MarloweStateMachine {
   public initialise 
           ( contract : Contract
           , signAndRetrieveOnlyHexTransactionWitnessSet : (tx :MarloweTxCBORHex) => TE.TaskEither<Error,HexTransactionWitnessSet>
+          , waitConfirmation : (txHash : string ) => TE.TaskEither<Error,boolean>  
           , walletDetails:WalletDetails
           , roles?: RolesConfig
           ) : TE.TaskEither<Error | DecodingError,ContractDetails>  { 
-    return Internal.initialise 
-                    (this.restClient)
-                    (signAndRetrieveOnlyHexTransactionWitnessSet)
-                    (walletDetails)
-                    ( { contract: contract
-                      , roles: roles
-                      , version: 'v1'
-                      , metadata: {}
-                      , tags : {}
-                      , minUTxODeposit: 3_000_000}
-                    )
+    return initialise 
+            (this.restClient)
+            (signAndRetrieveOnlyHexTransactionWitnessSet)
+            (waitConfirmation)
+            (walletDetails)
+            ( { contract: contract
+              , roles: roles
+              , version: 'v1'
+              , metadata: {}
+              , tags : {}
+              , minUTxODeposit: 3_000_000}
+            )
                
   }
 

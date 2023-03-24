@@ -9,7 +9,8 @@ import * as TE from 'fp-ts/TaskEither'
 
 import * as T from 'fp-ts/Task'
 import { getBankPrivateKey, getBlockfrostConfiguration, getMarloweRuntimeUrl } from '../../../../src/runtime/common/configuration';
-import { applyInputs, AxiosRestClient, initialise } from '../../../../src/runtime/endpoints';
+import { AxiosRestClient } from '../../../../src/runtime/endpoints';
+import { applyInputs, initialise } from '../../../../src/runtime/command/execute';
 import '@relmify/jest-fp-ts'
 import * as O from 'fp-ts/lib/Option';
 import { addDays } from 'date-fns/fp'
@@ -39,17 +40,19 @@ describe('Contracts/{contractd}/Transactions endpoints definitions', () => {
           , TE.chainFirst(({bankBalance})      => TE.of(expect(bankBalance).toBeGreaterThan(100_000_000)))
           , TE.map (({bank}) => ({bank : bank
                                  , initialise:initialise
-                                    (restApi) 
-                                    (bank.signMarloweTx)
-                                    ({ changeAddress: bank.address
-                                      , usedAddresses: O.none
-                                      , collateralUTxOs: O.none})
+                                                (restApi) 
+                                                (bank.signMarloweTx)
+                                                (bank.waitConfirmation)
+                                                ({ changeAddress: bank.address
+                                                  , usedAddresses: O.none
+                                                  , collateralUTxOs: O.none})
                                   , applyInputs :applyInputs 
-                                    (restApi) 
-                                    (bank.signMarloweTx)
-                                    ({ changeAddress: bank.address
-                                      , usedAddresses: O.none
-                                      , collateralUTxOs: O.none})})))  
+                                                  (restApi) 
+                                                  (bank.signMarloweTx)
+                                                  (bank.waitConfirmation)
+                                                  ({ changeAddress: bank.address
+                                                    , usedAddresses: O.none
+                                                    , collateralUTxOs: O.none})})))  
 
   it.skip('can Build Apply Input Tx : ' + 
      '(can POST: /contracts/{contractId}/transactions => ask to build the Tx to apply input on an initialised Marlowe Contract' +
@@ -68,8 +71,6 @@ describe('Contracts/{contractd}/Transactions endpoints definitions', () => {
                         , metadata: {}
                         , tags : {}
                         , minUTxODeposit: 2_000_000})
-                  , TE.chainFirstW ((contractDetails) => 
-                    bank.waitConfirmation(pipe(contractDetails.contractId, Contract.idToTxId)))
                   , TE.chainW ((contractDetails) =>       
                     restApi.contracts.contract.transactions.post
                         (contractDetails.contractId
@@ -107,8 +108,6 @@ describe('Contracts/{contractd}/Transactions endpoints definitions', () => {
                         , metadata: {}
                         , tags : {}
                         , minUTxODeposit: 2_000_000})
-                  , TE.chainFirstW ((contractDetails) => 
-                        bank.waitConfirmation(pipe(contractDetails.contractId, Contract.idToTxId)))
                   , TE.chainW ((contractDetails) =>       
                         applyInputs
                           (contractDetails.contractId)
@@ -121,7 +120,7 @@ describe('Contracts/{contractd}/Transactions endpoints definitions', () => {
           , TE.map (({result}) => result)
           , TE.match(
               (e) => { console.dir(e, { depth: null }); expect(e).not.toBeDefined()},
-              (res) => {console.dir(res, { depth: null });})
+              () => {})
           ) ()                                      
   },100_000),
   it.skip('can navigate throught Apply Inputs Txs pages ' + 

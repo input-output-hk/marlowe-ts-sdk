@@ -7,7 +7,8 @@ import { log } from '../../../src/common/logging'
 import * as TE from 'fp-ts/TaskEither'
 import * as T from 'fp-ts/Task'
 import { getBankPrivateKey, getBlockfrostConfiguration, getMarloweRuntimeUrl } from '../../../src/runtime/common/configuration';
-import { AxiosRestClient, initialise } from '../../../src/runtime/endpoints';
+import { AxiosRestClient } from '../../../src/runtime/endpoints';
+import { initialise } from '../../../src/runtime/command/execute';
 import '@relmify/jest-fp-ts'
 import * as O from 'fp-ts/lib/Option';
 
@@ -66,6 +67,7 @@ describe.skip('contracts endpoints', () => {
                     initialise
                       (restApi)
                       (bank.signMarloweTx)
+                      (bank.waitConfirmation)
                       ({ changeAddress: bank.address
                         , usedAddresses: O.none
                         , collateralUTxOs: O.none})
