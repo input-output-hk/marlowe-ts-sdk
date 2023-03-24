@@ -60,7 +60,7 @@ export type Observation =
   | GreaterOrEqual
   | Lower 
   | LowerOrEqual
-  | boolean;
+  | boolean
 
 export const Observation : t.Type<Observation> = t.recursion('Observation', () => 
   t.union([ And

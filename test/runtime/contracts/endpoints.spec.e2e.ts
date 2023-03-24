@@ -7,7 +7,7 @@ import { log } from '../../../src/common/logging'
 import * as TE from 'fp-ts/TaskEither'
 import * as T from 'fp-ts/Task'
 import { getBankPrivateKey, getBlockfrostConfiguration, getMarloweRuntimeUrl } from '../../../src/runtime/common/configuration';
-import { AxiosRestClient, Initialise } from '../../../src/runtime/endpoints';
+import { AxiosRestClient, initialise } from '../../../src/runtime/endpoints';
 import '@relmify/jest-fp-ts'
 import * as O from 'fp-ts/lib/Option';
 
@@ -63,17 +63,17 @@ describe.skip('contracts endpoints', () => {
               , TE.chainFirst(() => TE.of(log('# Exercise #')))
               , TE.chainFirst(() => TE.of(log('############')))
               , TE.bindW('contractDetails',({bank}) => 
-                    Initialise
+                    initialise
                       (restApi)
+                      (bank.signMarloweTx)
+                      ({ changeAddress: bank.address
+                        , usedAddresses: O.none
+                        , collateralUTxOs: O.none})
                       ( { contract: close
                           , version: 'v1'
                           , metadata: {}
                           , tags : {}
-                          , minUTxODeposit: 2_000_000}
-                        , { changeAddress: bank.address
-                          , usedAddresses: O.none
-                          , collateralUTxOs: O.none}
-                        , bank.signMarloweTx))
+                          , minUTxODeposit: 2_000_000}))
               , TE.map (({contractDetails}) => contractDetails))
       
       const result = await pipe(exercise, TE.match(

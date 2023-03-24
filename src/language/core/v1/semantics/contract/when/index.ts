@@ -28,4 +28,4 @@ export const Case : t.Type<Case>
 export type Timeout = t.TypeOf<typeof Timeout>
 export const Timeout = t.bigint 
 
-export const datetoTimeout = (date:Date):Timeout => pipe(date,getUnixTime,BigInt)
+export const datetoTimeout = (date:Date):Timeout => pipe(date,getUnixTime,(a) => a * 1_000,BigInt)

@@ -9,7 +9,7 @@ import * as TE from 'fp-ts/TaskEither'
 
 import * as T from 'fp-ts/Task'
 import { getBankPrivateKey, getBlockfrostConfiguration, getMarloweRuntimeUrl } from '../../../../src/runtime/common/configuration';
-import { ApplyInputs, AxiosRestClient, Initialise } from '../../../../src/runtime/endpoints';
+import { applyInputs, AxiosRestClient, initialise } from '../../../../src/runtime/endpoints';
 import '@relmify/jest-fp-ts'
 import * as O from 'fp-ts/lib/Option';
 import { addDays } from 'date-fns/fp'
@@ -18,6 +18,7 @@ import * as Contract from '../../../../src/runtime/contract/id'
 import * as Tx from '../../../../src/runtime/contract/transaction/id'
 import { addMinutes, subMinutes } from 'date-fns'
 import { datetoIso8601 } from '../../../../src/runtime/common/iso8601'
+import { inputNotify } from '../../../../src/language/core/v1/semantics/contract/when/input/notify'
 
 
 describe('Contracts/{contractd}/Transactions endpoints definitions', () => {
@@ -36,97 +37,93 @@ describe('Contracts/{contractd}/Transactions endpoints definitions', () => {
                       log(`Bank (${bank.address})`), 
                 () => log(`  - ${ADA.format(bankBalance)}`)))) 
           , TE.chainFirst(({bankBalance})      => TE.of(expect(bankBalance).toBeGreaterThan(100_000_000)))
-          , TE.map (({bank}) => ({bank:bank})))  
+          , TE.map (({bank}) => ({bank : bank
+                                 , initialise:initialise
+                                    (restApi) 
+                                    (bank.signMarloweTx)
+                                    ({ changeAddress: bank.address
+                                      , usedAddresses: O.none
+                                      , collateralUTxOs: O.none})
+                                  , applyInputs :applyInputs 
+                                    (restApi) 
+                                    (bank.signMarloweTx)
+                                    ({ changeAddress: bank.address
+                                      , usedAddresses: O.none
+                                      , collateralUTxOs: O.none})})))  
 
-  it('can Build Apply Input Tx : ' + 
+  it.skip('can Build Apply Input Tx : ' + 
      '(can POST: /contracts/{contractId}/transactions => ask to build the Tx to apply input on an initialised Marlowe Contract' +
      ' and GET : /contracts/{contractId}/transactions => should see the unsigned transaction listed)', async () => {                           
-    const exercise 
-      = pipe( setup              
-            , TE.chainFirst(() => TE.of(log('############')))
-            , TE.chainFirst(() => TE.of(log('# Exercise #')))
-            , TE.chainFirst(() => TE.of(log('############')))
-            , TE.let (`notifyTimeout`,   () => pipe(Date.now(),addDays(1),datetoTimeout))
-            , TE.bind('contractDetails',({bank,notifyTimeout}) =>
-                    Initialise
-                      (restApi)
-                      ( { contract: oneNotifyTrue(notifyTimeout)
-                          , version: 'v1'
-                          , metadata: {}
+    await  
+      pipe( setup              
+          , TE.chainFirst(() => TE.of(log('############')))
+          , TE.chainFirst(() => TE.of(log('# Exercise #')))
+          , TE.chainFirst(() => TE.of(log('############')))
+          , TE.let (`notifyTimeout`,   () => pipe(Date.now(),addDays(1),datetoTimeout))
+          , TE.bind('result',({initialise,bank,notifyTimeout}) =>
+                pipe
+                  ( initialise
+                    ( { contract: oneNotifyTrue(notifyTimeout)
+                        , version: 'v1'
+                        , metadata: {}
+                        , tags : {}
+                        , minUTxODeposit: 2_000_000})
+                  , TE.chainFirstW ((contractDetails) => 
+                    bank.waitConfirmation(pipe(contractDetails.contractId, Contract.idToTxId)))
+                  , TE.chainW ((contractDetails) =>       
+                    restApi.contracts.contract.transactions.post
+                        (contractDetails.contractId
+                        , { version : "v1"
+                          , inputs : [inputNotify]
+                          , metadata : {}
                           , tags : {}
-                          , minUTxODeposit: 2_000_000}
+                          , invalidBefore    : pipe(Date.now(),(date) => subMinutes(date,5),datetoIso8601)
+                          , invalidHereafter : pipe(Date.now(),(date) => addMinutes(date,5),datetoIso8601) }
                         , { changeAddress: bank.address
                           , usedAddresses: O.none
-                          , collateralUTxOs: O.none}
-                        , bank.signMarloweTx))
-            , TE.chainFirstW(({bank,contractDetails}) => 
-                bank.waitConfirmation(pipe(contractDetails.contractId, Contract.idToTxId)) ) 
-            , TE.bind('postResponse',({bank,contractDetails}) => 
-                restApi.contracts.contract.transactions.post
-                    (contractDetails.contractId
-                    , { version : "v1"
-                      , inputs : ["input_notify"]
-                      , metadata : {}
-                      , tags : {}
-                      , invalidBefore    : pipe(Date.now(),(date) => subMinutes(date,5),datetoIso8601)
-                      , invalidHereafter : pipe(Date.now(),(date) => addMinutes(date,5),datetoIso8601) }
-                    , { changeAddress: bank.address
-                      , usedAddresses: O.none
-                      , collateralUTxOs: O.none}) )
-            , TE.map (({postResponse}) => postResponse)
-            )
-    
-    const result = await pipe(exercise, TE.match(
-      (e) => { console.dir(e, { depth: null }); expect(e).not.toBeDefined()},
-      (res) => {console.dir(res, { depth: null });})) ()
+                          , collateralUTxOs: O.none}) )))
+          , TE.map (({result}) => result)
+          , TE.match(
+              (e) => { console.dir(e, { depth: null }); expect(e).not.toBeDefined()},
+              () => {})
+          ) ()
                               
   },100_000),
-  it.skip('can Apply Inputs : ' + 
+  it('can Apply Inputs : ' + 
      '(can POST: /contracts/{contractId}/transactions => ask to build the Tx to apply input on an initialised Marlowe Contract' + 
      ' , PUT:  /contracts/{contractId}/transactions/{transactionId} => Append the Applied Input Tx to the ledger' + 
-     ' , GET:  /contracts/{contractId}/transactions/{transactionId} => retrieve the Tx state)', async () => {            
-      const exercise 
-        = pipe( setup              
-              , TE.chainFirst(() => TE.of(log('############')))
-              , TE.chainFirst(() => TE.of(log('# Exercise #')))
-              , TE.chainFirst(() => TE.of(log('############')))
-              , TE.let (`notifyTimeout`,   () => pipe(Date.now(),addDays(1),datetoTimeout))
-              , TE.bind('contractDetails',({bank,notifyTimeout}) =>
-                      Initialise
-                        (restApi)
-                        ( { contract: oneNotifyTrue(notifyTimeout)
-                            , version: 'v1'
-                            , metadata: {}
-                            , tags : {}
-                            , minUTxODeposit: 2_000_000}
-                          , { changeAddress: bank.address
-                            , usedAddresses: O.none
-                            , collateralUTxOs: O.none}
-                          , bank.signMarloweTx))
-              , TE.chainFirstW(({bank,contractDetails}) => bank.waitConfirmation(pipe(contractDetails.contractId, Contract.idToTxId)) ) 
-              , TE.bind('transactionDetails',({bank,contractDetails}) => 
-                  ApplyInputs
-                      (restApi)
-                      (contractDetails.contractId)
-                      ({ version : "v1"
-                        , inputs : ["input_notify"]
-                        , metadata : {}
+     ' , GET:  /contracts/{contractId}/transactions/{transactionId} => retrieve the Tx state)', async () => {
+    await  
+      pipe( setup              
+          , TE.chainFirst(() => TE.of(log('############')))
+          , TE.chainFirst(() => TE.of(log('# Exercise #')))
+          , TE.chainFirst(() => TE.of(log('############')))
+          , TE.let (`notifyTimeout`,   () => pipe(Date.now(),addDays(1),datetoTimeout))
+          , TE.bind('result',({initialise,applyInputs,bank,notifyTimeout}) =>
+                pipe
+                  ( initialise
+                    ( { contract: oneNotifyTrue(notifyTimeout)
+                        , version: 'v1'
+                        , metadata: {}
                         , tags : {}
-                        , invalidBefore    : pipe(Date.now(),(date) => subMinutes(date,5),datetoIso8601)
-                        , invalidHereafter : pipe(Date.now(),(date) => addMinutes(date,5),datetoIso8601) }
-                      , { changeAddress: bank.address
-                        , usedAddresses: O.none
-                        , collateralUTxOs: O.none}
-                        , bank.signMarloweTx) )
-              , TE.chainFirstW(({bank,transactionDetails}) => bank.waitConfirmation(pipe(transactionDetails.transactionId, Tx.idToTxId)) ) 
-              , TE.map (({transactionDetails}) => transactionDetails)
-              )
-    
-    const result = await pipe(exercise, TE.match(
-      (e) => { console.dir(e, { depth: null }); expect(e).not.toBeDefined()},
-      (res) => {console.dir(res, { depth: null });})) ()
-                                
-  },10_000),
+                        , minUTxODeposit: 2_000_000})
+                  , TE.chainFirstW ((contractDetails) => 
+                        bank.waitConfirmation(pipe(contractDetails.contractId, Contract.idToTxId)))
+                  , TE.chainW ((contractDetails) =>       
+                        applyInputs
+                          (contractDetails.contractId)
+                          ({ version : "v1"
+                            , inputs : [inputNotify]
+                            , metadata : {}
+                            , tags : {}}))
+                  , TE.chainFirstW ((txDetails) => 
+                        bank.waitConfirmation(pipe(txDetails.transactionId, Tx.idToTxId)))))
+          , TE.map (({result}) => result)
+          , TE.match(
+              (e) => { console.dir(e, { depth: null }); expect(e).not.toBeDefined()},
+              (res) => {console.dir(res, { depth: null });})
+          ) ()                                      
+  },100_000),
   it.skip('can navigate throught Apply Inputs Txs pages ' + 
           '(GET:  /contracts/{contractId}/transactions )', async () => {            
     const exercise 

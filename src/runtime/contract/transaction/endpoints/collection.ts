@@ -97,7 +97,7 @@ export const PostTransactionsRequest
 
 export type PostResponse = t.TypeOf<typeof PostResponse>;
 export const PostResponse = t.type({
-    links   : t.type({ contract:t.string , transactions:t.string}),
+    links   : t.type({ transaction:t.string}),
     resource: TransactionTextEnvelope
     });  
 

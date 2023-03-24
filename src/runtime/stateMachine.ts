@@ -21,16 +21,17 @@ export class MarloweStateMachine {
           , walletDetails:WalletDetails
           , roles?: RolesConfig
           ) : TE.TaskEither<Error | DecodingError,ContractDetails>  { 
-    return Internal.Initialise 
+    return Internal.initialise 
                     (this.restClient)
+                    (signAndRetrieveOnlyHexTransactionWitnessSet)
+                    (walletDetails)
                     ( { contract: contract
                       , roles: roles
                       , version: 'v1'
                       , metadata: {}
                       , tags : {}
                       , minUTxODeposit: 3_000_000}
-                    , walletDetails
-                    , signAndRetrieveOnlyHexTransactionWitnessSet)
+                    )
                
   }
 

@@ -15,7 +15,7 @@ import { HexTransactionWitnessSet, transactionWitnessSetTextEnvelope } from "../
 export type GET = ( contractId: ContractId, transactionId : TransactionId) => TE.TaskEither<Error | DecodingError, Details>
 
 type GETPayload = t.TypeOf<typeof GETPayload>
-const GETPayload = t.type({ links: t.type ({previous : t.string,next: t.string}), resource: Details})
+const GETPayload = t.type({ links: t.type ({}), resource: Details})
 
 export const getViaAxios:(axiosInstance: AxiosInstance) => GET
     = (axiosInstance) => (contractId,transactionId) => 
@@ -39,4 +39,4 @@ export const putViaAxios:(axiosInstance: AxiosInstance) => PUT
             )
 
 const endpointURI = (contractId: ContractId, transactionId: TransactionId):string => 
-    (`/contracts/${pipe(contractId,unContractId,encodeURIComponent)}/transaction/${pipe(transactionId,unTransactionId,encodeURIComponent)}`)
+    (`/contracts/${pipe(contractId,unContractId,encodeURIComponent)}/transactions/${pipe(transactionId,unTransactionId,encodeURIComponent)}`)
