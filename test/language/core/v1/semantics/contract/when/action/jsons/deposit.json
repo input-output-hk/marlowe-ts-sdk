@@ -1,0 +1,16 @@
+{
+	"party": {
+		"role_token": "Ada provider"
+	},
+	"of_token": {
+		"token_name": "",
+		"currency_symbol": ""
+	},
+	"into_account": {
+		"role_token": "Ada provider"
+	},
+	"deposits": {
+		"times": 0,
+		"multiply": 1000000
+	}
+}

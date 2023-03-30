@@ -1,0 +1,31 @@
+{
+    "compilerOptions": {
+        "allowJs": true,
+        "allowSyntheticDefaultImports": true,
+        "baseUrl": "./",
+        "paths": 
+            { "@adapter/*": ["src/adapter/*"]
+            , "@runtime/*": ["src/runtime/*"]
+            , "@language/*": ["src/language/*"]
+            },
+        "declaration": true,
+        "esModuleInterop": true,
+        "inlineSourceMap": false,
+        "lib": ["es2020"],
+        "listEmittedFiles": false,
+        "listFiles": false,
+        "moduleResolution": "node",
+        "noFallthroughCasesInSwitch": true,
+        "pretty": true,
+        "resolveJsonModule": true,
+        "rootDir": "src",
+        "skipLibCheck": true,
+        "strict": true,
+        "traceResolution": false,
+        "strictPropertyInitialization":false,
+        "types": ["node", "jest"]
+    },
+    "compileOnSave": false,
+    "exclude": ["node_modules", "dist"],
+    "include": ["src"]
+}
