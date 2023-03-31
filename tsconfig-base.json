@@ -3,11 +3,6 @@
         "allowJs": true,
         "allowSyntheticDefaultImports": true,
         "baseUrl": "./",
-        "paths": 
-            { "@adapter/*": ["src/adapter/*"]
-            , "@runtime/*": ["src/runtime/*"]
-            , "@language/*": ["src/language/*"]
-            },
         "declaration": true,
         "esModuleInterop": true,
         "inlineSourceMap": false,
@@ -18,7 +13,7 @@
         "noFallthroughCasesInSwitch": true,
         "pretty": true,
         "resolveJsonModule": true,
-        "rootDir": "src",
+        "rootDirs": ["src","test"],
         "skipLibCheck": true,
         "strict": true,
         "traceResolution": false,

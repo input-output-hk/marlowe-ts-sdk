@@ -50,7 +50,7 @@ describe('withdrawals endpoints ', () => {
                           , inputs : [swapWithRequiredWithdrawalAndExpectedInputs.adaProviderInputDeposit]
                           , metadata : {}
                           , tags : {}}))
-                  , TE.chainW ((contractDetails) =>       
+                  , TE.chainW (contractDetails =>       
                       applyInputs
                           (tokenProvider)
                           (contractDetails.contractId)
@@ -75,7 +75,7 @@ describe('withdrawals endpoints ', () => {
                       )) 
             , TE.match(
               (e) => { console.dir(e, { depth: null }); expect(e).not.toBeDefined()},
-              (res) => { } )) ()
+              () => { } )) ()
 
                               
   },1000_000); 

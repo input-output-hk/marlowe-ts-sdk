@@ -1,16 +1,16 @@
 
 import * as TE from 'fp-ts/TaskEither'
 import * as E from 'fp-ts/Either'
-import * as HTTP from '@runtime/common/http';
+import * as HTTP from '../../../../runtime/common/http';
 import { pipe } from 'fp-ts/lib/function';
 import { AxiosInstance } from "axios";
 import { TransactionId, unTransactionId } from "../id";
 import { ContractId, unContractId } from "../../id";
-import { DecodingError } from "@runtime/common/codec";
+import { DecodingError } from "../../../../runtime/common/codec";
 import * as t from "io-ts";
 import { formatValidationErrors } from "io-ts-reporters";
 import { Details } from "../details";
-import { HexTransactionWitnessSet, transactionWitnessSetTextEnvelope } from "@runtime/common/textEnvelope";
+import { HexTransactionWitnessSet, transactionWitnessSetTextEnvelope } from "../../../../runtime/common/textEnvelope";
 
 export type GET = ( contractId: ContractId, transactionId : TransactionId) => TE.TaskEither<Error | DecodingError, Details>
 

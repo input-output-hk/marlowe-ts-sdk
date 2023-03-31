@@ -10,16 +10,16 @@ import { pipe } from 'fp-ts/lib/function';
 
 import { AxiosInstance } from "axios";
 
-import * as HTTP from '@runtime/common/http';
-import { unAddressBech32 } from "@runtime/common/address";
-import { Metadata } from "@runtime/common/metadata";
-import { WalletDetails } from "@runtime/common/wallet";
-import { DecodingError } from "@runtime/common/codec";
-import { TextEnvelope } from "@runtime/common/textEnvelope";
-import { MarloweVersion } from "@runtime/common/version";
-import { ISO8601 } from "@runtime/common/iso8601";
-import { Tags } from "@runtime/common/metadata/tag";
-import { Input } from "@language/core/v1/semantics/contract/when/input";
+import * as HTTP from '../../../../runtime/common/http';
+import { unAddressBech32 } from "../../../../runtime/common/address";
+import { Metadata } from "../../../../runtime/common/metadata";
+import { WalletDetails } from "../../../../runtime/common/wallet";
+import { DecodingError } from "../../../../runtime/common/codec";
+import { TextEnvelope } from "../../../../runtime/common/textEnvelope";
+import { MarloweVersion } from "../../../../runtime/common/version";
+import { ISO8601 } from "../../../../runtime/common/iso8601";
+import { Tags } from "../../../../runtime/common/metadata/tag";
+import { Input } from "../../../../language/core/v1/semantics/contract/when/input";
 import { Header } from "../header";
 import { TransactionId } from ".././id";
 import { ContractId, unContractId } from "../../id";
@@ -76,11 +76,11 @@ export const postViaAxios:(axiosInstance: AxiosInstance) => POST
                       ( transactionsEndpoint(contractId)
                       , postTransactionsRequest
                       , { headers: {
-                      'Accept': 'application/vendor.iog.marlowe-runtime.apply-inputs-tx-json',
-                      'Content-Type':'application/json',
-                      'X-Change-Address': unAddressBech32(walletDetails.changeAddress),
-                      'X-Address'         : pipe(walletDetails.usedAddresses      , A.fromOption, A.flatten, (a) => a.join(',')),
-                      'X-Collateral-UTxOs': pipe(walletDetails.collateralUTxOs, A.fromOption, A.flatten, (a) => a.join(','))}})
+                            'Accept': 'application/vendor.iog.marlowe-runtime.apply-inputs-tx-json',
+                            'Content-Type':'application/json',
+                            'X-Change-Address': unAddressBech32(walletDetails.changeAddress),
+                            'X-Address'         : pipe(walletDetails.usedAddresses      , A.fromOption, A.flatten, (a) => a.join(',')),
+                            'X-Collateral-UTxO': pipe(walletDetails.collateralUTxOs, A.fromOption, A.flatten, (a) => a.join(','))}})
           , TE.chainW((data) => TE.fromEither(E.mapLeft(formatValidationErrors)(PostResponse.decode(data))))
           , TE.map((payload) => payload.resource))  
 

@@ -7,7 +7,7 @@ import {formatValidationErrors} from 'io-ts-reporters'
 import {Value} from '../../../../../../../../src/language/core/v1/semantics/contract/common/value'
 import * as path from 'path'
 import { MarloweJSONCodec, minify } from '../../../../../../../../src/adapter/json';
-import {  getFileContents } from '../../../../../../../../src/adapter/file';
+import {  getFileContents } from '../../../../../../../adapter/file';
 import { fileURLToPath } from 'url';
 
 

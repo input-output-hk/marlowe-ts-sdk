@@ -5,11 +5,11 @@ import { AxiosInstance } from 'axios';
 import * as E from 'fp-ts/Either'
 import * as TE from 'fp-ts/TaskEither'
 import { pipe } from 'fp-ts/lib/function';
-import * as HTTP from '@runtime/common/http';
-import { HexTransactionWitnessSet, transactionWitnessSetTextEnvelope } from '@runtime/common/textEnvelope';
+import * as HTTP from '../../../../runtime/common/http';
+import { HexTransactionWitnessSet, transactionWitnessSetTextEnvelope } from '../../../../runtime/common/textEnvelope';
 
 import {formatValidationErrors} from 'io-ts-reporters'
-import { DecodingError } from '@runtime/common/codec';
+import { DecodingError } from '../../../../runtime/common/codec';
 import { unWithdrawalId, WithdrawalId } from '../id';
 import { Details } from '../details';
 
@@ -20,7 +20,7 @@ export const getViaAxios:(axiosInstance: AxiosInstance) => GET
     = (axiosInstance) => (withdrawalId) => 
         pipe(HTTP.Get(axiosInstance)
                 ( endpointURI(withdrawalId)
-                , { headers: { Accept: 'application/json', 'Content-Type':'application/json'}})
+                , { headers: { Accept: 'application/json','Content-Type':'application/json'}})
             , TE.chainW((data) => TE.fromEither(E.mapLeft(formatValidationErrors)(Details.decode(data)))))
 
 export type PUT = ( withdrawalId: WithdrawalId

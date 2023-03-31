@@ -86,11 +86,11 @@ export const postViaAxios:(axiosInstance: AxiosInstance) => POST
                         ( '/withdrawals'
                         , postWithdrawalsRequest
                         , { headers: {
-                        'Accept': 'application/vendor.iog.marlowe-runtime.withdraw-tx-json',
-                        'Content-Type':'application/json',
-                        'X-Change-Address': unAddressBech32(walletDetails.changeAddress),
-                        'X-Address'         : pipe(walletDetails.usedAddresses      , A.fromOption, A.flatten, (a) => a.join(',')),
-                        'X-Collateral-UTxOs': pipe(walletDetails.collateralUTxOs, A.fromOption, A.flatten, (a) => a.join(','))}})
+                                'Accept': 'application/vendor.iog.marlowe-runtime.withdraw-tx-json',
+                                'Content-Type':'application/json',
+                                'X-Change-Address': unAddressBech32(walletDetails.changeAddress),
+                                'X-Address'         : pipe(walletDetails.usedAddresses      , A.fromOption, A.flatten, (a) => a.join(',')),
+                                'X-Collateral-UTxO': pipe(walletDetails.collateralUTxOs, A.fromOption, A.flatten, (a) => a.join(','))}})
             , TE.chainW((data) => TE.fromEither(E.mapLeft(formatValidationErrors)(PostResponse.decode(data))))
             , TE.map((payload) => payload.resource))
                                         

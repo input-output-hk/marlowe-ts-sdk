@@ -1,6 +1,6 @@
-import { AddressBech32 } from "@runtime/common/address";
+import { AddressBech32 } from "../../runtime/common/address";
 import * as t from "io-ts"
-import { PolicyId } from "@language/core/v1/semantics/contract/common/policyId";
+import { PolicyId } from "../../language/core/v1/semantics/contract/common/policyId";
 import { optionFromNullable } from "io-ts-types";
 
 

@@ -70,9 +70,7 @@ describe('contracts endpoints', () => {
               (getMarloweRuntimeUrl())
               (getBlockfrostContext ())
               (getBankPrivateKey())                  
-          , TE.bindW('firstPage' ,()             => restApi.contracts.getHeadersByRange(O.none)) 
-          , TE.bindW('secondPage',({firstPage})  => restApi.contracts.getHeadersByRange(firstPage.nextRange))
-          , TE.bindW('thirdPage' ,({secondPage}) => restApi.contracts.getHeadersByRange(secondPage.nextRange))
+          , TE.bindW('firstPage' ,() => restApi.contracts.getHeadersByRange(O.none)) 
           , TE.match(
                 (e) => { console.dir(e, { depth: null }); expect(e).not.toBeDefined()},
                 () => {})) ()

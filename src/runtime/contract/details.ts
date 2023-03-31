@@ -1,17 +1,17 @@
 
 
 import { ContractId } from "./id";
-import { TextEnvelope } from "@runtime/common/textEnvelope";
+import { TextEnvelope } from "../../runtime/common/textEnvelope";
 import { optionFromNullable } from "io-ts-types";
 import * as t from "io-ts";
-import { BlockHeader } from "@runtime/common/block";
-import { MarloweVersion } from "@runtime/common/version";
-import { PolicyId } from "@runtime/common/policyId";
-import { Metadata } from "@runtime/common/metadata";
+import { BlockHeader } from "../../runtime/common/block";
+import { MarloweVersion } from "../../runtime/common/version";
+import { PolicyId } from "../../runtime/common/policyId";
+import { Metadata } from "../../runtime/common/metadata";
 import { TxStatus } from "./transaction/status";
-import { TxOutRef } from "@runtime/common/tx/outRef";
-import { Contract } from "@language/core/v1/semantics/contract";
-import { MarloweState } from "@runtime/common/state";
+import { TxOutRef } from "../../runtime/common/tx/outRef";
+import { Contract } from "../../language/core/v1/semantics/contract";
+import { MarloweState } from "../../runtime/common/state";
 
 
 export type ContractDetails = t.TypeOf<typeof ContractDetails>

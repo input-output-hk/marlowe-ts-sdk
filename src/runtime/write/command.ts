@@ -1,20 +1,20 @@
 
 import * as TE from 'fp-ts/TaskEither'
-import * as ContractCollection from '@runtime/contract/endpoints/collection';
-import * as TransactionCollection from '@runtime/contract/transaction/endpoints/collection';
-import * as WithdrawalCollection from '@runtime/contract/withdrawal/endpoints/collection';
-import { DecodingError } from '@runtime/common/codec';
-import { ContractDetails } from '@runtime/contract/details';
+import * as ContractCollection from '../../runtime/contract/endpoints/collection';
+import * as TransactionCollection from '../../runtime/contract/transaction/endpoints/collection';
+import * as WithdrawalCollection from '../../runtime/contract/withdrawal/endpoints/collection';
+import { DecodingError } from '../../runtime/common/codec';
+import { ContractDetails } from '../../runtime/contract/details';
 import { pipe } from 'fp-ts/function'
-import { WalletDetails } from '@runtime/common/wallet';
-import { HexTransactionWitnessSet, MarloweTxCBORHex } from '@runtime/common/textEnvelope';
-import { ContractId } from '@runtime/contract/id';
-import * as Contract from '@runtime/contract/id';
-import * as Tx from '@runtime/contract/transaction/id';
-import * as Transaction from '@runtime/contract/transaction/details';
-import * as Withdrawal from '@runtime/contract/withdrawal/details';
-import * as WithdrawalId from '@runtime/contract/withdrawal/id';
-import { RestAPI } from '@runtime/endpoints';
+import { WalletDetails } from '../../runtime/common/wallet';
+import { HexTransactionWitnessSet, MarloweTxCBORHex } from '../../runtime/common/textEnvelope';
+import { ContractId } from '../../runtime/contract/id';
+import * as Contract from '../../runtime/contract/id';
+import * as Tx from '../../runtime/contract/transaction/id';
+import * as Transaction from '../../runtime/contract/transaction/details';
+import * as Withdrawal from '../../runtime/contract/withdrawal/details';
+import * as WithdrawalId from '../../runtime/contract/withdrawal/id';
+import { RestAPI } from '../../runtime/endpoints';
 
 
 export type InitialisePayload  = ContractCollection.PostContractsRequest

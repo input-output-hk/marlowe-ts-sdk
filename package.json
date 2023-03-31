@@ -1,7 +1,7 @@
 {
   "name": "marlowe-ts-sdk",
-  "version": "0.0.1",
-  "description": "Marlowe Runtime Client for building Marlowe Contracts",
+  "version": "0.0.1-beta",
+  "description": "Marlowe Runtime SDK for building Marlowe Contracts",
   "engines": {
     "node": ">=14.20.1"
   },
@@ -13,14 +13,6 @@
     "Nicolas Henin <nicolas.henin@iohk.io> (https://iohk.io)"
   ],
   "license": "Apache-2.0",
-  "main": "dist/cjs/index.js",
-  "module": "dist/mjs/index.js",
-  "exports": {
-    ".": {
-      "import": "./dist/mjs/index.js",
-      "require": "./dist/cjs/index.js"
-    }
-  },
   "scripts": {
     "build:esm": "tsc -p src/tsconfig.json --outDir ./dist/esm --module es2020",
     "build:cjs": "tsc --build src",

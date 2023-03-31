@@ -9,7 +9,7 @@ import {Contract} from '../../../../../src/language/core/v1/semantics/contract'
 import * as path from 'path'
 import { fileURLToPath } from 'url';
 import {MarloweJSONCodec, minify} from '../../../../../src/adapter/json'
-import { getFileContents } from '../../../../../src/adapter/file';
+import { getFileContents } from '../../../../adapter/file';
 
 
 
