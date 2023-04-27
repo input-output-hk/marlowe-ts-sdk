@@ -31,7 +31,7 @@ describe('withdrawals endpoints ', () => {
               , amountOfToken : 3n
               , token :tokenAsset }))
           , TE.let (`swapWithRequiredWithdrawalAndExpectedInputs`, ({swapRequest}) => 
-              Examples.swapWithRequiredWithdrawalAndExpectedInputs(swapRequest))
+              Examples.swapAdaTokenWithRequiredWithdrawalAndExpectedInputs(swapRequest))
           , TE.bindW('contractDetails',({initialise,applyInputs,adaProvider,tokenProvider,swapWithRequiredWithdrawalAndExpectedInputs}) => 
               pipe( initialise 
                       (adaProvider)

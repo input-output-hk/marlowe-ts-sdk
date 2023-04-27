@@ -39,7 +39,7 @@ const serializeGetParams : ParamsSerializerOptions = { encode: (params) => strin
 export const getHeadersByRangeViaAxios:(axiosInstance: AxiosInstance) => GETHeadersByRange
     = (axiosInstance) => (rangeOption) => (tags) => 
         pipe( HTTP.GetWithDataAndHeaders(axiosInstance)
-                ( '/contractsX'
+                ( '/contracts'
                 , pipe(rangeOption
                       , O.match(    () => ({ params : {tag:tags}, paramsSerializer: serializeGetParams })
                                , range => ({ params : {tag:tags}, paramsSerializer: serializeGetParams
@@ -54,8 +54,8 @@ export const getHeadersByRangeViaAxios:(axiosInstance: AxiosInstance) => GETHead
                  , previousRange: rawResponse.previousRange
                  , nextRange    : rawResponse.nextRange})))
 
-type GETByRangeRawResponse = t.TypeOf<typeof GETByRangeRawResponse>;
-const GETByRangeRawResponse 
+export type GETByRangeRawResponse = t.TypeOf<typeof GETByRangeRawResponse>;
+export const GETByRangeRawResponse 
     = t.type({ data : t.type({ results : t.array(t.type({ links   : t.type({ contract:t.string, transactions:t.string})
                                 , resource: Header}))})
              , previousRange : optionFromNullable(ContractsRange)

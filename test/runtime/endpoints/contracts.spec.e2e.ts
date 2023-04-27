@@ -7,6 +7,7 @@ import { AxiosRestClient } from '../../../src/runtime/endpoints';
 import { initialise } from '../../../src/runtime/write/command';
 import { initialiseBankAndverifyProvisionning } from '../provisionning'
 import { getBankPrivateKey, getBlockfrostContext, getMarloweRuntimeUrl } from '../context';
+import { noTags } from '../../../src/runtime/common/metadata/tag';
 
 
 describe('contracts endpoints', () => {
@@ -70,7 +71,7 @@ describe('contracts endpoints', () => {
               (getMarloweRuntimeUrl())
               (getBlockfrostContext ())
               (getBankPrivateKey())                  
-          , TE.bindW('firstPage' ,() => restApi.contracts.getHeadersByRange(O.none)) 
+          , TE.bindW('firstPage' ,() => restApi.contracts.getHeadersByRange(O.none)(noTags)) 
           , TE.match(
                 (e) => { console.dir(e, { depth: null }); expect(e).not.toBeDefined()},
                 () => {})) ()
