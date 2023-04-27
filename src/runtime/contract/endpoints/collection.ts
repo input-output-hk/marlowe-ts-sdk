@@ -1,5 +1,5 @@
 
-import { AxiosInstance } from 'axios';
+import { AxiosInstance, ParamsSerializerOptions } from 'axios';
 
 import * as TE from 'fp-ts/TaskEither'
 import { pipe } from 'fp-ts/lib/function';
@@ -9,7 +9,7 @@ import { Header } from '../header';
 
 import { RolesConfig } from '../role';
 
-import { Metadata, Tags } from '../../../runtime/common/metadata';
+import { Metadata, Tag, Tags } from '../../../runtime/common/metadata';
 
 import { TextEnvelope } from '../../../runtime/common/textEnvelope';
 import { ContractId } from '../id';
@@ -25,25 +25,32 @@ import { fromNewtype, optionFromNullable } from 'io-ts-types';
 import * as O from 'fp-ts/lib/Option';
 import { Contract } from '../../../language/core/v1/semantics/contract';
 import { WalletDetails } from '../../../runtime/common/wallet';
-
+import { stringify } from 'qs';
 
 export interface ContractsRange extends Newtype<{ readonly ContractsRange: unique symbol }, string> {}
 export const ContractsRange = fromNewtype<ContractsRange>(t.string)
 export const unContractsRange =  iso<ContractsRange>().unwrap
 export const contractsRange =  iso<ContractsRange>().wrap
 
-export type GETHeadersByRange = (rangeOption: O.Option<ContractsRange>) => TE.TaskEither<Error | DecodingError,GETByRangeResponse>
+export type GETHeadersByRange = (rangeOption: O.Option<ContractsRange>) => (tags : Tag[])=> TE.TaskEither<Error | DecodingError,GETByRangeResponse>
+
+const serializeGetParams : ParamsSerializerOptions = { encode: (params) => stringify(params, { indices: false })}
 
 export const getHeadersByRangeViaAxios:(axiosInstance: AxiosInstance) => GETHeadersByRange
-    = (axiosInstance) => (rangeOption) => 
-        pipe( HTTP.GetWithDataAndHeaders(axiosInstance)( '/contracts',pipe(rangeOption,O.match(() => ({}), range => ({ headers: { Range: unContractsRange(range) }}))))
+    = (axiosInstance) => (rangeOption) => (tags) => 
+        pipe( HTTP.GetWithDataAndHeaders(axiosInstance)
+                ( '/contractsX'
+                , pipe(rangeOption
+                      , O.match(    () => ({ params : {tag:tags}, paramsSerializer: serializeGetParams })
+                               , range => ({ params : {tag:tags}, paramsSerializer: serializeGetParams
+                                       , headers: { Range: unContractsRange(range) }}))))
             , TE.map(([headers,data]) =>  
                 ({ data:data
                  , previousRange: headers['prev-range']
                  , nextRange    : headers['next-range']}))
             , TE.chainW((data) => TE.fromEither(E.mapLeft(formatValidationErrors)(GETByRangeRawResponse.decode(data))))
             , TE.map(rawResponse =>  
-                ({ headers: pipe(rawResponse.data.results,A.map((result) => result.resource))
+                ({ headers: pipe( rawResponse.data.results,A.map((result) => result.resource))
                  , previousRange: rawResponse.previousRange
                  , nextRange    : rawResponse.nextRange})))
 
