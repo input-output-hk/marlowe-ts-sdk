@@ -31,7 +31,7 @@ describe('swap', () => {
                  , amountOfToken : 10n
                  , token :tokenAsset }))
             , TE.let (`swapWithExpectedInputs`, ({swapRequest}) => 
-                  Examples.swapWithExpectedInputs(swapRequest))
+                  Examples.swapAdaTokenWithExpectedInputs(swapRequest))
             , TE.bindW('swapClosedResult',({initialise,applyInputs,adaProvider,tokenProvider,swapWithExpectedInputs}) => 
                   pipe( initialise 
                           (adaProvider)

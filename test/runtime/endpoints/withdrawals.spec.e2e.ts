@@ -31,7 +31,7 @@ describe('withdrawals endpoints ', () => {
               , amountOfToken : 3n
               , token :tokenAsset }))
           , TE.let (`swapWithRequiredWithdrawalAndExpectedInputs`, ({swapRequest}) => 
-              Examples.swapWithRequiredWithdrawalAndExpectedInputs(swapRequest))
+              Examples.swapAdaTokenWithRequiredWithdrawalAndExpectedInputs(swapRequest))
           , TE.bindW('contractDetails',({initialise,applyInputs,adaProvider,tokenProvider,swapWithRequiredWithdrawalAndExpectedInputs}) => 
               pipe( initialise 
                       (adaProvider)
@@ -50,7 +50,7 @@ describe('withdrawals endpoints ', () => {
                           , inputs : [swapWithRequiredWithdrawalAndExpectedInputs.adaProviderInputDeposit]
                           , metadata : {}
                           , tags : {}}))
-                  , TE.chainW ((contractDetails) =>       
+                  , TE.chainW (contractDetails =>       
                       applyInputs
                           (tokenProvider)
                           (contractDetails.contractId)
@@ -75,7 +75,7 @@ describe('withdrawals endpoints ', () => {
                       )) 
             , TE.match(
               (e) => { console.dir(e, { depth: null }); expect(e).not.toBeDefined()},
-              (res) => { } )) ()
+              () => { } )) ()
 
                               
   },1000_000); 

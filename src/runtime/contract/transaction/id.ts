@@ -2,7 +2,7 @@
 import * as t from "io-ts";
 import { iso, Newtype } from "newtype-ts";
 import { fromNewtype } from "io-ts-types";
-import { TxId } from "@runtime/common/tx/id";
+import { TxId } from "../../../runtime/common/tx/id";
 import { pipe } from "fp-ts/lib/function";
 
 export type TransactionId = Newtype<{ readonly TransactionId: unique symbol }, string> 

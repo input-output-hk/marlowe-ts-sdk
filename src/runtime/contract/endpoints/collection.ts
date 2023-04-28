@@ -1,54 +1,61 @@
 
-import { AxiosInstance } from 'axios';
+import { AxiosInstance, ParamsSerializerOptions } from 'axios';
 
 import * as TE from 'fp-ts/TaskEither'
 import { pipe } from 'fp-ts/lib/function';
 import { Newtype, iso } from 'newtype-ts'
-import * as HTTP from '@runtime/common/http';
+import * as HTTP from '../../../runtime/common/http';
 import { Header } from '../header';
 
 import { RolesConfig } from '../role';
 
-import { Metadata, Tags } from '@runtime/common/metadata';
+import { Metadata, Tag, Tags } from '../../../runtime/common/metadata';
 
-import { TextEnvelope } from '@runtime/common/textEnvelope';
+import { TextEnvelope } from '../../../runtime/common/textEnvelope';
 import { ContractId } from '../id';
 import * as t from "io-ts";
 import { formatValidationErrors } from 'io-ts-reporters'
-import { DecodingError } from '@runtime/common/codec';
+import { DecodingError } from '../../../runtime/common/codec';
 import * as E from 'fp-ts/Either'
 import * as A from 'fp-ts/Array'
-import { MarloweVersion } from '@runtime/common/version';
-import { unAddressBech32 } from '@runtime/common/address';
+import { MarloweVersion } from '../../../runtime/common/version';
+import { unAddressBech32 } from '../../../runtime/common/address';
 
 import { fromNewtype, optionFromNullable } from 'io-ts-types';
 import * as O from 'fp-ts/lib/Option';
-import { Contract } from '@language/core/v1/semantics/contract';
-import { WalletDetails } from '@runtime/common/wallet';
-
+import { Contract } from '../../../language/core/v1/semantics/contract';
+import { WalletDetails } from '../../../runtime/common/wallet';
+import { stringify } from 'qs';
 
 export interface ContractsRange extends Newtype<{ readonly ContractsRange: unique symbol }, string> {}
 export const ContractsRange = fromNewtype<ContractsRange>(t.string)
 export const unContractsRange =  iso<ContractsRange>().unwrap
 export const contractsRange =  iso<ContractsRange>().wrap
 
-export type GETHeadersByRange = (rangeOption: O.Option<ContractsRange>) => TE.TaskEither<Error | DecodingError,GETByRangeResponse>
+export type GETHeadersByRange = (rangeOption: O.Option<ContractsRange>) => (tags : Tag[])=> TE.TaskEither<Error | DecodingError,GETByRangeResponse>
+
+const serializeGetParams : ParamsSerializerOptions = { encode: (params) => stringify(params, { indices: false })}
 
 export const getHeadersByRangeViaAxios:(axiosInstance: AxiosInstance) => GETHeadersByRange
-    = (axiosInstance) => (rangeOption) => 
-        pipe( HTTP.GetWithDataAndHeaders(axiosInstance)( '/contracts',pipe(rangeOption,O.match(() => ({}), range => ({ headers: { Range: unContractsRange(range) }}))))
+    = (axiosInstance) => (rangeOption) => (tags) => 
+        pipe( HTTP.GetWithDataAndHeaders(axiosInstance)
+                ( '/contracts'
+                , pipe(rangeOption
+                      , O.match(    () => ({ params : {tag:tags}, paramsSerializer: serializeGetParams })
+                               , range => ({ params : {tag:tags}, paramsSerializer: serializeGetParams
+                                       , headers: { Range: unContractsRange(range) }}))))
             , TE.map(([headers,data]) =>  
                 ({ data:data
                  , previousRange: headers['prev-range']
                  , nextRange    : headers['next-range']}))
             , TE.chainW((data) => TE.fromEither(E.mapLeft(formatValidationErrors)(GETByRangeRawResponse.decode(data))))
-            , TE.map((rawResponse) =>  
-                ({ headers: pipe(rawResponse.data.results,A.map((result) => result.resource))
+            , TE.map(rawResponse =>  
+                ({ headers: pipe( rawResponse.data.results,A.map((result) => result.resource))
                  , previousRange: rawResponse.previousRange
                  , nextRange    : rawResponse.nextRange})))
 
-type GETByRangeRawResponse = t.TypeOf<typeof GETByRangeRawResponse>;
-const GETByRangeRawResponse 
+export type GETByRangeRawResponse = t.TypeOf<typeof GETByRangeRawResponse>;
+export const GETByRangeRawResponse 
     = t.type({ data : t.type({ results : t.array(t.type({ links   : t.type({ contract:t.string, transactions:t.string})
                                 , resource: Header}))})
              , previousRange : optionFromNullable(ContractsRange)
@@ -91,12 +98,11 @@ export const postViaAxios:(axiosInstance: AxiosInstance) => POST
         pipe( HTTP.Post (axiosInstance)
                         ( '/contracts'
                         , postContractsRequest
-                        , { headers: {
-                        'Accept': 'application/vendor.iog.marlowe-runtime.contract-tx-json',
-                        'Content-Type':'application/json',
-                        'X-Change-Address': unAddressBech32(walletDetails.changeAddress),
-                        'X-Address'         : pipe(walletDetails.usedAddresses      , A.fromOption, A.flatten, (a) => a.join(',')),
-                        'X-Collateral-UTxOs': pipe(walletDetails.collateralUTxOs, A.fromOption, A.flatten, (a) => a.join(','))}})
+                        , { headers: {  'Accept': 'application/vendor.iog.marlowe-runtime.contract-tx-json',
+                                        'Content-Type':'application/json',
+                                        'X-Change-Address': unAddressBech32(walletDetails.changeAddress),
+                                        'X-Address'         : pipe(walletDetails.usedAddresses      , A.fromOption, A.flatten, (a) => a.join(',')),
+                                        'X-Collateral-UTxO': pipe(walletDetails.collateralUTxOs, A.fromOption, A.flatten, (a) => a.join(','))}})
             , TE.chainW((data) => TE.fromEither(E.mapLeft(formatValidationErrors)(PostResponse.decode(data))))
             , TE.map((payload) => payload.resource))
                                         

@@ -6,8 +6,8 @@ import * as O from 'fp-ts/Option'
 import { log } from '../logging'
 import * as TE from 'fp-ts/TaskEither'
 import * as T from 'fp-ts/Task'
-import { addressBech32, AddressBech32, unAddressBech32 } from '@runtime/common/address';
-import { HexTransactionWitnessSet , MarloweTxCBORHex} from '@runtime/common/textEnvelope';
+import { addressBech32, AddressBech32, unAddressBech32 } from '../../../src/runtime/common/address';
+import { HexTransactionWitnessSet , MarloweTxCBORHex} from '../../../src/runtime/common/textEnvelope';
 
 export class Asset {
     policyId:string;

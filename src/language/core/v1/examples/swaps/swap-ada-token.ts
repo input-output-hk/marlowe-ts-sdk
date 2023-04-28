@@ -1,21 +1,21 @@
 /* eslint-disable sort-keys-fix/sort-keys-fix */
 
-import { Contract } from "../semantics/contract";
-import { close } from "../semantics/contract/close";
-import { Party, role } from "../semantics/contract/common/payee/party";
-import { ada, Token } from "../semantics/contract/common/token";
-import { Value, constant, mulValue } from "../semantics/contract/common/value";
-import { Timeout } from "../semantics/contract/when";
-import { InputDeposit } from "../semantics/contract/when/input/deposit";
+import { Contract } from "../../semantics/contract";
+import { close } from "../../semantics/contract/close";
+import { Party, role } from "../../semantics/contract/common/payee/party";
+import { ada, Token } from "../../semantics/contract/common/token";
+import { Value, constant, mulValue } from "../../semantics/contract/common/value";
+import { Timeout } from "../../semantics/contract/when";
+import { InputDeposit } from "../../semantics/contract/when/input/deposit";
 
 
 /**
  * Marlowe Example : Swap
  * Description :
- *      Takes Ada from one party and dollar tokens from another party, and it swaps them atomically.
+ *      Takes Ada from one party and tokens B from another party, and it swaps them atomically.
  */
 
-export const swap : ( adaDepositTimeout:Timeout
+export const swapAdaToken : ( adaDepositTimeout:Timeout
                     , tokenDepositTimeout:Timeout
                     , amountOfADA:bigint
                     , amountOfToken:bigint
@@ -63,10 +63,10 @@ export type SwapRequest
      , amountOfToken:bigint
      , token:Token }   
 
-export const swapWithExpectedInputs 
+export const swapAdaTokenWithExpectedInputs 
         : (request :SwapRequest )=> SwapWithExpectedInputs
    = (request) =>
-        ({ swap : swap(request.adaDepositTimeout, request.tokenDepositTimeout,request.amountOfADA,request.amountOfToken,request.token)
+        ({ swap : swapAdaToken(request.adaDepositTimeout, request.tokenDepositTimeout,request.amountOfADA,request.amountOfToken,request.token)
         , adaProviderInputDeposit : { input_from_party: role ('Ada provider')
                                     , that_deposits: 1_000_000n * request.amountOfADA
                                     , of_token: ada
@@ -79,7 +79,7 @@ export const swapWithExpectedInputs
 
 
 // Slightly different version of where the providers need to withdraw themselves the token at the end.
-export const swapWithRequiredWithdrawal : ( adaDepositTimeout:Timeout
+export const swapAdaTokenWithRequiredWithdrawal : ( adaDepositTimeout:Timeout
         , tokenDepositTimeout:Timeout
         , amountOfADA:bigint
         , amountOfToken:bigint
@@ -102,10 +102,10 @@ export const swapWithRequiredWithdrawal : ( adaDepositTimeout:Timeout
                     , timeout : adaDepositTimeout
                     , timeout_continuation : close})
 
-export const swapWithRequiredWithdrawalAndExpectedInputs 
+export const swapAdaTokenWithRequiredWithdrawalAndExpectedInputs 
                 : (request :SwapRequest )=> SwapWithExpectedInputs
         = (request) =>
-                ({ swap : swapWithRequiredWithdrawal(request.adaDepositTimeout, request.tokenDepositTimeout,request.amountOfADA,request.amountOfToken,request.token)
+                ({ swap : swapAdaTokenWithRequiredWithdrawal(request.adaDepositTimeout, request.tokenDepositTimeout,request.amountOfADA,request.amountOfToken,request.token)
                 , adaProviderInputDeposit : { input_from_party: role ('Ada provider')
                                         , that_deposits: 1_000_000n * request.amountOfADA
                                         , of_token: ada

@@ -1,2 +1,2 @@
-export * as RuntimeRest from './endpoints';
-export * as Runtime from './endpoints';
+export * as APIRest from './endpoints';
+export * as Commands from './write/command';
