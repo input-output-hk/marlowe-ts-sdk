@@ -1,13 +1,15 @@
 import { pipe } from 'fp-ts/function';
 import * as A from 'fp-ts/Array';
 import * as API from '@blockfrost/blockfrost-js'
-import { Blockfrost, Lucid, C, Network, PrivateKey, PolicyId, getAddressDetails, toUnit, fromText, NativeScript, Tx ,Core, TxSigned, TxComplete, Script, fromHex, toHex } from 'lucid-cardano';
+import { Blockfrost, Lucid, C, Network, PrivateKey, PolicyId, getAddressDetails, toUnit, fromText, NativeScript, Tx , TxSigned, TxComplete, Script, fromHex, toHex, Core } from 'lucid-cardano';
 import * as O from 'fp-ts/Option'
 import { log } from '../logging'
 import * as TE from 'fp-ts/TaskEither'
 import * as T from 'fp-ts/Task'
-import { addressBech32, AddressBech32, unAddressBech32 } from '../../../src/runtime/common/address';
-import { HexTransactionWitnessSet , MarloweTxCBORHex} from '../../../src/runtime/common/textEnvelope';
+import { AddressesAndCollaterals, WalletAPI } from '../../runtime/wallet';
+import { addressBech32, AddressBech32, unAddressBech32 } from '../../runtime/common/address';
+import { HexTransactionWitnessSet , MarloweTxCBORHex} from '../../runtime/common/textEnvelope';
+import { TxOutRef } from 'src/runtime/common/tx/outRef';
 
 export class Asset {
     policyId:string;
@@ -36,14 +38,17 @@ export class Context {
 
 export const getPrivateKeyFromHexString = (privateKeyHex:string) : PrivateKey => C.PrivateKey.from_bytes(Buffer.from(privateKeyHex, 'hex')).to_bech32()
 
-export class SingleAddressWallet {
+export class SingleAddressWallet implements WalletAPI {
     private privateKeyBech32: string;
     private context:Context;
     private lucid : Lucid;
     private blockfrostApi: API.BlockFrostAPI;
     
     public address : AddressBech32;
- 
+    getChangeAddress : T.Task<AddressBech32>
+    getUsedAddresses : T.Task<AddressBech32[]>
+    getCollaterals : T.Task<TxOutRef[]>
+
     private constructor (context:Context,privateKeyBech32:PrivateKey) {
         this.privateKeyBech32 = privateKeyBech32;
         this.context = context;
@@ -65,6 +70,9 @@ export class SingleAddressWallet {
         this.lucid = await Lucid.new(new Blockfrost(this.context.blockfrostUrl, this.context.projectId),this.context.network);
         this.lucid.selectWalletFromPrivateKey(this.privateKeyBech32);
         this.address = addressBech32(await this.lucid.wallet.address ());
+        this.getChangeAddress = T.of (this.address)
+        this.getUsedAddresses = T.of ([this.address])
+        this.getCollaterals = T.of ([])
      }
     
     public adaBalance : TE.TaskEither<Error,bigint> 
@@ -129,8 +137,10 @@ export class SingleAddressWallet {
                    , TE.chain(this.signSubmitAndWaitConfirmation)
                    , TE.map(() => new Asset (policyRefs[1],tokenName)))
     }
+    
 
-    public signMarloweTx : (cborHex :MarloweTxCBORHex) => TE.TaskEither<Error,HexTransactionWitnessSet>
+
+    public signTxTheCIP30Way : (cborHex :MarloweTxCBORHex) => TE.TaskEither<Error,HexTransactionWitnessSet>
         = (cborHex) => 
             pipe ( this.fromTxCBOR(cborHex)
             , this.signTx

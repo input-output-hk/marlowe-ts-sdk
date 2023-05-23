@@ -1,5 +1,5 @@
 import { Network } from "lucid-cardano";
-import { Context, getPrivateKeyFromHexString } from "../../src/adapter/wallet/lucid";
+import { Context, getPrivateKeyFromHexString } from "../../src/adapter/wallet/singleAddress";
 
 
 export function getBlockfrostContext () : Context {
@@ -19,3 +19,4 @@ export function getMarloweRuntimeUrl () : string {
     return MARLOWE_WEB_SERVER_URL as string
 };
   
+ 

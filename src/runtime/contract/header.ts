@@ -1,5 +1,5 @@
 import { BlockHeader } from "../../runtime/common/block";
-import { Metadata } from "../../runtime/common/metadata";
+import { Metadata, Tags } from "../../runtime/common/metadata";
 import { MarloweVersion } from "../../runtime/common/version";
 
 import { TxStatus } from "./transaction/status";
@@ -18,4 +18,5 @@ export const Header
         , status: TxStatus
         , block: optionFromNullable(BlockHeader)
         , metadata: Metadata
+        , tags : Tags
       })

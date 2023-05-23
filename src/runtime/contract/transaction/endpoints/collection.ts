@@ -13,7 +13,7 @@ import { AxiosInstance } from "axios";
 import * as HTTP from '../../../../runtime/common/http';
 import { unAddressBech32 } from "../../../../runtime/common/address";
 import { Metadata } from "../../../../runtime/common/metadata";
-import { WalletDetails } from "../../../../runtime/common/wallet";
+import { AddressesAndCollaterals } from "../../../wallet";
 import { DecodingError } from "../../../../runtime/common/codec";
 import { TextEnvelope } from "../../../../runtime/common/textEnvelope";
 import { MarloweVersion } from "../../../../runtime/common/version";
@@ -23,6 +23,7 @@ import { Input } from "../../../../language/core/v1/semantics/contract/when/inpu
 import { Header } from "../header";
 import { TransactionId } from ".././id";
 import { ContractId, unContractId } from "../../id";
+import { unTxOutRef } from "../../../common/tx/outRef";
 
 export interface TransactionsRange extends Newtype<{ readonly TransactionsRange: unique symbol }, string> {}
 export const TransactionsRange = fromNewtype<TransactionsRange>(t.string)
@@ -67,20 +68,20 @@ export const TransactionTextEnvelope = t.type({ contractId:ContractId, transacti
 
 export type POST = ( contractId:ContractId
                    , postTransactionsRequest: PostTransactionsRequest
-                   , walletDetails: WalletDetails) => TE.TaskEither<Error | DecodingError ,TransactionTextEnvelope>
+                   , addressesAndCollaterals: AddressesAndCollaterals) => TE.TaskEither<Error | DecodingError ,TransactionTextEnvelope>
 
 
 export const postViaAxios:(axiosInstance: AxiosInstance) => POST
-  = (axiosInstance) => (contractId, postTransactionsRequest, walletDetails) => 
+  = (axiosInstance) => (contractId, postTransactionsRequest, addressesAndCollaterals) => 
       pipe( HTTP.Post (axiosInstance)
                       ( transactionsEndpoint(contractId)
                       , postTransactionsRequest
                       , { headers: {
                             'Accept': 'application/vendor.iog.marlowe-runtime.apply-inputs-tx-json',
                             'Content-Type':'application/json',
-                            'X-Change-Address': unAddressBech32(walletDetails.changeAddress),
-                            'X-Address'         : pipe(walletDetails.usedAddresses      , A.fromOption, A.flatten, (a) => a.join(',')),
-                            'X-Collateral-UTxO': pipe(walletDetails.collateralUTxOs, A.fromOption, A.flatten, (a) => a.join(','))}})
+                            'X-Change-Address': unAddressBech32(addressesAndCollaterals.changeAddress),
+                            'X-Address'         : pipe(addressesAndCollaterals.usedAddresses ,  A.fromOption, A.flatten, A.map (unAddressBech32) , (a) => a.join(',')),
+                            'X-Collateral-UTxO': pipe(addressesAndCollaterals.collateralUTxOs, A.fromOption, A.flatten, A.map (unTxOutRef) , (a) => a.join(','))}})
           , TE.chainW((data) => TE.fromEither(E.mapLeft(formatValidationErrors)(PostResponse.decode(data))))
           , TE.map((payload) => payload.resource))  
 

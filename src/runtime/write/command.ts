@@ -1,4 +1,5 @@
 
+import * as T from 'fp-ts/Task'
 import * as TE from 'fp-ts/TaskEither'
 import * as ContractCollection from '../../runtime/contract/endpoints/collection';
 import * as TransactionCollection from '../../runtime/contract/transaction/endpoints/collection';
@@ -6,8 +7,6 @@ import * as WithdrawalCollection from '../../runtime/contract/withdrawal/endpoin
 import { DecodingError } from '../../runtime/common/codec';
 import { ContractDetails } from '../../runtime/contract/details';
 import { pipe } from 'fp-ts/function'
-import { WalletDetails } from '../../runtime/common/wallet';
-import { HexTransactionWitnessSet, MarloweTxCBORHex } from '../../runtime/common/textEnvelope';
 import { ContractId } from '../../runtime/contract/id';
 import * as Contract from '../../runtime/contract/id';
 import * as Tx from '../../runtime/contract/transaction/id';
@@ -15,60 +14,60 @@ import * as Transaction from '../../runtime/contract/transaction/details';
 import * as Withdrawal from '../../runtime/contract/withdrawal/details';
 import * as WithdrawalId from '../../runtime/contract/withdrawal/id';
 import { RestAPI } from '../../runtime/endpoints';
-
+import { WalletAPI, getAddressesAndCollaterals } from '../wallet';
 
 export type InitialisePayload  = ContractCollection.PostContractsRequest
 export type ApplyInputsPayload = TransactionCollection.PostTransactionsRequest
 export type WithdrawPayload = WithdrawalCollection.PostWithdrawalsRequest
 
-export const initialise : 
-  (client : RestAPI)
-  => (waitConfirmation : (txHash : string ) => TE.TaskEither<Error,boolean>)  
-  => (signAndRetrieveOnlyHexTransactionWitnessSet : (tx :MarloweTxCBORHex) => TE.TaskEither<Error,HexTransactionWitnessSet>)
-  => (walletDetails:WalletDetails) 
+export const initialise 
+  :  (client : RestAPI)
+  => (wallet : WalletAPI)
   => (payload : InitialisePayload)
   => TE.TaskEither<Error | DecodingError,ContractDetails> 
-  = (client) => (waitConfirmation) => (sign)  => (walletDetails) => (payload) =>  
-      pipe( client.contracts.post( payload, walletDetails)
+  = (client) => (wallet) => (payload) =>  
+      pipe( getAddressesAndCollaterals (wallet)
+          , TE.fromTask 
+          , TE.chain((addressesAndCollaterals) => client.contracts.post( payload, addressesAndCollaterals))
           , TE.chainW((contractTextEnvelope) => 
-                pipe ( sign(contractTextEnvelope.tx.cborHex)
+                pipe ( wallet.signTxTheCIP30Way(contractTextEnvelope.tx.cborHex)
                     , TE.chain((hexTransactionWitnessSet) => 
                           client.contracts.contract.put( contractTextEnvelope.contractId, hexTransactionWitnessSet))
                     , TE.map (() => contractTextEnvelope.contractId)))
-          , TE.chainFirstW((contractId) => waitConfirmation(pipe(contractId, Contract.idToTxId)))
+          , TE.chainFirstW((contractId) => wallet.waitConfirmation(pipe(contractId, Contract.idToTxId)))
           , TE.chainW ((contractId) => client.contracts.contract.get(contractId)))
 
-export const applyInputs : 
-  (client : RestAPI)
-  => (waitConfirmation : (txHash : string ) => TE.TaskEither<Error,boolean>)  
-  => (signAndRetrieveOnlyHexTransactionWitnessSet : (tx :MarloweTxCBORHex) => TE.TaskEither<Error,HexTransactionWitnessSet>)
-  => (walletDetails:WalletDetails) 
+export const applyInputs 
+  :  (client : RestAPI)
+  => (wallet : WalletAPI)
   => (contractId : ContractId) 
-  => ( payload : ApplyInputsPayload) 
+  => (payload : ApplyInputsPayload) 
   => TE.TaskEither<Error | DecodingError,Transaction.Details> 
-  = (client) => (waitConfirmation) => (sign) => (walletDetails) => (contractId) => (payload) =>   
-      pipe( client.contracts.contract.transactions.post(contractId, payload, walletDetails)
+  = (client) => (wallet) => (contractId) => (payload) =>   
+      pipe( getAddressesAndCollaterals (wallet)
+          , TE.fromTask 
+          , TE.chain((addressesAndCollaterals) => client.contracts.contract.transactions.post(contractId, payload, addressesAndCollaterals))
           , TE.chainW((transactionTextEnvelope) => 
-                pipe ( sign(transactionTextEnvelope.tx.cborHex)
+                pipe ( wallet.signTxTheCIP30Way(transactionTextEnvelope.tx.cborHex)
                       , TE.chain((hexTransactionWitnessSet) => 
                           client.contracts.contract.transactions.transaction.put( contractId,transactionTextEnvelope.transactionId, hexTransactionWitnessSet))
                       , TE.map (() => transactionTextEnvelope.transactionId)))
-          , TE.chainFirstW((transactionId) => waitConfirmation(pipe(transactionId, Tx.idToTxId)))
+          , TE.chainFirstW((transactionId) => wallet.waitConfirmation(pipe(transactionId, Tx.idToTxId)))
           , TE.chainW ((transactionId) => 
               client.contracts.contract.transactions.transaction.get(contractId,transactionId)))
 
-export const withdraw : 
-    (client : RestAPI)
-    => (waitConfirmation : (txHash : string ) => TE.TaskEither<Error,boolean>)  
-    => (signAndRetrieveOnlyHexTransactionWitnessSet : (tx :MarloweTxCBORHex) => TE.TaskEither<Error,HexTransactionWitnessSet>)
-    => (walletDetails:WalletDetails) 
-    => ( payload : WithdrawPayload) 
+export const withdraw 
+    :  (client : RestAPI)
+    => (wallet : WalletAPI) 
+    => (payload : WithdrawPayload) 
     => TE.TaskEither<Error | DecodingError,Withdrawal.Details> 
-    = (client) => (waitConfirmation) => (sign) => (walletDetails) => (payload) =>   
-        pipe( client.withdrawals.post (payload, walletDetails) 
-        , TE.chainW( (withdrawalTextEnvelope) =>
-            pipe ( sign(withdrawalTextEnvelope.tx.cborHex)  
-                , TE.chain ((hexTransactionWitnessSet) => client.withdrawals.withdrawal.put(withdrawalTextEnvelope.withdrawalId,hexTransactionWitnessSet))
-                , TE.map (() => withdrawalTextEnvelope.withdrawalId)))
-        , TE.chainFirstW((withdrawalId) => waitConfirmation(pipe(withdrawalId, WithdrawalId.idToTxId)))
-        , TE.chainW ((withdrawalId) => client.withdrawals.withdrawal.get(withdrawalId)) ) 
+    = (client) => (wallet) => (payload) =>   
+        pipe( getAddressesAndCollaterals (wallet)
+            , TE.fromTask 
+            , TE.chain((addressesAndCollaterals) => client.withdrawals.post (payload, addressesAndCollaterals)) 
+            , TE.chainW( (withdrawalTextEnvelope) =>
+                pipe ( wallet.signTxTheCIP30Way(withdrawalTextEnvelope.tx.cborHex)  
+                     , TE.chain ((hexTransactionWitnessSet) => client.withdrawals.withdrawal.put(withdrawalTextEnvelope.withdrawalId,hexTransactionWitnessSet))
+                     , TE.map (() => withdrawalTextEnvelope.withdrawalId)))
+            , TE.chainFirstW((withdrawalId) => wallet.waitConfirmation(pipe(withdrawalId, WithdrawalId.idToTxId)))
+            , TE.chainW ((withdrawalId) => client.withdrawals.withdrawal.get(withdrawalId)) ) 

@@ -2,11 +2,10 @@
 
 import { Contract } from "../../semantics/contract";
 import { close } from "../../semantics/contract/close";
-import { Party, Role, role } from "../../semantics/contract/common/payee/party";
+import { role } from "../../semantics/contract/common/payee/party";
 import { ada, Token } from "../../semantics/contract/common/token";
-import { Value, constant, mulValue } from "../../semantics/contract/common/value";
+import { constant, mulValue } from "../../semantics/contract/common/value";
 import { Timeout } from "../../semantics/contract/when";
-import { InputDeposit } from "../../semantics/contract/when/input/deposit";
 
 
 /**
@@ -16,42 +15,44 @@ import { InputDeposit } from "../../semantics/contract/when/input/deposit";
  */
 
 export type SwapRequest 
-   = { tokenA_DepositTimeout : Timeout
-     , tokenB_DepositTimeout:Timeout
-     , tokenA:Token
-     , tokenA_Amount:bigint
-     , tokenB:Token
-     , tokenB_Amount:bigint } 
+   = { a : SwapParty
+     , b : SwapParty } 
+
+export type SwapParty 
+   = { roleName : string
+     , depositTimeout : Timeout
+     , token:Token
+     , amount:bigint} 
 
 export const swap_tokenA_tokenB : ( request: SwapRequest) => Contract 
   = (request) => 
-      ({ when :[{ case :{ party: getTokenRoleName(request.tokenA)  
-                              , deposits: mulValue(constant(1_000_000n), request.tokenA_Amount)
+      ({ when :[{ case :{ party: role(request.a.roleName)
+                              , deposits: mulValue(constant(1_000_000n), request.a.amount)
                               , of_token: ada
-                              , into_account: getTokenRoleName(request.tokenA)  
+                              , into_account: role(request.a.roleName)  
                               }
-                        , then : { when :[{ case :{ party: getTokenRoleName(request.tokenB)
-                                                  , deposits: request.tokenB_Amount
-                                                  , of_token: request.tokenB
-                                                  , into_account: role('Token provider') 
+                        , then : { when :[{ case :{ party: role(request.b.roleName)
+                                                  , deposits: request.b.amount
+                                                  , of_token: request.b.token
+                                                  , into_account: role(request.b.roleName)
                                                   }
-                                          , then : { pay:mulValue(constant(1_000_000n), request.tokenA_Amount)
+                                          , then : { pay:mulValue(constant(1_000_000n), request.a.amount)
                                                     , token: ada
-                                                    , from_account: getTokenRoleName(request.tokenA)  
-                                                    , to: {party : getTokenRoleName(request.tokenB)}
-                                                    , then: ({ pay:request.tokenB_Amount
-                                                            , token: request.tokenB
-                                                            , from_account: getTokenRoleName(request.tokenB)
-                                                            , to: {party : getTokenRoleName(request.tokenA) }
+                                                    , from_account: role(request.a.roleName)  
+                                                    , to: {party :  role(request.b.roleName)}
+                                                    , then: ({ pay:request.b.amount
+                                                            , token: request.b.token
+                                                            , from_account: role(request.b.roleName)
+                                                            , to: {party : role(request.a.roleName) }
                                                             , then: close})}
                                           }]
-                                  , timeout : request.tokenB_DepositTimeout
-                                  , timeout_continuation : { pay: mulValue(constant(1_000_000n), request.tokenA_Amount)
+                                  , timeout : request.b.depositTimeout
+                                  , timeout_continuation : { pay: mulValue(constant(1_000_000n), request.a.amount)
                                                           , token: ada
-                                                          , from_account: getTokenRoleName(request.tokenA)  
-                                                          , to: {party :getTokenRoleName(request.tokenA) }
+                                                          , from_account: role(request.a.roleName)  
+                                                          , to: {party :  role(request.a.roleName)}
                                                           , then: close}}}]
-                , timeout : request.tokenA_DepositTimeout
+                , timeout : request.a.depositTimeout
                 , timeout_continuation : close})
         
-const getTokenRoleName : (token:Token) => Role = (token) => role(token.token_name + ' Provider')
+
