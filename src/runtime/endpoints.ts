@@ -1,5 +1,5 @@
 
-import axios from 'axios';
+import axios, { AxiosInstance } from 'axios';
 import * as TE from 'fp-ts/TaskEither'
 import * as HTTP from '../runtime/common/http';
 import * as WithdrawalSingleton from '../runtime/contract/withdrawal/endpoints/singleton';
@@ -8,7 +8,6 @@ import * as ContractSingleton from '../runtime/contract/endpoints/singleton';
 import * as ContractCollection from '../runtime/contract/endpoints/collection';
 import * as TransactionSingleton from '../runtime/contract/transaction/endpoints/singleton';
 import * as TransactionCollection from '../runtime/contract/transaction/endpoints/collection';
-// import curlirize from 'axios-curlirize';
 import { MarloweJSONCodec } from '../adapter/json';
 import { pipe } from 'fp-ts/lib/function';
 
@@ -41,15 +40,17 @@ export interface RestAPI {
   }
 }
 
-axios.interceptors.request.use(request => {
+const interceptRequest = (axiosInstance: AxiosInstance) => axiosInstance.interceptors.request.use(request => {
   console.log('Starting Request', JSON.stringify(request, null, 2))
   return request
 })
 
-axios.interceptors.response.use(response => {
+const interceptResponse = (axiosInstance: AxiosInstance) => axiosInstance.interceptors.response.use(response => {
   console.log('Response:', JSON.stringify(response, null, 2))
   return response
 })
+ 
+
 
 export const AxiosRestClient : (baseURL: string) =>  RestAPI = 
   (baseURL) => 
@@ -58,6 +59,7 @@ export const AxiosRestClient : (baseURL: string) =>  RestAPI =
               , transformRequest: MarloweJSONCodec.encode
               , transformResponse: MarloweJSONCodec.decode
             })
+        //  , (axiosInstance) => { curlirize(axiosInstance); return axiosInstance}
          , (axiosInstance) => 
              ({ healthcheck: () => HTTP.Get(axiosInstance)('/healthcheck')
               , withdrawals: 

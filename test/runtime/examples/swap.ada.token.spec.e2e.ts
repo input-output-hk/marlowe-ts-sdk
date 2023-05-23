@@ -1,7 +1,7 @@
 
 
 import { pipe } from 'fp-ts/function'
-import * as Examples from '../../../src/language/core/v1/examples'
+import * as Examples from '../../../src/language/core/v1/examples/swaps/swap-ada-token'
 import { addDays } from 'date-fns/fp'
 import * as TE from 'fp-ts/TaskEither'
 import { getBankPrivateKey, getBlockfrostContext, getMarloweRuntimeUrl } from '../context';

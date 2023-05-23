@@ -1,5 +1,5 @@
 
-import { AxiosInstance, ParamsSerializerOptions } from 'axios';
+import { AxiosInstance, ParamEncoder, ParamsSerializerOptions } from 'axios';
 
 import * as TE from 'fp-ts/TaskEither'
 import { pipe } from 'fp-ts/lib/function';
@@ -24,8 +24,10 @@ import { unAddressBech32 } from '../../../runtime/common/address';
 import { fromNewtype, optionFromNullable } from 'io-ts-types';
 import * as O from 'fp-ts/lib/Option';
 import { Contract } from '../../../language/core/v1/semantics/contract';
-import { WalletDetails } from '../../../runtime/common/wallet';
+import { AddressesAndCollaterals } from '../../wallet';
 import { stringify } from 'qs';
+import { unTxOutRef } from '../../common/tx/outRef';
+
 
 export interface ContractsRange extends Newtype<{ readonly ContractsRange: unique symbol }, string> {}
 export const ContractsRange = fromNewtype<ContractsRange>(t.string)
@@ -34,16 +36,15 @@ export const contractsRange =  iso<ContractsRange>().wrap
 
 export type GETHeadersByRange = (rangeOption: O.Option<ContractsRange>) => (tags : Tag[])=> TE.TaskEither<Error | DecodingError,GETByRangeResponse>
 
-const serializeGetParams : ParamsSerializerOptions = { encode: (params) => stringify(params, { indices: false })}
+
 
 export const getHeadersByRangeViaAxios:(axiosInstance: AxiosInstance) => GETHeadersByRange
     = (axiosInstance) => (rangeOption) => (tags) => 
-        pipe( HTTP.GetWithDataAndHeaders(axiosInstance)
-                ( '/contracts'
-                , pipe(rangeOption
-                      , O.match(    () => ({ params : {tag:tags}, paramsSerializer: serializeGetParams })
-                               , range => ({ params : {tag:tags}, paramsSerializer: serializeGetParams
-                                       , headers: { Range: unContractsRange(range) }}))))
+        pipe( ({ url : '/contracts?' + stringify(({tag:tags}), { indices: false }) 
+               , configs : pipe(rangeOption
+                    , O.match(   ()  => ({})
+                             , range => ({ headers: { Range: unContractsRange(range) }})))})                       
+            , ({url,configs}) => HTTP.GetWithDataAndHeaders(axiosInstance) (url,configs)
             , TE.map(([headers,data]) =>  
                 ({ data:data
                  , previousRange: headers['prev-range']
@@ -70,7 +71,7 @@ export const GETByRangeResponse
              });
 
 export type POST = ( postContractsRequest: PostContractsRequest
-                   , walletDetails: WalletDetails) => TE.TaskEither<Error | DecodingError ,ContractTextEnvelope>
+                   , addressesAndCollaterals: AddressesAndCollaterals) => TE.TaskEither<Error | DecodingError ,ContractTextEnvelope>
 
 export type PostContractsRequest = t.TypeOf<typeof PostContractsRequest>
 export const PostContractsRequest 
@@ -94,15 +95,15 @@ export const PostResponse = t.type({
     });
 
 export const postViaAxios:(axiosInstance: AxiosInstance) => POST
-    = (axiosInstance) => (postContractsRequest, walletDetails) => 
+    = (axiosInstance) => (postContractsRequest, addressesAndCollaterals) => 
         pipe( HTTP.Post (axiosInstance)
                         ( '/contracts'
                         , postContractsRequest
                         , { headers: {  'Accept': 'application/vendor.iog.marlowe-runtime.contract-tx-json',
                                         'Content-Type':'application/json',
-                                        'X-Change-Address': unAddressBech32(walletDetails.changeAddress),
-                                        'X-Address'         : pipe(walletDetails.usedAddresses      , A.fromOption, A.flatten, (a) => a.join(',')),
-                                        'X-Collateral-UTxO': pipe(walletDetails.collateralUTxOs, A.fromOption, A.flatten, (a) => a.join(','))}})
+                                        'X-Change-Address': unAddressBech32(addressesAndCollaterals.changeAddress),
+                                        'X-Address'         : pipe(addressesAndCollaterals.usedAddresses ,  A.fromOption, A.flatten, A.map (unAddressBech32) , (a) => a.join(',')),
+                                        'X-Collateral-UTxO': pipe(addressesAndCollaterals.collateralUTxOs, A.fromOption, A.flatten, A.map (unTxOutRef) , (a) => a.join(','))}})
             , TE.chainW((data) => TE.fromEither(E.mapLeft(formatValidationErrors)(PostResponse.decode(data))))
             , TE.map((payload) => payload.resource))
                                         

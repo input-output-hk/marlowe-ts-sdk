@@ -2,7 +2,7 @@ import * as TE from 'fp-ts/TaskEither'
 import * as T from 'fp-ts/Task'
 import * as O from 'fp-ts/Option'
 import { pipe } from 'fp-ts/function'
-import { Context, SingleAddressWallet } from '../../src/adapter/wallet/lucid'
+import { Context, SingleAddressWallet } from '../../src/adapter/wallet/singleAddress'
 import {PrivateKeysAsHex} from '../../src/adapter/wallet/privateKeys'
 import { log } from '../../src/adapter/logging'
 import * as ADA from '../../src/adapter/wallet/ada'
@@ -58,27 +58,15 @@ export const provisionAnAdaAndTokenProvider
                         , initialise : (wallet : SingleAddressWallet ) => 
                                 initialise
                                 (AxiosRestClient(runtimeURL)) 
-                                (wallet.waitConfirmation)
-                                (wallet.signMarloweTx)
-                                ({ changeAddress: wallet.address
-                                    , usedAddresses: O.none
-                                    , collateralUTxOs: O.none})
+                                (wallet)
                         , applyInputs : (wallet : SingleAddressWallet ) => 
                                 applyInputs
                                     (AxiosRestClient(runtimeURL)) 
-                                    (wallet.waitConfirmation)
-                                    (wallet.signMarloweTx)
-                                    ({ changeAddress: wallet.address
-                                        , usedAddresses: O.none
-                                        , collateralUTxOs: O.none})
+                                    (wallet)
                         , withdraw : (wallet : SingleAddressWallet ) => 
                                 withdraw
                                     (AxiosRestClient(runtimeURL)) 
-                                    (wallet.waitConfirmation)
-                                    (wallet.signMarloweTx)
-                                    ({ changeAddress: wallet.address
-                                    , usedAddresses: O.none
-                                    , collateralUTxOs: O.none})    })))                  
+                                    (wallet)    })))                  
                             
 
 export const initialiseBankAndverifyProvisionning 
@@ -99,15 +87,7 @@ export const initialiseBankAndverifyProvisionning
              , restApi : AxiosRestClient(runtimeURL)
              , initialise:initialise
                            (AxiosRestClient(runtimeURL)) 
-                           (bank.waitConfirmation)
-                           (bank.signMarloweTx)
-                           ({ changeAddress: bank.address
-                             , usedAddresses: O.none
-                             , collateralUTxOs: O.none})
+                           (bank)
              , applyInputs :applyInputs 
                              (AxiosRestClient(runtimeURL)) 
-                             (bank.waitConfirmation)
-                             (bank.signMarloweTx)
-                             ({ changeAddress: bank.address
-                               , usedAddresses: O.none
-                               , collateralUTxOs: O.none})})))  
+                             (bank)})))  

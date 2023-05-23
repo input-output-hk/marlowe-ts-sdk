@@ -21,10 +21,11 @@ import { unAddressBech32 } from '../../../common/address';
 import { fromNewtype, optionFromNullable } from 'io-ts-types';
 import * as O from 'fp-ts/lib/Option';
 
-import { WalletDetails } from '../../../common/wallet';
+import { AddressesAndCollaterals } from '../../../wallet';
 import { ContractId } from '../../id';
 import { RoleName } from '../../role';
 import { WithdrawalId } from '../id';
+import { unTxOutRef } from '../../../common/tx/outRef';
 
 
 export interface WithdrawalsRange extends Newtype<{ readonly WithdrawalsRange: unique symbol }, string> {}
@@ -63,7 +64,7 @@ export const GETByRangeResponse
              });
 
 export type POST = ( postWithdrawalsRequest: PostWithdrawalsRequest
-                   , walletDetails: WalletDetails) => TE.TaskEither<Error | DecodingError ,WithdrawalTextEnvelope>
+                   , addressesAndCollaterals: AddressesAndCollaterals) => TE.TaskEither<Error | DecodingError ,WithdrawalTextEnvelope>
 
 export type PostWithdrawalsRequest = t.TypeOf<typeof PostWithdrawalsRequest>
 export const PostWithdrawalsRequest 
@@ -81,16 +82,16 @@ export const PostResponse = t.type({
     });
 
 export const postViaAxios:(axiosInstance: AxiosInstance) => POST
-    = (axiosInstance) => (postWithdrawalsRequest, walletDetails) => 
+    = (axiosInstance) => (postWithdrawalsRequest, addressesAndCollaterals) => 
         pipe( HTTP.Post (axiosInstance)
                         ( '/withdrawals'
                         , postWithdrawalsRequest
                         , { headers: {
                                 'Accept': 'application/vendor.iog.marlowe-runtime.withdraw-tx-json',
                                 'Content-Type':'application/json',
-                                'X-Change-Address': unAddressBech32(walletDetails.changeAddress),
-                                'X-Address'         : pipe(walletDetails.usedAddresses      , A.fromOption, A.flatten, (a) => a.join(',')),
-                                'X-Collateral-UTxO': pipe(walletDetails.collateralUTxOs, A.fromOption, A.flatten, (a) => a.join(','))}})
+                                'X-Change-Address': unAddressBech32(addressesAndCollaterals.changeAddress),
+                                'X-Address'         : pipe(addressesAndCollaterals.usedAddresses ,  A.fromOption, A.flatten, A.map (unAddressBech32) , (a) => a.join(',')),
+                                'X-Collateral-UTxO': pipe(addressesAndCollaterals.collateralUTxOs, A.fromOption, A.flatten, A.map (unTxOutRef) , (a) => a.join(','))}})
             , TE.chainW((data) => TE.fromEither(E.mapLeft(formatValidationErrors)(PostResponse.decode(data))))
             , TE.map((payload) => payload.resource))
                                         

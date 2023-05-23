@@ -14,69 +14,73 @@ describe('contracts endpoints', () => {
 
   const restApi = AxiosRestClient(getMarloweRuntimeUrl())
 
-  it(' can build a Tx for Initialising a Marlowe Contract' + 
-     '(can POST: /contracts/ )', async () => {                           
-    await 
-      pipe( initialiseBankAndverifyProvisionning
-              (getMarloweRuntimeUrl())
-              (getBlockfrostContext ())
-              (getBankPrivateKey())              
-          , TE.bind('postContractResponse',({bank}) => 
-                restApi.contracts.post(  { contract: close
-                                        , version: 'v1'
-                                        , metadata: {}
-                                        , tags : {}
-                                        , minUTxODeposit: 2_000_000}
-                                      , { changeAddress: bank.address
-                                        , usedAddresses: O.none
-                                        , collateralUTxOs: O.none}))
-          , TE.map (({postContractResponse}) => postContractResponse)
-          , TE.match(
-              (e) => { console.dir(e, { depth: null }); expect(e).not.toBeDefined()},
-              () => {})) ()
-                              
-  },100_000),
-  it('can Initialise a Marlowe Contract ' + 
-     '(can POST: /contracts/ => build the Tx server side' +
-     ' and PUT : /contracts/{contractid} => Append the Contract Tx to the Cardano ledger' + 
-     ' and GET /contracts/{contractid} => provide details about the contract initialised)', async () => {            
+  it(' can build a Tx for Initialising a Marlowe Contract' +
+    '(can POST: /contracts/ )', async () => {
       await
-        pipe( initialiseBankAndverifyProvisionning
-                (getMarloweRuntimeUrl())
-                (getBlockfrostContext ())
-                (getBankPrivateKey())              
-            , TE.bindW('contractDetails',({bank}) => 
-                  initialise
-                    (restApi)
-                    (bank.waitConfirmation)
-                    (bank.signMarloweTx)
-                    ({ changeAddress: bank.address
-                      , usedAddresses: O.none
-                      , collateralUTxOs: O.none})
-                    ( { contract: close
-                        , version: 'v1'
-                        , metadata: {}
-                        , tags : {}
-                        , minUTxODeposit: 2_000_000}))
-            , TE.match(
-                  (e) => { console.dir(e, { depth: null }); 
-                          expect(e).not.toBeDefined()},
-                  () => {})) ()
-                                
-  },100_000),
-  it('can navigate throught Initialised Marlowe Contracts pages' + 
-     '(GET:  /contracts/)', async () => {            
-    await 
-      pipe( initialiseBankAndverifyProvisionning
-              (getMarloweRuntimeUrl())
-              (getBlockfrostContext ())
-              (getBankPrivateKey())                  
-          , TE.bindW('firstPage' ,() => restApi.contracts.getHeadersByRange(O.none)(noTags)) 
+        pipe(initialiseBankAndverifyProvisionning
+          (getMarloweRuntimeUrl())
+          (getBlockfrostContext())
+          (getBankPrivateKey())
+          , TE.bind('postContractResponse', ({ bank }) =>
+            restApi.contracts.post({
+              contract: close
+              , version: 'v1'
+              , metadata: {}
+              , tags: {}
+              , minUTxODeposit: 2_000_000
+            }
+              , {
+                changeAddress: bank.address
+                , usedAddresses: O.none
+                , collateralUTxOs: O.none
+              }))
+          , TE.map(({ postContractResponse }) => postContractResponse)
           , TE.match(
-                (e) => { console.dir(e, { depth: null }); expect(e).not.toBeDefined()},
-                () => {})) ()
-    
-                              
-  },100_000)
+            (e) => { console.dir(e, { depth: null }); expect(e).not.toBeDefined() },
+            () => { }))()
+
+    }, 100_000),
+    it('can Initialise a Marlowe Contract ' +
+      '(can POST: /contracts/ => build the Tx server side' +
+      ' and PUT : /contracts/{contractid} => Append the Contract Tx to the Cardano ledger' +
+      ' and GET /contracts/{contractid} => provide details about the contract initialised)', async () => {
+        await
+          pipe(initialiseBankAndverifyProvisionning
+            (getMarloweRuntimeUrl())
+            (getBlockfrostContext())
+            (getBankPrivateKey())
+            , TE.bindW('contractDetails', ({ bank }) =>
+              initialise
+                (restApi)
+                (bank)
+                ({
+                  contract: close
+                  , version: 'v1'
+                  , metadata: {}
+                  , tags: {}
+                  , minUTxODeposit: 2_000_000
+                }))
+            , TE.match(
+              (e) => {
+                console.dir(e, { depth: null });
+                expect(e).not.toBeDefined()
+              },
+              () => { }))()
+
+      }, 100_000),
+    it('can navigate throught Initialised Marlowe Contracts pages' +
+      '(GET:  /contracts/)', async () => {
+        await
+          pipe(initialiseBankAndverifyProvisionning
+            (getMarloweRuntimeUrl())
+            (getBlockfrostContext())
+            (getBankPrivateKey())
+            , TE.bindW('firstPage', () => restApi.contracts.getHeadersByRange(O.none)(['swap.L1.by.marlowe.team', "initialised"]))
+            , TE.match(
+              (e) => { console.dir(e, { depth: null }); expect(e).not.toBeDefined() },
+              (a) => { console.log("result",a.firstPage.headers.length)}))()
+
+
+      }, 100_000)
 })
 
