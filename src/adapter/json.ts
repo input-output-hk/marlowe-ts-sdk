@@ -4,7 +4,7 @@ import * as D from 'io-ts/Decoder'
 import * as E from 'io-ts/Encoder'
 import JSONbig from 'json-bigint'; //(({useNativeBigInt:false}))
 
-const JsonAlwayAndOnlyBigInt = JSONbig ({
+export const JsonAlwayAndOnlyBigInt = JSONbig ({
     alwaysParseAsBig: true,
     useNativeBigInt: true,
   });
