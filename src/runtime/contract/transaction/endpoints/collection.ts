@@ -4,7 +4,7 @@ import * as E from 'fp-ts/Either'
 import * as A from 'fp-ts/Array'
 import * as O from 'fp-ts/lib/Option';
 import * as TE from 'fp-ts/TaskEither'
-import { formatValidationErrors } from "io-ts-reporters";
+import { formatValidationErrors } from "jsonbigint-io-ts-reporters";
 import { fromNewtype, optionFromNullable } from 'io-ts-types';
 import { pipe } from 'fp-ts/lib/function';
 
@@ -13,11 +13,11 @@ import { AxiosInstance } from "axios";
 import * as HTTP from '../../../../runtime/common/http';
 import { unAddressBech32 } from "../../../../runtime/common/address";
 import { Metadata } from "../../../../runtime/common/metadata";
-import { AddressesAndCollaterals } from "../../../wallet";
+import { AddressesAndCollaterals } from "../../../../wallet/api";
 import { DecodingError } from "../../../../runtime/common/codec";
 import { TextEnvelope } from "../../../../runtime/common/textEnvelope";
 import { MarloweVersion } from "../../../../runtime/common/version";
-import { ISO8601 } from "../../../../runtime/common/iso8601";
+import { ISO8601 } from "../../../../adapter/time";
 import { Tags } from "../../../../runtime/common/metadata/tag";
 import { Input } from "../../../../language/core/v1/semantics/contract/when/input";
 import { Header } from "../header";

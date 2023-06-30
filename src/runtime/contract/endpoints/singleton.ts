@@ -7,7 +7,7 @@ import * as HTTP from '../../../runtime/common/http';
 import { HexTransactionWitnessSet, transactionWitnessSetTextEnvelope } from '../../../runtime/common/textEnvelope';
 import { ContractDetails } from '../details';
 import * as t from "io-ts";
-import {formatValidationErrors} from 'io-ts-reporters'
+import {formatValidationErrors} from 'jsonbigint-io-ts-reporters'
 import { DecodingError } from '../../../runtime/common/codec';
 import { ContractId, unContractId } from '../id';
 

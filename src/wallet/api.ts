@@ -3,12 +3,13 @@ import * as T from 'fp-ts/Task'
 import * as O from 'fp-ts/Option'
 import * as TE from 'fp-ts/TaskEither'
 
-import { HexTransactionWitnessSet, MarloweTxCBORHex } from '../common/textEnvelope';
+import { HexTransactionWitnessSet, MarloweTxCBORHex } from '../runtime/common/textEnvelope';
 import { optionFromNullable } from "io-ts-types"
-import { TxOutRef } from "../common/tx/outRef"
-import { AddressBech32 } from "../common/address"
+import { TxOutRef } from "../runtime/common/tx/outRef"
+import { AddressBech32 } from "../runtime/common/address"
 import * as t from "io-ts";
 import { pipe } from 'fp-ts/lib/function';
+import { TokenValue } from '../language/core/v1/semantics/contract/common/tokenValue';
 
 
 export type AddressesAndCollaterals = t.TypeOf<typeof AddressesAndCollaterals>
@@ -23,7 +24,8 @@ export interface WalletAPI {
     signTxTheCIP30Way : (tx :MarloweTxCBORHex) => TE.TaskEither<Error,HexTransactionWitnessSet>
     getChangeAddress : T.Task<AddressBech32>
     getUsedAddresses : T.Task<AddressBech32[]>
-    getCollaterals : T.Task<TxOutRef[]> 
+    getCollaterals : T.Task<TxOutRef[]>
+    getTokenValues : TE.TaskEither<Error,TokenValue[]>
 }
 
 export const getAddressesAndCollaterals : (walletAPI : WalletAPI)  => T.Task<AddressesAndCollaterals> =
@@ -37,3 +39,4 @@ export const getAddressesAndCollaterals : (walletAPI : WalletAPI)  => T.Task<Add
                      ,usedAddresses: usedAddresses.length == 0 ? O.none : O.some(usedAddresses) 
                      ,collateralUTxOs: collateralUTxOs.length == 0 ? O.none : O.some(collateralUTxOs)}))
               )
+

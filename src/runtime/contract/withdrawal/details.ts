@@ -7,6 +7,7 @@ import { TxStatus } from "../transaction/status";
 import { PolicyId } from "../../common/policyId";
 import { TxOutRef } from "../../common/tx/outRef";
 import { RoleName } from "../role";
+import { optionFromNullable } from "io-ts-types/lib/optionFromNullable";
 
 
 export type PayoutRef = t.TypeOf<typeof PayoutRef>
@@ -22,7 +23,7 @@ export const Details
   = t.type(
       { withdrawalId: WithdrawalId
       , status: TxStatus
-      , block: BlockHeader
+      , block: optionFromNullable(BlockHeader)
       , payouts : t.array(PayoutRef) 
     })
 

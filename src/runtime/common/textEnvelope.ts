@@ -1,4 +1,4 @@
-import reporter from 'io-ts-reporters'
+import reporter from 'jsonbigint-io-ts-reporters'
 import { Newtype } from "newtype-ts";
 import { fromNewtype,option, optionFromNullable } from "io-ts-types";
 import * as t from "io-ts";

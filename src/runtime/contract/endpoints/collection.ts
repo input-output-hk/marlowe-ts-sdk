@@ -14,7 +14,7 @@ import { Metadata, Tag, Tags } from '../../../runtime/common/metadata';
 import { TextEnvelope } from '../../../runtime/common/textEnvelope';
 import { ContractId } from '../id';
 import * as t from "io-ts";
-import { formatValidationErrors } from 'io-ts-reporters'
+import { formatValidationErrors } from 'jsonbigint-io-ts-reporters'
 import { DecodingError } from '../../../runtime/common/codec';
 import * as E from 'fp-ts/Either'
 import * as A from 'fp-ts/Array'
@@ -24,7 +24,7 @@ import { unAddressBech32 } from '../../../runtime/common/address';
 import { fromNewtype, optionFromNullable } from 'io-ts-types';
 import * as O from 'fp-ts/lib/Option';
 import { Contract } from '../../../language/core/v1/semantics/contract';
-import { AddressesAndCollaterals } from '../../wallet';
+import { AddressesAndCollaterals } from '../../../wallet/api';
 import { stringify } from 'qs';
 import { unTxOutRef } from '../../common/tx/outRef';
 
@@ -51,9 +51,14 @@ export const getHeadersByRangeViaAxios:(axiosInstance: AxiosInstance) => GETHead
                  , nextRange    : headers['next-range']}))
             , TE.chainW((data) => TE.fromEither(E.mapLeft(formatValidationErrors)(GETByRangeRawResponse.decode(data))))
             , TE.map(rawResponse =>  
-                ({ headers: pipe( rawResponse.data.results,A.map((result) => result.resource))
+                ({ headers: pipe( rawResponse.data.results
+                                , A.map(result => result.resource)
+                                , A.filter(header => eqSetString(new Set(Object.keys(header.tags)),new Set(tags)))) // All logic instead of Any, TODO : Add the flexibility to chose between Any and All 
                  , previousRange: rawResponse.previousRange
                  , nextRange    : rawResponse.nextRange})))
+
+
+const eqSetString = (xs : Set<string>, ys: Set<string>) => xs.size === ys.size && [...xs].every((x) => ys.has(x));
 
 export type GETByRangeRawResponse = t.TypeOf<typeof GETByRangeRawResponse>;
 export const GETByRangeRawResponse 

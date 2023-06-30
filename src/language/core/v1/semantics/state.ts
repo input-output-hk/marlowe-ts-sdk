@@ -1,7 +1,7 @@
 import * as t from "io-ts";
 
-import { Accounts } from "../../language/core/v1/semantics/contract/common/payee/account";
-import { ChoiceId, ValueId } from "../../language/core/v1/semantics/contract/common/value";
+import { Accounts } from "./contract/common/payee/account";
+import { ChoiceId, ValueId } from "./contract/common/value";
 
 
 export type MarloweState = t.TypeOf<typeof MarloweState>

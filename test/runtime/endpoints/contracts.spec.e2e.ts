@@ -3,26 +3,27 @@ import { pipe } from 'fp-ts/function'
 import * as O from 'fp-ts/lib/Option';
 import * as TE from 'fp-ts/TaskEither'
 import { close } from '../../../src/language/core/v1/semantics/contract/close'
-import { AxiosRestClient } from '../../../src/runtime/endpoints';
+import { mkRuntimeRestAPI } from '../../../src/runtime/restAPI';
 import { initialise } from '../../../src/runtime/write/command';
 import { initialiseBankAndverifyProvisionning } from '../provisionning'
 import { getBankPrivateKey, getBlockfrostContext, getMarloweRuntimeUrl } from '../context';
-import { noTags } from '../../../src/runtime/common/metadata/tag';
+import { RolesConfig } from '../../../src/runtime/contract/role';
+import { unAddressBech32 } from '../../../src/runtime/common/address';
 
 
 describe('contracts endpoints', () => {
 
-  const restApi = AxiosRestClient(getMarloweRuntimeUrl())
+  const runtimeRestAPI = mkRuntimeRestAPI(getMarloweRuntimeUrl())
 
   it(' can build a Tx for Initialising a Marlowe Contract' +
     '(can POST: /contracts/ )', async () => {
       await
         pipe(initialiseBankAndverifyProvisionning
-          (getMarloweRuntimeUrl())
+          (runtimeRestAPI)
           (getBlockfrostContext())
           (getBankPrivateKey())
           , TE.bind('postContractResponse', ({ bank }) =>
-            restApi.contracts.post({
+            runtimeRestAPI.contracts.post({
               contract: close
               , version: 'v1'
               , metadata: {}
@@ -46,36 +47,29 @@ describe('contracts endpoints', () => {
       ' and GET /contracts/{contractid} => provide details about the contract initialised)', async () => {
         await
           pipe(initialiseBankAndverifyProvisionning
-            (getMarloweRuntimeUrl())
+            (runtimeRestAPI)
             (getBlockfrostContext())
             (getBankPrivateKey())
-            , TE.bindW('contractDetails', ({ bank }) =>
-              initialise
-                (restApi)
-                (bank)
-                ({
-                  contract: close
-                  , version: 'v1'
-                  , metadata: {}
-                  , tags: {}
-                  , minUTxODeposit: 2_000_000
-                }))
+            , TE.bindW('contracId', ({ bank }) => 
+                initialise (runtimeRestAPI)(bank)
+                  ({contract: {"from_account":{"address":unAddressBech32(bank.address)},"pay":10000000n,"then":"close","to":{"party":{"role_token":"WithdrawalTest1"}},"token":{"currency_symbol":"","token_name":""}}
+                   ,roles : "8bb3b343d8e404472337966a722150048c768d0a92a9813596c5338d"}))
             , TE.match(
               (e) => {
                 console.dir(e, { depth: null });
                 expect(e).not.toBeDefined()
               },
-              () => { }))()
+              (contract) => {console.log("contractID created" ,contract) }))()
 
       }, 100_000),
     it('can navigate throught Initialised Marlowe Contracts pages' +
       '(GET:  /contracts/)', async () => {
         await
           pipe(initialiseBankAndverifyProvisionning
-            (getMarloweRuntimeUrl())
+            (runtimeRestAPI)
             (getBlockfrostContext())
             (getBankPrivateKey())
-            , TE.bindW('firstPage', () => restApi.contracts.getHeadersByRange(O.none)(['swap.L1.by.marlowe.team', "initialised"]))
+            , TE.bindW('firstPage', () => runtimeRestAPI.contracts.getHeadersByRange(O.none)(['swap.L1.by.marlowe.team', "initialised"]))
             , TE.match(
               (e) => { console.dir(e, { depth: null }); expect(e).not.toBeDefined() },
               (a) => { console.log("result",a.firstPage.headers.length)}))()

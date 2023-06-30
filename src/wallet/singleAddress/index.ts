@@ -1,27 +1,19 @@
 import { pipe } from 'fp-ts/function';
 import * as A from 'fp-ts/Array';
 import * as API from '@blockfrost/blockfrost-js'
-import { Blockfrost, Lucid, C, Network, PrivateKey, PolicyId, getAddressDetails, toUnit, fromText, NativeScript, Tx , TxSigned, TxComplete, Script, fromHex, toHex, Core } from 'lucid-cardano';
+import { Blockfrost, Lucid, C, Network, PrivateKey, PolicyId, getAddressDetails, toUnit, fromText, NativeScript, Tx , TxSigned, TxComplete, Script, fromHex, toHex, Core, fromUnit, Unit } from 'lucid-cardano';
 import * as O from 'fp-ts/Option'
-import { log } from '../logging'
+import { log } from '../../adapter/logging'
 import * as TE from 'fp-ts/TaskEither'
 import * as T from 'fp-ts/Task'
-import { AddressesAndCollaterals, WalletAPI } from '../../runtime/wallet';
+import { WalletAPI } from '../api';
 import { addressBech32, AddressBech32, unAddressBech32 } from '../../runtime/common/address';
 import { HexTransactionWitnessSet , MarloweTxCBORHex} from '../../runtime/common/textEnvelope';
 import { TxOutRef } from 'src/runtime/common/tx/outRef';
+import { Token, token } from '../../language/core/v1/semantics/contract/common/token';
+import { TokenValue, adaValue, tokenValue } from '../../language/core/v1/semantics/contract/common/tokenValue';
 
-export class Asset {
-    policyId:string;
-    tokenName:string;
 
-    public constructor(policyId:string,tokenName:string){
-        this.policyId  = policyId;
-        this.tokenName = tokenName;
-    }
-
-    public toString : () => string = () => `${this.policyId}|${this.tokenName}`
-}
 export type Address = string;
 
 export class Context {
@@ -75,6 +67,19 @@ export class SingleAddressWallet implements WalletAPI {
         this.getCollaterals = T.of ([])
      }
     
+    public getTokenValues: TE.TaskEither<Error,TokenValue[]>
+     = pipe( TE.tryCatch(
+                () => this.blockfrostApi.addresses(unAddressBech32(this.address)),
+                (reason) => new Error(`Error while retrieving assetBalance : ${reason}`))
+            , TE.map( (content) => pipe(content.amount??[]      
+                                , A.map((amount) =>  amount.unit === "lovelace" ? 
+                                    adaValue(BigInt(amount.quantity)) 
+                                    : tokenValue
+                                        (BigInt(amount.quantity).valueOf())
+                                        (token( fromUnit(amount.unit).policyId
+                                              , getAssetName(amount.unit))) ))))
+                                
+
     public adaBalance : TE.TaskEither<Error,bigint> 
       = pipe( TE.tryCatch(
                 () => this.blockfrostApi.addresses(unAddressBech32(this.address)),
@@ -86,13 +91,13 @@ export class SingleAddressWallet implements WalletAPI {
                                 , O.getOrElse(() => 0n))))
 
                          
-    public assetBalance : (asset:Asset) => TE.TaskEither<Error,bigint> 
-        = (asset) => 
+    public tokenBalance : (token : Token) => TE.TaskEither<Error,bigint> 
+        = (token) => 
             pipe(TE.tryCatch(
                         () => this.blockfrostApi.addresses(unAddressBech32(this.address)),
                         (reason) => new Error(`Error while retrieving assetBalance : ${reason}`))
                 , TE.map( (content) => pipe(content.amount??[]
-                                            , A.filter((amount) => amount.unit === toUnit(asset.policyId, fromText(asset.tokenName)))
+                                            , A.filter((amount) => amount.unit === toUnit(token.currency_symbol, fromText(token.token_name)))
                                             , A.map((amount) => BigInt(amount.quantity))
                                             , A.head
                                             , O.getOrElse(() => 0n))))
@@ -123,11 +128,8 @@ export class SingleAddressWallet implements WalletAPI {
         return [script,policyId];
     }
 
-    public mintRandomTokens(tokenName:string, amount: BigInt) : TE.TaskEither<Error,Asset> {
+    public mintRandomTokens(tokenName:string, amount: bigint) : TE.TaskEither<Error,TokenValue> {
         const policyRefs = this.randomPolicyId ();
-        const { paymentCredential } = getAddressDetails(unAddressBech32(this.address));
-        const before = this.lucid.currentSlot() + (5 * 60) 
-        const validTo = this.lucid.currentSlot() + 60
         const [mintingPolicy,policyId] = policyRefs             
         return pipe( this.lucid.newTx()
                                 .mintAssets({[toUnit(policyId, fromText(tokenName))]: amount.valueOf()})
@@ -135,7 +137,10 @@ export class SingleAddressWallet implements WalletAPI {
                                 .attachMintingPolicy(mintingPolicy)
                    , build
                    , TE.chain(this.signSubmitAndWaitConfirmation)
-                   , TE.map(() => new Asset (policyRefs[1],tokenName)))
+                   , TE.map(() => 
+                        ( { amount:amount
+                          , token:token(policyRefs[1],tokenName)
+                          })))
     }
     
 
@@ -191,3 +196,7 @@ const build : (tx : Tx ) => TE.TaskEither<Error,TxComplete>
 
 
 
+const getAssetName : (unit : Unit) => string = (unit) =>  {
+    const assetName = fromUnit(unit).assetName
+    return assetName ? assetName : ''
+}
