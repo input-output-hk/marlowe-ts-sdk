@@ -13,15 +13,6 @@ export const token = (currency_symbol :PolicyId,token_name: TokenName) => ({ cur
 
 export const toString : (token : Token) => string = (token) => `${token.currency_symbol}|${token.token_name}`
 
-export type TokenValue = t.TypeOf<typeof TokenValue>
-export const TokenValue = t.type({amount:t.bigint,token:Token})
+export const lovelaceToken : Token = token('','')
+export const adaToken: Token = lovelaceToken
 
-
-
-export const tokenValue : (amount : bigint) => (token : Token) => TokenValue 
-    = (amount) => (token) => ({amount:amount,token:token})
-
-export const adaValue : (amount : bigint)  => TokenValue 
-    = (amount)  => ({amount:amount*1_000_000n,token:adaToken})
-
-export const adaToken: Token = token('','')

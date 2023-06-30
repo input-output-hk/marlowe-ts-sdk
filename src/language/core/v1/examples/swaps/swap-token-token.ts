@@ -1,10 +1,8 @@
-/* eslint-disable sort-keys-fix/sort-keys-fix */
 
 import { Contract } from "../../semantics/contract";
 import { close } from "../../semantics/contract/close";
 import { role } from "../../semantics/contract/common/payee/party";
-import { Token, TokenValue } from "../../semantics/contract/common/token";
-import { constant, mulValue } from "../../semantics/contract/common/value";
+import { TokenValue } from "../../semantics/contract/common/tokenValue";
 import { Timeout } from "../../semantics/contract/when";
 
 

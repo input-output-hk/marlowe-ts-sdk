@@ -8,7 +8,11 @@ import * as A from 'fp-ts/Array'
 
 import { TxOutRef } from '../../runtime/common/tx/outRef';
 import { deserializeCollateral } from '../../runtime/common/tx/collateral';
+import { token } from '../../language/core/v1/semantics/contract/common/token';
 
+
+import * as CSL from '@emurgo/cardano-serialization-lib-browser'
+import { TokenValue, lovelaceValue, tokenValue } from '../../language/core/v1/semantics/contract/common/tokenValue';
 
 
 export const getExtensionInstance : (extensionName : string) => T.Task<WalletAPI> = (extensionName) =>  
@@ -18,7 +22,8 @@ export const getExtensionInstance : (extensionName : string) => T.Task<WalletAPI
              , signTxTheCIP30Way : signMarloweTx(extensionCIP30Instance)
              , getChangeAddress : fetchChangeAddress(extensionCIP30Instance)
              , getUsedAddresses : fetchUsedAddresses(extensionCIP30Instance)
-             , getCollaterals : fetchCollaterals(extensionCIP30Instance) 
+             , getCollaterals : fetchCollaterals(extensionCIP30Instance)
+             , getTokenValues : fetchTokenValues(extensionCIP30Instance) 
             })) )
 
 
@@ -71,3 +76,52 @@ type BroswerExtensionCIP30Api = {
 type ExperimentalFeatures = {
     getCollateral(): Promise<string[] | undefined>;
   };
+
+
+const fetchTokenValues : (extensionCIP30Instance : BroswerExtensionCIP30Api) => TE.TaskEither<Error,TokenValue[]> 
+  = (extensionCIP30Instance) => 
+    pipe
+    ( () => extensionCIP30Instance.getBalance()
+    , T.map((balances) => fromValue(deserializeValue(balances)))
+    , TE.fromTask)
+
+
+ 
+
+const toUTF8 = (hex: string) => Buffer.from(hex, 'hex').toString('utf-8');
+const deserializeValue = (value: string) => CSL.Value.from_bytes(toBytes(value));
+const toBytes = (hex: string): Uint8Array => {
+  if (hex.length % 2 === 0 && /^[0-9A-F]*$/i.test(hex))
+    return Buffer.from(hex, 'hex');
+
+  return Buffer.from(hex, 'utf-8');
+};
+
+export const fromValue = (value: CSL.Value) => {
+  const assets: TokenValue[] = [ lovelaceValue(BigInt(value.coin().to_str()).valueOf())]
+
+  const multiAsset = value.multiasset();
+  if (multiAsset !== undefined) {
+    const policies = multiAsset.keys();
+    for (let i = 0; i < policies.len(); i += 1) {
+      const policyId = policies.get(i);
+      const policyAssets = multiAsset.get(policyId);
+      if (policyAssets !== undefined) {
+        const policyAssetNames = policyAssets.keys();
+        for (let j = 0; j < policyAssetNames.len(); j += 1) {
+          const assetName = policyAssetNames.get(j);
+          const quantity = policyAssets.get(assetName) ?? CSL.BigNum.from_str('0');
+          assets.push(
+            tokenValue
+              (BigInt(quantity.to_str()).valueOf())
+              (token
+                (policyId.to_hex()
+                ,toUTF8(assetName.to_hex()).substring(1) // N.H : investigate why 1 aditional character is returned
+              )));
+        }
+      }
+    }
+  }
+
+  return assets;
+};

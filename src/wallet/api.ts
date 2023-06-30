@@ -9,6 +9,7 @@ import { TxOutRef } from "../runtime/common/tx/outRef"
 import { AddressBech32 } from "../runtime/common/address"
 import * as t from "io-ts";
 import { pipe } from 'fp-ts/lib/function';
+import { TokenValue } from '../language/core/v1/semantics/contract/common/tokenValue';
 
 
 export type AddressesAndCollaterals = t.TypeOf<typeof AddressesAndCollaterals>
@@ -24,6 +25,7 @@ export interface WalletAPI {
     getChangeAddress : T.Task<AddressBech32>
     getUsedAddresses : T.Task<AddressBech32[]>
     getCollaterals : T.Task<TxOutRef[]>
+    getTokenValues : TE.TaskEither<Error,TokenValue[]>
 }
 
 export const getAddressesAndCollaterals : (walletAPI : WalletAPI)  => T.Task<AddressesAndCollaterals> =
