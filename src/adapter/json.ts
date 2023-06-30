@@ -15,7 +15,7 @@ export const MarloweJSONDecoder: D.Decoder<string, unknown> = {
 }
 
 export const MarloweJSONEncoder: E.Encoder<string, unknown> = {
-  encode: (contract) =>  JsonAlwayAndOnlyBigInt.stringify(contract)
+  encode: (data) =>  JsonAlwayAndOnlyBigInt.stringify(data)
 }
 
 export const MarloweJSONCodec: C.Codec<string, string, unknown> = C.make(MarloweJSONDecoder, MarloweJSONEncoder)

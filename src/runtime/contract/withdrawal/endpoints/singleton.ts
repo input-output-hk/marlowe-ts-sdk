@@ -8,7 +8,7 @@ import { pipe } from 'fp-ts/lib/function';
 import * as HTTP from '../../../../runtime/common/http';
 import { HexTransactionWitnessSet, transactionWitnessSetTextEnvelope } from '../../../../runtime/common/textEnvelope';
 
-import {formatValidationErrors} from 'io-ts-reporters'
+import {formatValidationErrors} from 'jsonbigint-io-ts-reporters'
 import { DecodingError } from '../../../../runtime/common/codec';
 import { unWithdrawalId, WithdrawalId } from '../id';
 import { Details } from '../details';

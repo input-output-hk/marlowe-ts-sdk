@@ -4,7 +4,7 @@ import * as E from 'fp-ts/Either'
 
 import '@relmify/jest-fp-ts'
 import { pipe } from 'fp-ts/lib/function';
-import {formatValidationErrors} from 'io-ts-reporters'
+import {formatValidationErrors} from 'jsonbigint-io-ts-reporters'
 import {Contract} from '../../../../../src/language/core/v1/semantics/contract'
 import * as path from 'path'
 import { fileURLToPath } from 'url';

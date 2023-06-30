@@ -8,7 +8,7 @@ import { TransactionId, unTransactionId } from "../id";
 import { ContractId, unContractId } from "../../id";
 import { DecodingError } from "../../../../runtime/common/codec";
 import * as t from "io-ts";
-import { formatValidationErrors } from "io-ts-reporters";
+import { formatValidationErrors } from "jsonbigint-io-ts-reporters";
 import { Details } from "../details";
 import { HexTransactionWitnessSet, transactionWitnessSetTextEnvelope } from "../../../../runtime/common/textEnvelope";
 

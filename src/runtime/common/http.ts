@@ -5,10 +5,11 @@ import axios from 'axios';
 import { AxiosInstance, AxiosResponse } from 'axios';
 import * as TE from 'fp-ts/TaskEither'
 import { flow, identity } from 'fp-ts/lib/function';
+import { JsonAlwayAndOnlyBigInt } from '../../adapter/json';
 
 
 const getOnlyData = TE.bimap(
-  (e: unknown) => (e instanceof Error ? e : new Error(JSON.stringify(e))),
+  (e: unknown) => (e instanceof Error ? e : new Error(JsonAlwayAndOnlyBigInt.stringify(e))),
   (v: AxiosResponse): any => v.data,
 );
 
