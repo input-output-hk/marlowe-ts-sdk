@@ -12,7 +12,7 @@ import { Header } from '../header';
 import { TextEnvelope } from '../../../common/textEnvelope';
 
 import * as t from "io-ts";
-import { formatValidationErrors } from 'io-ts-reporters'
+import { formatValidationErrors } from 'jsonbigint-io-ts-reporters'
 import { DecodingError } from '../../../common/codec';
 import * as E from 'fp-ts/Either'
 import * as A from 'fp-ts/Array'
@@ -21,7 +21,7 @@ import { unAddressBech32 } from '../../../common/address';
 import { fromNewtype, optionFromNullable } from 'io-ts-types';
 import * as O from 'fp-ts/lib/Option';
 
-import { AddressesAndCollaterals } from '../../../wallet';
+import { AddressesAndCollaterals } from '../../../../wallet/api';
 import { ContractId } from '../../id';
 import { RoleName } from '../../role';
 import { WithdrawalId } from '../id';

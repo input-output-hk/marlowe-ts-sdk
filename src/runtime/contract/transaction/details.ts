@@ -9,9 +9,9 @@ import * as t from "io-ts";
 import { BuiltinByteString, Input } from "../../../language/core/v1/semantics/contract/when/input";
 import { Tags } from "../../../runtime/common/metadata/tag";
 import { Contract } from "../../../language/core/v1/semantics/contract";
-import { MarloweState } from "../../../runtime/common/state";
+import { MarloweState } from "../../../language/core/v1/semantics/state";
 import { TxId } from "../../../runtime/common/tx/id";
-import { ISO8601 } from "../../../runtime/common/iso8601";
+import { ISO8601 } from "../../../adapter/time";
 import { TextEnvelope } from "../../../runtime/common/textEnvelope";
 
 export type Details = t.TypeOf<typeof Details>

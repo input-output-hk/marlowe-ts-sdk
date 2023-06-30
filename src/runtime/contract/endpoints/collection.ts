@@ -14,7 +14,7 @@ import { Metadata, Tag, Tags } from '../../../runtime/common/metadata';
 import { TextEnvelope } from '../../../runtime/common/textEnvelope';
 import { ContractId } from '../id';
 import * as t from "io-ts";
-import { formatValidationErrors } from 'io-ts-reporters'
+import { formatValidationErrors } from 'jsonbigint-io-ts-reporters'
 import { DecodingError } from '../../../runtime/common/codec';
 import * as E from 'fp-ts/Either'
 import * as A from 'fp-ts/Array'
@@ -24,7 +24,7 @@ import { unAddressBech32 } from '../../../runtime/common/address';
 import { fromNewtype, optionFromNullable } from 'io-ts-types';
 import * as O from 'fp-ts/lib/Option';
 import { Contract } from '../../../language/core/v1/semantics/contract';
-import { AddressesAndCollaterals } from '../../wallet';
+import { AddressesAndCollaterals } from '../../../wallet/api';
 import { stringify } from 'qs';
 import { unTxOutRef } from '../../common/tx/outRef';
 

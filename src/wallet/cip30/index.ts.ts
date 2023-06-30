@@ -1,22 +1,13 @@
-import { DecodingError } from '../common/codec';
-import { ContractDetails } from '../contract/details';
-import { ContractId } from '../contract/id';
-import { AxiosRestClient, RestAPI } from '../endpoints';
-import { ApplyInputsPayload, InitialisePayload, WithdrawPayload } from '../write/command';
-import * as Command from '../write/command';
-import * as Transaction from '../contract/transaction/details';
-import * as Withdrawal from '../contract/withdrawal/details';
 import * as T from 'fp-ts/Task'
 import * as TE from 'fp-ts/TaskEither'
 import { pipe } from 'fp-ts/lib/function';
-import { MarloweTxCBORHex, HexTransactionWitnessSet } from '../common/textEnvelope';
-import { AddressesAndCollaterals, WalletAPI } from '.';
-import { AddressBech32, deserializeAddress } from '../common/address';
+import { MarloweTxCBORHex, HexTransactionWitnessSet } from '../../runtime/common/textEnvelope';
+import { WalletAPI } from '../api';
+import { AddressBech32, deserializeAddress } from '../../runtime/common/address';
 import * as A from 'fp-ts/Array'
 
-import * as O from 'fp-ts/Option'
-import { TxOutRef } from '../common/tx/outRef';
-import { deserializeCollateral } from '../common/tx/collateral';
+import { TxOutRef } from '../../runtime/common/tx/outRef';
+import { deserializeCollateral } from '../../runtime/common/tx/collateral';
 
 
 

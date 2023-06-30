@@ -1,5 +1,5 @@
 import { Network } from "lucid-cardano";
-import { Context, getPrivateKeyFromHexString } from "../../src/adapter/wallet/singleAddress";
+import { Context, getPrivateKeyFromHexString } from "../../src/wallet/singleAddress";
 
 
 export function getBlockfrostContext () : Context {

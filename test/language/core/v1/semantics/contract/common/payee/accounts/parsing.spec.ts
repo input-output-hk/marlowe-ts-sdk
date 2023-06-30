@@ -3,7 +3,7 @@ import * as TE from 'fp-ts/TaskEither'
 import * as E from 'fp-ts/Either'
 
 import { pipe } from 'fp-ts/lib/function';
-import {formatValidationErrors} from 'io-ts-reporters'
+import {formatValidationErrors} from 'jsonbigint-io-ts-reporters'
 import * as path from 'path'
 import { MarloweJSONCodec, minify } from '../../../../../../../../../src/adapter/json';
 import {  getFileContents } from '../../../../../../../../adapter/file';
