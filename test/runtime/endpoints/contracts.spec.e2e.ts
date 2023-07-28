@@ -7,6 +7,8 @@ import { mkRuntimeRestAPI } from '../../../src/runtime/restAPI';
 import { initialise } from '../../../src/runtime/write/command';
 import { initialiseBankAndverifyProvisionning } from '../provisionning'
 import { getBankPrivateKey, getBlockfrostContext, getMarloweRuntimeUrl } from '../context';
+import { RolesConfig } from '../../../src/runtime/contract/role';
+import { unAddressBech32 } from '../../../src/runtime/common/address';
 
 
 describe('contracts endpoints', () => {
@@ -54,7 +56,7 @@ describe('contracts endpoints', () => {
                 console.dir(e, { depth: null });
                 expect(e).not.toBeDefined()
               },
-              () => { }))()
+              (contract) => {console.log("contractID created" ,contract) }))()
 
       }, 100_000),
     it('can navigate throught Initialised Marlowe Contracts pages' +

@@ -8,7 +8,7 @@ import { getBankPrivateKey, getBlockfrostContext, getMarloweRuntimeUrl } from '.
 import { datetoTimeout } from '../../../src/language/core/v1/semantics/contract/when'
 import { provisionAnAdaAndTokenProvider } from '../provisionning'
 import { mkRuntimeRestAPI } from '../../../src/runtime/restAPI';
-import { adaValue } from '../../../src/language/core/v1/semantics/contract/common/token';
+import { adaValue } from '../../../src/language/core/v1/semantics/contract/common/tokenValue';
 import { toInput } from '../../../src/language/core/v1/semantics/next/applicables/canDeposit';
 
 

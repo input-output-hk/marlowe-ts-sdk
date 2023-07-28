@@ -1,7 +1,7 @@
 import { pipe } from 'fp-ts/function';
 import * as A from 'fp-ts/Array';
 import * as API from '@blockfrost/blockfrost-js'
-import { Blockfrost, Lucid, C, Network, PrivateKey, PolicyId, getAddressDetails, toUnit, fromText, NativeScript, Tx , TxSigned, TxComplete, Script, fromHex, toHex, Core } from 'lucid-cardano';
+import { Blockfrost, Lucid, C, Network, PrivateKey, PolicyId, getAddressDetails, toUnit, fromText, NativeScript, Tx , TxSigned, TxComplete, Script, fromHex, toHex, Core, fromUnit, Unit } from 'lucid-cardano';
 import * as O from 'fp-ts/Option'
 import { log } from '../../adapter/logging'
 import * as TE from 'fp-ts/TaskEither'
@@ -10,7 +10,8 @@ import { WalletAPI } from '../api';
 import { addressBech32, AddressBech32, unAddressBech32 } from '../../runtime/common/address';
 import { HexTransactionWitnessSet , MarloweTxCBORHex} from '../../runtime/common/textEnvelope';
 import { TxOutRef } from 'src/runtime/common/tx/outRef';
-import { Token, TokenValue, token } from '../../language/core/v1/semantics/contract/common/token';
+import { Token, token } from '../../language/core/v1/semantics/contract/common/token';
+import { TokenValue, adaValue, tokenValue } from '../../language/core/v1/semantics/contract/common/tokenValue';
 
 
 export type Address = string;
@@ -66,6 +67,19 @@ export class SingleAddressWallet implements WalletAPI {
         this.getCollaterals = T.of ([])
      }
     
+    public getTokenValues: TE.TaskEither<Error,TokenValue[]>
+     = pipe( TE.tryCatch(
+                () => this.blockfrostApi.addresses(unAddressBech32(this.address)),
+                (reason) => new Error(`Error while retrieving assetBalance : ${reason}`))
+            , TE.map( (content) => pipe(content.amount??[]      
+                                , A.map((amount) =>  amount.unit === "lovelace" ? 
+                                    adaValue(BigInt(amount.quantity)) 
+                                    : tokenValue
+                                        (BigInt(amount.quantity).valueOf())
+                                        (token( fromUnit(amount.unit).policyId
+                                              , getAssetName(amount.unit))) ))))
+                                
+
     public adaBalance : TE.TaskEither<Error,bigint> 
       = pipe( TE.tryCatch(
                 () => this.blockfrostApi.addresses(unAddressBech32(this.address)),
@@ -182,3 +196,7 @@ const build : (tx : Tx ) => TE.TaskEither<Error,TxComplete>
 
 
 
+const getAssetName : (unit : Unit) => string = (unit) =>  {
+    const assetName = fromUnit(unit).assetName
+    return assetName ? assetName : ''
+}

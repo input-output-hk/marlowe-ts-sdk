@@ -51,9 +51,14 @@ export const getHeadersByRangeViaAxios:(axiosInstance: AxiosInstance) => GETHead
                  , nextRange    : headers['next-range']}))
             , TE.chainW((data) => TE.fromEither(E.mapLeft(formatValidationErrors)(GETByRangeRawResponse.decode(data))))
             , TE.map(rawResponse =>  
-                ({ headers: pipe( rawResponse.data.results,A.map((result) => result.resource))
+                ({ headers: pipe( rawResponse.data.results
+                                , A.map(result => result.resource)
+                                , A.filter(header => eqSetString(new Set(Object.keys(header.tags)),new Set(tags)))) // All logic instead of Any, TODO : Add the flexibility to chose between Any and All 
                  , previousRange: rawResponse.previousRange
                  , nextRange    : rawResponse.nextRange})))
+
+
+const eqSetString = (xs : Set<string>, ys: Set<string>) => xs.size === ys.size && [...xs].every((x) => ys.has(x));
 
 export type GETByRangeRawResponse = t.TypeOf<typeof GETByRangeRawResponse>;
 export const GETByRangeRawResponse 
