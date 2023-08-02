@@ -1,0 +1,53 @@
+{
+  "name": "@marlowe/language-core-v1",
+  "version": "0.1.0-beta",
+  "description": "Library to manipulate Marlowe Core contracts",
+  "repository": "https://github.com/input-output-hk/marlowe-ts-sdk",
+  "publishConfig": {
+    "access": "public"
+  },
+  "contributors": [
+    "Nicolas Henin <nicolas.henin@iohk.io> (https://iohk.io)",
+    "Hernan Rajchert <hernan.rajchert@iohk.io> (https://iohk.io)",
+    "Bjorn Kihlberg <bjorn.kihlberg@iohk.io> (https://iohk.io)"
+  ],
+  "license": "Apache-2.0",
+  "scripts": {
+    "build": "tsc --build src",
+    "clean": "tsc --build --clean src ",
+    "test": "jest --config  ../../../../jest.config.js"
+  },
+  "exports": {
+    ".": "./dist/semantics/contract/index.js",
+    "./examples": "./dist/examples/index.js",
+    "./next": "./dist/semantics/next/index.js",
+    "./environment": "./dist/semantics/environment.js",
+    "./state": "./dist/semantics/state.js"
+  },
+
+  "dependencies": {
+    "@blockfrost/blockfrost-js": "5.2.0",
+    "@blockfrost/openapi": "0.1.54",
+    "@emurgo/cardano-serialization-lib-browser":"11.4.0",
+    "@types/deep-equal": "1.0.1",
+    "@types/qs" : "6.9.7",
+    "qs" : "6.11.1" ,
+    "axios": "^1.3.3",
+    "axios-curlirize": "^2.0.0",
+    "date-fns": "2.29.3",
+    "deep-equal": "1.0.1",
+    "dotenv": "^16.0.3",
+    "fp-ts": "^2.16.0",
+    "json-bigint": "^1.0.0",
+    "lucid-cardano": "0.9.4",
+    "ts-adt": "^2.0.2",
+    "ts-pattern": "^4.2.0",
+    "retry-ts":"0.1.4",
+    "newtype-ts":"0.3.5",
+    "monocle-ts":"2.3.13",
+    "io-ts":"2.2.20",
+    "io-ts-types":"0.5.19",
+    "io-ts-bigint":"2.0.1",
+    "jsonbigint-io-ts-reporters":"2.0.1"
+  }
+}

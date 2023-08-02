@@ -1,0 +1,14 @@
+{
+  "extends": "../../../../../tsconfig-base.json",
+  "compilerOptions": {
+    "outDir": "../test-dist",
+    "paths": {
+        "@marlowe/legacy-adapter/*": ["../../../../legacy-adapter/src/*"],
+        "@marlowe/language-core-v1/*": ["../src/*"],
+    }
+  },
+  "references": [
+    {"path": "../../../../legacy-adapter/src"},
+    {"path": "../src"}
+  ]
+}
