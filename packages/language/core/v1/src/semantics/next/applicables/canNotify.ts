@@ -1,11 +1,11 @@
 import * as t from "io-ts";
-import { IsMerkleizedContinuation } from "../common/IsMerkleizedContinuation";
-import { CaseIndex } from "../common/caseIndex";
-import { InputNotify } from "../../contract/when/input/notify";
+import { IsMerkleizedContinuation } from "../common/IsMerkleizedContinuation.js";
+import { CaseIndex } from "../common/caseIndex.js";
+import { InputNotify } from "../../contract/when/input/notify.js";
 
 
 export type CanNotify = t.TypeOf<typeof CanNotify>
-export const CanNotify 
+export const CanNotify
   = t.type(
       { case_index: CaseIndex
       , is_merkleized_continuation: IsMerkleizedContinuation

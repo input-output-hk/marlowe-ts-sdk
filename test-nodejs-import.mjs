@@ -3,9 +3,11 @@
 //       Try this by running `node test-nodejs-import.mjs`
 import {POSIXTime} from "@marlowe/legacy-adapter/time"
 import {Close} from "@marlowe/language-core-v1"
-// import {mkRuntime} from "@marlowe/legacy-runtime"
+import {mkRuntime} from "@marlowe/legacy-runtime"
+
+
 
 console.log("POSIXTime", POSIXTime);
 console.log("Close", Close);
-// console.log("mkRuntime", mkRuntime);
+console.log("mkRuntime", mkRuntime);
 

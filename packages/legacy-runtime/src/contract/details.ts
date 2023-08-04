@@ -1,17 +1,17 @@
 
-import { ContractId } from "./id";
-import { TextEnvelope } from "../common/textEnvelope";
+import { ContractId } from "./id.js";
+import { TextEnvelope } from "../common/textEnvelope.js";
 import { optionFromNullable } from "io-ts-types";
 import * as t from "io-ts";
-import { BlockHeader } from "../common/block";
-import { MarloweVersion } from "../common/version";
-import { PolicyId } from "../common/policyId";
-import { Metadata } from "../common/metadata";
-import { TxStatus } from "./transaction/status";
-import { TxOutRef } from "../common/tx/outRef";
-import { Contract } from "@marlowe/language-core-v1/semantics/contract";
-import { MarloweState } from "@marlowe/language-core-v1/semantics/state";
-import { RoleName } from "./role";
+import { BlockHeader } from "../common/block.js";
+import { MarloweVersion } from "../common/version.js";
+import { PolicyId } from "../common/policyId.js";
+import { Metadata } from "../common/metadata/index.js";
+import { TxStatus } from "./transaction/status.js";
+import { TxOutRef } from "../common/tx/outRef.js";
+import { Contract } from "@marlowe/language-core-v1/semantics/contract/index.js";
+import { MarloweState } from "@marlowe/language-core-v1/semantics/state.js";
+import { RoleName } from "./role.js";
 
 
 export type Payout = t.TypeOf<typeof Payout>

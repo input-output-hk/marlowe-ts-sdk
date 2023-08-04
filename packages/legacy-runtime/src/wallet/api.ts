@@ -1,15 +1,15 @@
 
-import * as T from 'fp-ts/Task'
-import * as O from 'fp-ts/Option'
-import * as TE from 'fp-ts/TaskEither'
+import * as T from 'fp-ts/lib/Task.js'
+import * as O from 'fp-ts/lib/Option.js'
+import * as TE from 'fp-ts/lib/TaskEither.js'
 
-import { HexTransactionWitnessSet, MarloweTxCBORHex } from '../common/textEnvelope';
+import { HexTransactionWitnessSet, MarloweTxCBORHex } from '../common/textEnvelope.js';
 import { optionFromNullable } from "io-ts-types"
-import { TxOutRef } from "../common/tx/outRef"
-import { AddressBech32 } from "../common/address"
+import { TxOutRef } from "../common/tx/outRef.js"
+import { AddressBech32 } from "../common/address.js"
 import * as t from "io-ts";
-import { pipe } from 'fp-ts/lib/function';
-import { TokenValue } from '@marlowe/language-core-v1/semantics/contract/common/tokenValue';
+import { pipe } from 'fp-ts/lib/function.js';
+import { TokenValue } from '@marlowe/language-core-v1/semantics/contract/common/tokenValue.js';
 
 
 export type AddressesAndCollaterals = t.TypeOf<typeof AddressesAndCollaterals>

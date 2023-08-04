@@ -1,5 +1,5 @@
 import * as t from "io-ts"
-import { PolicyId } from "./policyId"
+import { PolicyId } from "./policyId.js";
 
 
 export type  TokenName = t.TypeOf<typeof TokenName>

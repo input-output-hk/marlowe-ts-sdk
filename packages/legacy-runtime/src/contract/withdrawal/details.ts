@@ -1,13 +1,13 @@
 
 import * as t from "io-ts";
-import { BlockHeader } from "../../common/block";
+import { BlockHeader } from "../../common/block.js";
 
-import { WithdrawalId } from "./id";
-import { TxStatus } from "../transaction/status";
-import { PolicyId } from "../../common/policyId";
-import { TxOutRef } from "../../common/tx/outRef";
-import { RoleName } from "../role";
-import { optionFromNullable } from "io-ts-types/lib/optionFromNullable";
+import { WithdrawalId } from "./id.js";
+import { TxStatus } from "../transaction/status.js";
+import { PolicyId } from "../../common/policyId.js";
+import { TxOutRef } from "../../common/tx/outRef.js";
+import { RoleName } from "../role.js";
+import { optionFromNullable } from "io-ts-types/lib/optionFromNullable.js";
 
 
 export type PayoutRef = t.TypeOf<typeof PayoutRef>
@@ -19,11 +19,11 @@ export const PayoutRef = t.type(
     })
 
 export type Details = t.TypeOf<typeof Details>
-export const Details 
+export const Details
   = t.type(
       { withdrawalId: WithdrawalId
       , status: TxStatus
       , block: optionFromNullable(BlockHeader)
-      , payouts : t.array(PayoutRef) 
+      , payouts : t.array(PayoutRef)
     })
 

@@ -1,5 +1,5 @@
 import * as t from "io-ts";
-import { pipe } from "fp-ts/lib/function";
+import { pipe } from "fp-ts/lib/function.js";
 import { format, formatISO } from "date-fns";
 
 export type ISO8601 = t.TypeOf<typeof ISO8601>

@@ -1,2 +1,2 @@
-export * as JSONAdapter from './json';
-export * as Logging from './logging';
+export * as JSONAdapter from './json.js';
+export * as Logging from './logging.js';

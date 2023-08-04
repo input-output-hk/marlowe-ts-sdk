@@ -12,6 +12,7 @@
     "Bjorn Kihlberg <bjorn.kihlberg@iohk.io> (https://iohk.io)"
   ],
   "license": "Apache-2.0",
+  "type": "module",
   "scripts": {
     "build": "tsc --build src",
     "clean": "tsc --build --clean src",

@@ -1,5 +1,5 @@
 import * as t from "io-ts";
-import { Metadata } from ".";
+import { Metadata } from "./index.js";
 
 
 export type  Tag = t.TypeOf<typeof Tag>

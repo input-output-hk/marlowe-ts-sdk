@@ -1,32 +1,32 @@
 
 import { AxiosInstance, ParamEncoder, ParamsSerializerOptions } from 'axios';
 
-import * as TE from 'fp-ts/TaskEither'
-import { pipe } from 'fp-ts/lib/function';
+import * as TE from 'fp-ts/lib/TaskEither.js'
+import { pipe } from 'fp-ts/lib/function.js';
 import { Newtype, iso } from 'newtype-ts'
-import * as HTTP from '../../common/http';
-import { Header } from '../header';
+import * as HTTP from '../../common/http.js';
+import { Header } from '../header.js';
 
-import { RolesConfig } from '../role';
+import { RolesConfig } from '../role.js';
 
-import { Metadata, Tag, Tags } from '../../common/metadata';
+import { Metadata, Tag, Tags } from '../../common/metadata/index.js';
 
-import { TextEnvelope } from '../../common/textEnvelope';
-import { ContractId } from '../id';
+import { TextEnvelope } from '../../common/textEnvelope.js';
+import { ContractId } from '../id.js';
 import * as t from "io-ts";
 import { formatValidationErrors } from 'jsonbigint-io-ts-reporters'
-import { DecodingError } from '../../common/codec';
-import * as E from 'fp-ts/Either'
-import * as A from 'fp-ts/Array'
-import { MarloweVersion } from '../../common/version';
-import { unAddressBech32 } from '../../common/address';
+import { DecodingError } from '../../common/codec.js';
+import * as E from 'fp-ts/lib/Either.js'
+import * as A from 'fp-ts/lib/Array.js'
+import { MarloweVersion } from '../../common/version.js';
+import { unAddressBech32 } from '../../common/address.js';
 
 import { fromNewtype, optionFromNullable } from 'io-ts-types';
-import * as O from 'fp-ts/lib/Option';
-import { Contract } from '@marlowe/language-core-v1/semantics/contract';
-import { AddressesAndCollaterals } from '../../wallet/api';
+import * as O from 'fp-ts/lib/Option.js';
+import { Contract } from '@marlowe/language-core-v1/semantics/contract/index.js';
+import { AddressesAndCollaterals } from '../../wallet/api.js';
 import { stringify } from 'qs';
-import { unTxOutRef } from '../../common/tx/outRef';
+import { unTxOutRef } from '../../common/tx/outRef.js';
 
 
 export interface ContractsRange extends Newtype<{ readonly ContractsRange: unique symbol }, string> {}

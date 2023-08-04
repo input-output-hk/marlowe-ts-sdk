@@ -2,30 +2,30 @@
 /* eslint-disable no-use-before-define */
 import { AxiosInstance } from 'axios';
 
-import * as TE from 'fp-ts/TaskEither'
-import { pipe } from 'fp-ts/lib/function';
+import * as TE from 'fp-ts/lib/TaskEither.js'
+import { pipe } from 'fp-ts/lib/function.js';
 import { Newtype, iso } from 'newtype-ts'
-import * as HTTP from '../../../common/http';
-import { Header } from '../header';
+import * as HTTP from '../../../common/http.js';
+import { Header } from '../header.js';
 
 
-import { TextEnvelope } from '../../../common/textEnvelope';
+import { TextEnvelope } from '../../../common/textEnvelope.js';
 
 import * as t from "io-ts";
 import { formatValidationErrors } from 'jsonbigint-io-ts-reporters'
-import { DecodingError } from '../../../common/codec';
-import * as E from 'fp-ts/Either'
-import * as A from 'fp-ts/Array'
-import { unAddressBech32 } from '../../../common/address';
+import { DecodingError } from '../../../common/codec.js';
+import * as E from 'fp-ts/lib/Either.js'
+import * as A from 'fp-ts/lib/Array.js'
+import { unAddressBech32 } from '../../../common/address.js';
 
 import { fromNewtype, optionFromNullable } from 'io-ts-types';
-import * as O from 'fp-ts/lib/Option';
+import * as O from 'fp-ts/lib/Option.js';
 
-import { AddressesAndCollaterals } from '../../../wallet/api';
-import { ContractId } from '../../id';
-import { RoleName } from '../../role';
-import { WithdrawalId } from '../id';
-import { unTxOutRef } from '../../../common/tx/outRef';
+import { AddressesAndCollaterals } from '../../../wallet/api.js';
+import { ContractId } from '../../id.js';
+import { RoleName } from '../../role.js';
+import { WithdrawalId } from '../id.js';
+import { unTxOutRef } from '../../../common/tx/outRef.js';
 
 
 export interface WithdrawalsRange extends Newtype<{ readonly WithdrawalsRange: unique symbol }, string> {}

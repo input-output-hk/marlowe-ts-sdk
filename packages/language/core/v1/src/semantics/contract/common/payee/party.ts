@@ -1,10 +1,10 @@
 import * as t from "io-ts";
 import { iso, Newtype } from "newtype-ts";
 import { fromNewtype } from "io-ts-types";
-import { TokenName } from "../token";
-import { AddressBech32 } from "../address";
-import { pipe } from "fp-ts/lib/function";
-import * as A from 'fp-ts/Array'
+import { TokenName } from "../token.js";
+import { AddressBech32 } from "../address.js";
+import { pipe } from "fp-ts/lib/function.js";
+import * as A from 'fp-ts/lib/Array.js'
 
 export type  Address = t.TypeOf<typeof Address>
 export const Address = t.type({address:AddressBech32})
@@ -19,12 +19,12 @@ export type Party =  t.TypeOf<typeof Party>
 export const Party = t.union([Address,Role])
 
 
-export const partiesToStrings : (parties :Party[]) => (string[]) = 
+export const partiesToStrings : (parties :Party[]) => (string[]) =
     (parties) => pipe(parties,A.map (partyToString))
 
-export const partyToString : (party :Party) => string = 
+export const partyToString : (party :Party) => string =
     (party) => isRole(party) ? party.role_token : party.address
-    
+
 
 export function isRole (party:Party) : party is Role {
     return (party as Role).role_token !== undefined

@@ -17,6 +17,7 @@
     "clean": "tsc --build --clean src",
     "test": "echo 'runtime test'"
   },
+  "type": "module",
   "exports": {
     ".": "./dist/index.js",
     "./restAPI": "./dist/restAPI.js",

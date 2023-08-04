@@ -1,25 +1,25 @@
 
-import * as T from 'fp-ts/Task'
-import * as TE from 'fp-ts/TaskEither'
-import * as ContractCollection from '../contract/endpoints/collection';
-import * as TransactionCollection from '../contract/transaction/endpoints/collection';
-import * as WithdrawalCollection from '../contract/withdrawal/endpoints/collection';
-import { DecodingError } from '../common/codec';
-import { ContractDetails } from '../contract/details';
-import { pipe } from 'fp-ts/function'
-import { ContractId }  from '../contract/id';
-import * as Contracts from '../contract/id';
-import * as Tx from '../contract/transaction/id';
-import * as Transaction from '../contract/transaction/details';
-import * as Withdrawal from '../contract/withdrawal/details';
-import * as WithdrawalId from '../contract/withdrawal/id';
-import { RuntimeRestAPI } from '../restAPI';
-import { WalletAPI, getAddressesAndCollaterals } from '../wallet/api';
-import { Metadata, Tags } from '../common/metadata';
-import { MarloweVersion } from '../common/version';
-import { Contract } from '@marlowe/language-core-v1/semantics/contract';
-import { RolesConfig } from '../contract/role';
-import { Input } from '@marlowe/language-core-v1/semantics/contract/when/input';
+import * as T from 'fp-ts/lib/Task.js'
+import * as TE from 'fp-ts/lib/TaskEither.js'
+import * as ContractCollection from '../contract/endpoints/collection.js';
+import * as TransactionCollection from '../contract/transaction/endpoints/collection.js';
+import * as WithdrawalCollection from '../contract/withdrawal/endpoints/collection.js';
+import { DecodingError } from '../common/codec.js';
+import { ContractDetails } from '../contract/details.js';
+import { pipe } from 'fp-ts/lib/function.js'
+import { ContractId }  from '../contract/id.js';
+import * as Contracts from '../contract/id.js';
+import * as Tx from '../contract/transaction/id.js';
+import * as Transaction from '../contract/transaction/details.js';
+import * as Withdrawal from '../contract/withdrawal/details.js';
+import * as WithdrawalId from '../contract/withdrawal/id.js';
+import { RuntimeRestAPI } from '../restAPI.js';
+import { WalletAPI, getAddressesAndCollaterals } from '../wallet/api.js';
+import { Metadata, Tags } from '../common/metadata/index.js';
+import { MarloweVersion } from '../common/version.js';
+import { Contract } from '@marlowe/language-core-v1/semantics/contract/index.js';
+import { RolesConfig } from '../contract/role.js';
+import { Input } from '@marlowe/language-core-v1/semantics/contract/when/input/index.js';
 import { ISO8601 } from '@marlowe/legacy-adapter/time';
 
 

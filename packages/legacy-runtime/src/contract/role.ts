@@ -1,6 +1,6 @@
-import { AddressBech32 } from "../common/address";
+import { AddressBech32 } from "../common/address.js";
 import * as t from "io-ts"
-import { PolicyId } from "@marlowe/language-core-v1/semantics/contract/common/policyId";
+import { PolicyId } from "@marlowe/language-core-v1/semantics/contract/common/policyId.js";
 import { optionFromNullable } from "io-ts-types";
 
 export type  RoleName = string

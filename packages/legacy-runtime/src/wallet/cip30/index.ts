@@ -1,18 +1,18 @@
-import * as T from 'fp-ts/Task'
-import * as TE from 'fp-ts/TaskEither'
-import { pipe } from 'fp-ts/lib/function';
-import { MarloweTxCBORHex, HexTransactionWitnessSet } from '../../common/textEnvelope';
-import { WalletAPI } from '../api';
-import { AddressBech32, deserializeAddress } from '../../common/address';
-import * as A from 'fp-ts/Array'
+import * as T from 'fp-ts/lib/Task.js'
+import * as TE from 'fp-ts/lib/TaskEither.js'
+import { pipe } from 'fp-ts/lib/function.js';
+import { MarloweTxCBORHex, HexTransactionWitnessSet } from '../../common/textEnvelope.js';
+import { WalletAPI } from '../api.js';
+import { AddressBech32, deserializeAddress } from '../../common/address.js';
+import * as A from 'fp-ts/lib/Array.js'
 
-import { TxOutRef } from '../../common/tx/outRef';
-import { deserializeCollateral } from '../../common/tx/collateral';
-import { token } from '@marlowe/language-core-v1/semantics/contract/common/token';
+import { TxOutRef } from '../../common/tx/outRef.js';
+import { deserializeCollateral } from '../../common/tx/collateral.js';
+import { token } from '@marlowe/language-core-v1/semantics/contract/common/token.js';
 
 
 import * as CSL from '@emurgo/cardano-serialization-lib-browser'
-import { TokenValue, lovelaceValue, tokenValue } from '@marlowe/language-core-v1/semantics/contract/common/tokenValue';
+import { TokenValue, lovelaceValue, tokenValue } from '@marlowe/language-core-v1/semantics/contract/common/tokenValue.js';
 
 
 export const getExtensionInstance : (extensionName : string) => T.Task<WalletAPI> = (extensionName) =>

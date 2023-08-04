@@ -3,8 +3,8 @@
 /* eslint-disable no-use-before-define */
 import axios from 'axios';
 import { AxiosInstance, AxiosResponse } from 'axios';
-import * as TE from 'fp-ts/TaskEither'
-import { flow, identity } from 'fp-ts/lib/function';
+import * as TE from 'fp-ts/lib/TaskEither.js'
+import { flow, identity } from 'fp-ts/lib/function.js';
 import { JsonAlwayAndOnlyBigInt } from '@marlowe/legacy-adapter/json';
 
 

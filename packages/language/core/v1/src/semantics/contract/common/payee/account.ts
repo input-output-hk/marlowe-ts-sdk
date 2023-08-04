@@ -1,6 +1,6 @@
 import * as t from "io-ts";
-import { Party } from "./party";
-import { Token } from "../token";
+import { Party } from "./party.js";
+import { Token } from "../token.js";
 
 export type AccountId =  t.TypeOf<typeof Party>
 export const AccountId = Party

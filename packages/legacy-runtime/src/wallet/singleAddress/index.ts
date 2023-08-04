@@ -1,17 +1,17 @@
-import { pipe } from 'fp-ts/function';
-import * as A from 'fp-ts/Array';
+import { pipe } from 'fp-ts/lib/function.js';
+import * as A from 'fp-ts/lib/Array.js';
 import * as API from '@blockfrost/blockfrost-js'
 import { Blockfrost, Lucid, C, Network, PrivateKey, PolicyId, getAddressDetails, toUnit, fromText, NativeScript, Tx , TxSigned, TxComplete, Script, fromHex, toHex, Core, fromUnit, Unit } from 'lucid-cardano';
-import * as O from 'fp-ts/Option'
+import * as O from 'fp-ts/lib/Option.js'
 import { log } from '@marlowe/legacy-adapter/logging'
-import * as TE from 'fp-ts/TaskEither'
-import * as T from 'fp-ts/Task'
-import { WalletAPI } from '../api';
-import { addressBech32, AddressBech32, unAddressBech32 } from '../../common/address';
-import { HexTransactionWitnessSet , MarloweTxCBORHex} from '../../common/textEnvelope';
-import { TxOutRef } from '../../common/tx/outRef';
-import { Token, token } from '@marlowe/language-core-v1/semantics/contract/common/token';
-import { TokenValue, adaValue, tokenValue } from '@marlowe/language-core-v1/semantics/contract/common/tokenValue';
+import * as TE from 'fp-ts/lib/TaskEither.js'
+import * as T from 'fp-ts/lib/Task.js'
+import { WalletAPI } from '../api.js';
+import { addressBech32, AddressBech32, unAddressBech32 } from '../../common/address.js';
+import { HexTransactionWitnessSet , MarloweTxCBORHex} from '../../common/textEnvelope.js';
+import { TxOutRef } from '../../common/tx/outRef.js';
+import { Token, token } from '@marlowe/language-core-v1/semantics/contract/common/token.js';
+import { TokenValue, adaValue, tokenValue } from '@marlowe/language-core-v1/semantics/contract/common/tokenValue.js';
 
 
 export type Address = string;

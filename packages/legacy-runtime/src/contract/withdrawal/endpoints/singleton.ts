@@ -2,16 +2,16 @@
 /* eslint-disable sort-keys-fix/sort-keys-fix */
 /* eslint-disable no-use-before-define */
 import { AxiosInstance } from 'axios';
-import * as E from 'fp-ts/Either'
-import * as TE from 'fp-ts/TaskEither'
-import { pipe } from 'fp-ts/lib/function';
-import * as HTTP from '../../../common/http';
-import { HexTransactionWitnessSet, transactionWitnessSetTextEnvelope } from '../../../common/textEnvelope';
+import * as E from 'fp-ts/lib/Either.js'
+import * as TE from 'fp-ts/lib/TaskEither.js'
+import { pipe } from 'fp-ts/lib/function.js';
+import * as HTTP from '../../../common/http.js';
+import { HexTransactionWitnessSet, transactionWitnessSetTextEnvelope } from '../../../common/textEnvelope.js';
 
 import {formatValidationErrors} from 'jsonbigint-io-ts-reporters'
-import { DecodingError } from '../../../common/codec';
-import { unWithdrawalId, WithdrawalId } from '../id';
-import { Details } from '../details';
+import { DecodingError } from '../../../common/codec.js';
+import { unWithdrawalId, WithdrawalId } from '../id.js';
+import { Details } from '../details.js';
 
 
 export type GET = ( withdrawalId: WithdrawalId) => TE.TaskEither<Error | DecodingError, Details>

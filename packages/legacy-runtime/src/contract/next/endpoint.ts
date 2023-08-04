@@ -1,14 +1,14 @@
 import { AxiosInstance } from 'axios';
-import * as E from 'fp-ts/Either'
-import * as TE from 'fp-ts/TaskEither'
-import { pipe } from 'fp-ts/lib/function';
-import * as HTTP from '../../common/http';
+import * as E from 'fp-ts/lib/Either.js'
+import * as TE from 'fp-ts/lib/TaskEither.js'
+import { pipe } from 'fp-ts/lib/function.js';
+import * as HTTP from '../../common/http.js';
 import {formatValidationErrors} from 'jsonbigint-io-ts-reporters'
-import { DecodingError } from '../../common/codec';
-import { ContractId, unContractId } from '../id';
-import { Environment } from '@marlowe/language-core-v1/semantics/environment';
-import { Next } from '@marlowe/language-core-v1/semantics/next';
-import { Party } from '@marlowe/language-core-v1/semantics/contract/common/payee/party';
+import { DecodingError } from '../../common/codec.js';
+import { ContractId, unContractId } from '../id.js';
+import { Environment } from '@marlowe/language-core-v1/environment';
+import { Next } from '@marlowe/language-core-v1/next';
+import { Party } from '@marlowe/language-core-v1/semantics/contract/common/payee/party.js';
 import { stringify } from 'qs';
 
 export type GET

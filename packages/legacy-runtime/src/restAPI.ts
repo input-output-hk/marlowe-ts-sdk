@@ -1,16 +1,16 @@
 
 import axios, { AxiosInstance } from 'axios';
-import * as TE from 'fp-ts/TaskEither'
-import * as HTTP from './common/http';
-import * as WithdrawalSingleton from './contract/withdrawal/endpoints/singleton';
-import * as WithdrawalCollection from './contract/withdrawal/endpoints/collection';
-import * as ContractSingleton from './contract/endpoints/singleton';
-import * as ContractCollection from './contract/endpoints/collection';
-import * as TransactionSingleton from './contract/transaction/endpoints/singleton';
-import * as TransactionCollection from './contract/transaction/endpoints/collection';
-import * as ContractNext from './contract/next/endpoint';
+import * as TE from 'fp-ts/lib/TaskEither.js'
+import * as HTTP from './common/http.js';
+import * as WithdrawalSingleton from './contract/withdrawal/endpoints/singleton.js';
+import * as WithdrawalCollection from './contract/withdrawal/endpoints/collection.js';
+import * as ContractSingleton from './contract/endpoints/singleton.js';
+import * as ContractCollection from './contract/endpoints/collection.js';
+import * as TransactionSingleton from './contract/transaction/endpoints/singleton.js';
+import * as TransactionCollection from './contract/transaction/endpoints/collection.js';
+import * as ContractNext from './contract/next/endpoint.js';
 import { JsonAlwayAndOnlyBigInt, MarloweJSONCodec } from '@marlowe/legacy-adapter/json';
-import { pipe } from 'fp-ts/lib/function';
+import { pipe } from 'fp-ts/lib/function.js';
 
 
 export interface RuntimeRestAPI {

@@ -1,14 +1,14 @@
 import * as t from "io-ts";
-import { Contract } from ".";
-import { Observation } from "./common/observations";
+import { Contract } from "./index.js";
+import { Observation } from "./common/observations.js";
 
-export type If 
+export type If
   = { if: Observation
     , then: Contract
     , else: Contract }
 
-export const If : t.Type<If> 
-    = t.recursion('If', () => 
+export const If : t.Type<If>
+    = t.recursion('If', () =>
         t.type ({ if: Observation
                 , then: Contract
-                , else: Contract })) 
+                , else: Contract }))

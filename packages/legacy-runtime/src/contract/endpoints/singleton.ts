@@ -1,15 +1,15 @@
 
 import { AxiosInstance } from 'axios';
-import * as E from 'fp-ts/Either'
-import * as TE from 'fp-ts/TaskEither'
-import { pipe } from 'fp-ts/lib/function';
-import * as HTTP from '../../common/http';
-import { HexTransactionWitnessSet, transactionWitnessSetTextEnvelope } from '../../common/textEnvelope';
-import { ContractDetails } from '../details';
+import * as E from 'fp-ts/lib/Either.js'
+import * as TE from 'fp-ts/lib/TaskEither.js'
+import { pipe } from 'fp-ts/lib/function.js';
+import * as HTTP from '../../common/http.js';
+import { HexTransactionWitnessSet, transactionWitnessSetTextEnvelope } from '../../common/textEnvelope.js';
+import { ContractDetails } from '../details.js';
 import * as t from "io-ts";
 import {formatValidationErrors} from 'jsonbigint-io-ts-reporters'
-import { DecodingError } from '../../common/codec';
-import { ContractId, unContractId } from '../id';
+import { DecodingError } from '../../common/codec.js';
+import { ContractId, unContractId } from '../id.js';
 
 export type GET = ( contractId: ContractId) => TE.TaskEither<Error | DecodingError, ContractDetails>
 

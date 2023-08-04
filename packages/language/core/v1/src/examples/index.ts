@@ -1,4 +1,4 @@
-export * as SwapADAToken from './swaps/swap-token-token';
+export * as SwapADAToken from './swaps/swap-token-token.js';
 
 
 

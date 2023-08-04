@@ -1,20 +1,20 @@
-import { DecodingError } from './common/codec';
-import { ContractId } from './contract/id';
-import { RuntimeRestAPI } from './restAPI';
-import { ApplyInputsPayload, InitialisePayload, WithdrawPayload } from './write/command';
-import * as Command from './write/command';
-import * as Withdrawal from './contract/withdrawal/details';
-import * as TE from 'fp-ts/TaskEither'
-import * as T from 'fp-ts/Task'
-import { pipe } from 'fp-ts/lib/function';
-import * as O from 'fp-ts/Option'
-import { WalletAPI } from './wallet/api';
-import { mkEnvironment } from '@marlowe/language-core-v1/semantics/environment';
+import { DecodingError } from './common/codec.js';
+import { ContractId } from './contract/id.js';
+import { RuntimeRestAPI } from './restAPI.js';
+import { ApplyInputsPayload, InitialisePayload, WithdrawPayload } from './write/command.js';
+import * as Command from './write/command.js';
+import * as Withdrawal from './contract/withdrawal/details.js';
+import * as A from 'fp-ts/lib/Array.js'
+import * as TE from 'fp-ts/lib/TaskEither.js'
+import * as T from 'fp-ts/lib/Task.js'
+import { pipe } from 'fp-ts/lib/function.js';
+import * as O from 'fp-ts/lib/Option.js'
+import { WalletAPI } from './wallet/api.js';
+import { mkEnvironment } from '@marlowe/language-core-v1/environment';
 import { addMinutes, subMinutes } from 'date-fns';
-import { Next } from '@marlowe/language-core-v1/semantics/next';
-import { Party } from '@marlowe/language-core-v1/semantics/contract/common/payee/party';
-import { PolicyId } from './common/policyId';
-import * as A from 'fp-ts/Array'
+import { Next } from '@marlowe/language-core-v1/semantics/next/index.js';
+import { Party } from '@marlowe/language-core-v1/semantics/contract/common/payee/party.js';
+import { PolicyId } from './common/policyId.js';
 
 export type Runtime =
   { wallet : WalletAPI

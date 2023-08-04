@@ -1,7 +1,7 @@
 import * as t from "io-ts";
-import * as C from 'io-ts/Codec'
-import * as D from 'io-ts/Decoder'
-import * as E from 'io-ts/Encoder'
+import * as C from 'io-ts/lib/Codec.js'
+import * as D from 'io-ts/lib/Decoder.js'
+import * as E from 'io-ts/lib/Encoder.js'
 import JSONbig from 'json-bigint'; //(({useNativeBigInt:false}))
 
 export const JsonAlwayAndOnlyBigInt = JSONbig ({

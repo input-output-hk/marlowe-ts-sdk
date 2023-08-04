@@ -1,9 +1,9 @@
-import { mkRuntimeRestAPI } from './restAPI';
-import * as T from 'fp-ts/Task'
-import { pipe } from 'fp-ts/lib/function';
+import { mkRuntimeRestAPI } from './restAPI.js';
+import * as T from 'fp-ts/lib/Task.js'
+import { pipe } from 'fp-ts/lib/function.js';
 
-import { getExtensionInstance } from './wallet/cip30/index.ts';
-import { mkRuntime, Runtime } from '.';
+import { getExtensionInstance } from './wallet/cip30/index.js';
+import { mkRuntime, Runtime } from './index.js';
 
 export const mkRuntimeCIP30
   : (runtimeURL : string)

@@ -1,9 +1,9 @@
 
 
 import * as t from "io-ts";
-import { identity } from 'fp-ts/lib/function'
+import { identity } from 'fp-ts/lib/function.js'
 import { failure, success, Type } from 'io-ts'
-import {PositiveBigInt} from 'io-ts-bigint'                
+import {PositiveBigInt} from 'io-ts-bigint'
 
 
 export function isBigIntOrNumber(u: unknown): u is (bigint | number)  {
@@ -18,8 +18,7 @@ export const bigint = new Type<bigint | number, bigint, unknown>(
     )
 
 export type BlockHeader = t.TypeOf<typeof BlockHeader>
-export const BlockHeader = t.type({ slotNo:bigint  
-                                  , blockNo:bigint 
+export const BlockHeader = t.type({ slotNo:bigint
+                                  , blockNo:bigint
                                   , blockHeaderHash:t.string})
 
-                

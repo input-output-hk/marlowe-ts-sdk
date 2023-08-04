@@ -1,14 +1,14 @@
 import { optionFromNullable } from "io-ts-types";
 import * as t from "io-ts";
-import { AccountId } from "../../contract/common/payee/account";
-import { Party } from "../../contract/common/payee/party";
-import { Token } from "../../contract/common/token";
-import { IsMerkleizedContinuation } from "../common/IsMerkleizedContinuation";
-import { CaseIndex } from "../common/caseIndex";
-import { InputDeposit } from "../../contract/when/input/deposit";
+import { AccountId } from "../../contract/common/payee/account.js";
+import { Party } from "../../contract/common/payee/party.js";
+import { Token } from "../../contract/common/token.js";
+import { IsMerkleizedContinuation } from "../common/IsMerkleizedContinuation.js";
+import { CaseIndex } from "../common/caseIndex.js";
+import { InputDeposit } from "../../contract/when/input/deposit.js";
 
 export type CanDeposit = t.TypeOf<typeof CanDeposit>
-export const CanDeposit 
+export const CanDeposit
     = t.type(
         { case_index: CaseIndex
         , party : Party
@@ -19,7 +19,7 @@ export const CanDeposit
     })
 
 export const toInput : (canDeposit : CanDeposit) => (InputDeposit) =
-  (canDeposit) => 
+  (canDeposit) =>
     ({input_from_party: canDeposit.party
      , that_deposits: canDeposit.can_deposit
      , of_token: canDeposit.of_token

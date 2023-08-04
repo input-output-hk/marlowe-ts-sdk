@@ -1,29 +1,29 @@
 import * as t from "io-ts";
 import { Newtype, iso } from 'newtype-ts'
-import * as E from 'fp-ts/Either'
-import * as A from 'fp-ts/Array'
-import * as O from 'fp-ts/lib/Option';
-import * as TE from 'fp-ts/TaskEither'
+import * as E from 'fp-ts/lib/Either.js'
+import * as A from 'fp-ts/lib/Array.js'
+import * as O from 'fp-ts/lib/Option.js';
+import * as TE from 'fp-ts/lib/TaskEither.js'
 import { formatValidationErrors } from "jsonbigint-io-ts-reporters";
 import { fromNewtype, optionFromNullable } from 'io-ts-types';
-import { pipe } from 'fp-ts/lib/function';
+import { pipe } from 'fp-ts/lib/function.js';
 
 import { AxiosInstance } from "axios";
 
-import * as HTTP from '../../../common/http';
-import { unAddressBech32 } from "../../../common/address";
-import { Metadata } from "../../../common/metadata";
-import { AddressesAndCollaterals } from "../../../wallet/api";
-import { DecodingError } from "../../../common/codec";
-import { TextEnvelope } from "../../../common/textEnvelope";
-import { MarloweVersion } from "../../../common/version";
+import * as HTTP from '../../../common/http.js';
+import { unAddressBech32 } from "../../../common/address.js";
+import { Metadata } from "../../../common/metadata/index.js";
+import { AddressesAndCollaterals } from "../../../wallet/api.js";
+import { DecodingError } from "../../../common/codec.js";
+import { TextEnvelope } from "../../../common/textEnvelope.js";
+import { MarloweVersion } from "../../../common/version.js";
 import { ISO8601 } from "@marlowe/legacy-adapter/time";
-import { Tags } from "../../../common/metadata/tag";
-import { Input } from "@marlowe/language-core-v1/semantics/contract/when/input";
-import { Header } from "../header";
-import { TransactionId } from ".././id";
-import { ContractId, unContractId } from "../../id";
-import { unTxOutRef } from "../../../common/tx/outRef";
+import { Tags } from "../../../common/metadata/tag.js";
+import { Input } from "@marlowe/language-core-v1/semantics/contract/when/input/index.js";
+import { Header } from "../header.js";
+import { TransactionId } from ".././id.js";
+import { ContractId, unContractId } from "../../id.js";
+import { unTxOutRef } from "../../../common/tx/outRef.js";
 
 export interface TransactionsRange extends Newtype<{ readonly TransactionsRange: unique symbol }, string> {}
 export const TransactionsRange = fromNewtype<TransactionsRange>(t.string)

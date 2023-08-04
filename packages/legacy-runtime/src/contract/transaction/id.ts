@@ -2,8 +2,8 @@
 import * as t from "io-ts";
 import { iso, Newtype } from "newtype-ts";
 import { fromNewtype } from "io-ts-types";
-import { TxId } from "../../common/tx/id";
-import { pipe } from "fp-ts/lib/function";
+import { TxId } from "../../common/tx/id.js";
+import { pipe } from "fp-ts/lib/function.js";
 
 export type TransactionId = Newtype<{ readonly TransactionId: unique symbol }, string>
 export const TransactionId = fromNewtype<TransactionId>(t.string)

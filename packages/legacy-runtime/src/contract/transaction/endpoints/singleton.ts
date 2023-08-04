@@ -1,16 +1,16 @@
 
-import * as TE from 'fp-ts/TaskEither'
-import * as E from 'fp-ts/Either'
-import * as HTTP from '../../../common/http';
-import { pipe } from 'fp-ts/lib/function';
+import * as TE from 'fp-ts/lib/TaskEither.js'
+import * as E from 'fp-ts/lib/Either.js'
+import * as HTTP from '../../../common/http.js';
+import { pipe } from 'fp-ts/lib/function.js';
 import { AxiosInstance } from "axios";
-import { TransactionId, unTransactionId } from "../id";
-import { ContractId, unContractId } from "../../id";
-import { DecodingError } from "../../../common/codec";
+import { TransactionId, unTransactionId } from "../id.js";
+import { ContractId, unContractId } from "../../id.js";
+import { DecodingError } from "../../../common/codec.js";
 import * as t from "io-ts";
 import { formatValidationErrors } from "jsonbigint-io-ts-reporters";
-import { Details } from "../details";
-import { HexTransactionWitnessSet, transactionWitnessSetTextEnvelope } from "../../../common/textEnvelope";
+import { Details } from "../details.js";
+import { HexTransactionWitnessSet, transactionWitnessSetTextEnvelope } from "../../../common/textEnvelope.js";
 
 export type GET = ( contractId: ContractId, transactionId : TransactionId) => TE.TaskEither<Error | DecodingError, Details>
 

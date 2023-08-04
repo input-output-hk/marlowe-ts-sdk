@@ -17,6 +17,7 @@
     "clean": "tsc --build --clean src ",
     "test": "jest --config  ../../../../jest.config.js"
   },
+  "type": "module",
   "exports": {
     ".": "./dist/semantics/contract/index.js",
     "./examples": "./dist/examples/index.js",
