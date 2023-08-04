@@ -11,7 +11,7 @@ To build all packages
 $ npm run build
 ```
 
-To build a particular package
+To build a single package
 ```
 # From the root folder
 $ npm run build -w @marlowe/language-core-v1
@@ -26,8 +26,8 @@ To clean all packages
 $ npm run clean
 ```
 
+
 TODO migrage
-    "build": "rm -fr dist/* && tsc -p tsconfig.json && tsc -p tsconfig-cjs.json && ./fixup",
     "test": "yarn node --experimental-vm-modules $(yarn bin jest -c ./jest.config.js)"
 
 
