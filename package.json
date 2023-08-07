@@ -18,7 +18,7 @@
   "scripts": {
     "build": "tsc --build && rollup --config rollup/legacy-runtime-esm.config.mjs",
     "clean": "npm run clean --workspaces && shx rm -rf dist",
-    "test": "npm run test --workspaces",
+    "test": "NODE_OPTIONS='--experimental-vm-modules --no-warnings' jest",
     "docs": "typedoc ."
   },
   "workspaces": [

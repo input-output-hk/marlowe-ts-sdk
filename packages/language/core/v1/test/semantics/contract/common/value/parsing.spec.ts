@@ -1,14 +1,14 @@
 
-import * as TE from 'fp-ts/TaskEither'
-import * as E from 'fp-ts/Either'
+import * as TE from 'fp-ts/lib/TaskEither.js'
+import * as E from 'fp-ts/lib/Either.js'
 
-import { pipe } from 'fp-ts/lib/function';
+import { pipe } from 'fp-ts/lib/function.js';
 import {formatValidationErrors} from 'jsonbigint-io-ts-reporters'
-import {Value} from '../../../../../../../../src/language/core/v1/semantics/contract/common/value'
+import { Value } from '@marlowe/language-core-v1'
 import * as path from 'path'
-import { MarloweJSONCodec, minify } from '../../../../../../../../src/adapter/json';
-import {  getFileContents } from '../../../../../../../adapter/file';
+import { MarloweJSONCodec, minify } from '@marlowe/legacy-adapter/json';
 import { fileURLToPath } from 'url';
+import { getFileContents } from '../../../../adapter/file.js';
 
 
 const getfilename = () => fileURLToPath(import.meta.url);
@@ -17,19 +17,19 @@ export const currentDirectoryPath  = () => path.dirname(getfilename());
 describe('value', () => {
 
   it.each(['value'])
-    ('(%p) can be decoded/encoded and is isomorphic', async (filename) => {                           
-    
-    await pipe( TE.Do 
+    ('(%p) can be decoded/encoded and is isomorphic', async (filename) => {
+
+    await pipe( TE.Do
               , TE.bind('uncoded', () =>  getFileContents(path.join(currentDirectoryPath(), `/jsons/${filename}.json`)))
               , TE.bind('decoded', ({uncoded}) => TE.of(MarloweJSONCodec.decode(uncoded)))
-              , TE.bindW('typed', ({decoded}) => 
+              , TE.bindW('typed', ({decoded}) =>
                       TE.fromEither(pipe( Value.decode(decoded)
                                         , E.mapLeft(formatValidationErrors))))
               , TE.bindW('encoded', ({typed}) => TE.of(MarloweJSONCodec.encode(typed)))
               , TE.match(
                     (e) => { console.dir(e, { depth: null }); expect(e).not.toBeDefined()},
                     ({encoded,uncoded}) => {expect(minify(encoded)).toEqual(minify(uncoded))})) ()
-                              
+
   })
 
 })

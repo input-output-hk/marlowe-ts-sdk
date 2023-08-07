@@ -18,7 +18,7 @@
         "strict": true,
         "traceResolution": false,
         "strictPropertyInitialization":false,
-        "types": ["node", "jest"],
+        "types": ["node"],
         "composite": true
     },
     "compileOnSave": false,

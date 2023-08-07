@@ -1,5 +1,6 @@
-/** @type {import('ts-jest').JestConfigWithTsJest} */
 module.exports = {
-  preset: "ts-jest",
   testEnvironment: "node",
+  projects: [
+    '<rootDir>/packages/language/core/v1/test/jest.unit.config.mjs'
+  ]
 };

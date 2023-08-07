@@ -13,7 +13,9 @@ export { If } from "./if.js";
 export { Let } from "./let.js";
 export { Pay } from "./pay.js";
 export { When } from "./when/index.js";
-
+export { Action } from "./when/action/index.js";
+export { Value } from "./common/value.js";
+export { Accounts } from "./common/payee/account.js";
 
 export type Contract =
   | Close
