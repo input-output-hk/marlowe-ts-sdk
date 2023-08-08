@@ -1,15 +1,15 @@
-import { pipe } from 'fp-ts/function'
-import * as Examples from '../../../src/language/core/v1/examples/swaps/swap-token-token'
-import { addDays } from 'date-fns/fp'
-import * as TE from 'fp-ts/TaskEither'
-import * as O from 'fp-ts/Option'
-import { getBankPrivateKey, getBlockfrostContext, getMarloweRuntimeUrl } from '../context';
-import { datetoTimeout } from '../../../src/language/core/v1/semantics/contract/when'
-import { mkRuntimeRestAPI } from '../../../src/runtime/restAPI'
-import { provisionAnAdaAndTokenProvider } from '../provisionning'
-import { adaValue } from '../../../src/language/core/v1/semantics/contract/common/tokenValue'
-import { toInput } from '../../../src/language/core/v1/semantics/next/applicables/canDeposit'
+import { pipe } from 'fp-ts/lib/function.js';
+import * as TE from 'fp-ts/lib/TaskEither.js';
+import * as O from 'fp-ts/lib/Option.js';
+import { addDays } from 'date-fns/fp';
 
+import * as Examples from '@marlowe/language-core-v1/examples';
+import { datetoTimeout, adaValue } from '@marlowe/language-core-v1';
+import { toInput } from '@marlowe/language-core-v1/next';
+import { mkRuntimeRestAPI } from '@marlowe/legacy-runtime/restAPI';
+
+import { getBankPrivateKey, getBlockfrostContext, getMarloweRuntimeUrl } from '../context.js';
+import { provisionAnAdaAndTokenProvider } from '../provisionning.js';
 
 describe('withdrawals endpoints ', () => {
 
@@ -34,7 +34,7 @@ describe('withdrawals endpoints ', () => {
                   , depositTimeout : pipe(Date.now(),addDays(2),datetoTimeout)
                   , value : tokenValueMinted}
               }))
-          , TE.let (`swapContract`, ({swapRequest}) => Examples.mkSwapContract(swapRequest))
+          , TE.let (`swapContract`, ({swapRequest}) => Examples.SwapADAToken.mkSwapContract(swapRequest))
           , TE.bindW('contractId',({runtime,adaProvider,tokenProvider,swapRequest,swapContract}) =>
               pipe( runtime(adaProvider).initialise
                       ( { contract: swapContract

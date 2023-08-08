@@ -1,17 +1,19 @@
-import { pipe } from 'fp-ts/lib/function.js';
-import * as A from 'fp-ts/lib/Array.js';
 import * as API from '@blockfrost/blockfrost-js'
 import { Blockfrost, Lucid, C, Network, PrivateKey, PolicyId, getAddressDetails, toUnit, fromText, NativeScript, Tx , TxSigned, TxComplete, Script, fromHex, toHex, Core, fromUnit, Unit } from 'lucid-cardano';
+import * as A from 'fp-ts/lib/Array.js';
+import { pipe } from 'fp-ts/lib/function.js';
 import * as O from 'fp-ts/lib/Option.js'
-import { log } from '@marlowe/legacy-adapter/logging'
 import * as TE from 'fp-ts/lib/TaskEither.js'
 import * as T from 'fp-ts/lib/Task.js'
+
+import { Token, token, TokenValue, adaValue, tokenValue  } from '@marlowe/language-core-v1';
+import { log } from '@marlowe/legacy-adapter/logging'
+
 import { WalletAPI } from '../api.js';
 import { addressBech32, AddressBech32, unAddressBech32 } from '../../common/address.js';
 import { HexTransactionWitnessSet , MarloweTxCBORHex} from '../../common/textEnvelope.js';
 import { TxOutRef } from '../../common/tx/outRef.js';
-import { Token, token } from '@marlowe/language-core-v1/semantics/contract/common/token.js';
-import { TokenValue, adaValue, tokenValue } from '@marlowe/language-core-v1/semantics/contract/common/tokenValue.js';
+export { PrivateKeysAsHex } from "./privateKeys.js";
 
 
 export type Address = string;

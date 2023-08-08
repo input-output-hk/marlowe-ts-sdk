@@ -1,33 +1,30 @@
 
 import { AxiosInstance, ParamEncoder, ParamsSerializerOptions } from 'axios';
 
+import * as t from "io-ts";
 import * as TE from 'fp-ts/lib/TaskEither.js'
 import { pipe } from 'fp-ts/lib/function.js';
-import { Newtype, iso } from 'newtype-ts'
-import * as HTTP from '../../common/http.js';
-import { Header } from '../header.js';
-
-import { RolesConfig } from '../role.js';
-
-import { Metadata, Tag, Tags } from '../../common/metadata/index.js';
-
-import { TextEnvelope } from '../../common/textEnvelope.js';
-import { ContractId } from '../id.js';
-import * as t from "io-ts";
-import { formatValidationErrors } from 'jsonbigint-io-ts-reporters'
-import { DecodingError } from '../../common/codec.js';
 import * as E from 'fp-ts/lib/Either.js'
 import * as A from 'fp-ts/lib/Array.js'
+import * as O from 'fp-ts/lib/Option.js';
+import { Newtype, iso } from 'newtype-ts'
+import { formatValidationErrors } from 'jsonbigint-io-ts-reporters'
+import { fromNewtype, optionFromNullable } from 'io-ts-types';
+import { stringify } from 'qs';
+
+import { Contract } from '@marlowe/language-core-v1';
+
+import * as HTTP from '../../common/http.js';
+import { Header } from '../header.js';
+import { RolesConfig } from '../role.js';
+import { Metadata, Tag, Tags } from '../../common/metadata/index.js';
+import { TextEnvelope } from '../../common/textEnvelope.js';
+import { ContractId } from '../id.js';
+import { DecodingError } from '../../common/codec.js';
 import { MarloweVersion } from '../../common/version.js';
 import { unAddressBech32 } from '../../common/address.js';
-
-import { fromNewtype, optionFromNullable } from 'io-ts-types';
-import * as O from 'fp-ts/lib/Option.js';
-import { Contract } from '@marlowe/language-core-v1/semantics/contract/index.js';
 import { AddressesAndCollaterals } from '../../wallet/api.js';
-import { stringify } from 'qs';
 import { unTxOutRef } from '../../common/tx/outRef.js';
-
 
 export interface ContractsRange extends Newtype<{ readonly ContractsRange: unique symbol }, string> {}
 export const ContractsRange = fromNewtype<ContractsRange>(t.string)

@@ -1,17 +1,26 @@
+# WIP WARNING
+> The TypeScript SDK is a work in progress, it's API might change so use with caution.
+
 # Marlowe TS-SDK
-TODO
+The Marlowe TypeScript SDK is a set of libraries and utilities to work with Marlowe contracts. The project uses [npm workspaces](https://docs.npmjs.com/cli/v7/using-npm/workspaces) to divide itself in the following packages:
+
+* `language/core/v1`: The `@marlowe/language-core-v1` library that contains the core Marlowe language definitions and utilities.
+* `legacy-adapter`: The `@marlowe/legacy-adapter` library that contains common utilities.
+* `legacy-runtime`: The `@marlowe/legacy-runtime` library that contains the initial abstraction over the Marlowe runtime
 
 ## Developer notes
 
 ### Build
 
-To build all packages
+In order to start develop the SDK you need to install the dependencies and build the packages.
 
 ```
+$ npm i
 $ npm run build
 ```
 
-To build a single package
+If you want to build a single package you can use the `-w` flag or execute the build command from the package folder.
+
 ```
 # From the root folder
 $ npm run build -w @marlowe/language-core-v1
@@ -20,20 +29,21 @@ $ cd packages/language/core/v1
 $ npm run build
 ```
 
-To clean all packages
+In order to clean the build artifacts you can use the `clean` command.
 
 ```
 $ npm run clean
 ```
 
+To run the unit test you can execute the `test` command.
 
-TODO migrage
-    "test": "yarn node --experimental-vm-modules $(yarn bin jest -c ./jest.config.js)"
+```
+$ npm run test
+```
 
+### E2E tests
 
-### Run tests
-
-
+TODO: Fix the E2E tests
 In order to run the E2E tests you need to create a `env/.env.test` file that points to a working version of the marlowe runtime and a working Blockfrost instance and a faucet PK
 
 TODO: explain how to get the Faucet PK

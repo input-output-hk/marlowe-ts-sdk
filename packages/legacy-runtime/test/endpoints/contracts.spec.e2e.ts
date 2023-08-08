@@ -1,15 +1,14 @@
 
-import { pipe } from 'fp-ts/function'
-import * as O from 'fp-ts/lib/Option';
-import * as TE from 'fp-ts/TaskEither'
-import { close } from '../../../src/language/core/v1/semantics/contract/close'
-import { mkRuntimeRestAPI } from '../../../src/runtime/restAPI';
-import { initialise } from '../../../src/runtime/write/command';
-import { initialiseBankAndverifyProvisionning } from '../provisionning'
-import { getBankPrivateKey, getBlockfrostContext, getMarloweRuntimeUrl } from '../context';
-import { RolesConfig } from '../../../src/runtime/contract/role';
-import { unAddressBech32 } from '../../../src/runtime/common/address';
+import { pipe } from 'fp-ts/lib/function.js'
+import * as TE from 'fp-ts/lib/TaskEither.js';
+import * as O from 'fp-ts/lib/Option.js';
 
+import { close } from '@marlowe/language-core-v1'
+import { mkRuntimeRestAPI } from '@marlowe/legacy-runtime/restAPI';
+import { initialise } from '@marlowe/legacy-runtime/write/command';
+
+import { initialiseBankAndverifyProvisionning } from '../provisionning.js';
+import { getBankPrivateKey, getBlockfrostContext, getMarloweRuntimeUrl } from '../context.js';
 
 describe('contracts endpoints', () => {
 

@@ -15,14 +15,18 @@
   "scripts": {
     "build": "tsc --build src",
     "clean": "tsc --build --clean src",
-    "test": "echo 'runtime test'"
+    "test": "echo 'The legact runtime doesnt have unit tests'",
+    "test:e2e": "NODE_OPTIONS='--experimental-vm-modules --no-warnings' jest --config test/jest.e2e.config.mjs",
+    "build:e2e": "tsc --build test"
   },
   "type": "module",
   "exports": {
     ".": "./dist/index.js",
     "./restAPI": "./dist/restAPI.js",
     "./runtimeCIP30": "./dist/runtimeCIP30.js",
-    "./runtimeSingleAddress": "./dist/runtimeSingleAddress.js"
+    "./runtimeSingleAddress": "./dist/runtimeSingleAddress.js",
+    "./transaction": "./dist/contract/transaction/index.js",
+    "./write/command": "./dist/write/command.js"
   },
   "dependencies": {
     "@blockfrost/blockfrost-js": "5.2.0",

@@ -1,10 +1,7 @@
 import * as t from "io-ts"
-import { PolicyId } from "./policyId.js";
 import * as T from "./token.js";
 
-
-
-export const toString : (token : TokenValue) => string = (tokenValue) => `${tokenValue.amount} - ${T.toString(tokenValue.token)}`
+export const toString : (token : TokenValue) => string = (tokenValue) => `${tokenValue.amount} - ${T.tokenToString(tokenValue.token)}`
 
 
 export type TokenValue = t.TypeOf<typeof TokenValue>

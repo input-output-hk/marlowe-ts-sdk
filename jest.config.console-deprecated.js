@@ -1,1 +1,0 @@
-global.console = require('console');

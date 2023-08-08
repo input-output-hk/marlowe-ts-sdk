@@ -1,35 +1,34 @@
 
-import { pipe } from 'fp-ts/function'
-import * as TE from 'fp-ts/TaskEither'
-import * as O from 'fp-ts/lib/Option';
-
-import { getBankPrivateKey, getBlockfrostContext, getMarloweRuntimeUrl } from '../context';
-import { addDays } from 'date-fns/fp'
-import { datetoTimeout } from '../../../src/language/core/v1/semantics/contract/when'
-import * as Tx from '../../../src/runtime/contract/transaction/id'
+import { pipe } from 'fp-ts/lib/function.js'
+import * as TE from 'fp-ts/lib/TaskEither.js'
+import * as O from 'fp-ts/lib/Option.js';
+import { addDays } from 'date-fns/fp';
 import { addMinutes, subMinutes } from 'date-fns'
-import { datetoIso8601, datetoIso8601Bis } from '../../../src/adapter/time'
-import { inputNotify } from '../../../src/language/core/v1/semantics/contract/when/input/notify'
-import { initialiseBankAndverifyProvisionning } from '../provisionning'
-import { oneNotifyTrue } from '../../../src/language/core/v1/examples/contract-one-notify'
-import { mkRuntimeRestAPI } from '../../../src/runtime/restAPI';
+
+import { datetoTimeout, inputNotify } from '@marlowe/language-core-v1';
+import { oneNotifyTrue } from '@marlowe/language-core-v1/examples'
+import { datetoIso8601Bis } from '@marlowe/legacy-adapter/time'
+import { mkRuntimeRestAPI } from '@marlowe/legacy-runtime/restAPI';
+
+import { getBankPrivateKey, getBlockfrostContext, getMarloweRuntimeUrl } from '../context.js';
+import { initialiseBankAndverifyProvisionning } from '../provisionning.js'
 
 
 describe('Contracts/{contractd}/Transactions endpoints', () => {
 
-  it('can Build Apply Input Tx : ' + 
-     '(can POST: /contracts/{contractId}/transactions => ask to build the Tx to apply input on an initialised Marlowe Contract)', async () => {                           
-    await  
+  it('can Build Apply Input Tx : ' +
+     '(can POST: /contracts/{contractId}/transactions => ask to build the Tx to apply input on an initialised Marlowe Contract)', async () => {
+    await
       pipe( initialiseBankAndverifyProvisionning
               (mkRuntimeRestAPI(getMarloweRuntimeUrl()))
               (getBlockfrostContext ())
-              (getBankPrivateKey()) 
+              (getBankPrivateKey())
           , TE.let (`notifyTimeout`,   () => pipe(Date.now(),addDays(1),datetoTimeout))
           , TE.bind('result',({runtimeRestAPI,runtime,bank,notifyTimeout}) =>
                 pipe
                   ( runtime.initialise
                     ( { contract: oneNotifyTrue(notifyTimeout)})
-                  , TE.chainW ((contractId) =>       
+                  , TE.chainW ((contractId) =>
                      runtimeRestAPI.contracts.contract.transactions.post
                         (contractId
                         , { version : "v1"
@@ -47,18 +46,18 @@ describe('Contracts/{contractd}/Transactions endpoints', () => {
               (e) => { console.dir(e, { depth: null }); expect(e).not.toBeDefined()},
               () => {})
           ) ()
-                              
+
   },100_000),
-  it('can Apply Inputs : ' + 
-     '(can POST: /contracts/{contractId}/transactions => ask to build the Tx to apply input on an initialised Marlowe Contract' + 
-     ' ,   PUT:  /contracts/{contractId}/transactions/{transactionId} => Append the Applied Input Tx to the ledger' + 
+  it('can Apply Inputs : ' +
+     '(can POST: /contracts/{contractId}/transactions => ask to build the Tx to apply input on an initialised Marlowe Contract' +
+     ' ,   PUT:  /contracts/{contractId}/transactions/{transactionId} => Append the Applied Input Tx to the ledger' +
      ' ,   GET:  /contracts/{contractId}/transactions/{transactionId} => retrieve the Tx state' +
      ' and GET : /contracts/{contractId}/transactions => should see the unsigned transaction listed)', async () => {
-    await  
+    await
       pipe( initialiseBankAndverifyProvisionning
               (mkRuntimeRestAPI(getMarloweRuntimeUrl()))
               (getBlockfrostContext ())
-              (getBankPrivateKey()) 
+              (getBankPrivateKey())
           , TE.let (`notifyTimeout`,   () => pipe(Date.now(),addDays(1),datetoTimeout))
           , TE.bind('result',({runtimeRestAPI,runtime,bank,notifyTimeout}) =>
                 pipe
@@ -69,7 +68,7 @@ describe('Contracts/{contractd}/Transactions endpoints', () => {
           , TE.match(
               (e) => { console.dir(e, { depth: null }); expect(e).not.toBeDefined()},
               () => {})
-          ) ()                                      
+          ) ()
   },100_000)
 })
 

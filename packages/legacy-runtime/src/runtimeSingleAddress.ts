@@ -4,7 +4,7 @@ import { pipe } from 'fp-ts/lib/function.js';
 
 import * as S from './wallet/singleAddress/index.js';
 import { mkRuntime, Runtime } from './index.js';
-
+export {Context, SingleAddressWallet, PrivateKeysAsHex, getPrivateKeyFromHexString} from './wallet/singleAddress/index.js';
 
 
 export const mkRuntimeSingleAddress

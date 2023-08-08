@@ -4,11 +4,13 @@ import * as E from 'fp-ts/lib/Either.js'
 import * as A from 'fp-ts/lib/Array.js'
 import * as O from 'fp-ts/lib/Option.js';
 import * as TE from 'fp-ts/lib/TaskEither.js'
+import { pipe } from 'fp-ts/lib/function.js';
 import { formatValidationErrors } from "jsonbigint-io-ts-reporters";
 import { fromNewtype, optionFromNullable } from 'io-ts-types';
-import { pipe } from 'fp-ts/lib/function.js';
-
 import { AxiosInstance } from "axios";
+
+import { ISO8601 } from "@marlowe/legacy-adapter/time";
+import { Input } from "@marlowe/language-core-v1";
 
 import * as HTTP from '../../../common/http.js';
 import { unAddressBech32 } from "../../../common/address.js";
@@ -17,9 +19,7 @@ import { AddressesAndCollaterals } from "../../../wallet/api.js";
 import { DecodingError } from "../../../common/codec.js";
 import { TextEnvelope } from "../../../common/textEnvelope.js";
 import { MarloweVersion } from "../../../common/version.js";
-import { ISO8601 } from "@marlowe/legacy-adapter/time";
 import { Tags } from "../../../common/metadata/tag.js";
-import { Input } from "@marlowe/language-core-v1/semantics/contract/when/input/index.js";
 import { Header } from "../header.js";
 import { TransactionId } from ".././id.js";
 import { ContractId, unContractId } from "../../id.js";

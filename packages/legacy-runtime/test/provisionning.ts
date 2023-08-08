@@ -1,24 +1,22 @@
-import * as TE from 'fp-ts/TaskEither'
-import * as T from 'fp-ts/Task'
-import { pipe } from 'fp-ts/function'
-import { Context, SingleAddressWallet } from '../../src/wallet/singleAddress'
-import {PrivateKeysAsHex} from '../../src/wallet/singleAddress/privateKeys'
-import { log } from '../../src/adapter/logging'
-import * as ADA from '../../src/adapter/ada'
-import { toString, TokenName } from '../../src/language/core/v1/semantics/contract/common/token'
-import { mkRuntime } from '../../src/runtime'
-import { RuntimeRestAPI } from '../../src/runtime/restAPI'
-
-export type ProvisionScheme = 
+import * as TE from 'fp-ts/lib/TaskEither.js'
+import * as T from 'fp-ts/lib/Task.js'
+import { pipe } from 'fp-ts/lib/function.js'
+import { Context, SingleAddressWallet, PrivateKeysAsHex } from '@marlowe/legacy-runtime/runtimeSingleAddress'
+import { log } from '@marlowe/legacy-adapter/logging'
+import * as ADA from '@marlowe/legacy-adapter/ada'
+import { tokenToString, TokenName } from '@marlowe/language-core-v1'
+import { mkRuntime } from '@marlowe/legacy-runtime'
+import { RuntimeRestAPI } from '@marlowe/legacy-runtime/restAPI'
+export type ProvisionScheme =
     { provider   : {adaAmount : bigint}
     , swapper : {adaAmount :bigint,tokenAmount : bigint, tokenName : TokenName}
     }
 
-export const provisionAnAdaAndTokenProvider 
+export const provisionAnAdaAndTokenProvider
     =  (runtimeRestAPI: RuntimeRestAPI) =>
-       (walletContext: Context) => 
-       (bankPrivateKey : PrivateKeysAsHex) => 
-       (scheme : ProvisionScheme) => 
+       (walletContext: Context) =>
+       (bankPrivateKey : PrivateKeysAsHex) =>
+       (scheme : ProvisionScheme) =>
             pipe( TE.Do
             // Generating/Initialising Accounts
             , T.bind('bank',()          => SingleAddressWallet.Initialise (walletContext,bankPrivateKey))
@@ -28,8 +26,8 @@ export const provisionAnAdaAndTokenProvider
             // Check Banks treasury
             , TE.bind('bankBalance',({bank})     => bank.adaBalance)
             , TE.chainFirst(({bankBalance,bank}) => TE.of(pipe(
-                        log(`Bank (${bank.address})`), 
-                () => log(`  - ${ADA.format(bankBalance)}`)))) 
+                        log(`Bank (${bank.address})`),
+                () => log(`  - ${ADA.format(bankBalance)}`))))
             , TE.chainFirst(({bankBalance})      => TE.of(expect(bankBalance).toBeGreaterThan(100_000_000)))
             // Provisionning
             , TE.chainFirst(({bank,adaProvider,tokenProvider}) =>
@@ -37,41 +35,41 @@ export const provisionAnAdaAndTokenProvider
                                                 [tokenProvider,scheme.swapper.adaAmount]]))
             , TE.bind('tokenValueMinted',({tokenProvider}) => tokenProvider.mintRandomTokens(scheme.swapper.tokenName,scheme.swapper.tokenAmount))
             // Provisionning Checks
-            // Ada Provider 
-            , TE.bind('adaProviderBalance',({adaProvider})     => adaProvider.adaBalance)                                     
+            // Ada Provider
+            , TE.bind('adaProviderBalance',({adaProvider})     => adaProvider.adaBalance)
             , TE.chainFirst(({adaProvider,adaProviderBalance}) => TE.of(pipe(
-                    log( `Ada Provider (${adaProvider.address}`), 
-                () => log(`   - ${ADA.format(adaProviderBalance)}`)))) 
-            // Token Provider 
-            , TE.bind('tokenProviderADABalance',({tokenProvider})     => tokenProvider.adaBalance)                                     
+                    log( `Ada Provider (${adaProvider.address}`),
+                () => log(`   - ${ADA.format(adaProviderBalance)}`))))
+            // Token Provider
+            , TE.bind('tokenProviderADABalance',({tokenProvider})     => tokenProvider.adaBalance)
             , TE.bind('tokenBalance' ,({tokenProvider,tokenValueMinted}) => tokenProvider.tokenBalance(tokenValueMinted.token))
             , TE.chainFirst(({tokenProvider,tokenProviderADABalance,tokenValueMinted,tokenBalance}) => TE.of(pipe(
-                    log(`Token Provider (${tokenProvider.address})`), 
-                () => log(  `   - ${ADA.format(tokenProviderADABalance)}`), 
-                () => log(  `   - ${tokenBalance} ${toString(tokenValueMinted.token)}`))))
+                    log(`Token Provider (${tokenProvider.address})`),
+                () => log(  `   - ${ADA.format(tokenProviderADABalance)}`),
+                () => log(  `   - ${tokenBalance} ${tokenToString(tokenValueMinted.token)}`))))
             , TE.chainFirst(({tokenBalance}) => TE.of(expect(tokenBalance).toBe(scheme.swapper.tokenAmount)))
-            , TE.map (({adaProvider,tokenProvider,tokenValueMinted}) => 
+            , TE.map (({adaProvider,tokenProvider,tokenValueMinted}) =>
                         ({ adaProvider:adaProvider
                         , tokenProvider:tokenProvider
                         , tokenValueMinted:tokenValueMinted
                         , runtimeRestAPI : runtimeRestAPI
-                        , runtime : mkRuntime(runtimeRestAPI)})))                  
-                            
+                        , runtime : mkRuntime(runtimeRestAPI)})))
 
-export const initialiseBankAndverifyProvisionning 
+
+export const initialiseBankAndverifyProvisionning
   =  (runtimeRestAPI: RuntimeRestAPI) =>
-     (walletContext: Context) => 
-     (bankPrivateKey : PrivateKeysAsHex) => 
+     (walletContext: Context) =>
+     (bankPrivateKey : PrivateKeysAsHex) =>
        pipe( TE.Do
         , T.bind('bank',() => SingleAddressWallet.Initialise (walletContext,bankPrivateKey))
         , TE.fromTask
         // Check Banks treasury
         , TE.bind('bankBalance',({bank})     => bank.adaBalance)
         , TE.chainFirst(({bankBalance,bank}) => TE.of(pipe(
-                    log(`Bank (${bank.address})`), 
-              () => log(`  - ${ADA.format(bankBalance)}`)))) 
+                    log(`Bank (${bank.address})`),
+              () => log(`  - ${ADA.format(bankBalance)}`))))
         , TE.chainFirst(({bankBalance})      => TE.of(expect(bankBalance).toBeGreaterThan(100_000_000)))
-        , TE.map (({bank}) => 
+        , TE.map (({bank}) =>
             ({ bank : bank
              , runtimeRestAPI : runtimeRestAPI
-             , runtime : mkRuntime(runtimeRestAPI)(bank)})))  
+             , runtime : mkRuntime(runtimeRestAPI)(bank)})))
