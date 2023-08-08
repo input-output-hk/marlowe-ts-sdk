@@ -45,3 +45,36 @@ BLOCKFROST_URL="https://cardano-preprod.blockfrost.io/api/v0"
 NETWORK_ID=Preprod
 BANK_PK_HEX='<pk>'
 ```
+
+### Documentation
+
+> ⚠ You need to [build the packages](#build) before you can compile the documentation!
+
+To compile all documentation
+
+```
+$ npm run docs
+```
+
+Documentation is built with [TypeDoc](https://typedoc.org), published through [GitHub Pages](https://pages.github.com), and hosted at https://input-output-hk.github.io/marlowe-ts-sdk
+
+Each sub project needs a `typedoc.json` file in the sub project root directory as specified in the `workspaces` field in `./packages.json`. For example, there's some project "some-project" specified:
+
+```json
+// ./packages.json
+{
+  ...,
+  "workspaces": ["./path/to/some-project"]
+}
+```
+
+There needs to be a `typedoc.json` in `./path/to/some-project` and it needs properties along the lines of this example:
+
+```json
+// ./path/to/some-project/typedoc.json
+{
+  "entryPointStrategy": "expand",
+  "entryPoints": ["./src"],
+  "tsconfig": "./tsconfig.json"
+}
+```

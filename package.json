@@ -18,7 +18,8 @@
   "scripts": {
     "build": "tsc --build && rollup --config rollup/legacy-runtime-esm.config.mjs",
     "clean": "npm run clean --workspaces && shx rm -rf dist",
-    "test": "npm run test --workspaces"
+    "test": "npm run test --workspaces",
+    "docs": "typedoc ."
   },
   "workspaces": [
     "packages/legacy-adapter",
@@ -45,6 +46,7 @@
     "shx": "^0.3.3",
     "ts-jest": "^29.0.5",
     "ts-node": "^10.9.1",
+    "typedoc": "^0.24.8",
     "typescript": "^4.9.5",
     "typescript-language-server": "^3.1.0"
   },
