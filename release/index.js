@@ -1,4 +1,1 @@
-const f = (x) => x * 3;
-const g = (x) => x + 10;
-
-export { f, g };
+export { m as mkRuntime } from "./index-795dd903.js";
