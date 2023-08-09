@@ -1,0 +1,5 @@
+{
+  "entryPointStrategy": "packages",
+  "out": "./docs",
+  "readme": "none"
+}

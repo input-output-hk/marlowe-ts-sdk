@@ -1,9 +1,8 @@
 {
-  "extends": "./tsconfig-base.json",
-  "compilerOptions": {
-    "composite": true,
-    "module": "es2020",
-    "outDir": "dist/mjs",
-    "target": "es2020",
-  }
+  "files": [],
+  "references": [
+    { "path": "./packages/legacy-adapter/src" },
+    { "path": "./packages/language/core/v1/src" },
+    { "path": "./packages/legacy-runtime/src" }
+  ]
 }
