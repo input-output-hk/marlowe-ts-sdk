@@ -8,11 +8,11 @@ import * as A from 'fp-ts/lib/Array.js'
 
 import { TxOutRef } from '../../common/tx/outRef.js';
 import { deserializeCollateral } from '../../common/tx/collateral.js';
-import { token } from '@marlowe/language-core-v1/semantics/contract/common/token.js';
+import { token } from '@marlowe/language-core-v1/token';
 
 
-import * as CSL from '@emurgo/cardano-serialization-lib-browser'
-import { TokenValue, lovelaceValue, tokenValue } from '@marlowe/language-core-v1/semantics/contract/common/tokenValue.js';
+import * as CSL from '@emurgo/cardano-serialization-lib-asmjs'
+import { TokenValue, lovelaceValue, tokenValue } from '@marlowe/language-core-v1/tokenValue';
 
 
 export const getExtensionInstance : (extensionName : string) => T.Task<WalletAPI> = (extensionName) =>

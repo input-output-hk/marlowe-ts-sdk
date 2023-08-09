@@ -5,7 +5,7 @@ import { Context, SingleAddressWallet, PrivateKeysAsHex } from '@marlowe/legacy-
 import { log } from '@marlowe/legacy-adapter/logging'
 import * as ADA from '@marlowe/legacy-adapter/ada'
 import { tokenToString, TokenName } from '@marlowe/language-core-v1'
-import { mkRuntime } from '@marlowe/legacy-runtime'
+import { mkRuntime } from '@marlowe/legacy-runtime/runtime'
 import { RuntimeRestAPI } from '@marlowe/legacy-runtime/restAPI'
 export type ProvisionScheme =
     { provider   : {adaAmount : bigint}

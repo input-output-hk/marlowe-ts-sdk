@@ -23,6 +23,7 @@
   "exports": {
     ".": "./dist/index.js",
     "./restAPI": "./dist/restAPI.js",
+    "./runtime": "./dist/runtime.js",
     "./runtimeCIP30": "./dist/runtimeCIP30.js",
     "./runtimeSingleAddress": "./dist/runtimeSingleAddress.js",
     "./transaction": "./dist/contract/transaction/index.js",
@@ -31,7 +32,8 @@
   "dependencies": {
     "@blockfrost/blockfrost-js": "5.2.0",
     "@blockfrost/openapi": "0.1.54",
-    "@emurgo/cardano-serialization-lib-browser":"11.4.0",
+    "@emurgo/cardano-serialization-lib-asmjs":"11.4.0",
+    "lucid-cardano": "0.9.4",
     "@types/deep-equal": "1.0.1",
     "@types/qs" : "6.9.7",
     "qs" : "6.11.1" ,
@@ -42,7 +44,6 @@
     "dotenv": "^16.0.3",
     "fp-ts": "^2.13.1",
     "json-bigint": "^1.0.0",
-    "lucid-cardano": "0.9.4",
     "ts-adt": "^2.0.2",
     "ts-pattern": "^4.2.0",
     "retry-ts":"0.1.4",
