@@ -23,13 +23,14 @@
     "./examples": "./dist/examples/index.js",
     "./next": "./dist/semantics/next/index.js",
     "./environment": "./dist/semantics/environment.js",
-    "./state": "./dist/semantics/state.js"
+    "./state": "./dist/semantics/state.js",
+    "./token": "./dist/semantics/contract/common/token.js",
+    "./tokenValue": "./dist/semantics/contract/common/tokenValue.js"
   },
 
   "dependencies": {
     "@blockfrost/blockfrost-js": "5.2.0",
     "@blockfrost/openapi": "0.1.54",
-    "@emurgo/cardano-serialization-lib-browser":"11.4.0",
     "@types/deep-equal": "1.0.1",
     "@types/qs" : "6.9.7",
     "qs" : "6.11.1" ,
