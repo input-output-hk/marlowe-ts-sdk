@@ -1,7 +1,9 @@
 name: Post integration
 
 on:
-  pull_request:
+  push:
+    branches:
+      - main
 
 permissions:
   contents: read
