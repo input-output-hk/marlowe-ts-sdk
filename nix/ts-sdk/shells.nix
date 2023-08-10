@@ -12,6 +12,7 @@
       pkg-config
       nodejs
       yarn
+      scriv
     ];
 
     env = [
