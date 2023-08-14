@@ -19,12 +19,17 @@ export const AddressesAndCollaterals = t.type(
       , collateralUTxOs: optionFromNullable(t.array(TxOutRef))
     })
 
+// N.B : Network Id returned by CIP30 Interface doesn't provide information on which Testnet Network
+//       the extension in configured.
+export type CIP30Network = "Mainnet" | "Testnets";
+
 export interface WalletAPI {
     waitConfirmation : (txHash : string ) => TE.TaskEither<Error,boolean>
     signTxTheCIP30Way : (tx :MarloweTxCBORHex) => TE.TaskEither<Error,HexTransactionWitnessSet>
     getChangeAddress : T.Task<AddressBech32>
     getUsedAddresses : T.Task<AddressBech32[]>
     getCollaterals : T.Task<TxOutRef[]>
+    getCIP30Network: T.Task<CIP30Network> 
     getTokenValues : TE.TaskEither<Error,TokenValue[]>
 }
 
