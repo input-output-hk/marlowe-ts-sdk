@@ -1,4 +1,4 @@
-import * as t from "io-ts";
+import * as t from "io-ts/lib/index.js";
 import { Bound } from "../../contract/when/action/choice.js";
 import { ChoiceId } from "../../contract/common/value.js";
 import { IsMerkleizedContinuation } from "../common/IsMerkleizedContinuation.js";

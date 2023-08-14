@@ -1,4 +1,4 @@
-import * as t from "io-ts";
+import * as t from "io-ts/lib/index.js";
 import { ChoiceId } from "../../common/value.js";
 
 export type Bound

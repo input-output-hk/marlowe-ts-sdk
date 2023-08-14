@@ -1,5 +1,5 @@
 
-import * as t from "io-ts";
+import * as t from "io-ts/lib/index.js";
 
 import { Assert } from "./assert.js";
 import { Close } from "./close.js";

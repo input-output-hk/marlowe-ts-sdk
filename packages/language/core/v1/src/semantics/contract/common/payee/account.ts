@@ -1,4 +1,4 @@
-import * as t from "io-ts";
+import * as t from "io-ts/lib/index.js";
 import { Party } from "./party.js";
 import { Token } from "../token.js";
 
