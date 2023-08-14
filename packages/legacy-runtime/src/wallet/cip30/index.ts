@@ -17,7 +17,7 @@ import { TokenValue, lovelaceValue, tokenValue } from '@marlowe/language-core-v1
 import { hex, utf8 } from '@47ng/codec'
 
 export const getExtensionInstance : (extensionName : string) => T.Task<WalletAPI> = (extensionName) =>
-    pipe(() => window.cardano[extensionName.toLowerCase()].enable()
+    pipe(() =>  window.cardano[extensionName.toLowerCase()].enable()
         ,T.map (extensionCIP30Instance =>
             ({ waitConfirmation: waitConfirmation
              , signTxTheCIP30Way : signMarloweTx(extensionCIP30Instance)
@@ -66,6 +66,21 @@ const fetchCollaterals : (extensionCIP30Instance : BroswerExtensionCIP30Api)  =>
 type DataSignature = {
     signature: string;
     key: string;
+};
+
+declare global {
+  interface Window {
+    cardano: Cardano;
+  }
+}
+
+type Cardano = {
+  [key: string]: {
+    name: string;
+    icon: string;
+    apiVersion: string;
+    enable: () => Promise<BroswerExtensionCIP30Api>;
+  };
 };
 
 type BroswerExtensionCIP30Api = {
