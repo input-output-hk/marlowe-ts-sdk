@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>withdraw POC</title>
+</head>
+<body>
+  <div id="console"></div>
+
+  <script type="module" >
+    const log = (message) => {
+      var currentContent = document.getElementById("console").innerHTML
+      document.getElementById("console").innerHTML = currentContent + "<\BR>" + message;  
+    } 
+    import * as marloweSDK from "/dist/legacy-runtime/esm/index.js";
+    console.log("marloweSDK",marloweSDK)
+    log("##########")
+    log("Available marloweSDK Interfaces :")
+    log(JSON.stringify(marloweSDK))
+    log("##########")
+    log("##########")
+    log("Accessing Nami Wallet Extension")
+    log("##########")
+    const runtimeUrl = 'http://localhost:32952' // To Update with your own context
+    const runtime = await marloweSDK.RuntimeCIP30.mkRuntimeCIP30 (runtimeUrl)('nami')()
+    log("##########")
+    log("Reading Wallet information")
+    log("##########")
+    log("####")
+    log("Cardano Network")
+    log("####")
+    const cip30Network = await runtime.wallet.getCIP30Network()
+    log("> CIP30 Network (can't provide a more granular information that Testnets for testnets Networks)  : " + cip30Network) 
+    log("####")
+    log("Wallet Balances")
+    log("####")
+    const lovelaces = await runtime.wallet.getLovelaces()
+    log("> lovelaces Balance : " + lovelaces.right)  
+
+    log("> Token Balances : ") 
+    const tokenValues = await runtime.wallet.getTokenValues()
+    tokenValues.right
+      .filter(tokenValue => tokenValue.token.token_name )
+      .map(tokenValue => log( '&nbsp;&nbsp;&nbsp; >> '+ tokenValue.token.token_name + ":" + tokenValue.amount ))
+    log("##########")
+  </script>
+
+</body>
+</html>

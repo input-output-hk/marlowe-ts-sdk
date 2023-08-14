@@ -9,7 +9,7 @@ import * as T from 'fp-ts/lib/Task.js'
 import { Token, token, TokenValue, adaValue, tokenValue  } from '@marlowe/language-core-v1';
 import { log } from '@marlowe/legacy-adapter/logging'
 
-import { WalletAPI } from '../api.js';
+import { CIP30Network, WalletAPI } from '../api.js';
 import { addressBech32, AddressBech32, unAddressBech32 } from '../../common/address.js';
 import { HexTransactionWitnessSet , MarloweTxCBORHex} from '../../common/textEnvelope.js';
 import { TxOutRef } from '../../common/tx/outRef.js';
@@ -59,7 +59,7 @@ export class SingleAddressWallet implements WalletAPI {
         const account = new SingleAddressWallet(context,privateKey);
         return (() => account.initialise().then(() => account));
     }
-
+    
     private async initialise () {
         this.lucid = await Lucid.new(new Blockfrost(this.context.blockfrostUrl, this.context.projectId),this.context.network);
         this.lucid.selectWalletFromPrivateKey(this.privateKeyBech32);
@@ -68,7 +68,12 @@ export class SingleAddressWallet implements WalletAPI {
         this.getUsedAddresses = T.of ([this.address])
         this.getCollaterals = T.of ([])
      }
-
+    
+    public getCIP30Network  : T.Task<CIP30Network> 
+      = () => 
+            { if (this.lucid.network === "Mainnet") { return Promise.resolve("Mainnet")} 
+              else {return Promise.resolve("Testnets")}}
+     
     public getTokenValues: TE.TaskEither<Error,TokenValue[]>
      = pipe( TE.tryCatch(
                 () => this.blockfrostApi.addresses(unAddressBech32(this.address)),
