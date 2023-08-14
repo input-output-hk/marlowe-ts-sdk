@@ -1,4 +1,4 @@
-import * as t from "io-ts"
+import * as t from "io-ts/lib/index.js"
 import { optionFromNullable } from "io-ts-types";
 import { PolicyId } from "@marlowe/language-core-v1";
 import { AddressBech32 } from "../common/address.js";

@@ -1,7 +1,7 @@
 import reporter from 'jsonbigint-io-ts-reporters'
 import { Newtype } from "newtype-ts";
 import { fromNewtype,option, optionFromNullable } from "io-ts-types";
-import * as t from "io-ts";
+import * as t from "io-ts/lib/index.js";
 
 // see : https://input-output-hk.github.io/cardano-node/cardano-api/lib/Cardano-Api-SerialiseTextEnvelope.html
 

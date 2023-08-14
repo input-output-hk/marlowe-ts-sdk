@@ -7,7 +7,7 @@ import { AxiosInstance } from "axios";
 import { TransactionId, unTransactionId } from "../id.js";
 import { ContractId, unContractId } from "../../id.js";
 import { DecodingError } from "../../../common/codec.js";
-import * as t from "io-ts";
+import * as t from "io-ts/lib/index.js";
 import { formatValidationErrors } from "jsonbigint-io-ts-reporters";
 import { Details } from "../details.js";
 import { HexTransactionWitnessSet, transactionWitnessSetTextEnvelope } from "../../../common/textEnvelope.js";

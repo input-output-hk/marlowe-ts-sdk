@@ -1,5 +1,5 @@
 
-import * as t from "io-ts";
+import * as t from "io-ts/lib/index.js";
 import { BlockHeader } from "../../common/block.js";
 
 import { WithdrawalId } from "./id.js";

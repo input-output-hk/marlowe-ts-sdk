@@ -1,9 +1,7 @@
 
 
-import * as t from "io-ts";
-import { identity } from 'fp-ts/lib/function.js'
-import { failure, success, Type } from 'io-ts'
-import {PositiveBigInt} from 'io-ts-bigint'
+import * as t from "io-ts/lib/index.js";
+import { failure, success, Type } from 'io-ts/lib/index.js'
 
 
 export function isBigIntOrNumber(u: unknown): u is (bigint | number)  {

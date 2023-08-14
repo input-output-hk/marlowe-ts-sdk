@@ -5,7 +5,7 @@ import { MarloweVersion } from "../common/version.js";
 import { TxStatus } from "./transaction/status.js";
 import { ContractId } from "./id.js";
 import { optionFromNullable } from "io-ts-types";
-import * as t from "io-ts";
+import * as t from "io-ts/lib/index.js";
 
 import { PolicyId } from "../common/policyId.js";
 
