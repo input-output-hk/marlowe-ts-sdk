@@ -30,11 +30,8 @@
     "./write/command": "./dist/write/command.js"
   },
   "dependencies": {
-    "@blockfrost/blockfrost-js": "5.2.0",
-    "@blockfrost/openapi": "0.1.54",
     "@emurgo/cardano-serialization-lib-asmjs":"11.4.0",
     "@47ng/codec":"1.1.0",
-    "lucid-cardano": "0.9.4",
     "@types/deep-equal": "1.0.1",
     "@types/qs" : "6.9.7",
     "qs" : "6.11.1" ,
@@ -42,7 +39,6 @@
     "axios-curlirize": "^2.0.0",
     "date-fns": "2.29.3",
     "deep-equal": "1.0.1",
-    "dotenv": "^16.0.3",
     "fp-ts": "^2.13.1",
     "json-bigint": "^1.0.0",
     "ts-adt": "^2.0.2",

@@ -1,9 +1,9 @@
-import { mkRuntimeRestAPI } from './restAPI.js';
+import { mkRuntimeRestAPI } from '../../src/restAPI.js';
 import * as T from 'fp-ts/lib/Task.js';
 import { pipe } from 'fp-ts/lib/function.js';
 
 import * as S from './wallet/singleAddress/index.js';
-import { mkRuntime, Runtime } from './runtime.js';
+import { mkRuntime, Runtime } from '../../src/runtime.js';
 export {Context, SingleAddressWallet, PrivateKeysAsHex, getPrivateKeyFromHexString} from './wallet/singleAddress/index.js';
 
 

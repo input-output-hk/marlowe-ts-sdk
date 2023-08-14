@@ -27,6 +27,10 @@
     "packages/legacy-runtime"
   ],
   "devDependencies": {
+    "@blockfrost/blockfrost-js": "5.2.0",
+    "@blockfrost/openapi": "0.1.54",
+    "lucid-cardano": "0.9.4",
+    "dotenv": "^16.0.3",
     "@relmify/jest-fp-ts": "^2.0.2",
     "@rollup/plugin-commonjs": "^25.0.3",
     "@rollup/plugin-node-resolve": "^15.1.0",

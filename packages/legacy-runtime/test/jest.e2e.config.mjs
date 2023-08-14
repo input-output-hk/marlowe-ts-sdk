@@ -1,4 +1,5 @@
 import { fileURLToPath } from "node:url";
+import dotenv from "dotenv"
 
 const relative = (file) => fileURLToPath(new URL(file, import.meta.url));
 
@@ -11,6 +12,7 @@ const moduleNameMapper = {
   '^(\\.{1,2}/.*)\\.js$': '$1',
 }
 
+dotenv.config({ path: relative('./env/.env.test') })
 
 const config = {
   testEnvironment: "node",

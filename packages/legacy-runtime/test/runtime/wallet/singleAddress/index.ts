@@ -9,10 +9,10 @@ import * as T from 'fp-ts/lib/Task.js'
 import { Token, token, TokenValue, adaValue, tokenValue  } from '@marlowe/language-core-v1';
 import { log } from '@marlowe/legacy-adapter/logging'
 
-import { CIP30Network, WalletAPI } from '../api.js';
-import { addressBech32, AddressBech32, unAddressBech32 } from '../../common/address.js';
-import { HexTransactionWitnessSet , MarloweTxCBORHex} from '../../common/textEnvelope.js';
-import { TxOutRef } from '../../common/tx/outRef.js';
+import { CIP30Network, WalletAPI } from '../../../../src/wallet/api.js';
+import { addressBech32, AddressBech32, unAddressBech32 } from '../../../../src/common/address.js';
+import { HexTransactionWitnessSet , MarloweTxCBORHex} from '../../../../src/common/textEnvelope.js';
+import { TxOutRef } from '../../../../src/common/tx/outRef.js';
 export { PrivateKeysAsHex } from "./privateKeys.js";
 
 
