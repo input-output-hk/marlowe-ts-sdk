@@ -87,3 +87,15 @@ There needs to be a `typedoc.json` in `./path/to/some-project` and it needs prop
   "tsconfig": "./tsconfig.json"
 }
 ```
+
+### Changelogs
+
+This project manages its changelog with [scriv](https://github.com/nedbat/scriv). PRs are automatically checked to see if there's a new entry in the `./changelog.d` folder. If a PR doesn't need a changelog entry, a `No Changelog Required` label can be added to disable the check.
+
+Create a new changelog entry template with
+
+```
+$ scriv create
+```
+
+edit the new file with appropriate content for your PR and commit it. Read [the documentation for scriv](https://scriv.readthedocs.io/en) to learn more about how to use this tool.
