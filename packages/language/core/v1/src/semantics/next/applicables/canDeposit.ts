@@ -1,5 +1,5 @@
 import { optionFromNullable } from "io-ts-types";
-import * as t from "io-ts";
+import * as t from "io-ts/lib/index.js";
 import { AccountId } from "../../contract/common/payee/account.js";
 import { Party } from "../../contract/common/payee/party.js";
 import { Token } from "../../contract/common/token.js";

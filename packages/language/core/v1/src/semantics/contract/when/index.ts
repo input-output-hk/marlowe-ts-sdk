@@ -1,4 +1,4 @@
-import * as t from "io-ts";
+import * as t from "io-ts/lib/index.js";
 import { Action } from "./action/index.js";
 import { Contract } from "../index.js";
 import { pipe } from "fp-ts/lib/function.js";

@@ -1,4 +1,4 @@
-import * as t from "io-ts";
+import * as t from "io-ts/lib/index.js";
 
 import { Accounts } from "./contract/common/payee/account.js";
 import { ChoiceId, ValueId } from "./contract/common/value.js";

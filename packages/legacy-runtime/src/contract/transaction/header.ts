@@ -1,4 +1,4 @@
-import * as t from "io-ts";
+import * as t from "io-ts/lib/index.js";
 import { optionFromNullable } from "io-ts-types";
 import { BuiltinByteString } from "@marlowe/language-core-v1";
 

@@ -1,4 +1,4 @@
-import * as t from "io-ts";
+import * as t from "io-ts/lib/index.js";
 import { iso, Newtype } from "newtype-ts";
 import { fromNewtype } from "io-ts-types";
 import { TokenName } from "../token.js";

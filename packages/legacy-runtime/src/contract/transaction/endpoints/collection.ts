@@ -1,4 +1,4 @@
-import * as t from "io-ts";
+import * as t from "io-ts/lib/index.js";
 import { Newtype, iso } from 'newtype-ts'
 import * as E from 'fp-ts/lib/Either.js'
 import * as A from 'fp-ts/lib/Array.js'

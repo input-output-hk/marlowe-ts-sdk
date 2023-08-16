@@ -1,4 +1,4 @@
-import * as t from "io-ts";
+import * as t from "io-ts/lib/index.js";
 import { ApplicableInputs } from "./applicables/index.js";
 export { toInput } from "./applicables/canDeposit.js";
 

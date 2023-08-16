@@ -11,7 +11,7 @@ import { Header } from '../header.js';
 
 import { TextEnvelope } from '../../../common/textEnvelope.js';
 
-import * as t from "io-ts";
+import * as t from "io-ts/lib/index.js";
 import { formatValidationErrors } from 'jsonbigint-io-ts-reporters'
 import { DecodingError } from '../../../common/codec.js';
 import * as E from 'fp-ts/lib/Either.js'

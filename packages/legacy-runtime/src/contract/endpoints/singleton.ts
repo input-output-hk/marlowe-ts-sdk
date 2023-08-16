@@ -6,7 +6,7 @@ import { pipe } from 'fp-ts/lib/function.js';
 import * as HTTP from '../../common/http.js';
 import { HexTransactionWitnessSet, transactionWitnessSetTextEnvelope } from '../../common/textEnvelope.js';
 import { ContractDetails } from '../details.js';
-import * as t from "io-ts";
+import * as t from "io-ts/lib/index.js";
 import {formatValidationErrors} from 'jsonbigint-io-ts-reporters'
 import { DecodingError } from '../../common/codec.js';
 import { ContractId, unContractId } from '../id.js';

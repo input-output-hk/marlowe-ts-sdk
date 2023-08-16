@@ -1,4 +1,4 @@
-import * as t from "io-ts";
+import * as t from "io-ts/lib/index.js";
 import { pipe } from "fp-ts/lib/function.js";
 import { format, formatISO } from "date-fns";
 

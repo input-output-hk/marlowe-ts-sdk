@@ -1,5 +1,5 @@
 import { optionFromNullable } from "io-ts-types";
-import * as t from "io-ts";
+import * as t from "io-ts/lib/index.js";
 
 import { ISO8601 } from "@marlowe/legacy-adapter/time";
 import { BuiltinByteString, Input } from "@marlowe/language-core-v1";

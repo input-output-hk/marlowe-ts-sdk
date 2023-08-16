@@ -1,7 +1,7 @@
 
 import { AxiosInstance, ParamEncoder, ParamsSerializerOptions } from 'axios';
 
-import * as t from "io-ts";
+import * as t from "io-ts/lib/index.js";
 import * as TE from 'fp-ts/lib/TaskEither.js'
 import { pipe } from 'fp-ts/lib/function.js';
 import * as E from 'fp-ts/lib/Either.js'

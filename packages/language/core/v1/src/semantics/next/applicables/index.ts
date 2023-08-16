@@ -1,5 +1,5 @@
 import { optionFromNullable } from "io-ts-types";
-import * as t from "io-ts";
+import * as t from "io-ts/lib/index.js";
 import { CanDeposit } from "./canDeposit.js";
 import { CanChoose } from "./canChoose.js";
 import { CanNotify } from "./canNotify.js";
