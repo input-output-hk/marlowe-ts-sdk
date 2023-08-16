@@ -39,6 +39,6 @@
     "@47ng/codec":"1.1.0",
     "json-bigint": "^1.0.0",
     "jsonbigint-io-ts-reporters":"2.0.1",
-    "@emurgo/cardano-serialization-lib-asmjs":"11.4.0"
+    "@emurgo/cardano-serialization-lib-browser":"11.4.0"
   }
 }

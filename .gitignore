@@ -10,7 +10,8 @@ tsconfig.tsbuildinfo
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
-
+# created by the rollup
+stats.html
 # created by nix
 result
 source

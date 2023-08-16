@@ -3,7 +3,7 @@ import { iso, Newtype } from "newtype-ts";
 import { fromNewtype } from "io-ts-types";
 
 import { pipe } from "fp-ts/lib/function.js";
-import * as CSL from '@emurgo/cardano-serialization-lib-asmjs'
+import * as CSL from '@emurgo/cardano-serialization-lib-browser'
 import { hex } from '@47ng/codec'
 
 export type AddressBech32 = Newtype<{ readonly AddressBech32: unique symbol }, string>

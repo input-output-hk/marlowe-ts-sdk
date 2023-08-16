@@ -1,5 +1,5 @@
 import { pipe } from "fp-ts/lib/function.js";
-import * as CSL from '@emurgo/cardano-serialization-lib-asmjs'
+import * as CSL from '@emurgo/cardano-serialization-lib-browser'
 import { TxOutRef, txOutRef } from "./outRef.js";
 import { hex } from '@47ng/codec'
 

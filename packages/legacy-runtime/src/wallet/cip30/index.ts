@@ -11,7 +11,7 @@ import { deserializeCollateral } from '../../common/tx/collateral.js';
 import { token } from '@marlowe/language-core-v1/token';
 
 
-import * as CSL from '@emurgo/cardano-serialization-lib-asmjs'
+import * as CSL from '@emurgo/cardano-serialization-lib-browser'
 import { TokenValue, lovelaceValue, tokenValue } from '@marlowe/language-core-v1/tokenValue';
 
 import { hex, utf8 } from '@47ng/codec'
