@@ -3,9 +3,9 @@ import { pipe } from 'fp-ts/lib/function.js'
 import * as TE from 'fp-ts/lib/TaskEither.js';
 import * as O from 'fp-ts/lib/Option.js';
 
-import { close } from '@marlowe/language-core-v1'
-import { mkRuntimeRestAPI } from '@marlowe/legacy-runtime/restAPI';
-import { initialise } from '@marlowe/legacy-runtime/write/command';
+import { close } from '@marlowe.io/language-core-v1'
+import { mkRuntimeRestAPI } from '@marlowe.io/legacy-runtime/restAPI';
+import { initialise } from '@marlowe.io/legacy-runtime/write/command';
 
 import { initialiseBankAndverifyProvisionning } from '../provisionning.js';
 import { getBankPrivateKey, getBlockfrostContext, getMarloweRuntimeUrl } from '../context.js';

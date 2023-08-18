@@ -1,5 +1,5 @@
 {
-  "name": "@marlowe/language-core-v1",
+  "name": "@marlowe.io/language-core-v1",
   "version": "0.1.0-beta",
   "description": "Library to manipulate Marlowe Core contracts",
   "repository": "https://github.com/input-output-hk/marlowe-ts-sdk",

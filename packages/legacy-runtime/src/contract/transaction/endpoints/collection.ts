@@ -9,8 +9,8 @@ import { formatValidationErrors } from "jsonbigint-io-ts-reporters";
 import { fromNewtype, optionFromNullable } from 'io-ts-types';
 import { AxiosInstance } from "axios";
 
-import { ISO8601 } from "@marlowe/legacy-adapter/time";
-import { Input } from "@marlowe/language-core-v1";
+import { ISO8601 } from "@marlowe.io/legacy-adapter/time";
+import { Input } from "@marlowe.io/language-core-v1";
 
 import * as HTTP from '../../../common/http.js';
 import { unAddressBech32 } from "../../../common/address.js";

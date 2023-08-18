@@ -6,9 +6,9 @@ import * as HTTP from '../../common/http.js';
 import {formatValidationErrors} from 'jsonbigint-io-ts-reporters'
 import { DecodingError } from '../../common/codec.js';
 import { ContractId, unContractId } from '../id.js';
-import { Environment } from '@marlowe/language-core-v1/environment';
-import { Next } from '@marlowe/language-core-v1/next';
-import { Party } from '@marlowe/language-core-v1/semantics/contract/common/payee/party.js';
+import { Environment } from '@marlowe.io/language-core-v1/environment';
+import { Next } from '@marlowe.io/language-core-v1/next';
+import { Party } from '@marlowe.io/language-core-v1/semantics/contract/common/payee/party.js';
 import { stringify } from 'qs';
 
 export type GET

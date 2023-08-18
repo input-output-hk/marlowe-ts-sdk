@@ -9,7 +9,7 @@ import { TxOutRef } from "../common/tx/outRef.js"
 import { AddressBech32 } from "../common/address.js"
 import * as t from "io-ts/lib/index.js";
 import { pipe } from 'fp-ts/lib/function.js';
-import { TokenValue } from '@marlowe/language-core-v1/semantics/contract/common/tokenValue.js';
+import { TokenValue } from '@marlowe.io/language-core-v1/semantics/contract/common/tokenValue.js';
 
 
 export type AddressesAndCollaterals = t.TypeOf<typeof AddressesAndCollaterals>

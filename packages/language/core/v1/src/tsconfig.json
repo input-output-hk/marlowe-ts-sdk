@@ -3,7 +3,7 @@
   "compilerOptions": {
     "outDir": "../dist",
     "paths": {
-        "@marlowe/legacy-adapter/*": ["../../../../legacy-adapter/src/*"],
+        "@marlowe.io/legacy-adapter/*": ["../../../../legacy-adapter/src/*"],
     }
   },
   "references": [

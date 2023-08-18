@@ -1,6 +1,6 @@
 import * as t from "io-ts/lib/index.js";
 import { optionFromNullable } from "io-ts-types";
-import { BuiltinByteString } from "@marlowe/language-core-v1";
+import { BuiltinByteString } from "@marlowe.io/language-core-v1";
 
 import { BlockHeader } from "../../common/block.js";
 import { Metadata } from "../../common/metadata/index.js";

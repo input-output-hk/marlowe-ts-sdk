@@ -1,2 +1,2 @@
-# @marlowe/legacy-runtime
+# @marlowe.io/legacy-runtime
 TODO

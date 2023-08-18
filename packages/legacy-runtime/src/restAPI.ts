@@ -9,7 +9,7 @@ import * as ContractCollection from './contract/endpoints/collection.js';
 import * as TransactionSingleton from './contract/transaction/endpoints/singleton.js';
 import * as TransactionCollection from './contract/transaction/endpoints/collection.js';
 import * as ContractNext from './contract/next/endpoint.js';
-import { JsonAlwayAndOnlyBigInt, MarloweJSONCodec } from '@marlowe/legacy-adapter/json';
+import { JsonAlwayAndOnlyBigInt, MarloweJSONCodec } from '@marlowe.io/legacy-adapter/json';
 import { pipe } from 'fp-ts/lib/function.js';
 
 

@@ -17,10 +17,10 @@ import { RuntimeRestAPI } from '../restAPI.js';
 import { WalletAPI, getAddressesAndCollaterals } from '../wallet/api.js';
 import { Metadata, Tags } from '../common/metadata/index.js';
 import { MarloweVersion } from '../common/version.js';
-import { Contract } from '@marlowe/language-core-v1/semantics/contract/index.js';
+import { Contract } from '@marlowe.io/language-core-v1/semantics/contract/index.js';
 import { RolesConfig } from '../contract/role.js';
-import { Input } from '@marlowe/language-core-v1/semantics/contract/when/input/index.js';
-import { ISO8601 } from '@marlowe/legacy-adapter/time';
+import { Input } from '@marlowe.io/language-core-v1/semantics/contract/when/input/index.js';
+import { ISO8601 } from '@marlowe.io/legacy-adapter/time';
 
 
 export type InitialisePayload =

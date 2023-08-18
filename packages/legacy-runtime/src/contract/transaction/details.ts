@@ -1,10 +1,10 @@
 import { optionFromNullable } from "io-ts-types";
 import * as t from "io-ts/lib/index.js";
 
-import { ISO8601 } from "@marlowe/legacy-adapter/time";
-import { BuiltinByteString, Input } from "@marlowe/language-core-v1";
-import { MarloweState } from "@marlowe/language-core-v1/state";
-import { Contract } from "@marlowe/language-core-v1";
+import { ISO8601 } from "@marlowe.io/legacy-adapter/time";
+import { BuiltinByteString, Input } from "@marlowe.io/language-core-v1";
+import { MarloweState } from "@marlowe.io/language-core-v1/state";
+import { Contract } from "@marlowe.io/language-core-v1";
 
 import { BlockHeader } from "../../common/block.js";
 import { Metadata } from "../../common/metadata/index.js";

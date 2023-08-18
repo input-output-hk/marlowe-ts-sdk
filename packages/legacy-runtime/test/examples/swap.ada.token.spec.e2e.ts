@@ -4,10 +4,10 @@ import { pipe } from 'fp-ts/lib/function.js'
 import * as TE from 'fp-ts/lib/TaskEither.js'
 import { addDays } from 'date-fns/fp'
 
-import { toInput } from '@marlowe/language-core-v1/next';
-import * as Examples from '@marlowe/language-core-v1/examples'
-import { datetoTimeout, adaValue } from '@marlowe/language-core-v1'
-import { mkRuntimeRestAPI } from '@marlowe/legacy-runtime/restAPI';
+import { toInput } from '@marlowe.io/language-core-v1/next';
+import * as Examples from '@marlowe.io/language-core-v1/examples'
+import { datetoTimeout, adaValue } from '@marlowe.io/language-core-v1'
+import { mkRuntimeRestAPI } from '@marlowe.io/legacy-runtime/restAPI';
 
 import { getBankPrivateKey, getBlockfrostContext, getMarloweRuntimeUrl } from '../context.js';
 import { provisionAnAdaAndTokenProvider } from '../provisionning.js'

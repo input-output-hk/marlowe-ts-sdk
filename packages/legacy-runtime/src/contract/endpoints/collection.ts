@@ -12,7 +12,7 @@ import { formatValidationErrors } from 'jsonbigint-io-ts-reporters'
 import { fromNewtype, optionFromNullable } from 'io-ts-types';
 import { stringify } from 'qs';
 
-import { Contract } from '@marlowe/language-core-v1';
+import { Contract } from '@marlowe.io/language-core-v1';
 
 import * as HTTP from '../../common/http.js';
 import { Header } from '../header.js';

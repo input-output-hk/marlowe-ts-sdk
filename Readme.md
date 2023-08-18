@@ -4,9 +4,9 @@
 # Marlowe TS-SDK
 The Marlowe TypeScript SDK is a set of libraries and utilities to work with Marlowe contracts. The project uses [npm workspaces](https://docs.npmjs.com/cli/v7/using-npm/workspaces) to divide itself in the following packages:
 
-* `language/core/v1`: The `@marlowe/language-core-v1` library that contains the core Marlowe language definitions and utilities.
-* `legacy-adapter`: The `@marlowe/legacy-adapter` library that contains common utilities.
-* `legacy-runtime`: The `@marlowe/legacy-runtime` library that contains the initial abstraction over the Marlowe runtime
+* `language/core/v1`: The `@marlowe.io/language-core-v1` library that contains the core Marlowe language definitions and utilities.
+* `legacy-adapter`: The `@marlowe.io/legacy-adapter` library that contains common utilities.
+* `legacy-runtime`: The `@marlowe.io/legacy-runtime` library that contains the initial abstraction over the Marlowe runtime
 
 ## Developer notes
 
@@ -23,7 +23,7 @@ If you want to build a single package you can use the `-w` flag or execute the b
 
 ```
 # From the root folder
-$ npm run build -w @marlowe/language-core-v1
+$ npm run build -w @marlowe.io/language-core-v1
 # Or you can enter the package and build
 $ cd packages/language/core/v1
 $ npm run build

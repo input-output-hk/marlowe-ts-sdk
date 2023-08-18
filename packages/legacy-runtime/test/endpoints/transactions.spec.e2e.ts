@@ -5,10 +5,10 @@ import * as O from 'fp-ts/lib/Option.js';
 import { addDays } from 'date-fns/fp';
 import { addMinutes, subMinutes } from 'date-fns'
 
-import { datetoTimeout, inputNotify } from '@marlowe/language-core-v1';
-import { oneNotifyTrue } from '@marlowe/language-core-v1/examples'
-import { datetoIso8601Bis } from '@marlowe/legacy-adapter/time'
-import { mkRuntimeRestAPI } from '@marlowe/legacy-runtime/restAPI';
+import { datetoTimeout, inputNotify } from '@marlowe.io/language-core-v1';
+import { oneNotifyTrue } from '@marlowe.io/language-core-v1/examples'
+import { datetoIso8601Bis } from '@marlowe.io/legacy-adapter/time'
+import { mkRuntimeRestAPI } from '@marlowe.io/legacy-runtime/restAPI';
 
 import { getBankPrivateKey, getBlockfrostContext, getMarloweRuntimeUrl } from '../context.js';
 import { initialiseBankAndverifyProvisionning } from '../provisionning.js'

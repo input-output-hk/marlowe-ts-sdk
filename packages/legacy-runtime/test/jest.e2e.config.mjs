@@ -4,11 +4,11 @@ import dotenv from "dotenv"
 const relative = (file) => fileURLToPath(new URL(file, import.meta.url));
 
 const moduleNameMapper = {
-  '^@marlowe/legacy-adapter/(.*)$': relative('../../legacy-adapter/dist/$1.js'),
-  '^@marlowe/language\\-core\\-v1$': relative("../../language/core/v1/dist/semantics/contract/index.js"),
-  '^@marlowe/language\\-core\\-v1/next$': relative('../../language/core/v1/dist/semantics/next/index.js'),
-  '^@marlowe/language\\-core\\-v1/examples$': relative('../../language/core/v1/dist/examples/index.js'),
-  '^@marlowe/legacy\\-runtime/restAPI': relative('../dist/restAPI.js'),
+  '^@marlowe.io/legacy-adapter/(.*)$': relative('../../legacy-adapter/dist/$1.js'),
+  '^@marlowe.io/language\\-core\\-v1$': relative("../../language/core/v1/dist/semantics/contract/index.js"),
+  '^@marlowe.io/language\\-core\\-v1/next$': relative('../../language/core/v1/dist/semantics/next/index.js'),
+  '^@marlowe.io/language\\-core\\-v1/examples$': relative('../../language/core/v1/dist/examples/index.js'),
+  '^@marlowe.io/legacy\\-runtime/restAPI': relative('../dist/restAPI.js'),
   '^(\\.{1,2}/.*)\\.js$': '$1',
 }
 

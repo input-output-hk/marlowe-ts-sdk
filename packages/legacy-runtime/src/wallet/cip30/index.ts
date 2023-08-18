@@ -3,16 +3,16 @@ import * as TE from 'fp-ts/lib/TaskEither.js'
 import { pipe } from 'fp-ts/lib/function.js';
 import { MarloweTxCBORHex, HexTransactionWitnessSet } from '../../common/textEnvelope.js';
 import { CIP30Network, WalletAPI } from '../api.js';
-import { AddressBech32, deserializeAddress } from '../../common/address.js';
+import { AddressBech32, addressBech32 } from '../../common/address.js';
 import * as A from 'fp-ts/lib/Array.js'
 
-import { TxOutRef } from '../../common/tx/outRef.js';
-import { deserializeCollateral } from '../../common/tx/collateral.js';
-import { token } from '@marlowe/language-core-v1/token';
+import { TxOutRef, txOutRef } from '../../common/tx/outRef.js';
+
+import { token } from '@marlowe.io/language-core-v1/token';
 
 
 import * as CSL from '@emurgo/cardano-serialization-lib-browser'
-import { TokenValue, lovelaceValue, tokenValue } from '@marlowe/language-core-v1/tokenValue';
+import { TokenValue, lovelaceValue, tokenValue } from '@marlowe.io/language-core-v1/tokenValue';
 
 import { hex, utf8 } from '@47ng/codec'
 
@@ -62,6 +62,17 @@ const fetchCollaterals : (extensionCIP30Instance : BroswerExtensionCIP30Api)  =>
                     , T.bind('collaterals'  ,() => pipe(() => extensionCIP30Instance.experimental.getCollateral()))
                     , T.map (({collaterals}) =>  collaterals == undefined ? [] : pipe( collaterals, A.map(deserializeCollateral)))
                     )
+
+const deserializeAddress : (addressHex:string) =>  AddressBech32 =
+    (addressHex) => 
+      pipe(CSL.Address.from_bytes(hex.decode(addressHex),).to_bech32()
+          ,addressBech32)
+
+
+const deserializeCollateral : (collateral:string) =>  TxOutRef 
+  = (collateral) => 
+    pipe( CSL.TransactionUnspentOutput.from_bytes(hex.decode(collateral))
+        , utxo => txOutRef (utxo.input().transaction_id().to_hex() + '#' + utxo.input().index().toString()))
 
 type DataSignature = {
     signature: string;

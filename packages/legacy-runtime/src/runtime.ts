@@ -10,10 +10,10 @@ import * as T from 'fp-ts/lib/Task.js'
 import { pipe } from 'fp-ts/lib/function.js';
 import * as O from 'fp-ts/lib/Option.js'
 import { WalletAPI } from './wallet/api.js';
-import { mkEnvironment } from '@marlowe/language-core-v1/environment';
+import { mkEnvironment } from '@marlowe.io/language-core-v1/environment';
 import { addMinutes, subMinutes } from 'date-fns';
-import { Next } from '@marlowe/language-core-v1/semantics/next/index.js';
-import { Party } from '@marlowe/language-core-v1/semantics/contract/common/payee/party.js';
+import { Next } from '@marlowe.io/language-core-v1/semantics/next/index.js';
+import { Party } from '@marlowe.io/language-core-v1/semantics/contract/common/payee/party.js';
 import { PolicyId } from './common/policyId.js';
 
 export type Runtime =

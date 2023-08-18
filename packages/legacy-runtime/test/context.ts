@@ -1,5 +1,5 @@
 import { Network } from "lucid-cardano";
-import { Context, getPrivateKeyFromHexString } from '@marlowe/legacy-runtime/runtimeSingleAddress';
+import { Context, getPrivateKeyFromHexString } from './runtime/wallet/singleAddress/index.js';
 
 
 export function getBlockfrostContext () : Context {

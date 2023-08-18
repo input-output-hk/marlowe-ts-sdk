@@ -1,7 +1,7 @@
 import { optionFromNullable } from "io-ts-types";
 import * as t from "io-ts/lib/index.js";
-import { Contract } from "@marlowe/language-core-v1";
-import { MarloweState } from "@marlowe/language-core-v1/state";
+import { Contract } from "@marlowe.io/language-core-v1";
+import { MarloweState } from "@marlowe.io/language-core-v1/state";
 import { ContractId } from "./id.js";
 import { TextEnvelope } from "../common/textEnvelope.js";
 import { BlockHeader } from "../common/block.js";

@@ -3,8 +3,8 @@
   "compilerOptions": {
     "outDir": "../dist",
     "paths": {
-      "@marlowe/legacy-adapter/*": ["../../legacy-adapter/src/*"],
-      "@marlowe/language-core-v1/*": ["../../language/core/v1/src/*"]
+      "@marlowe.io/legacy-adapter/*": ["../../legacy-adapter/src/*"],
+      "@marlowe.io/language-core-v1/*": ["../../language/core/v1/src/*"]
     }
   },
   "references": [

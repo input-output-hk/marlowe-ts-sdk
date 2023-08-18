@@ -1,12 +1,13 @@
 import * as TE from 'fp-ts/lib/TaskEither.js'
 import * as T from 'fp-ts/lib/Task.js'
 import { pipe } from 'fp-ts/lib/function.js'
-import { Context, SingleAddressWallet, PrivateKeysAsHex } from '@marlowe/legacy-runtime/runtimeSingleAddress'
-import { log } from '@marlowe/legacy-adapter/logging'
-import * as ADA from '@marlowe/legacy-adapter/ada'
-import { tokenToString, TokenName } from '@marlowe/language-core-v1'
-import { mkRuntime } from '@marlowe/legacy-runtime/runtime'
-import { RuntimeRestAPI } from '@marlowe/legacy-runtime/restAPI'
+import { log } from '@marlowe.io/legacy-adapter/logging'
+import * as ADA from '@marlowe.io/legacy-adapter/ada'
+import { tokenToString, TokenName } from '@marlowe.io/language-core-v1'
+import { mkRuntime } from '@marlowe.io/legacy-runtime/runtime'
+import { RuntimeRestAPI } from '@marlowe.io/legacy-runtime/restAPI'
+import { Context, SingleAddressWallet, PrivateKeysAsHex } from './runtime/wallet/singleAddress/index.js'
+
 export type ProvisionScheme =
     { provider   : {adaAmount : bigint}
     , swapper : {adaAmount :bigint,tokenAmount : bigint, tokenName : TokenName}

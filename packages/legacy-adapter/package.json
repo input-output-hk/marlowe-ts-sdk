@@ -1,5 +1,5 @@
 {
-  "name": "@marlowe/legacy-adapter",
+  "name": "@marlowe.io/legacy-adapter",
   "version": "0.1.0-beta",
   "description": "TODO",
   "repository": "https://github.com/input-output-hk/marlowe-ts-sdk",
@@ -19,18 +19,32 @@
     "test": "echo 'adapter doesnt have tests for the moment'"
   },
   "exports": {
-    ".": "./dist/index.js",
-    "./time": "./dist/time.js",
-    "./json": "./dist/json.js",
-    "./ada": "./dist/ada.js",
-    "./logging": "./dist/logging.js"
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./time": {
+      "import": "./dist/time.js",
+      "types": "./dist/time.d.ts"
+    },
+    "./json": {
+      "import": "./dist/json.js",
+      "types": "./dist/json.d.ts"
+    },
+    "./ada": {
+      "import": "./dist/ada.js",
+      "types": "./dist/ada.d.ts"
+    },
+    "./logging": {
+      "import": "./dist/logging.js",
+      "types": "./dist/logging.d.ts"
+    }
   },
-
   "dependencies": {
     "date-fns": "2.29.3",
     "fp-ts": "^2.16.0",
-    "io-ts":"2.2.20",
+    "io-ts": "2.2.20",
     "json-bigint": "^1.0.0",
-    "newtype-ts":"0.3.5"
+    "newtype-ts": "0.3.5"
   }
 }

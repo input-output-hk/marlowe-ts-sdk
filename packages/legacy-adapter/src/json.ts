@@ -1,4 +1,3 @@
-import * as t from "io-ts";
 import * as C from 'io-ts/lib/Codec.js'
 import * as D from 'io-ts/lib/Decoder.js'
 import * as E from 'io-ts/lib/Encoder.js'

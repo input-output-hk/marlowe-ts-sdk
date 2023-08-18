@@ -5,7 +5,7 @@ import axios from 'axios';
 import { AxiosInstance, AxiosResponse } from 'axios';
 import * as TE from 'fp-ts/lib/TaskEither.js'
 import { flow, identity } from 'fp-ts/lib/function.js';
-import { JsonAlwayAndOnlyBigInt } from '@marlowe/legacy-adapter/json';
+import { JsonAlwayAndOnlyBigInt } from '@marlowe.io/legacy-adapter/json';
 
 
 const getOnlyData = TE.bimap(
