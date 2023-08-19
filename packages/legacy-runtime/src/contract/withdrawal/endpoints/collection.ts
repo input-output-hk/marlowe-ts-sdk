@@ -5,7 +5,7 @@ import { AxiosInstance } from 'axios';
 import * as TE from 'fp-ts/lib/TaskEither.js'
 import { pipe } from 'fp-ts/lib/function.js';
 import { Newtype, iso } from 'newtype-ts'
-import * as HTTP from '../../../common/http.js';
+import * as HTTP from '@marlowe.io/adapter/http';
 import { Header } from '../header.js';
 
 
@@ -13,7 +13,6 @@ import { TextEnvelope } from '../../../common/textEnvelope.js';
 
 import * as t from "io-ts/lib/index.js";
 import { formatValidationErrors } from 'jsonbigint-io-ts-reporters'
-import { DecodingError } from '../../../common/codec.js';
 import * as E from 'fp-ts/lib/Either.js'
 import * as A from 'fp-ts/lib/Array.js'
 import { unAddressBech32 } from '../../../common/address.js';
@@ -26,6 +25,7 @@ import { ContractId } from '../../id.js';
 import { RoleName } from '../../role.js';
 import { WithdrawalId } from '../id.js';
 import { unTxOutRef } from '../../../common/tx/outRef.js';
+import { DecodingError } from '@marlowe.io/adapter/codec';
 
 
 export interface WithdrawalsRange extends Newtype<{ readonly WithdrawalsRange: unique symbol }, string> {}

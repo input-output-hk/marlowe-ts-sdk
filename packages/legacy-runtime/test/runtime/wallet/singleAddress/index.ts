@@ -7,7 +7,7 @@ import * as TE from 'fp-ts/lib/TaskEither.js'
 import * as T from 'fp-ts/lib/Task.js'
 
 import { Token, token, TokenValue, adaValue, tokenValue  } from '@marlowe.io/language-core-v1';
-import { log } from '@marlowe.io/legacy-adapter/logging'
+import { log } from '@marlowe.io/adapter/logging'
 
 import { CIP30Network, WalletAPI } from '../../../../src/wallet/api.js';
 import { addressBech32, AddressBech32, unAddressBech32 } from '../../../../src/common/address.js';

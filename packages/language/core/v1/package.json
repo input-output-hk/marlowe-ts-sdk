@@ -18,34 +18,37 @@
     "test": "NODE_OPTIONS='--experimental-vm-modules --no-warnings' jest --config test/jest.unit.config.mjs"
   },
   "type": "module",
+  "module": "./dist/semantics/contract/index.js",
+  "main": "./dist/semantics/contract/index.js",
+  "types": "./dist/semantics/contract/index.d.ts",
   "files": [
     "dist"
   ],
   "exports": {
     ".": {
       "import": "./dist/semantics/contract/index.js",
-      "types": "./dist/semantics/contract/index.d.js"
+      "types": "./dist/semantics/contract/index.d.ts"
     },
     "./examples/*": "./dist/examples/*.js",
     "./next": {
       "import": "./dist/semantics/next/index.js",
-      "types": "./dist/semantics/next/index.d.js"
+      "types": "./dist/semantics/next/index.d.ts"
     },
     "./environment": {
       "import": "./dist/semantics/environment.js",
-      "types": "./dist/semantics/environment.d.js"
+      "types": "./dist/semantics/environment.d.ts"
     },
     "./state": {
       "import": "./dist/semantics/state.js",
-      "types": "./dist/semantics/state.d.js"
+      "types": "./dist/semantics/state.d.ts"
     },
     "./token": {
       "import": "./dist/semantics/contract/common/token.js",
-      "types": "./dist/semantics/contract/common/token.d.js"
+      "types": "./dist/semantics/contract/common/token.d.ts"
     },
     "./tokenValue": {
       "import": "./dist/semantics/contract/common/tokenValue.js",
-      "types": "./dist/semantics/contract/common/tokenValue.d.js"
+      "types": "./dist/semantics/contract/common/tokenValue.d.ts"
     },
     "./contract/*": "./dist/semantics/contract/*.js"
   },

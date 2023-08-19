@@ -9,14 +9,13 @@ import { formatValidationErrors } from "jsonbigint-io-ts-reporters";
 import { fromNewtype, optionFromNullable } from 'io-ts-types';
 import { AxiosInstance } from "axios";
 
-import { ISO8601 } from "@marlowe.io/legacy-adapter/time";
+import { ISO8601 } from "@marlowe.io/adapter/time";
 import { Input } from "@marlowe.io/language-core-v1";
 
-import * as HTTP from '../../../common/http.js';
+import * as HTTP from '@marlowe.io/adapter/http';
 import { unAddressBech32 } from "../../../common/address.js";
 import { Metadata } from "../../../common/metadata/index.js";
 import { AddressesAndCollaterals } from "../../../wallet/api.js";
-import { DecodingError } from "../../../common/codec.js";
 import { TextEnvelope } from "../../../common/textEnvelope.js";
 import { MarloweVersion } from "../../../common/version.js";
 import { Tags } from "../../../common/metadata/tag.js";
@@ -24,6 +23,7 @@ import { Header } from "../header.js";
 import { TransactionId } from ".././id.js";
 import { ContractId, unContractId } from "../../id.js";
 import { unTxOutRef } from "../../../common/tx/outRef.js";
+import { DecodingError } from "@marlowe.io/adapter/codec";
 
 export interface TransactionsRange extends Newtype<{ readonly TransactionsRange: unique symbol }, string> {}
 export const TransactionsRange = fromNewtype<TransactionsRange>(t.string)

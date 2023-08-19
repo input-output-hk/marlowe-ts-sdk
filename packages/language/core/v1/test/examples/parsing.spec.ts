@@ -8,7 +8,7 @@ import {formatValidationErrors} from 'jsonbigint-io-ts-reporters'
 import {Contract} from '@marlowe.io/language-core-v1'
 import * as path from 'path'
 import { fileURLToPath } from 'url';
-import {MarloweJSONCodec, minify} from '@marlowe.io/legacy-adapter/json'
+import {MarloweJSONCodec, minify} from '@marlowe.io/adapter/json'
 import { getFileContents } from '../adapter/file.js';
 
 

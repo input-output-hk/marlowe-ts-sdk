@@ -1,26 +1,21 @@
 
-import * as T from 'fp-ts/lib/Task.js'
 import * as TE from 'fp-ts/lib/TaskEither.js'
-import * as ContractCollection from '../contract/endpoints/collection.js';
-import * as TransactionCollection from '../contract/transaction/endpoints/collection.js';
 import * as WithdrawalCollection from '../contract/withdrawal/endpoints/collection.js';
-import { DecodingError } from '../common/codec.js';
-import { ContractDetails } from '../contract/details.js';
+
 import { pipe } from 'fp-ts/lib/function.js'
 import { ContractId }  from '../contract/id.js';
 import * as Contracts from '../contract/id.js';
 import * as Tx from '../contract/transaction/id.js';
-import * as Transaction from '../contract/transaction/details.js';
 import * as Withdrawal from '../contract/withdrawal/details.js';
 import * as WithdrawalId from '../contract/withdrawal/id.js';
 import { RuntimeRestAPI } from '../restAPI.js';
 import { WalletAPI, getAddressesAndCollaterals } from '../wallet/api.js';
 import { Metadata, Tags } from '../common/metadata/index.js';
-import { MarloweVersion } from '../common/version.js';
 import { Contract } from '@marlowe.io/language-core-v1/semantics/contract/index.js';
 import { RolesConfig } from '../contract/role.js';
 import { Input } from '@marlowe.io/language-core-v1/semantics/contract/when/input/index.js';
-import { ISO8601 } from '@marlowe.io/legacy-adapter/time';
+import { ISO8601 } from '@marlowe.io/adapter/time';
+import { DecodingError } from '@marlowe.io/adapter/codec';
 
 
 export type InitialisePayload =

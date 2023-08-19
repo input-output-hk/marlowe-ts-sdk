@@ -19,7 +19,7 @@ const copyWasm = copy({
 });
 export default {
     // input: 'packages/language/core/v1/dist/semantics/contract/index.js',
-    // input: 'packages/legacy-adapter/dist/index.js',
+    // input: 'packages/adapter/dist/index.js',
     input: 'packages/legacy-runtime/dist/index.js',
     output: {
         dir: outputDir,

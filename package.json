@@ -22,7 +22,7 @@
     "docs": "typedoc ."
   },
   "workspaces": [
-    "packages/legacy-adapter",
+    "packages/adapter",
     "packages/language/core/v1",
     "packages/legacy-runtime",
     "packages/token-metadata-client"

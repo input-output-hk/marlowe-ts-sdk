@@ -1,4 +1,4 @@
-import { DecodingError } from './common/codec.js';
+
 import { ContractId } from './contract/id.js';
 import { RuntimeRestAPI } from './restAPI.js';
 import { ApplyInputsPayload, InitialisePayload, WithdrawPayload } from './write/command.js';
@@ -15,6 +15,7 @@ import { addMinutes, subMinutes } from 'date-fns';
 import { Next } from '@marlowe.io/language-core-v1/semantics/next/index.js';
 import { Party } from '@marlowe.io/language-core-v1/semantics/contract/common/payee/party.js';
 import { PolicyId } from './common/policyId.js';
+import { DecodingError } from '@marlowe.io/adapter/codec';
 
 export type Runtime =
   { wallet : WalletAPI

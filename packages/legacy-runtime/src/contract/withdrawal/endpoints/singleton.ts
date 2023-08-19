@@ -5,13 +5,15 @@ import { AxiosInstance } from 'axios';
 import * as E from 'fp-ts/lib/Either.js'
 import * as TE from 'fp-ts/lib/TaskEither.js'
 import { pipe } from 'fp-ts/lib/function.js';
-import * as HTTP from '../../../common/http.js';
+import * as HTTP from '@marlowe.io/adapter/http';
+
 import { HexTransactionWitnessSet, transactionWitnessSetTextEnvelope } from '../../../common/textEnvelope.js';
 
 import {formatValidationErrors} from 'jsonbigint-io-ts-reporters'
-import { DecodingError } from '../../../common/codec.js';
+
 import { unWithdrawalId, WithdrawalId } from '../id.js';
 import { Details } from '../details.js';
+import { DecodingError } from '@marlowe.io/adapter/codec';
 
 
 export type GET = ( withdrawalId: WithdrawalId) => TE.TaskEither<Error | DecodingError, Details>

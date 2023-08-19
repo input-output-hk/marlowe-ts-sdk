@@ -3,13 +3,13 @@
   "compilerOptions": {
     "outDir": "../test-dist",
     "paths": {
-        "@marlowe.io/legacy-adapter/*": ["../../../../legacy-adapter/src/*"],
+        "@marlowe.io/adapter/*": ["../../../../adapter/src/*"],
         "@marlowe.io/language-core-v1/*": ["../src/*"]
     },
     "types": ["node", "jest"]
   },
   "references": [
-    {"path": "../../../../legacy-adapter/src"},
+    {"path": "../../../../adapter/src"},
     {"path": "../src"}
   ]
 }

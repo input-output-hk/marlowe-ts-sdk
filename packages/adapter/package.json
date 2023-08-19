@@ -1,5 +1,5 @@
 {
-  "name": "@marlowe.io/legacy-adapter",
+  "name": "@marlowe.io/adapter",
   "version": "0.1.0-beta",
   "description": "TODO",
   "repository": "https://github.com/input-output-hk/marlowe-ts-sdk",
@@ -12,12 +12,15 @@
     "Bjorn Kihlberg <bjorn.kihlberg@iohk.io> (https://iohk.io)"
   ],
   "license": "Apache-2.0",
-  "type": "module",
   "scripts": {
     "build": "tsc --build src",
     "clean": "tsc --build --clean src",
     "test": "echo 'adapter doesnt have tests for the moment'"
   },
+  "type": "module",
+  "files": [
+    "dist"
+  ],
   "exports": {
     ".": {
       "import": "./dist/index.js",
@@ -27,17 +30,13 @@
       "import": "./dist/time.js",
       "types": "./dist/time.d.ts"
     },
-    "./json": {
-      "import": "./dist/json.js",
-      "types": "./dist/json.d.ts"
+    "./codec": {
+      "import": "./dist/codec.js",
+      "types": "./dist/codec.d.ts"
     },
-    "./ada": {
-      "import": "./dist/ada.js",
-      "types": "./dist/ada.d.ts"
-    },
-    "./logging": {
-      "import": "./dist/logging.js",
-      "types": "./dist/logging.d.ts"
+    "./http": {
+      "import": "./dist/http.js",
+      "types": "./dist/http.d.ts"
     }
   },
   "dependencies": {

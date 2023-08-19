@@ -1,15 +1,11 @@
-
-/* eslint-disable sort-keys-fix/sort-keys-fix */
-/* eslint-disable no-use-before-define */
-import axios from 'axios';
 import { AxiosInstance, AxiosResponse } from 'axios';
 import * as TE from 'fp-ts/lib/TaskEither.js'
 import { flow, identity } from 'fp-ts/lib/function.js';
-import { JsonAlwayAndOnlyBigInt } from '@marlowe.io/legacy-adapter/json';
+import { MarloweJSON } from '@marlowe.io/adapter/codec';
 
 
 const getOnlyData = TE.bimap(
-  (e: unknown) => (e instanceof Error ? e : new Error(JsonAlwayAndOnlyBigInt.stringify(e))),
+  (e: unknown) => (e instanceof Error ? e : new Error(MarloweJSON.stringify(e))),
   (v: AxiosResponse): any => v.data,
 );
 

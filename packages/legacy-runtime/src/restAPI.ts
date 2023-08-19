@@ -1,7 +1,7 @@
 
-import axios, { AxiosInstance } from 'axios';
+import axios from 'axios';
 import * as TE from 'fp-ts/lib/TaskEither.js'
-import * as HTTP from './common/http.js';
+import * as HTTP from '@marlowe.io/adapter/http';
 import * as WithdrawalSingleton from './contract/withdrawal/endpoints/singleton.js';
 import * as WithdrawalCollection from './contract/withdrawal/endpoints/collection.js';
 import * as ContractSingleton from './contract/endpoints/singleton.js';
@@ -9,7 +9,7 @@ import * as ContractCollection from './contract/endpoints/collection.js';
 import * as TransactionSingleton from './contract/transaction/endpoints/singleton.js';
 import * as TransactionCollection from './contract/transaction/endpoints/collection.js';
 import * as ContractNext from './contract/next/endpoint.js';
-import { JsonAlwayAndOnlyBigInt, MarloweJSONCodec } from '@marlowe.io/legacy-adapter/json';
+import { MarloweJSONCodec } from '@marlowe.io/adapter/codec';
 import { pipe } from 'fp-ts/lib/function.js';
 
 
@@ -42,12 +42,6 @@ export interface RuntimeRestAPI {
   }
 }
 
-const interceptRequest = (axiosInstance: AxiosInstance) => axiosInstance.interceptors.request.use(request => {
-  console.log('Starting Request', JsonAlwayAndOnlyBigInt.stringify(request, null, 2))
-  return request
-})
-
-
 export const mkRuntimeRestAPI : (baseURL: string) =>  RuntimeRestAPI =
   (baseURL) =>
      pipe(axios.create
@@ -55,7 +49,6 @@ export const mkRuntimeRestAPI : (baseURL: string) =>  RuntimeRestAPI =
               , transformRequest: MarloweJSONCodec.encode
               , transformResponse: MarloweJSONCodec.decode
             })
-        //  , (axiosInstance) => { interceptRequest(axiosInstance); return axiosInstance}
          , (axiosInstance) =>
              ({ healthcheck: () => HTTP.Get(axiosInstance)('/healthcheck')
               , withdrawals:

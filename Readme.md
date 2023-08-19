@@ -5,7 +5,7 @@
 The Marlowe TypeScript SDK is a set of libraries and utilities to work with Marlowe contracts. The project uses [npm workspaces](https://docs.npmjs.com/cli/v7/using-npm/workspaces) to divide itself in the following packages:
 
 * `language/core/v1`: The `@marlowe.io/language-core-v1` library that contains the core Marlowe language definitions and utilities.
-* `legacy-adapter`: The `@marlowe.io/legacy-adapter` library that contains common utilities.
+* `adapter`: The `@marlowe.io/adapter` library that contains infrastruture domain functionalities.
 * `legacy-runtime`: The `@marlowe.io/legacy-runtime` library that contains the initial abstraction over the Marlowe runtime
 
 ## Developer notes

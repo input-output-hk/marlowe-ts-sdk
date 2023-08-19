@@ -3,13 +3,13 @@ import { AxiosInstance } from 'axios';
 import * as E from 'fp-ts/lib/Either.js'
 import * as TE from 'fp-ts/lib/TaskEither.js'
 import { pipe } from 'fp-ts/lib/function.js';
-import * as HTTP from '../../common/http.js';
+import * as HTTP from '@marlowe.io/adapter/http';
 import { HexTransactionWitnessSet, transactionWitnessSetTextEnvelope } from '../../common/textEnvelope.js';
 import { ContractDetails } from '../details.js';
 import * as t from "io-ts/lib/index.js";
 import {formatValidationErrors} from 'jsonbigint-io-ts-reporters'
-import { DecodingError } from '../../common/codec.js';
 import { ContractId, unContractId } from '../id.js';
+import { DecodingError } from '@marlowe.io/adapter/codec';
 
 export type GET = ( contractId: ContractId) => TE.TaskEither<Error | DecodingError, ContractDetails>
 

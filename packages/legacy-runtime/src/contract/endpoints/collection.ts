@@ -14,17 +14,17 @@ import { stringify } from 'qs';
 
 import { Contract } from '@marlowe.io/language-core-v1';
 
-import * as HTTP from '../../common/http.js';
+import * as HTTP from '@marlowe.io/adapter/http';
 import { Header } from '../header.js';
 import { RolesConfig } from '../role.js';
 import { Metadata, Tag, Tags } from '../../common/metadata/index.js';
 import { TextEnvelope } from '../../common/textEnvelope.js';
 import { ContractId } from '../id.js';
-import { DecodingError } from '../../common/codec.js';
 import { MarloweVersion } from '../../common/version.js';
 import { unAddressBech32 } from '../../common/address.js';
 import { AddressesAndCollaterals } from '../../wallet/api.js';
 import { unTxOutRef } from '../../common/tx/outRef.js';
+import { DecodingError } from '@marlowe.io/adapter/codec';
 
 export interface ContractsRange extends Newtype<{ readonly ContractsRange: unique symbol }, string> {}
 export const ContractsRange = fromNewtype<ContractsRange>(t.string)

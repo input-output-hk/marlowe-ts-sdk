@@ -1,9 +1,6 @@
 {
   "name": "@marlowe.io/legacy-runtime",
   "version": "0.1.0-beta",
-  "module": "./dist/index.js",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
   "description": "TODO",
   "repository": "https://github.com/input-output-hk/marlowe-ts-sdk",
   "publishConfig": {
@@ -23,6 +20,9 @@
     "build:e2e": "tsc --build test"
   },
   "type": "module",
+  "module": "./dist/index.js",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "files": [
     "dist"
   ],
