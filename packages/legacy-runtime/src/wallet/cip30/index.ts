@@ -8,13 +8,15 @@ import * as A from 'fp-ts/lib/Array.js'
 
 import { TxOutRef, txOutRef } from '../../common/tx/outRef.js';
 
+
 import { token } from '@marlowe.io/language-core-v1/token';
-
-
-import * as CSL from '@emurgo/cardano-serialization-lib-browser'
 import { TokenValue, lovelaceValue, tokenValue } from '@marlowe.io/language-core-v1/tokenValue';
 
+
+
+import { C,Core } from 'lucid-cardano';
 import { hex, utf8 } from '@47ng/codec'
+
 
 export const getExtensionInstance : (extensionName : string) => T.Task<WalletAPI> = (extensionName) =>
     pipe(() =>  window.cardano[extensionName.toLowerCase()].enable()
@@ -65,13 +67,13 @@ const fetchCollaterals : (extensionCIP30Instance : BroswerExtensionCIP30Api)  =>
 
 const deserializeAddress : (addressHex:string) =>  AddressBech32 =
     (addressHex) => 
-      pipe(CSL.Address.from_bytes(hex.decode(addressHex),).to_bech32()
+      pipe(C.Address.from_bytes(hex.decode(addressHex),).to_bech32(undefined)
           ,addressBech32)
 
 
 const deserializeCollateral : (collateral:string) =>  TxOutRef 
   = (collateral) => 
-    pipe( CSL.TransactionUnspentOutput.from_bytes(hex.decode(collateral))
+    pipe( C.TransactionUnspentOutput.from_bytes(hex.decode(collateral))
         , utxo => txOutRef (utxo.input().transaction_id().to_hex() + '#' + utxo.input().index().toString()))
 
 type DataSignature = {
@@ -79,11 +81,6 @@ type DataSignature = {
     key: string;
 };
 
-declare global {
-  interface Window {
-    cardano: Cardano;
-  }
-}
 
 type Cardano = {
   [key: string]: {
@@ -120,9 +117,9 @@ const fetchTokenValues : (extensionCIP30Instance : BroswerExtensionCIP30Api) => 
     , T.map((balances) => fromValue(deserializeValue(balances)))
     , TE.fromTask)
 
-const deserializeValue = (value: string) => CSL.Value.from_bytes(hex.decode(value));
+const deserializeValue = (value: string) => C.Value.from_bytes(hex.decode(value));
 
-export const fromValue = (value: CSL.Value) => {
+const fromValue = (value: Core.Value) => {
   const tokenValues: TokenValue[] = [ lovelaceValue(BigInt(value.coin().to_str()).valueOf())]
 
   const multiAsset = value.multiasset();
@@ -135,7 +132,7 @@ export const fromValue = (value: CSL.Value) => {
         const policyAssetNames = policyAssets.keys();
         for (let j = 0; j < policyAssetNames.len(); j += 1) {
           const assetName = policyAssetNames.get(j);
-          const quantity = policyAssets.get(assetName) ?? CSL.BigNum.from_str('0');
+          const quantity = policyAssets.get(assetName) ?? C.BigNum.from_str('0');
           tokenValues.push(
             tokenValue
               (BigInt(quantity.to_str()).valueOf())
