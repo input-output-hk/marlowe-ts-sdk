@@ -26,6 +26,7 @@
     "packages/adapter",
     "packages/language/core/v1",
     "packages/token-metadata-client",
+    "packages/wallet",
     "packages/runtime"
   ],
   "devDependencies": {

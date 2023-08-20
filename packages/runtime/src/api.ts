@@ -1,21 +1,22 @@
 
-import { ContractId } from './instance/overRestAPI/restClient/contract/id.js';
-import { RestAPI } from './instance/overRestAPI/restClient/index.js';
-import * as Withdrawal from './instance/overRestAPI/restClient/contract/withdrawal/details.js';
+import * as Withdrawal from '@marlowe.io/client-rest/contract/withdrawal/details.js';
 
 import * as TE from 'fp-ts/lib/TaskEither.js'
-import { WalletAPI } from './wallet/api.js';
+import { WalletAPI } from '@marlowe.io/wallet/api';
 import { Next } from '@marlowe.io/language-core-v1/semantics/next/index.js';
 import { DecodingError } from '@marlowe.io/adapter/codec';
-import { RolesConfig } from './instance/overRestAPI/restClient/contract/role.js';
+
 
 import { ISO8601 } from '@marlowe.io/adapter/time';
 
-import * as WithdrawalCollection from './instance/overRestAPI/restClient/contract/withdrawal/endpoints/collection.js';
+
 
 import { Contract } from '@marlowe.io/language-core-v1/semantics/contract/index.js';
 import { Input } from '@marlowe.io/language-core-v1/semantics/contract/when/input/index.js';
 import { Tags, Metadata } from '@marlowe.io/core/cardano';
+import { RoleName, RolesConfig } from '@marlowe.io/client-rest/contract/role.js';
+import { RestAPI } from '@marlowe.io/client-rest/index.js';
+import { ContractId } from '@marlowe.io/client-rest/contract/id.js';
 
 
 export type Runtime =
@@ -47,4 +48,4 @@ export type ApplyInputsRequest
         , invalidBefore?: ISO8601
         , invalidHereafter?: ISO8601})
 
-export type WithdrawRequest = WithdrawalCollection.PostWithdrawalsRequest
+export type WithdrawRequest = ({ contractId: ContractId, role: RoleName})

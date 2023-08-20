@@ -7,7 +7,6 @@ import { visualizer } from "rollup-plugin-visualizer";
 const outputDir = 'dist/runtime/esm';
 const nodePlugin = nodeResolve(
     { browser: true 
-    , resolveOnly: module => !module.includes('@emurgo/cardano-serialization-lib-browser')
     });
 
 // const wasmPlugin = wasm({targetEnv: 'browser', sync: ['**/*.wasm']});

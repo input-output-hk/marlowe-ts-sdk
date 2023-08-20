@@ -5,7 +5,7 @@ import { pipe } from 'fp-ts/lib/function.js'
 import { tokenToString, TokenName } from '@marlowe.io/language-core-v1'
 import { mkRuntime } from '@marlowe.io/runtime/overRestAPI'
 import { RestAPI } from '@marlowe.io/runtime/restClient'
-import { Context, SingleAddressWallet, PrivateKeysAsHex } from '@marlowe.io/runtime/wallet/nodejs/index.js'
+import { Context, SingleAddressWallet, PrivateKeysAsHex } from '@marlowe.io/wallet/nodejs';
 
 const log = (message:string) => console.log(`\t## - ${message}`);
 const formatADA = (lovelaces:bigint): String => new Intl.NumberFormat().format((lovelaces / 1_000_000n)).concat(" ₳");

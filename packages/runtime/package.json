@@ -61,10 +61,7 @@
     "newtype-ts": "0.3.5",
     "monocle-ts":"2.3.13",
     "date-fns": "2.29.3",
-    "axios": "^1.3.3",
-    "@47ng/codec": "1.1.0",
     "json-bigint": "^1.0.0",
-    "jsonbigint-io-ts-reporters": "2.0.1",
-    "lucid-cardano": "0.9.4"
+    "jsonbigint-io-ts-reporters": "2.0.1"
   }
 }

@@ -16,9 +16,8 @@ import { formatValidationErrors } from 'jsonbigint-io-ts-reporters'
 import * as HTTP from '@marlowe.io/adapter/http';
 import { DecodingError } from '@marlowe.io/adapter/codec';
 
-import { TextEnvelope, unAddressBech32, unTxOutRef } from '@marlowe.io/core/cardano';
+import { AddressesAndCollaterals, TextEnvelope, unAddressBech32, unTxOutRef } from '@marlowe.io/core/cardano';
 
-import { AddressesAndCollaterals } from '../../../../../../wallet/api.js';
 import { ContractId } from '../../id.js';
 import { RoleName } from '../../role.js';
 import { WithdrawalId } from '../id.js';

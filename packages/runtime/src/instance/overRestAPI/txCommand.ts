@@ -2,15 +2,15 @@
 import * as TE from 'fp-ts/lib/TaskEither.js'
 
 import { pipe } from 'fp-ts/lib/function.js'
-import { ContractId }  from './restClient/contract/id.js';
-import * as Contracts from './restClient/contract/id.js';
-import * as Tx from './restClient/contract/transaction/id.js';
-import * as Withdrawal from './restClient/contract/withdrawal/details.js';
-import * as WithdrawalId from './restClient/contract/withdrawal/id.js';
-import { RestAPI } from './restClient/index.js';
-import { WalletAPI, getAddressesAndCollaterals } from '../../wallet/api.js';
+import * as Contracts from '@marlowe.io/client-rest/contract/id.js';
+import * as Tx from '@marlowe.io/client-rest/contract/transaction/id.js';
+import * as Withdrawal from '@marlowe.io/client-rest/contract/withdrawal/details.js';
+import { RestAPI } from '@marlowe.io/client-rest/index.js';
+import { WalletAPI, getAddressesAndCollaterals } from '@marlowe.io/wallet/api';
 import { DecodingError } from '@marlowe.io/adapter/codec';
 import { CreateRequest, ApplyInputsRequest, WithdrawRequest } from '../../api.js';
+import { ContractId } from '@marlowe.io/client-rest/contract/id.js';
+import * as WithdrawalId from '@marlowe.io/client-rest/contract/withdrawal/id.js';
 
 
 export const create

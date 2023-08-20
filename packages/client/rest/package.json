@@ -1,0 +1,47 @@
+{
+  "name": "@marlowe.io/client-rest",
+  "version": "0.1.0-beta",
+  "description": "TODO",
+  "repository": "https://github.com/input-output-hk/marlowe-ts-sdk",
+  "publishConfig": {
+    "access": "public"
+  },
+  "contributors": [
+    "Nicolas Henin <nicolas.henin@iohk.io> (https://iohk.io)",
+    "Hernan Rajchert <hernan.rajchert@iohk.io> (https://iohk.io)",
+    "Bjorn Kihlberg <bjorn.kihlberg@iohk.io> (https://iohk.io)"
+  ],
+  "license": "Apache-2.0",
+  "scripts": {
+    "build": "tsc --build src",
+    "clean": "tsc --build --clean src",
+    "test": "echo 'The client rest doesnt have unit tests'",
+    "test:e2e": "echo 'The client rest doesnt have e2e tests'",
+    "build:e2e": "echo 'The client rest doesnt have unit tests'"
+  },
+  "type": "module",
+  "module": "./dist/index.js",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./contract/*": "./dist/contract/*.js"
+  },
+  "dependencies": {
+    "@types/qs": "6.9.7",
+    "fp-ts": "^2.13.1",
+    "io-ts": "2.2.20",
+    "newtype-ts": "0.3.5",
+    "monocle-ts": "2.3.13",
+    "date-fns": "2.29.3",
+    "axios": "^1.3.3",
+    "json-bigint": "^1.0.0",
+    "jsonbigint-io-ts-reporters": "2.0.1"
+  }
+}

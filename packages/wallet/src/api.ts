@@ -4,18 +4,9 @@ import * as O from 'fp-ts/lib/Option.js'
 import { pipe } from 'fp-ts/lib/function.js';
 import * as TE from 'fp-ts/lib/TaskEither.js'
 
-import * as t from "io-ts/lib/index.js";
-import { optionFromNullable } from "io-ts-types"
-import { AddressBech32, HexTransactionWitnessSet, MarloweTxCBORHex, TxOutRef } from '@marlowe.io/core/cardano'
+import { AddressBech32, AddressesAndCollaterals, HexTransactionWitnessSet, MarloweTxCBORHex, TxOutRef } from '@marlowe.io/core/cardano'
 import { TokenValue } from '@marlowe.io/language-core-v1/semantics/contract/common/tokenValue.js';
 
-
-export type AddressesAndCollaterals = t.TypeOf<typeof AddressesAndCollaterals>
-export const AddressesAndCollaterals = t.type(
-      { changeAddress: AddressBech32
-      , usedAddresses: optionFromNullable(t.array(AddressBech32))
-      , collateralUTxOs: optionFromNullable(t.array(TxOutRef))
-    })
 
 // N.B : Network Id returned by CIP30 Interface doesn't provide information on which Testnet Network
 //       the extension in configured.

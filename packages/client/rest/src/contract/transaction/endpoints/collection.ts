@@ -17,9 +17,7 @@ import { DecodingError } from "@marlowe.io/adapter/codec";
 import { ISO8601 } from "@marlowe.io/adapter/time";
 
 
-import { Metadata, Tags, TextEnvelope, unAddressBech32, unTxOutRef } from "@marlowe.io/core/cardano";
-
-import { AddressesAndCollaterals } from "../../../../../../wallet/api.js";
+import { AddressesAndCollaterals, Metadata, Tags, TextEnvelope, unAddressBech32, unTxOutRef } from "@marlowe.io/core/cardano";
 
 import { Header } from "../header.js";
 import { TransactionId } from "../id.js";

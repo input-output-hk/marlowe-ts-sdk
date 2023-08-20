@@ -1,6 +1,6 @@
 
-import { ContractId } from './restClient/contract/id.js';
-import { RestAPI } from './restClient/index.js';
+import { ContractId } from '@marlowe.io/client-rest/contract/id.js';
+import { RestAPI } from '@marlowe.io/client-rest/index.js';
 
 import * as Command from './txCommand.js';
 import * as A from 'fp-ts/lib/Array.js'
@@ -14,7 +14,7 @@ import { addMinutes, subMinutes } from 'date-fns';
 import { Party } from '@marlowe.io/language-core-v1/semantics/contract/common/payee/party.js';
 
 import { CreateRequest, ProvideInput, Runtime, WithdrawRequest } from '../../api.js';
-import { WalletAPI } from '../../wallet/api.js';
+import { WalletAPI } from '@marlowe.io/wallet/api';
 import { PolicyId } from '@marlowe.io/core/cardano';
 
 

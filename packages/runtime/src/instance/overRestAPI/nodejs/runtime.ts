@@ -1,8 +1,8 @@
-import { mkRestClient } from '../restClient/index.js';
+import { mkRestClient } from '@marlowe.io/client-rest/index.js';
 import * as T from 'fp-ts/lib/Task.js';
 import { pipe } from 'fp-ts/lib/function.js';
 
-import * as S from '../../../wallet/nodejs/index.js';
+import * as S from '@marlowe.io/wallet/nodejs';;
 import { mkRuntime } from '../runtime.js';
 import { Runtime } from '../../../api.js';
 

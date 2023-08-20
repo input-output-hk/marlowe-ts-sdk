@@ -3,18 +3,12 @@
   "compilerOptions": {
     "outDir": "../dist",
     "paths": {
-      "@marlowe.io/adapter/*": ["../../adapter/src/*"],
       "@marlowe.io/core/*": ["../../core/src/*"],
-      "@marlowe.io/wallet/*": ["../../wallet/src/*"],
-      "@marlowe.io/client-rest/*": ["../../client/rest/src/*"],
       "@marlowe.io/language-core-v1/*": ["../../language/core/v1/src/*"]
     }
   },
   "references": [
     { "path": "../../core/src" },
-    { "path": "../../adapter/src" },
-    { "path": "../../wallet/src" },
-    { "path": "../../client/rest/src" },
     { "path": "../../language/core/v1/src" },
   ]
 }
