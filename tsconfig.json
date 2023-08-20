@@ -3,6 +3,6 @@
   "references": [
     { "path": "./packages/adapter/src" },
     { "path": "./packages/language/core/v1/src" },
-    { "path": "./packages/legacy-runtime/src" }
+    { "path": "./packages/runtime/src" }
   ]
 }

@@ -16,7 +16,7 @@
   ],
   "license": "Apache-2.0",
   "scripts": {
-    "build": "tsc --build && rollup --config rollup/legacy-runtime-esm.config.mjs",
+    "build": "tsc --build && rollup --config rollup/runtime-esm.config.mjs",
     "clean": "npm run clean --workspaces && shx rm -rf dist",
     "test": "NODE_OPTIONS='--experimental-vm-modules --no-warnings' jest",
     "docs": "typedoc ."
@@ -24,8 +24,8 @@
   "workspaces": [
     "packages/adapter",
     "packages/language/core/v1",
-    "packages/legacy-runtime",
-    "packages/token-metadata-client"
+    "packages/token-metadata-client",
+    "packages/runtime"
   ],
   "devDependencies": {
     "@blockfrost/blockfrost-js": "5.2.0",

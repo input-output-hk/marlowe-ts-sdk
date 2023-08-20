@@ -6,7 +6,7 @@ The Marlowe TypeScript SDK is a set of libraries and utilities to work with Marl
 
 * `language/core/v1`: The `@marlowe.io/language-core-v1` library that contains the core Marlowe language definitions and utilities.
 * `adapter`: The `@marlowe.io/adapter` library that contains infrastruture domain functionalities.
-* `legacy-runtime`: The `@marlowe.io/legacy-runtime` library that contains the initial abstraction over the Marlowe runtime
+* `runtime`: The `@marlowe.io/runtime` library that contains the initial abstraction over the Marlowe runtime
 
 ## Developer notes
 
@@ -43,7 +43,7 @@ $ npm run test
 
 ### E2E tests
 
-In order to run the E2E tests you need to create a `packages/legacy-runtime/test/env/.env.test` file that points to a working version of the marlowe runtime and a working Blockfrost instance and a faucet PK
+In order to run the E2E tests you need to create a `packages/runtime/test/env/.env.test` file that points to a working version of the marlowe runtime and a working Blockfrost instance and a faucet PK
 
 TODO: explain how to get the Faucet PK
 

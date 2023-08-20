@@ -29,7 +29,6 @@
       "import": "./dist/semantics/contract/index.js",
       "types": "./dist/semantics/contract/index.d.ts"
     },
-    "./examples/*": "./dist/examples/*.js",
     "./next": {
       "import": "./dist/semantics/next/index.js",
       "types": "./dist/semantics/next/index.d.ts"
@@ -49,6 +48,10 @@
     "./tokenValue": {
       "import": "./dist/semantics/contract/common/tokenValue.js",
       "types": "./dist/semantics/contract/common/tokenValue.d.ts"
+    },
+    "./examples": {
+      "import": "./dist/examples/index.js",
+      "types": "./dist/examples/index.d.ts"
     },
     "./contract/*": "./dist/semantics/contract/*.js"
   },
