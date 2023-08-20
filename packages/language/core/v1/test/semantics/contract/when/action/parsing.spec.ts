@@ -7,8 +7,8 @@ import { pipe } from 'fp-ts/lib/function.js';
 import {formatValidationErrors} from 'jsonbigint-io-ts-reporters'
 import {Action} from '@marlowe.io/language-core-v1'
 import * as path from 'path'
-import { MarloweJSONCodec, minify } from '@marlowe.io/adapter/json';
-import {  getFileContents } from '../../../../adapter/file.js';
+import { MarloweJSONCodec, minify } from '@marlowe.io/adapter/codec';
+import {  getFileContents } from '@marlowe.io/adapter/file';
 import { fileURLToPath } from 'url';
 
 const getfilename = () => fileURLToPath(import.meta.url);

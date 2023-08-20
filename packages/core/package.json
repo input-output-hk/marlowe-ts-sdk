@@ -1,5 +1,5 @@
 {
-  "name": "@marlowe.io/adapter",
+  "name": "@marlowe.io/core",
   "version": "0.1.0-beta",
   "description": "TODO",
   "repository": "https://github.com/input-output-hk/marlowe-ts-sdk",
@@ -18,36 +18,22 @@
     "test": "echo 'adapter doesnt have tests for the moment'"
   },
   "type": "module",
+  "module": "./dist/cardano/index.js",
+  "main": "./dist/cardano/index.js",
+  "types": "./dist/cardano/index.d.ts",
   "files": [
     "dist"
   ],
   "exports": {
-    ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+    "./cardano": {
+      "import": "./dist/cardano/index.js",
+      "types": "./dist/cardano/index.d.ts"
     },
-    "./time": {
-      "import": "./dist/time.js",
-      "types": "./dist/time.d.ts"
-    },
-    "./codec": {
-      "import": "./dist/codec.js",
-      "types": "./dist/codec.d.ts"
-    },
-    "./file": {
-      "import": "./dist/file.js",
-      "types": "./dist/file.d.ts"
-    },
-    "./http": {
-      "import": "./dist/http.js",
-      "types": "./dist/http.d.ts"
-    }
+    "./cardano/*": "./dist/cardano/*.js"
   },
   "dependencies": {
-    "date-fns": "2.29.3",
     "fp-ts": "^2.16.0",
     "io-ts": "2.2.20",
-    "json-bigint": "^1.0.0",
     "newtype-ts": "0.3.5"
   }
 }

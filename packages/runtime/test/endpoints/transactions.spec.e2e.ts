@@ -8,7 +8,7 @@ import { addMinutes, subMinutes } from 'date-fns'
 import { datetoTimeout, inputNotify } from '@marlowe.io/language-core-v1';
 import { oneNotifyTrue } from '@marlowe.io/language-core-v1/examples'
 import { datetoIso8601Bis } from '@marlowe.io/adapter/time'
-import { mkRuntimeRestAPI } from '@marlowe.io/runtime/restClient';
+import { mkRestClient } from '@marlowe.io/runtime/restClient';
 
 import { getBankPrivateKey, getBlockfrostContext, getMarloweRuntimeUrl } from '../context.js';
 import { initialiseBankAndverifyProvisionning } from '../provisionning.js'
@@ -22,16 +22,16 @@ describe('Contracts/{contractd}/Transactions endpoints', () => {
      '(can POST: /contracts/{contractId}/transactions => ask to build the Tx to apply input on an initialised Marlowe Contract)', async () => {
     await
       pipe( initialiseBankAndverifyProvisionning
-              (mkRuntimeRestAPI(getMarloweRuntimeUrl()))
+              (mkRestClient(getMarloweRuntimeUrl()))
               (getBlockfrostContext ())
               (getBankPrivateKey())
           , TE.let (`notifyTimeout`,   () => pipe(Date.now(),addDays(1),datetoTimeout))
-          , TE.bind('result',({runtimeRestAPI,runtime,bank,notifyTimeout}) =>
+          , TE.bind('result',({restAPI,runtime,bank,notifyTimeout}) =>
                 pipe
-                  ( runtime.create
+                  ( runtime.txCommand.create
                     ( { contract: oneNotifyTrue(notifyTimeout)})
                   , TE.chainW ((contractId) =>
-                     runtimeRestAPI.contracts.contract.transactions.post
+                     restAPI.contracts.contract.transactions.post
                         (contractId
                         , { version : "v1"
                           , inputs : [inputNotify]
@@ -57,15 +57,15 @@ describe('Contracts/{contractd}/Transactions endpoints', () => {
      ' and GET : /contracts/{contractId}/transactions => should see the unsigned transaction listed)', async () => {
     await
       pipe( initialiseBankAndverifyProvisionning
-              (mkRuntimeRestAPI(getMarloweRuntimeUrl()))
+              (mkRestClient(getMarloweRuntimeUrl()))
               (getBlockfrostContext ())
               (getBankPrivateKey())
           , TE.let (`notifyTimeout`,   () => pipe(Date.now(),addDays(1),datetoTimeout))
-          , TE.bind('result',({runtimeRestAPI,runtime,bank,notifyTimeout}) =>
+          , TE.bind('result',({restAPI,runtime,bank,notifyTimeout}) =>
                 pipe
-                  ( runtime.create ({ contract: oneNotifyTrue(notifyTimeout)})
-                  , TE.chainW ((contractId) => runtime.applyInputs(contractId) ((next) => ({ inputs : [inputNotify]})))
-                  , TE.chainW ( contractId => runtimeRestAPI.contracts.contract.transactions.getHeadersByRange (contractId,O.none))
+                  ( runtime.txCommand.create ({ contract: oneNotifyTrue(notifyTimeout)})
+                  , TE.chainW ((contractId) => runtime.txCommand.applyInputs(contractId) ((next) => ({ inputs : [inputNotify]})))
+                  , TE.chainW ( contractId => restAPI.contracts.contract.transactions.getHeadersByRange (contractId,O.none))
                   , TE.map ((result) =>  expect(result.headers.length).toBe(1))))
           , TE.match(
               (e) => { console.dir(e, { depth: null }); expect(e).not.toBeDefined()},

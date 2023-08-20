@@ -49,6 +49,10 @@
       "import": "./dist/semantics/contract/common/tokenValue.js",
       "types": "./dist/semantics/contract/common/tokenValue.d.ts"
     },
+    "./version": {
+      "import": "./dist/semantics/version.js",
+      "types": "./dist/semantics/version.d.ts"
+    },
     "./examples": {
       "import": "./dist/examples/index.js",
       "types": "./dist/examples/index.d.ts"

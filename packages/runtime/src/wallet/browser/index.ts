@@ -1,18 +1,15 @@
 import * as T from 'fp-ts/lib/Task.js'
 import * as TE from 'fp-ts/lib/TaskEither.js'
 import { pipe } from 'fp-ts/lib/function.js';
-import { MarloweTxCBORHex, HexTransactionWitnessSet } from '../../common/textEnvelope.js';
-import { CIP30Network, WalletAPI } from '../api.js';
-import { AddressBech32, addressBech32 } from '../../common/address.js';
 import * as A from 'fp-ts/lib/Array.js'
-
-import { TxOutRef, txOutRef } from '../../common/tx/outRef.js';
 
 import { token } from '@marlowe.io/language-core-v1/token';
 import { TokenValue, lovelaceValue, tokenValue } from '@marlowe.io/language-core-v1/tokenValue';
 
+import { CIP30Network, WalletAPI } from '../api.js';
 import { C,Core } from 'lucid-cardano';
 import { hex, utf8 } from '@47ng/codec'
+import { MarloweTxCBORHex, HexTransactionWitnessSet, AddressBech32, TxOutRef, addressBech32, txOutRef } from '@marlowe.io/core/cardano';
 
 
 export const getExtensionInstance : (extensionName : string) => T.Task<WalletAPI> = (extensionName) =>

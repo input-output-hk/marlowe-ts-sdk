@@ -7,9 +7,7 @@ import * as TE from 'fp-ts/lib/TaskEither.js'
 import * as T from 'fp-ts/lib/Task.js'
 
 import { Token, token, TokenValue, adaValue, tokenValue  } from '@marlowe.io/language-core-v1';
-import { AddressBech32, addressBech32, unAddressBech32 } from '../../common/address.js';
-import { MarloweTxCBORHex, HexTransactionWitnessSet } from '../../common/textEnvelope.js';
-import { TxOutRef } from '../../common/tx/outRef.js';
+import { AddressBech32, TxOutRef, addressBech32, unAddressBech32, MarloweTxCBORHex, HexTransactionWitnessSet } from '@marlowe.io/core/cardano';
 import { WalletAPI, CIP30Network } from '../api.js';
 
 

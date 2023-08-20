@@ -5,10 +5,10 @@ import * as E from 'fp-ts/lib/Either.js'
 import { pipe } from 'fp-ts/lib/function.js';
 import {formatValidationErrors} from 'jsonbigint-io-ts-reporters'
 import * as path from 'path'
-import { MarloweJSONCodec, minify } from '@marlowe.io/adapter/json';
+import { MarloweJSONCodec, minify } from '@marlowe.io/adapter/codec';
 import { fileURLToPath } from 'url';
 import { Accounts } from '@marlowe.io/language-core-v1';
-import { getFileContents } from '../../../../../adapter/file.js';
+import { getFileContents } from '@marlowe.io/adapter/file';
 
 const getfilename = () => fileURLToPath(import.meta.url);
 export const currentDirectoryPath  = () => path.dirname(getfilename());

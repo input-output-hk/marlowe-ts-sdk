@@ -4,7 +4,7 @@ import * as TE from 'fp-ts/lib/TaskEither.js';
 import * as O from 'fp-ts/lib/Option.js';
 
 import { close } from '@marlowe.io/language-core-v1'
-import { mkRuntimeRestAPI } from '@marlowe.io/runtime/restClient';
+import { mkRestClient } from '@marlowe.io/runtime/restClient';
 import { create } from '@marlowe.io/runtime/txCommand';
 
 import { initialiseBankAndverifyProvisionning } from '../provisionning.js';
@@ -15,17 +15,17 @@ global.console = console
 
 describe('contracts endpoints', () => {
 
-  const runtimeRestAPI = mkRuntimeRestAPI(getMarloweRuntimeUrl())
+  const restClient = mkRestClient(getMarloweRuntimeUrl())
 
   it(' can build a Tx for Initialising a Marlowe Contract' +
     '(can POST: /contracts/ )', async () => {
       await
         pipe(initialiseBankAndverifyProvisionning
-          (runtimeRestAPI)
+          (restClient)
           (getBlockfrostContext())
           (getBankPrivateKey())
           , TE.bind('postContractResponse', ({ bank }) =>
-            runtimeRestAPI.contracts.post({
+            restClient.contracts.post({
               contract: close
               , version: 'v1'
               , metadata: {}
@@ -49,10 +49,10 @@ describe('contracts endpoints', () => {
       ' and GET /contracts/{contractid} => provide details about the contract initialised)', async () => {
         await
           pipe(initialiseBankAndverifyProvisionning
-            (runtimeRestAPI)
+            (restClient)
             (getBlockfrostContext())
             (getBankPrivateKey())
-            , TE.bindW('contracId', ({ bank }) => create (runtimeRestAPI)(bank)({contract: close}))
+            , TE.bindW('contracId', ({ bank }) => create (restClient)(bank)({contract: close}))
             , TE.match(
               (e) => {
                 console.dir(e, { depth: null });
@@ -65,10 +65,10 @@ describe('contracts endpoints', () => {
       '(GET:  /contracts/)', async () => {
         await
           pipe(initialiseBankAndverifyProvisionning
-            (runtimeRestAPI)
+            (restClient)
             (getBlockfrostContext())
             (getBankPrivateKey())
-            , TE.bindW('firstPage', () => runtimeRestAPI.contracts.getHeadersByRange(O.none)(['swap.L1.by.marlowe.team', "initialised"]))
+            , TE.bindW('firstPage', () => restClient.contracts.getHeadersByRange(O.none)(['swap.L1.by.marlowe.team', "initialised"]))
             , TE.match(
               (e) => { console.dir(e, { depth: null }); expect(e).not.toBeDefined() },
               (a) => { console.log("result",a.firstPage.headers.length)}))()

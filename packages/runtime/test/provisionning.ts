@@ -3,8 +3,8 @@ import * as T from 'fp-ts/lib/Task.js'
 import { pipe } from 'fp-ts/lib/function.js'
 
 import { tokenToString, TokenName } from '@marlowe.io/language-core-v1'
-import { mkRuntime } from '@marlowe.io/runtime/overRestClient'
-import { RuntimeRestAPI } from '@marlowe.io/runtime/restClient'
+import { mkRuntime } from '@marlowe.io/runtime/overRestAPI'
+import { RestAPI } from '@marlowe.io/runtime/restClient'
 import { Context, SingleAddressWallet, PrivateKeysAsHex } from '@marlowe.io/runtime/wallet/nodejs/index.js'
 
 const log = (message:string) => console.log(`\t## - ${message}`);
@@ -16,7 +16,7 @@ export type ProvisionScheme =
     }
 
 export const provisionAnAdaAndTokenProvider
-    =  (runtimeRestAPI: RuntimeRestAPI) =>
+    =  (restAPI: RestAPI) =>
        (walletContext: Context) =>
        (bankPrivateKey : PrivateKeysAsHex) =>
        (scheme : ProvisionScheme) =>
@@ -55,12 +55,12 @@ export const provisionAnAdaAndTokenProvider
                         ({ adaProvider:adaProvider
                         , tokenProvider:tokenProvider
                         , tokenValueMinted:tokenValueMinted
-                        , runtimeRestAPI : runtimeRestAPI
-                        , runtime : mkRuntime(runtimeRestAPI)})))
+                        , restAPI : restAPI
+                        , runtime : mkRuntime(restAPI)})))
 
 
 export const initialiseBankAndverifyProvisionning
-  =  (runtimeRestAPI: RuntimeRestAPI) =>
+  =  (restAPI: RestAPI) =>
      (walletContext: Context) =>
      (bankPrivateKey : PrivateKeysAsHex) =>
        pipe( TE.Do
@@ -74,5 +74,5 @@ export const initialiseBankAndverifyProvisionning
         , TE.chainFirst(({bankBalance})      => TE.of(expect(bankBalance).toBeGreaterThan(100_000_000)))
         , TE.map (({bank}) =>
             ({ bank : bank
-             , runtimeRestAPI : runtimeRestAPI
-             , runtime : mkRuntime(runtimeRestAPI)(bank)})))
+             , restAPI : restAPI
+             , runtime : mkRuntime(restAPI)(bank)})))

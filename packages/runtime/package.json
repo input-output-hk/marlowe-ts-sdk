@@ -32,26 +32,26 @@
       "types": "./dist/index.d.ts"
     },
     "./restClient": {
-      "import": "./dist/instance/overRestClient/restClient/index.js",
-      "types": "./dist/instance/overRestClient/restClient/index.d.ts"
+      "import": "./dist/instance/overRestAPI/restClient/index.js",
+      "types": "./dist/instance/overRestAPI/restClient/index.d.ts"
     },
-    "./overRestClient": {
-      "import": "./dist/instance/overRestClient/runtime.js",
-      "types": "./dist/instance/overRestClient/runtime.d.ts"
+    "./overRestAPI": {
+      "import": "./dist/instance/overRestAPI/runtime.js",
+      "types": "./dist/instance/overRestAPI/runtime.d.ts"
     },
     "./browser": {
-      "import": "./dist/instance/overRestClient/browser/runtime.js",
-      "types": "./dist/instance/overRestClient/browser/runtime.d.ts"
+      "import": "./dist/instance/overRestAPI/browser/runtime.js",
+      "types": "./dist/instance/overRestAPI/browser/runtime.d.ts"
     },
     "./nodejs": {
-      "import": "./dist/instance/overRestClient/nodejs/runtime.js",
-      "types": "./dist/instance/overRestClient/nodejs/runtime.d.ts"
+      "import": "./dist/instance/overRestAPI/nodejs/runtime.js",
+      "types": "./dist/instance/overRestAPI/nodejs/runtime.d.ts"
     },
     "./common/*": "./dist/common/*.js",
     "./wallet/*": "./dist/wallet/*.js",
     "./txCommand": {
-      "import": "./dist/txCommand.js",
-      "types": "./dist/txCommand.d.ts"
+      "import": "./dist/instance/overRestAPI/txCommand.js",
+      "types": "./dist/instance/overRestAPI/txCommand.d.ts"
     }
   },
   "dependencies": {

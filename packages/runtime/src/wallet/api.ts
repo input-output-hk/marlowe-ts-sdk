@@ -1,14 +1,12 @@
 
 import * as T from 'fp-ts/lib/Task.js'
 import * as O from 'fp-ts/lib/Option.js'
+import { pipe } from 'fp-ts/lib/function.js';
 import * as TE from 'fp-ts/lib/TaskEither.js'
 
-import { HexTransactionWitnessSet, MarloweTxCBORHex } from '../common/textEnvelope.js';
-import { optionFromNullable } from "io-ts-types"
-import { TxOutRef } from "../common/tx/outRef.js"
-import { AddressBech32 } from "../common/address.js"
 import * as t from "io-ts/lib/index.js";
-import { pipe } from 'fp-ts/lib/function.js';
+import { optionFromNullable } from "io-ts-types"
+import { AddressBech32, HexTransactionWitnessSet, MarloweTxCBORHex, TxOutRef } from '@marlowe.io/core/cardano'
 import { TokenValue } from '@marlowe.io/language-core-v1/semantics/contract/common/tokenValue.js';
 
 
