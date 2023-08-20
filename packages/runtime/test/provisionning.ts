@@ -3,9 +3,9 @@ import * as T from 'fp-ts/lib/Task.js'
 import { pipe } from 'fp-ts/lib/function.js'
 
 import { tokenToString, TokenName } from '@marlowe.io/language-core-v1'
-import { mkRuntime } from '@marlowe.io/runtime/runtime'
-import { RuntimeRestAPI } from '@marlowe.io/runtime/client'
-import { Context, SingleAddressWallet, PrivateKeysAsHex } from './runtime/wallet/singleAddress/index.js'
+import { mkRuntime } from '@marlowe.io/runtime/overRestClient'
+import { RuntimeRestAPI } from '@marlowe.io/runtime/restClient'
+import { Context, SingleAddressWallet, PrivateKeysAsHex } from '@marlowe.io/runtime/wallet/nodejs/index.js'
 
 const log = (message:string) => console.log(`\t## - ${message}`);
 const formatADA = (lovelaces:bigint): String => new Intl.NumberFormat().format((lovelaces / 1_000_000n)).concat(" ₳");

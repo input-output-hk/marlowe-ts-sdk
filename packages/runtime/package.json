@@ -31,21 +31,28 @@
       "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
     },
-    "./client": {
-      "import": "./dist/client/index.js",
-      "types": "./dist/client/index.d.ts"
+    "./restClient": {
+      "import": "./dist/instance/overRestClient/restClient/index.js",
+      "types": "./dist/instance/overRestClient/restClient/index.d.ts"
     },
-    "./runtime": {
-      "import": "./dist/runtime.js",
-      "types": "./dist/runtime.d.ts"
+    "./overRestClient": {
+      "import": "./dist/instance/overRestClient/runtime.js",
+      "types": "./dist/instance/overRestClient/runtime.d.ts"
     },
-    "./runtimeCIP30": {
-      "import": "./dist/runtimeCIP30.js",
-      "types": "./dist/runtimeCIP30.d.ts"
+    "./browser": {
+      "import": "./dist/instance/overRestClient/browser/runtime.js",
+      "types": "./dist/instance/overRestClient/browser/runtime.d.ts"
+    },
+    "./nodejs": {
+      "import": "./dist/instance/overRestClient/nodejs/runtime.js",
+      "types": "./dist/instance/overRestClient/nodejs/runtime.d.ts"
     },
     "./common/*": "./dist/common/*.js",
     "./wallet/*": "./dist/wallet/*.js",
-    "./write/*": "./dist/write/*.js"
+    "./txCommand": {
+      "import": "./dist/txCommand.js",
+      "types": "./dist/txCommand.d.ts"
+    }
   },
   "dependencies": {
     "@types/qs": "6.9.7",

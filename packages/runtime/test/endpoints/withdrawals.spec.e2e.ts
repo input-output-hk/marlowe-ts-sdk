@@ -6,7 +6,7 @@ import { addDays } from 'date-fns/fp';
 import * as Examples from '@marlowe.io/language-core-v1/examples';
 import { datetoTimeout, adaValue } from '@marlowe.io/language-core-v1';
 import { toInput } from '@marlowe.io/language-core-v1/next';
-import { mkRuntimeRestAPI } from '@marlowe.io/runtime/client';
+import { mkRuntimeRestAPI } from '@marlowe.io/runtime/restClient';
 
 import { getBankPrivateKey, getBlockfrostContext, getMarloweRuntimeUrl } from '../context.js';
 import { provisionAnAdaAndTokenProvider } from '../provisionning.js';
@@ -39,7 +39,7 @@ describe('withdrawals endpoints ', () => {
               }))
           , TE.let (`swapContract`, ({swapRequest}) => Examples.SwapADAToken.mkSwapContract(swapRequest))
           , TE.bindW('contractId',({runtime,adaProvider,tokenProvider,swapRequest,swapContract}) =>
-              pipe( runtime(adaProvider).initialise
+              pipe( runtime(adaProvider).create
                       ( { contract: swapContract
                         , roles: {[swapRequest.provider.roleName] : adaProvider.address
                                  ,[swapRequest.swapper.roleName]  : tokenProvider.address}})

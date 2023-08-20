@@ -4,8 +4,8 @@ import * as TE from 'fp-ts/lib/TaskEither.js';
 import * as O from 'fp-ts/lib/Option.js';
 
 import { close } from '@marlowe.io/language-core-v1'
-import { mkRuntimeRestAPI } from '@marlowe.io/runtime/client';
-import { initialise } from '@marlowe.io/runtime/write/command';
+import { mkRuntimeRestAPI } from '@marlowe.io/runtime/restClient';
+import { create } from '@marlowe.io/runtime/txCommand';
 
 import { initialiseBankAndverifyProvisionning } from '../provisionning.js';
 import { getBankPrivateKey, getBlockfrostContext, getMarloweRuntimeUrl } from '../context.js';
@@ -52,7 +52,7 @@ describe('contracts endpoints', () => {
             (runtimeRestAPI)
             (getBlockfrostContext())
             (getBankPrivateKey())
-            , TE.bindW('contracId', ({ bank }) => initialise (runtimeRestAPI)(bank)({contract: close}))
+            , TE.bindW('contracId', ({ bank }) => create (runtimeRestAPI)(bank)({contract: close}))
             , TE.match(
               (e) => {
                 console.dir(e, { depth: null });

@@ -10,7 +10,8 @@ const moduleNameMapper = {
   '^@marlowe.io/language\\-core\\-v1$': relative("../../language/core/v1/dist/semantics/contract/index.js"),
   '^@marlowe.io/language\\-core\\-v1/next$': relative('../../language/core/v1/dist/semantics/next/index.js'),
   '^@marlowe.io/language\\-core\\-v1/examples$': relative('../../language/core/v1/dist/examples/index.js'),
-  '^@marlowe.io/runtime/client': relative('../dist/client/index.js'),
+  '^@marlowe.io/runtime/restClient': relative('../dist/instance/overRestClient/restClient/index.js'),
+  '^@marlowe.io/runtime/wallet/nodejs/index.js': relative('../dist/wallet/nodejs/index.js'),
   '^(\\.{1,2}/.*)\\.js$': '$1',
 }
 

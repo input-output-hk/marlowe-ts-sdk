@@ -8,7 +8,7 @@ import { addMinutes, subMinutes } from 'date-fns'
 import { datetoTimeout, inputNotify } from '@marlowe.io/language-core-v1';
 import { oneNotifyTrue } from '@marlowe.io/language-core-v1/examples'
 import { datetoIso8601Bis } from '@marlowe.io/adapter/time'
-import { mkRuntimeRestAPI } from '@marlowe.io/runtime/client';
+import { mkRuntimeRestAPI } from '@marlowe.io/runtime/restClient';
 
 import { getBankPrivateKey, getBlockfrostContext, getMarloweRuntimeUrl } from '../context.js';
 import { initialiseBankAndverifyProvisionning } from '../provisionning.js'
@@ -28,7 +28,7 @@ describe('Contracts/{contractd}/Transactions endpoints', () => {
           , TE.let (`notifyTimeout`,   () => pipe(Date.now(),addDays(1),datetoTimeout))
           , TE.bind('result',({runtimeRestAPI,runtime,bank,notifyTimeout}) =>
                 pipe
-                  ( runtime.initialise
+                  ( runtime.create
                     ( { contract: oneNotifyTrue(notifyTimeout)})
                   , TE.chainW ((contractId) =>
                      runtimeRestAPI.contracts.contract.transactions.post
@@ -63,7 +63,7 @@ describe('Contracts/{contractd}/Transactions endpoints', () => {
           , TE.let (`notifyTimeout`,   () => pipe(Date.now(),addDays(1),datetoTimeout))
           , TE.bind('result',({runtimeRestAPI,runtime,bank,notifyTimeout}) =>
                 pipe
-                  ( runtime.initialise ({ contract: oneNotifyTrue(notifyTimeout)})
+                  ( runtime.create ({ contract: oneNotifyTrue(notifyTimeout)})
                   , TE.chainW ((contractId) => runtime.applyInputs(contractId) ((next) => ({ inputs : [inputNotify]})))
                   , TE.chainW ( contractId => runtimeRestAPI.contracts.contract.transactions.getHeadersByRange (contractId,O.none))
                   , TE.map ((result) =>  expect(result.headers.length).toBe(1))))
