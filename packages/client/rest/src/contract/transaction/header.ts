@@ -2,10 +2,10 @@ import * as t from "io-ts/lib/index.js";
 import { optionFromNullable } from "io-ts-types";
 
 import { BuiltinByteString } from "@marlowe.io/language-core-v1";
-import { Tags, Metadata, BlockHeader, TxOutRef } from "@marlowe.io/core/cardano";
+import { Tags, Metadata, BlockHeader, TxOutRef } from "@marlowe.io/core";
 
 
-import { ContractId } from "../id.js";
+import { ContractId } from "@marlowe.io/core";
 import { TransactionId } from "./id.js";
 import { TxStatus } from "./status.js";
 

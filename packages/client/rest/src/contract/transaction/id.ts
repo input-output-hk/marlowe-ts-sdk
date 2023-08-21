@@ -4,7 +4,7 @@ import { iso, Newtype } from "newtype-ts";
 import { fromNewtype } from "io-ts-types";
 
 import { pipe } from "fp-ts/lib/function.js";
-import { TxId } from "@marlowe.io/core/cardano";
+import { TxId } from "@marlowe.io/core";
 
 export type TransactionId = Newtype<{ readonly TransactionId: unique symbol }, string>
 export const TransactionId = fromNewtype<TransactionId>(t.string)

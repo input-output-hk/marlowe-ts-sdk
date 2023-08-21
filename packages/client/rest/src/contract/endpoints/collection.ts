@@ -18,12 +18,12 @@ import { MarloweVersion } from '@marlowe.io/language-core-v1/version';
 import * as HTTP from '@marlowe.io/adapter/http';
 import { DecodingError } from '@marlowe.io/adapter/codec';
 
-import { Tag, Tags, Metadata, TextEnvelope, unAddressBech32, unTxOutRef, AddressesAndCollaterals } from '@marlowe.io/core/cardano';
+import { Tag, Tags, Metadata, TextEnvelope, unAddressBech32, unTxOutRef, AddressesAndCollaterals } from '@marlowe.io/core';
 
 import { Header } from '../header.js';
 import { RolesConfig } from '../role.js';
 
-import { ContractId } from '../id.js';
+import { ContractId } from "@marlowe.io/core";
 
 export interface ContractsRange extends Newtype<{ readonly ContractsRange: unique symbol }, string> {}
 export const ContractsRange = fromNewtype<ContractsRange>(t.string)

@@ -25,11 +25,10 @@
     "dist"
   ],
   "exports": {
-    "./cardano": {
-      "import": "./dist/cardano/index.js",
-      "types": "./dist/cardano/index.d.ts"
-    },
-    "./cardano/*": "./dist/cardano/*.js"
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
   },
   "dependencies": {
     "fp-ts": "^2.16.0",

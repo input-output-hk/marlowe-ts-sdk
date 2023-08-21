@@ -9,7 +9,7 @@ import { TokenValue, lovelaceValue, tokenValue } from '@marlowe.io/language-core
 import { CIP30Network, WalletAPI } from '../api.js';
 import { C,Core } from 'lucid-cardano';
 import { hex, utf8 } from '@47ng/codec'
-import { MarloweTxCBORHex, HexTransactionWitnessSet, AddressBech32, TxOutRef, addressBech32, txOutRef } from '@marlowe.io/core/cardano';
+import { MarloweTxCBORHex, HexTransactionWitnessSet, AddressBech32, TxOutRef, addressBech32, txOutRef } from '@marlowe.io/core';
 
 
 export const getExtensionInstance : (extensionName : string) => T.Task<WalletAPI> = (extensionName) =>

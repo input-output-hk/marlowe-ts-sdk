@@ -8,7 +8,7 @@ import { addMinutes, subMinutes } from 'date-fns'
 import { datetoTimeout, inputNotify } from '@marlowe.io/language-core-v1';
 import { oneNotifyTrue } from '@marlowe.io/language-core-v1/examples'
 import { datetoIso8601Bis } from '@marlowe.io/adapter/time'
-import { mkRestClient } from '@marlowe.io/runtime/restClient';
+import { mkRestClient } from '@marlowe.io/runtime-rest-client/index.js';
 
 import { getBankPrivateKey, getBlockfrostContext, getMarloweRuntimeUrl } from '../context.js';
 import { initialiseBankAndverifyProvisionning } from '../provisionning.js'

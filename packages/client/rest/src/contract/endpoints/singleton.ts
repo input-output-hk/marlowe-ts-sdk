@@ -11,10 +11,10 @@ import {formatValidationErrors} from 'jsonbigint-io-ts-reporters'
 import * as HTTP from '@marlowe.io/adapter/http';
 import { DecodingError } from '@marlowe.io/adapter/codec';
 
-import { HexTransactionWitnessSet, transactionWitnessSetTextEnvelope } from '@marlowe.io/core/cardano';
+import { HexTransactionWitnessSet, transactionWitnessSetTextEnvelope } from '@marlowe.io/core';
 
 import { ContractDetails } from '../details.js';
-import { ContractId, unContractId } from '../id.js';
+import { ContractId, unContractId } from "@marlowe.io/core";
 
 export type GET = ( contractId: ContractId) => TE.TaskEither<Error | DecodingError, ContractDetails>
 

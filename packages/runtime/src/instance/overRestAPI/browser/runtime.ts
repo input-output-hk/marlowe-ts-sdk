@@ -1,16 +1,17 @@
-import { mkRestClient } from '@marlowe.io/client-rest/index.js';
 import * as T from 'fp-ts/lib/Task.js'
 import { pipe } from 'fp-ts/lib/function.js';
 
 import { getExtensionInstance } from '@marlowe.io/wallet/browser';
-import { mkRuntime } from '../runtime.js';
-import { Runtime } from '../../../api.js';
+import * as Generic from '../runtime.js';
+import { Runtime } from '../../../apis/runtime.js';
 
-export const mkRuntimeBroswer
+import { mkRestClient } from '@marlowe.io/runtime-rest-client';
+
+export const mkRuntime
   : (runtimeURL : string)
   => (extensionName : string)
   => T.Task<Runtime> =
   (runtimeURL) => (extensionName) =>
     pipe( getExtensionInstance (extensionName)
-        , T.map (mkRuntime (mkRestClient(runtimeURL))))
+        , T.map (Generic.mkRuntime (mkRestClient(runtimeURL))))
 

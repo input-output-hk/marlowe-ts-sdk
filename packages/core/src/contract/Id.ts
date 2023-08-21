@@ -4,7 +4,7 @@ import { fromNewtype } from "io-ts-types";
 import { split } from "fp-ts/lib/string.js";
 import { pipe } from "fp-ts/lib/function.js";
 import { head } from "fp-ts/lib/ReadonlyNonEmptyArray.js";
-import { TxId } from "@marlowe.io/core/cardano";
+import { TxId } from "../tx/id.js";
 
 
 export type ContractId = Newtype<{ readonly ContractId: unique symbol }, string>

@@ -1,8 +1,7 @@
 
-import { ContractId } from '@marlowe.io/client-rest/contract/id.js';
-import { RestAPI } from '@marlowe.io/client-rest/index.js';
 
-import * as Command from './txCommand.js';
+
+import * as Command from './tx.js';
 import * as A from 'fp-ts/lib/Array.js'
 import * as TE from 'fp-ts/lib/TaskEither.js'
 import * as T from 'fp-ts/lib/Task.js'
@@ -12,11 +11,12 @@ import { mkEnvironment } from '@marlowe.io/language-core-v1/environment';
 import { addMinutes, subMinutes } from 'date-fns';
 
 import { Party } from '@marlowe.io/language-core-v1/semantics/contract/common/payee/party.js';
-
-import { CreateRequest, ProvideInput, Runtime, WithdrawRequest } from '../../api.js';
+import { Runtime } from '../../apis/runtime.js';
+import { CreateRequest, ProvideInput, WithdrawRequest } from '../../apis/tx.js';
 import { WalletAPI } from '@marlowe.io/wallet/api';
-import { PolicyId } from '@marlowe.io/core/cardano';
+import { PolicyId,ContractId } from '@marlowe.io/core';
 
+import { RestAPI } from '@marlowe.io/runtime-rest-client';
 
 export const mkRuntime
   :  (restAPI : RestAPI)

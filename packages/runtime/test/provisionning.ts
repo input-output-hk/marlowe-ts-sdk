@@ -4,7 +4,7 @@ import { pipe } from 'fp-ts/lib/function.js'
 
 import { tokenToString, TokenName } from '@marlowe.io/language-core-v1'
 import { mkRuntime } from '@marlowe.io/runtime/overRestAPI'
-import { RestAPI } from '@marlowe.io/runtime/restClient'
+import { RestAPI } from '@marlowe.io/runtime-rest-client/index.js'
 import { Context, SingleAddressWallet, PrivateKeysAsHex } from '@marlowe.io/wallet/nodejs';
 
 const log = (message:string) => console.log(`\t## - ${message}`);

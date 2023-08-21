@@ -11,11 +11,11 @@ const nodePlugin = nodeResolve(
 
 // const wasmPlugin = wasm({targetEnv: 'browser', sync: ['**/*.wasm']});
 
-const copyWasm = copy({
-    targets: [
-        { src: 'node_modules/@emurgo/cardano-serialization-lib-browser/*.wasm', dest: `${outputDir}/` }
-    ]
-});
+// const copyWasm = copy({
+//     targets: [
+//         { src: 'node_modules/@emurgo/cardano-serialization-lib-browser/*.wasm', dest: `${outputDir}/` }
+//     ]
+// });
 export default {
     // input: 'packages/language/core/v1/dist/semantics/contract/index.js',
     // input: 'packages/adapter/dist/index.js',
@@ -25,7 +25,8 @@ export default {
         format: 'esm',
     },
     plugins: 
-        [ copyWasm
+        [ 
+            // copyWasm
         , nodePlugin
         , commonjs()
         , outputSize()

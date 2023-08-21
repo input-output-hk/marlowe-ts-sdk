@@ -1,7 +1,7 @@
 {
-  "name": "@marlowe.io/client-rest",
+  "name": "@marlowe.io/runtime-rest-client",
   "version": "0.1.0-beta",
-  "description": "TODO",
+  "description": "Client of Runtime REST API",
   "repository": "https://github.com/input-output-hk/marlowe-ts-sdk",
   "publishConfig": {
     "access": "public"
@@ -15,9 +15,7 @@
   "scripts": {
     "build": "tsc --build src",
     "clean": "tsc --build --clean src",
-    "test": "echo 'The client rest doesnt have unit tests'",
-    "test:e2e": "echo 'The client rest doesnt have e2e tests'",
-    "build:e2e": "echo 'The client rest doesnt have unit tests'"
+    "test": "echo 'The client rest doesnt have unit tests'"
   },
   "type": "module",
   "module": "./dist/index.js",
@@ -30,6 +28,14 @@
     ".": {
       "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
+    },
+    "./transaction": {
+      "import": "./dist/contract/transaction/index.js",
+      "types": "./dist/contract/transaction/index.d.ts"
+    },
+    "./withdrawal": {
+      "import": "./dist/contract/withdrawal/index.js",
+      "types": "./dist/contract/withdrawal/index.d.ts"
     },
     "./contract/*": "./dist/contract/*.js"
   },

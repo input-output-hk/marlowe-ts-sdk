@@ -3,12 +3,12 @@ import * as t from "io-ts/lib/index.js";
 import { Contract } from "@marlowe.io/language-core-v1";
 import { MarloweState } from "@marlowe.io/language-core-v1/state";
 import { MarloweVersion } from "@marlowe.io/language-core-v1/version";
-import { ContractId } from "./id.js";
+import { ContractId } from "@marlowe.io/core";
 
 import { TxStatus } from "./transaction/status.js";
 
 import { RoleName } from "./role.js";
-import { TxOutRef, BlockHeader, Metadata, TextEnvelope,PolicyId } from "@marlowe.io/core/cardano";
+import { TxOutRef, BlockHeader, Metadata, TextEnvelope,PolicyId } from "@marlowe.io/core";
 
 
 export type Payout = t.TypeOf<typeof Payout>

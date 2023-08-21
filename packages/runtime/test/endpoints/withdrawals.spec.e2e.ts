@@ -6,7 +6,7 @@ import { addDays } from 'date-fns/fp';
 import * as Examples from '@marlowe.io/language-core-v1/examples';
 import { datetoTimeout, adaValue } from '@marlowe.io/language-core-v1';
 import { toInput } from '@marlowe.io/language-core-v1/next';
-import { mkRestClient } from '@marlowe.io/runtime/restClient';
+import { mkRestClient } from '@marlowe.io/runtime-rest-client/index.js';
 
 import { getBankPrivateKey, getBlockfrostContext, getMarloweRuntimeUrl } from '../context.js';
 import { provisionAnAdaAndTokenProvider } from '../provisionning.js';

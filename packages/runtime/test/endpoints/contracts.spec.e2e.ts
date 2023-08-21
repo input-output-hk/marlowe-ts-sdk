@@ -4,8 +4,8 @@ import * as TE from 'fp-ts/lib/TaskEither.js';
 import * as O from 'fp-ts/lib/Option.js';
 
 import { close } from '@marlowe.io/language-core-v1'
-import { mkRestClient } from '@marlowe.io/runtime/restClient';
 import { create } from '@marlowe.io/runtime/txCommand';
+import { mkRestClient } from '@marlowe.io/runtime-rest-client/index.js';
 
 import { initialiseBankAndverifyProvisionning } from '../provisionning.js';
 import { getBankPrivateKey, getBlockfrostContext, getMarloweRuntimeUrl } from '../context.js';

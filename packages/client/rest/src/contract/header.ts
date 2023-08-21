@@ -4,10 +4,10 @@ import { optionFromNullable } from "io-ts-types";
 
 import { MarloweVersion } from "@marlowe.io/language-core-v1/version";
 
-import { BlockHeader, Metadata, PolicyId, Tags } from "@marlowe.io/core/cardano";
+import { BlockHeader, Metadata, PolicyId, Tags } from "@marlowe.io/core";
 
 import { TxStatus } from "./transaction/status.js";
-import { ContractId } from "./id.js";
+import { ContractId } from "@marlowe.io/core";
 
 
 export type Header = t.TypeOf<typeof Header>

@@ -42,6 +42,7 @@
     "fp-ts": "^2.16.0",
     "io-ts": "2.2.20",
     "newtype-ts": "0.3.5",
+    "@47ng/codec" : "1.1.0",
     "lucid-cardano": "0.9.4"
   }
 }

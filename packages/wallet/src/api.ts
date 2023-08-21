@@ -4,7 +4,7 @@ import * as O from 'fp-ts/lib/Option.js'
 import { pipe } from 'fp-ts/lib/function.js';
 import * as TE from 'fp-ts/lib/TaskEither.js'
 
-import { AddressBech32, AddressesAndCollaterals, HexTransactionWitnessSet, MarloweTxCBORHex, TxOutRef } from '@marlowe.io/core/cardano'
+import { AddressBech32, AddressesAndCollaterals, HexTransactionWitnessSet, MarloweTxCBORHex, TxOutRef } from '@marlowe.io/core'
 import { TokenValue } from '@marlowe.io/language-core-v1/semantics/contract/common/tokenValue.js';
 
 

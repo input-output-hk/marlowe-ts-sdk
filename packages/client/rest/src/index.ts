@@ -1,7 +1,11 @@
 
 import axios from 'axios';
 import * as TE from 'fp-ts/lib/TaskEither.js'
+import { pipe } from 'fp-ts/lib/function.js';
+
+import { MarloweJSONCodec } from '@marlowe.io/adapter/codec';
 import * as HTTP from '@marlowe.io/adapter/http';
+
 import * as WithdrawalSingleton from './contract/withdrawal/endpoints/singleton.js';
 import * as WithdrawalCollection from './contract/withdrawal/endpoints/collection.js';
 import * as ContractSingleton from './contract/endpoints/singleton.js';
@@ -9,9 +13,6 @@ import * as ContractCollection from './contract/endpoints/collection.js';
 import * as TransactionSingleton from './contract/transaction/endpoints/singleton.js';
 import * as TransactionCollection from './contract/transaction/endpoints/collection.js';
 import * as ContractNext from './contract/next/endpoint.js';
-import { MarloweJSONCodec } from '@marlowe.io/adapter/codec';
-import { pipe } from 'fp-ts/lib/function.js';
-
 
 export interface RestAPI {
   healthcheck : () => TE.TaskEither<Error,Boolean>
