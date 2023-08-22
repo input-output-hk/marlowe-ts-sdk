@@ -1,0 +1,25 @@
+{
+  "name": "@marlowe/token-metadata-client",
+  "version": "0.1.0-beta",
+  "description": "TODO",
+  "repository": "https://github.com/input-output-hk/marlowe-ts-sdk",
+  "publishConfig": {
+    "access": "public"
+  },
+  "contributors": [
+    "Nicolas Henin <nicolas.henin@iohk.io> (https://iohk.io)",
+    "Hernan Rajchert <hernan.rajchert@iohk.io> (https://iohk.io)",
+    "Bjorn Kihlberg <bjorn.kihlberg@iohk.io> (https://iohk.io)"
+  ],
+  "license": "Apache-2.0",
+  "scripts": {
+    "build": "tsc --build src",
+    "clean": "tsc --build --clean src",
+    "test": "echo '@marlowe/token-metadata-client doesnt have unit tests'"
+  },
+  "type": "module",
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "dependencies": {}
+}
