@@ -1,7 +1,7 @@
 import * as t from "io-ts/lib/index.js"
 import { optionFromNullable } from "io-ts-types";
 import { PolicyId } from "@marlowe.io/language-core-v1";
-import { AddressBech32 } from "@marlowe.io/core";
+import { AddressBech32 } from "@marlowe.io/runtime-core";
 
 
 export type  RoleName = string

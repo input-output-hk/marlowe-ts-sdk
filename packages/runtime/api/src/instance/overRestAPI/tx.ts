@@ -6,8 +6,8 @@ import { RestAPI } from '@marlowe.io/runtime-rest-client/index.js';
 import { WalletAPI, getAddressesAndCollaterals } from '@marlowe.io/wallet/api';
 import { DecodingError } from '@marlowe.io/adapter/codec';
 import { CreateRequest, ApplyInputsRequest, WithdrawRequest } from '../../apis/tx.js';
-import { ContractId } from "@marlowe.io/core";;
-import * as Contracts from "@marlowe.io/core";;
+import { ContractId } from "@marlowe.io/runtime-core";;
+import * as Contracts from "@marlowe.io/runtime-core";;
 
 
 import * as Tx from '@marlowe.io/runtime-rest-client/transaction';

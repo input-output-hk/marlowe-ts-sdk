@@ -2,7 +2,7 @@ import * as t from "io-ts/lib/index.js";
 import { iso, Newtype } from "newtype-ts";
 import { fromNewtype } from "io-ts-types";
 import { pipe } from "fp-ts/lib/function.js";
-import { TxId } from "@marlowe.io/core";
+import { TxId } from "@marlowe.io/runtime-core";
 
 
 export type WithdrawalId = Newtype<{ readonly WithdrawalId: unique symbol }, string>

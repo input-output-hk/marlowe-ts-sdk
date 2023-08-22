@@ -17,11 +17,11 @@ import { DecodingError } from "@marlowe.io/adapter/codec";
 import { ISO8601 } from "@marlowe.io/adapter/time";
 
 
-import { AddressesAndCollaterals, Metadata, Tags, TextEnvelope, unAddressBech32, unTxOutRef } from "@marlowe.io/core";
+import { AddressesAndCollaterals, Metadata, Tags, TextEnvelope, unAddressBech32, unTxOutRef } from "@marlowe.io/runtime-core";
 
 import { Header } from "../header.js";
 import { TransactionId } from "../id.js";
-import { ContractId, unContractId } from "@marlowe.io/core";
+import { ContractId, unContractId } from "@marlowe.io/runtime-core";
 
 
 export interface TransactionsRange extends Newtype<{ readonly TransactionsRange: unique symbol }, string> {}

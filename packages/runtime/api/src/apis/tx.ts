@@ -8,7 +8,7 @@ import { Contract } from '@marlowe.io/language-core-v1/semantics/contract/index.
 import { Input } from '@marlowe.io/language-core-v1/semantics/contract/when/input/index.js';
 import { Next } from '@marlowe.io/language-core-v1/semantics/next/index.js';
 
-import { Tags, Metadata,ContractId } from '@marlowe.io/core';
+import { Tags, Metadata,ContractId } from '@marlowe.io/runtime-core';
 
 import { RoleName, RolesConfig } from '@marlowe.io/runtime-rest-client/contract/role.js';
 import * as Withdrawal from '@marlowe.io/runtime-rest-client/contract/withdrawal/details.js';

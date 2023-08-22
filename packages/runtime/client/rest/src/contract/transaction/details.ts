@@ -7,9 +7,9 @@ import { BuiltinByteString, Input } from "@marlowe.io/language-core-v1";
 import { MarloweState } from "@marlowe.io/language-core-v1/state";
 import { Contract } from "@marlowe.io/language-core-v1";
 
-import { Tags, Metadata, BlockHeader, TxOutRef, TxId, TextEnvelope } from "@marlowe.io/core";
+import { Tags, Metadata, BlockHeader, TxOutRef, TxId, TextEnvelope } from "@marlowe.io/runtime-core";
 
-import { ContractId } from "@marlowe.io/core";
+import { ContractId } from "@marlowe.io/runtime-core";
 import { TransactionId } from "./id.js";
 import { TxStatus } from "./status.js";
 

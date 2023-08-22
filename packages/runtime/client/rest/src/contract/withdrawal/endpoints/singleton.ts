@@ -12,7 +12,7 @@ import {formatValidationErrors} from 'jsonbigint-io-ts-reporters'
 import { unWithdrawalId, WithdrawalId } from '../id.js';
 import { Details } from '../details.js';
 import { DecodingError } from '@marlowe.io/adapter/codec';
-import { HexTransactionWitnessSet, transactionWitnessSetTextEnvelope } from '@marlowe.io/core';
+import { HexTransactionWitnessSet, transactionWitnessSetTextEnvelope } from '@marlowe.io/runtime-core';
 
 
 export type GET = ( withdrawalId: WithdrawalId) => TE.TaskEither<Error | DecodingError, Details>

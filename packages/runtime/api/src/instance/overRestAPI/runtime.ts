@@ -14,7 +14,7 @@ import { Party } from '@marlowe.io/language-core-v1/semantics/contract/common/pa
 import { Runtime } from '../../apis/runtime.js';
 import { CreateRequest, ProvideInput, WithdrawRequest } from '../../apis/tx.js';
 import { WalletAPI } from '@marlowe.io/wallet/api';
-import { PolicyId,ContractId } from '@marlowe.io/core';
+import { PolicyId,ContractId } from '@marlowe.io/runtime-core';
 
 import { RestAPI } from '@marlowe.io/runtime-rest-client';
 
