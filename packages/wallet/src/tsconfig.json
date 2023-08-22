@@ -3,12 +3,12 @@
   "compilerOptions": {
     "outDir": "../dist",
     "paths": {
-      "@marlowe.io/core/*": ["../../core/src/*"],
+      "@marlowe.io/core/*": ["../../runtime/core/src/*"],
       "@marlowe.io/language-core-v1/*": ["../../language/core/v1/src/*"]
     }
   },
   "references": [
-    { "path": "../../core/src" },
+    { "path": "../../runtime/core/src" },
     { "path": "../../language/core/v1/src" },
   ]
 }

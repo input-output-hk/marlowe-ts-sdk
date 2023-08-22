@@ -22,13 +22,13 @@
     "docs": "typedoc ."
   },
   "workspaces": [
-    "packages/core",
     "packages/adapter",
     "packages/language/core/v1",
     "packages/token-metadata-client",
     "packages/wallet",
-    "packages/client/rest",
-    "packages/runtime"
+    "packages/runtime/client/rest",
+    "packages/runtime/core",
+    "packages/runtime/api"
   ],
   "devDependencies": {
     "@blockfrost/blockfrost-js": "5.2.0",
