@@ -1,7 +1,7 @@
 {
   "name": "@marlowe.io/wallet",
   "version": "0.1.0-beta",
-  "description": "TODO",
+  "description": "Cardano Wallet Capabalities for Marlowe specific environment",
   "repository": "https://github.com/input-output-hk/marlowe-ts-sdk",
   "publishConfig": {
     "access": "public"

@@ -1,7 +1,7 @@
 {
   "name": "@marlowe.io/runtime-core",
   "version": "0.1.0-beta",
-  "description": "TODO",
+  "description": "Core concepts used throughout the Marlowe Runtime libraries",
   "repository": "https://github.com/input-output-hk/marlowe-ts-sdk",
   "publishConfig": {
     "access": "public"
