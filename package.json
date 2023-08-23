@@ -24,7 +24,8 @@
   "workspaces": [
     "packages/legacy-adapter",
     "packages/language/core/v1",
-    "packages/legacy-runtime"
+    "packages/legacy-runtime",
+    "packages/token-metadata-client"
   ],
   "devDependencies": {
     "@blockfrost/blockfrost-js": "5.2.0",
