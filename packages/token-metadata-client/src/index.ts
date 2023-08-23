@@ -5,11 +5,22 @@ export interface TokenMetadata {
   network: "mainnet" | "preview" | "preprod";
 }
 
-export const lookupToken = (
+export const lookupTokenMetadata = (
   policyId: string,
   tokenName: string
-): TokenMetadata => {
-  if (policyId === "" && tokenName === "")
-    return { precision: 1e-6, symbol: "₳", name: "Ada", network: "mainnet" };
-  throw new Error("not found");
-};
+): Promise<TokenMetadata> =>
+  new Promise((resolve, reject) => {
+    if (policyId === "" && tokenName === "")
+      return resolve({
+        precision: 1e-6,
+        symbol: "₳",
+        name: "Ada",
+        network: "mainnet",
+      });
+    throw reject("not found");
+  });
+
+export const formatToken = (
+  { precision, symbol }: TokenMetadata,
+  value: number
+): string => `${value * precision} ${symbol}`;
