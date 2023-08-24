@@ -1,101 +1,73 @@
-# WIP WARNING
-> The TypeScript SDK is a work in progress, it's API might change so use with caution.
+<div align="left">
+    <img src="./doc/image/logo.svg" alt="Logo" width="100" height="100"> 
+</div>
 
-# Marlowe TS-SDK
-The Marlowe TypeScript SDK is a set of libraries and utilities to work with Marlowe contracts. The project uses [npm workspaces](https://docs.npmjs.com/cli/v7/using-npm/workspaces) to divide itself in the following packages:
+Official Links
+  - Website : <a href="https://marlowe.iohk.io" > marlowe.iohk.io </a>
+  - Documentation :<a href="https://docs.marlowe.iohk.io" > docs.marlowe.iohk.io </a>
+  - Playground : <a href="https://play.marlowe.iohk.io" > play.marlowe.iohk.io </a>
+  - Blog : <a href="https://marlowe.iohk.io/blog" > marlowe.iohk.io/blog </a>
+  - Support : <a href="https://iohk.zendesk.com/hc/en-us/requests/new" > iohk.zendesk.com </a> 
 
-* `language/core/v1`: The `@marlowe/language-core-v1` library that contains the core Marlowe language definitions and utilities.
-* `legacy-adapter`: The `@marlowe/legacy-adapter` library that contains common utilities.
-* `legacy-runtime`: The `@marlowe/legacy-runtime` library that contains the initial abstraction over the Marlowe runtime
+**Repository Status** : *Beta* (Warning : Work still under progress) 
 
-## Developer notes
+# Overview
 
-### Build
+`marlowe-ts-sdk` is a suite of **TypeScript/JavaScript** libraries for Web Cardano Dapp Development using Marlowe Technologies. 
 
-In order to start develop the SDK you need to install the dependencies and build the packages.
+It is composed of the following [npm workspaces](https://docs.npmjs.com/cli/v7/using-npm/workspaces) :
 
-```
-$ npm i
-$ npm run build
-```
+- Language  
+  - [@marlowe.io/language-core-v1](./packages/language/core/v1/)
+    - Marlowe Core V1 constructs
+    - JSON Codec 
+- Cardano Wallet 
+  - [@marlowe.io/wallet](./packages/runtime/core/)
+      - Wallet Extension Capabalities (Browser / CIP-30)
+      - Single Wallet Address Capabalities(NodeJS / Version used for e2e tests only)
+- Runtime 
+  - [@marlowe.io/runtime](./packages/runtime/api/) : Entry Point for Running remotely Marlowe Contracts over a backend instance of the runtime using a connected wallet. 
+      - Marlowe Tx Commands 
+        - Create 
+        - Applying Inputs
+        - Withdraws
+      - Query capabilities for supporting these commands  
+  - [@marlowe.io/runtime-core](./packages/runtime/core/) : core concepts used throughout the runtime libraries.
+  - [@marlowe.io/runtime-rest-client](./packages/runtime/client/rest/) : client of the runtime rest api.
+- Infrastruture Supporting SubDomains 
+  - [@marlowe.io/adapter](./packages/adapter) : supporting set of libraries for Marlowe and Runtime Core Domains.
+  
 
-If you want to build a single package you can use the `-w` flag or execute the build command from the package folder.
+# Get Started
 
-```
-# From the root folder
-$ npm run build -w @marlowe/language-core-v1
-# Or you can enter the package and build
-$ cd packages/language/core/v1
-$ npm run build
-```
+## Prerequesites
 
-In order to clean the build artifacts you can use the `clean` command.
+- Runtime instance available :  How to ? (TODO)
+- Wallet Extension installed : (TODO)
 
-```
-$ npm run clean
-```
+## Wallet Extensions  
+### Compatible 
+  - Nami 
+  - Eternl 
+### Non Compatiible
+  - Lace
+### Non Tested
+ - TODO 
 
-To run the unit test you can execute the `test` command.
+## NPM 
 
-```
-$ npm run test
-```
-
-### E2E tests
-
-In order to run the E2E tests you need to create a `packages/legacy-runtime/test/env/.env.test` file that points to a working version of the marlowe runtime and a working Blockfrost instance and a faucet PK
-
-TODO: explain how to get the Faucet PK
-
-```
-MARLOWE_WEB_SERVER_URL="http://<path-to-runtime>:33294/"
-BLOCKFROST_PROJECT_ID="<blockfrost-id>"
-BLOCKFROST_URL="https://cardano-preprod.blockfrost.io/api/v0"
-NETWORK_ID=Preprod
-BANK_PK_HEX='<pk>'
-```
-
-### Documentation
-
-> ⚠ You need to [build the packages](#build) before you can compile the documentation!
-
-To compile all documentation
-
-```
-$ npm run docs
+```bash
+npm install @marlowe.io/adapter @marlowe.io/wallet @marlowe.io/language-core-v1 @marlowe.io/runtime @marlowe.io/runtime-core @marlowe.io/runtime-rest-client
 ```
 
-Documentation is built with [TypeDoc](https://typedoc.org), published through [GitHub Pages](https://pages.github.com), and hosted at https://input-output-hk.github.io/marlowe-ts-sdk
+## Examples 
+  - TODO 
 
-Each sub project needs a `typedoc.json` file in the sub project root directory as specified in the `workspaces` field in `./packages.json`. For example, there's some project "some-project" specified:
-
-```json
-// ./packages.json
-{
-  ...,
-  "workspaces": ["./path/to/some-project"]
-}
+## Basic usage 
+```
+TODO
 ```
 
-There needs to be a `typedoc.json` in `./path/to/some-project` and it needs properties along the lines of this example:
+# Development 
 
-```json
-// ./path/to/some-project/typedoc.json
-{
-  "entryPointStrategy": "expand",
-  "entryPoints": ["./src"],
-  "tsconfig": "./tsconfig.json"
-}
-```
-
-### Changelogs
-
-This project manages its changelog with [scriv](https://github.com/nedbat/scriv). PRs are automatically checked to see if there's a new entry in the `./changelog.d` folder. If a PR doesn't need a changelog entry, a `No Changelog Required` label can be added to disable the check.
-
-Create a new changelog entry template with
-
-```
-$ scriv create
-```
-
-edit the new file with appropriate content for your PR and commit it. Read [the documentation for scriv](https://scriv.readthedocs.io/en) to learn more about how to use this tool.
+see documentation [here](./doc/howToDevelop.md). 

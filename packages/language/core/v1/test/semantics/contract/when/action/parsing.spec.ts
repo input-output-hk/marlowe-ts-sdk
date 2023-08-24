@@ -5,10 +5,10 @@ import * as E from 'fp-ts/lib/Either.js'
 import '@relmify/jest-fp-ts'
 import { pipe } from 'fp-ts/lib/function.js';
 import {formatValidationErrors} from 'jsonbigint-io-ts-reporters'
-import {Action} from '@marlowe/language-core-v1'
+import {Action} from '@marlowe.io/language-core-v1'
 import * as path from 'path'
-import { MarloweJSONCodec, minify } from '@marlowe/legacy-adapter/json';
-import {  getFileContents } from '../../../../adapter/file.js';
+import { MarloweJSONCodec, minify } from '@marlowe.io/adapter/codec';
+import {  getFileContents } from '@marlowe.io/adapter/file';
 import { fileURLToPath } from 'url';
 
 const getfilename = () => fileURLToPath(import.meta.url);

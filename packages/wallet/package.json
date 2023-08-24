@@ -1,0 +1,48 @@
+{
+  "name": "@marlowe.io/wallet",
+  "version": "0.1.0-beta",
+  "description": "Cardano Wallet Capabalities for Marlowe specific environment",
+  "repository": "https://github.com/input-output-hk/marlowe-ts-sdk",
+  "publishConfig": {
+    "access": "public"
+  },
+  "contributors": [
+    "Nicolas Henin <nicolas.henin@iohk.io> (https://iohk.io)",
+    "Hernan Rajchert <hernan.rajchert@iohk.io> (https://iohk.io)",
+    "Bjorn Kihlberg <bjorn.kihlberg@iohk.io> (https://iohk.io)"
+  ],
+  "license": "Apache-2.0",
+  "scripts": {
+    "build": "tsc --build src",
+    "clean": "tsc --build --clean src",
+    "test": "echo 'wallet doesnt have tests for the moment'"
+  },
+  "type": "module",
+  "module": "./dist/browser/index.js",
+  "main": "./dist/browser/index.js",
+  "types": "./dist/browser/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    "./api": {
+      "import": "./dist/api.js",
+      "types": "./dist/api.d.ts"
+    },
+    "./browser": {
+      "import": "./dist/browser/index.js",
+      "types": "./dist/browser/index.d.ts"
+    },
+    "./nodejs": {
+      "import": "./dist/nodejs/index.js",
+      "types": "./dist/nodejs/index.d.ts"
+    }
+  },
+  "dependencies": {
+    "fp-ts": "^2.16.0",
+    "io-ts": "2.2.20",
+    "newtype-ts": "0.3.5",
+    "@47ng/codec" : "1.1.0",
+    "lucid-cardano": "0.9.4"
+  }
+}

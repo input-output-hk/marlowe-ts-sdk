@@ -1,2 +1,0 @@
-# @marlowe/legacy-adapter
-TODO

@@ -1,5 +1,5 @@
 {
-  "name": "@marlowe/language-core-v1",
+  "name": "@marlowe.io/language-core-v1",
   "version": "0.1.0-beta",
   "description": "Library to manipulate Marlowe Core contracts",
   "repository": "https://github.com/input-output-hk/marlowe-ts-sdk",
@@ -18,23 +18,54 @@
     "test": "NODE_OPTIONS='--experimental-vm-modules --no-warnings' jest --config test/jest.unit.config.mjs"
   },
   "type": "module",
+  "module": "./dist/semantics/contract/index.js",
+  "main": "./dist/semantics/contract/index.js",
+  "types": "./dist/semantics/contract/index.d.ts",
+  "files": [
+    "dist"
+  ],
   "exports": {
-    ".": "./dist/semantics/contract/index.js",
-    "./examples": "./dist/examples/index.js",
-    "./next": "./dist/semantics/next/index.js",
-    "./environment": "./dist/semantics/environment.js",
-    "./state": "./dist/semantics/state.js",
-    "./token": "./dist/semantics/contract/common/token.js",
-    "./tokenValue": "./dist/semantics/contract/common/tokenValue.js"
+    ".": {
+      "import": "./dist/semantics/contract/index.js",
+      "types": "./dist/semantics/contract/index.d.ts"
+    },
+    "./next": {
+      "import": "./dist/semantics/next/index.js",
+      "types": "./dist/semantics/next/index.d.ts"
+    },
+    "./environment": {
+      "import": "./dist/semantics/environment.js",
+      "types": "./dist/semantics/environment.d.ts"
+    },
+    "./state": {
+      "import": "./dist/semantics/state.js",
+      "types": "./dist/semantics/state.d.ts"
+    },
+    "./token": {
+      "import": "./dist/semantics/contract/common/token.js",
+      "types": "./dist/semantics/contract/common/token.d.ts"
+    },
+    "./tokenValue": {
+      "import": "./dist/semantics/contract/common/tokenValue.js",
+      "types": "./dist/semantics/contract/common/tokenValue.d.ts"
+    },
+    "./version": {
+      "import": "./dist/semantics/version.js",
+      "types": "./dist/semantics/version.d.ts"
+    },
+    "./examples": {
+      "import": "./dist/examples/index.js",
+      "types": "./dist/examples/index.d.ts"
+    },
+    "./contract/*": "./dist/semantics/contract/*.js"
   },
-
   "dependencies": {
     "date-fns": "2.29.3",
     "fp-ts": "^2.16.0",
-    "io-ts":"2.2.20",
-    "io-ts-types":"0.5.19",
-    "newtype-ts":"0.3.5",
+    "io-ts": "2.2.20",
+    "io-ts-types": "0.5.19",
+    "newtype-ts": "0.3.5",
     "json-bigint": "^1.0.0",
-    "jsonbigint-io-ts-reporters":"2.0.1"
+    "jsonbigint-io-ts-reporters": "2.0.1"
   }
 }

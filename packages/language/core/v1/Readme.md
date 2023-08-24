@@ -1,2 +1,2 @@
-# @marlowe/language-core-v1
+# @marlowe.io/language-core-v1
 TODO

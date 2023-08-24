@@ -1,0 +1,38 @@
+{
+  "name": "@marlowe.io/runtime-core",
+  "version": "0.1.0-beta",
+  "description": "Core concepts used throughout the Marlowe Runtime libraries",
+  "repository": "https://github.com/input-output-hk/marlowe-ts-sdk",
+  "publishConfig": {
+    "access": "public"
+  },
+  "contributors": [
+    "Nicolas Henin <nicolas.henin@iohk.io> (https://iohk.io)",
+    "Hernan Rajchert <hernan.rajchert@iohk.io> (https://iohk.io)",
+    "Bjorn Kihlberg <bjorn.kihlberg@iohk.io> (https://iohk.io)"
+  ],
+  "license": "Apache-2.0",
+  "scripts": {
+    "build": "tsc --build src",
+    "clean": "tsc --build --clean src",
+    "test": "echo 'adapter doesnt have tests for the moment'"
+  },
+  "type": "module",
+  "module": "./dist/cardano/index.js",
+  "main": "./dist/cardano/index.js",
+  "types": "./dist/cardano/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "dependencies": {
+    "fp-ts": "^2.16.0",
+    "io-ts": "2.2.20",
+    "newtype-ts": "0.3.5"
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "name": "@marlowe.io/adapter",
+  "version": "0.1.0-beta",
+  "description": "Infrastruture Supporting SubDomains libraries",
+  "repository": "https://github.com/input-output-hk/marlowe-ts-sdk",
+  "publishConfig": {
+    "access": "public"
+  },
+  "contributors": [
+    "Nicolas Henin <nicolas.henin@iohk.io> (https://iohk.io)",
+    "Hernan Rajchert <hernan.rajchert@iohk.io> (https://iohk.io)",
+    "Bjorn Kihlberg <bjorn.kihlberg@iohk.io> (https://iohk.io)"
+  ],
+  "license": "Apache-2.0",
+  "scripts": {
+    "build": "tsc --build src",
+    "clean": "tsc --build --clean src",
+    "test": "echo 'adapter doesnt have tests for the moment'"
+  },
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./time": {
+      "import": "./dist/time.js",
+      "types": "./dist/time.d.ts"
+    },
+    "./codec": {
+      "import": "./dist/codec.js",
+      "types": "./dist/codec.d.ts"
+    },
+    "./file": {
+      "import": "./dist/file.js",
+      "types": "./dist/file.d.ts"
+    },
+    "./http": {
+      "import": "./dist/http.js",
+      "types": "./dist/http.d.ts"
+    }
+  },
+  "dependencies": {
+    "date-fns": "2.29.3",
+    "fp-ts": "^2.16.0",
+    "io-ts": "2.2.20",
+    "json-bigint": "^1.0.0",
+    "newtype-ts": "0.3.5"
+  }
+}

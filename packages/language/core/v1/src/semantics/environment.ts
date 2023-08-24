@@ -1,5 +1,5 @@
 import * as t from "io-ts/lib/index.js";
-import { ISO8601, datetoIso8601 } from "@marlowe/legacy-adapter/time";
+import { ISO8601, datetoIso8601 } from "@marlowe.io/adapter/time";
 
 export const mkEnvironment : (validityStart:Date) => (validityEnd:Date) => Environment
     = (start) => (end) => ({ validityStart: datetoIso8601(start), validityEnd: datetoIso8601(end)})
