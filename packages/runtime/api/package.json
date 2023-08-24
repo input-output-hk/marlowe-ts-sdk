@@ -49,9 +49,9 @@
     },
     "./common/*": "./dist/common/*.js",
     "./wallet/*": "./dist/wallet/*.js",
-    "./txCommand": {
-      "import": "./dist/instance/overRestAPI/txCommand.js",
-      "types": "./dist/instance/overRestAPI/txCommand.d.ts"
+    "./tx": {
+      "import": "./dist/instance/overRestAPI/tx.js",
+      "types": "./dist/instance/overRestAPI/tx.d.ts"
     }
   },
   "dependencies": {

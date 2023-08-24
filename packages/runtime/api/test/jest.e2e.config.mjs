@@ -12,12 +12,12 @@ const moduleNameMapper = {
   '^@marlowe.io/language\\-core\\-v1/examples$': relative('../../../language/core/v1/dist/examples/index.js'),
   '^@marlowe.io/wallet/nodejs/(.*)$': relative('../../../wallet/dist/nodejs/$1.js'),
   '^@marlowe.io/wallet/nodejs/index.js': relative('../../../dist/wallet/nodejs/index.js'),
-  '^@marlowe.io/runtime\\-core/(.*)$': relative('../../core/dist/cardano/$1.js'),
+  '^@marlowe.io/runtime\\-core/(.*)$': relative('../../core/dist/$1.js'),
   '^@marlowe.io/runtime\\-rest\\-client/index.js$': relative('../../client/rest/dist/index.js'),
   '^(\\.{1,2}/.*)\\.js$': '$1',
 }
 
-dotenv.config({ path: relative('./env/.env.test') })
+dotenv.config({ path: relative('../../../../env/.env.test') })
 
 const config = {
   testEnvironment: "node",

@@ -8,8 +8,8 @@ import { optionFromNullable } from "io-ts-types/lib/optionFromNullable.js";
 import { BlockHeader } from "@marlowe.io/runtime-core";
 
 
-export type Header = t.TypeOf<typeof Header>
-export const Header
+export type WithdrawalHeader = t.TypeOf<typeof WithdrawalHeader>
+export const WithdrawalHeader
   = t.type(
       { withdrawalId: WithdrawalId
       , status: TxStatus

@@ -16,12 +16,10 @@ import { formatValidationErrors } from 'jsonbigint-io-ts-reporters'
 import * as HTTP from '@marlowe.io/adapter/http';
 import { DecodingError } from '@marlowe.io/adapter/codec';
 
-import { AddressesAndCollaterals, TextEnvelope, unAddressBech32, unTxOutRef } from '@marlowe.io/runtime-core';
+import { AddressesAndCollaterals, PayoutIds, TextEnvelope, unAddressBech32, unTxOutRef } from '@marlowe.io/runtime-core';
 
-import { ContractId } from "@marlowe.io/runtime-core";
-import { RoleName } from '../../role.js';
 import { WithdrawalId } from '../id.js';
-import { Header } from '../header.js';
+import { WithdrawalHeader } from '../header.js';
 
 
 export interface WithdrawalsRange extends Newtype<{ readonly WithdrawalsRange: unique symbol }, string> {}
@@ -47,26 +45,20 @@ export const getHeadersByRangeViaAxios:(axiosInstance: AxiosInstance) => GETHead
 type GETByRangeRawResponse = t.TypeOf<typeof GETByRangeRawResponse>;
 const GETByRangeRawResponse
     = t.type({ data : t.type({ results : t.array(t.type({ links   : t.type({ contract:t.string, transactions:t.string})
-                                , resource: Header}))})
+                                , resource: WithdrawalHeader}))})
              , previousRange : optionFromNullable(WithdrawalsRange)
              , nextRange :optionFromNullable(WithdrawalsRange)
              });
 
 export type GETByRangeResponse = t.TypeOf<typeof GETByRangeResponse>;
 export const GETByRangeResponse
-    = t.type({ headers : t.array(Header)
+    = t.type({ headers : t.array(WithdrawalHeader)
              , previousRange : optionFromNullable(WithdrawalsRange)
              , nextRange :optionFromNullable(WithdrawalsRange)
              });
 
-export type POST = ( postWithdrawalsRequest: PostWithdrawalsRequest
+export type POST = ( payoutIds: PayoutIds
                    , addressesAndCollaterals: AddressesAndCollaterals) => TE.TaskEither<Error | DecodingError ,WithdrawalTextEnvelope>
-
-export type PostWithdrawalsRequest = t.TypeOf<typeof PostWithdrawalsRequest>
-export const PostWithdrawalsRequest
-    = t.type({ contractId: ContractId
-             , role: RoleName})
-
 
 export type WithdrawalTextEnvelope = t.TypeOf<typeof WithdrawalTextEnvelope>;
 export const WithdrawalTextEnvelope = t.type({ withdrawalId: WithdrawalId, tx : TextEnvelope})
@@ -78,10 +70,10 @@ export const PostResponse = t.type({
     });
 
 export const postViaAxios:(axiosInstance: AxiosInstance) => POST
-    = (axiosInstance) => (postWithdrawalsRequest, addressesAndCollaterals) =>
+    = (axiosInstance) => (payoutIds, addressesAndCollaterals) =>
         pipe( HTTP.Post (axiosInstance)
                         ( '/withdrawals'
-                        , postWithdrawalsRequest
+                        , payoutIds
                         , { headers: {
                                 'Accept': 'application/vendor.iog.marlowe-runtime.withdraw-tx-json',
                                 'Content-Type':'application/json',

@@ -8,7 +8,7 @@ import { toInput } from '@marlowe.io/language-core-v1/next';
 import * as Examples from '@marlowe.io/language-core-v1/examples'
 import { datetoTimeout, adaValue } from '@marlowe.io/language-core-v1'
 import { mkRestClient } from '@marlowe.io/runtime-rest-client/index.js';
-
+import * as O from 'fp-ts/lib/Option.js';
 import { getBankPrivateKey, getBlockfrostContext, getMarloweRuntimeUrl } from '../context.js';
 import { provisionAnAdaAndTokenProvider } from '../provisionning.js'
 import console from "console"
@@ -49,10 +49,21 @@ describe('swap', () => {
                       , TE.chainW ((contractId) =>
                         runtime(tokenProvider).txCommand.applyInputs(contractId)
                               ((next) => ({ inputs : [pipe(next.applicable_inputs.deposits[0],toInput)]})))
-                      , TE.chainW ((contractId) =>
+                      , TE.chainW((contractId) => 
+                              pipe (runtime(adaProvider).restAPI.payouts.getHeadersByRange 
+                                      (O.none) 
+                                      ([contractId]) 
+                                      ([])
+                                      (O.none)
+                                    , TE.map((result) => result.headers)))
+                      , TE.chainW ((payouts) =>
                           TE.sequenceArray(
-                              [ runtime(adaProvider).txCommand.withdraw    ( { contractId : contractId, role : swapRequest.provider.roleName})
-                              , runtime(tokenProvider).txCommand.withdraw  ( { contractId : contractId, role : swapRequest.swapper.roleName })
+                              [ runtime(adaProvider).txCommand.withdraw    ( { payouts : payouts
+                                .filter(payout => payout.role.assetName === swapRequest.provider.roleName)
+                                .map (payout => payout.payoutId)})
+                              , runtime(tokenProvider).txCommand.withdraw  ( { payouts : payouts
+                                .filter(payout => payout.role.assetName === swapRequest.swapper.roleName)
+                                .map (payout => payout.payoutId)})
                               ]))
                       ))
             , TE.match(
