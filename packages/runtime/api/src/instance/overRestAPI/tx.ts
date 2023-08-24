@@ -5,15 +5,11 @@ import { pipe } from 'fp-ts/lib/function.js'
 import { RestAPI } from '@marlowe.io/runtime-rest-client/index.js';
 import { WalletAPI, getAddressesAndCollaterals } from '@marlowe.io/wallet/api';
 import { DecodingError } from '@marlowe.io/adapter/codec';
-import { CreateRequest, ApplyInputsRequest, WithdrawRequest } from '../../apis/tx.js';
-import { ContractId } from "@marlowe.io/runtime-core";;
-import * as Contracts from "@marlowe.io/runtime-core";;
-
+import { CreateRequest, ApplyInputsRequest } from '../../apis/tx.js';
+import { ContractId, PayoutIds, contractIdToTxId } from "@marlowe.io/runtime-core";;
 
 import * as Tx from '@marlowe.io/runtime-rest-client/transaction';
 import * as Withdrawal from '@marlowe.io/runtime-rest-client/withdrawal';
-
-
 
 export const create
   :  (client : RestAPI)
@@ -37,7 +33,7 @@ export const create
                     , TE.chain((hexTransactionWitnessSet) =>
                           client.contracts.contract.put( contractTextEnvelope.contractId, hexTransactionWitnessSet))
                     , TE.map (() => contractTextEnvelope.contractId)))
-          , TE.chainFirstW((contractId) => wallet.waitConfirmation(pipe(contractId, Contracts.idToTxId)))
+          , TE.chainFirstW((contractId) => wallet.waitConfirmation(pipe(contractId, contractIdToTxId)))
           )
 
 export const applyInputs
@@ -70,12 +66,12 @@ export const applyInputs
 export const withdraw
     :  (client : RestAPI)
     => (wallet : WalletAPI)
-    => (payload : WithdrawRequest)
+    => (payoutIds : PayoutIds)
     => TE.TaskEither<Error | DecodingError,Withdrawal.Details>
-    = (client) => (wallet) => (payload) =>
+    = (client) => (wallet) => (payoutIds) =>
         pipe( getAddressesAndCollaterals (wallet)
             , TE.fromTask
-            , TE.chain((addressesAndCollaterals) => client.withdrawals.post (payload, addressesAndCollaterals))
+            , TE.chain((addressesAndCollaterals) => client.withdrawals.post (payoutIds, addressesAndCollaterals))
             , TE.chainW( (withdrawalTextEnvelope) =>
                 pipe ( wallet.signTxTheCIP30Way(withdrawalTextEnvelope.tx.cborHex)
                      , TE.chain ((hexTransactionWitnessSet) => client.withdrawals.withdrawal.put(withdrawalTextEnvelope.withdrawalId,hexTransactionWitnessSet))

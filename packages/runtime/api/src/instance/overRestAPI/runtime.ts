@@ -12,9 +12,9 @@ import { addMinutes, subMinutes } from 'date-fns';
 
 import { Party } from '@marlowe.io/language-core-v1/semantics/contract/common/payee/party.js';
 import { Runtime } from '../../apis/runtime.js';
-import { CreateRequest, ProvideInput, WithdrawRequest } from '../../apis/tx.js';
+import { CreateRequest, ProvideInput } from '../../apis/tx.js';
 import { WalletAPI } from '@marlowe.io/wallet/api';
-import { PolicyId,ContractId } from '@marlowe.io/runtime-core';
+import { PolicyId,ContractId, PayoutIds } from '@marlowe.io/runtime-core';
 
 import { RestAPI } from '@marlowe.io/runtime-rest-client';
 
@@ -44,7 +44,7 @@ export const mkRuntime
                   (walletAPI)
                   (contractId)
                   (provideInput(next))))
-        , withdraw : (payload : WithdrawRequest) => Command.withdraw (restAPI) (walletAPI) (payload)}})
+        , withdraw : (payoutIds : PayoutIds) => Command.withdraw (restAPI) (walletAPI) (payoutIds)}})
 
 const getLovelaces : (walletApi : WalletAPI)  => TE.TaskEither<Error,bigint>
   = (walletAPI) =>

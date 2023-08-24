@@ -15,7 +15,8 @@
   "scripts": {
     "build": "tsc --build src",
     "clean": "tsc --build --clean src",
-    "test": "echo 'The client rest doesnt have unit tests'"
+    "test": "echo 'The client rest doesnt have unit tests'",
+    "test:e2e": "NODE_OPTIONS='--experimental-vm-modules --no-warnings' jest --runInBand --config test/jest.e2e.config.mjs --verbose"
   },
   "type": "module",
   "module": "./dist/index.js",

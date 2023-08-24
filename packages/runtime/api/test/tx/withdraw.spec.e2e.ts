@@ -14,7 +14,7 @@ import console from "console"
 
 global.console = console
 
-describe('withdrawals endpoints ', () => {
+describe('Marlowe Tx Commands', () => {
 
   const restAPI = mkRestClient(getMarloweRuntimeUrl())
   const provisionScheme =
@@ -50,40 +50,29 @@ describe('withdrawals endpoints ', () => {
                   , TE.chainW (contractId =>
                     runtime(tokenProvider).txCommand.applyInputs
                           (contractId)
-                          ((next) => ({ inputs : [pipe(next.applicable_inputs.deposits[0],toInput)]}))))))
+                          ((next) => ({ inputs : [pipe(next.applicable_inputs.deposits[0],toInput)]})))))
+          , TE.bindW(`payouts`,({contractId}) => 
+              pipe (restAPI.payouts.getHeadersByRange 
+                      (O.none) 
+                      ([contractId]) 
+                      ([])
+                    , TE.map((result) => result.headers))
+           ))
 
-
-  it('can build a withdraw Tx : ' +
-     '(can POST : /withdrawals => ask to build the Tx to withdraw assets on the closed contract )' , async () => {
-
-    await
-      pipe( executeSwapWithRequiredWithdrawalTillClosing
-            , TE.bindW('result',({adaProvider,contractId,swapRequest}) =>
-                  pipe( restAPI.withdrawals.post
-                          ( { contractId : contractId
-                            , role : swapRequest.provider.roleName }
-                          , { changeAddress: adaProvider.address
-                            , usedAddresses: O.none
-                            , collateralUTxOs: O.none})
-                      ))
-            , TE.match(
-              (e) => { console.dir(e, { depth: null }); expect(e).not.toBeDefined()},
-              () => { } )) ()
-
-
-  },1000_000);
-
-  it('can withdraw : ' +
-     '(can POST : /withdrawals => ask to build the Tx to withdraw assets on the closed contract )' +
-     ' and PUT  : /withdrawals/{withdrawalId} => Append the withdraw Tx to the ledger' +
-     ' and GET  : /withdrawals/{withdrawalId} => retrieve the Tx state', async () => {
+  it('can withdraw' , async () => {
 
     await
       pipe( executeSwapWithRequiredWithdrawalTillClosing
-          , TE.bindW('result',({adaProvider,tokenProvider,contractId,swapRequest,runtime}) =>
+          , TE.bindW('result',({adaProvider,tokenProvider,payouts,swapRequest,runtime}) =>
               TE.sequenceArray(
-                [ runtime(adaProvider).txCommand.withdraw    ( { contractId : contractId, role : swapRequest.provider.roleName})
-                , runtime(tokenProvider).txCommand.withdraw  ( { contractId : contractId, role : swapRequest.swapper.roleName })
+                [ runtime(adaProvider).txCommand.withdraw
+                    ( { payouts : payouts
+                          .filter(payout => payout.role.assetName === swapRequest.provider.roleName)
+                          .map (payout => payout.payoutId)})
+                , runtime(tokenProvider).txCommand.withdraw  
+                    ( { payouts : payouts
+                      .filter(payout => payout.role.assetName === swapRequest.swapper.roleName)
+                      .map (payout => payout.payoutId)})
                 ]))
           , TE.match(
               (e) => { console.dir(e, { depth: null }); expect(e).not.toBeDefined()},

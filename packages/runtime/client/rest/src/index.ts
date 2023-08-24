@@ -6,37 +6,45 @@ import { pipe } from 'fp-ts/lib/function.js';
 import { MarloweJSONCodec } from '@marlowe.io/adapter/codec';
 import * as HTTP from '@marlowe.io/adapter/http';
 
-import * as WithdrawalSingleton from './contract/withdrawal/endpoints/singleton.js';
-import * as WithdrawalCollection from './contract/withdrawal/endpoints/collection.js';
-import * as ContractSingleton from './contract/endpoints/singleton.js';
-import * as ContractCollection from './contract/endpoints/collection.js';
-import * as TransactionSingleton from './contract/transaction/endpoints/singleton.js';
-import * as TransactionCollection from './contract/transaction/endpoints/collection.js';
+import * as Payouts from './payout/endpoints/collection.js';
+import * as Payout from './payout/endpoints/singleton.js';
+
+import * as Withdrawal from './contract/withdrawal/endpoints/singleton.js';
+import * as Withdrawals from './contract/withdrawal/endpoints/collection.js';
+import * as Contract from './contract/endpoints/singleton.js';
+import * as Contracts from './contract/endpoints/collection.js';
+import * as Transaction from './contract/transaction/endpoints/singleton.js';
+import * as Transactions from './contract/transaction/endpoints/collection.js';
 import * as ContractNext from './contract/next/endpoint.js';
+// import curlirize from 'axios-curlirize';
 
 export interface RestAPI {
   healthcheck : () => TE.TaskEither<Error,Boolean>
+  payouts : {
+    getHeadersByRange: Payouts.GETHeadersByRange
+    get: Payout.GET
+  }
   withdrawals: {
-    getHeadersByRange: WithdrawalCollection.GETHeadersByRange
-    post: WithdrawalCollection.POST
+    getHeadersByRange: Withdrawals.GETHeadersByRange
+    post: Withdrawals.POST
     withdrawal: {
-      get: WithdrawalSingleton.GET
-      put: WithdrawalSingleton.PUT
+      get: Withdrawal.GET
+      put: Withdrawal.PUT
     }
   }
   contracts: {
-    getHeadersByRange: ContractCollection.GETHeadersByRange
-    post: ContractCollection.POST
+    getHeadersByRange: Contracts.GETHeadersByRange
+    post: Contracts.POST
     contract: {
-      get: ContractSingleton.GET
-      put: ContractSingleton.PUT
+      get: Contract.GET
+      put: Contract.PUT
       next: ContractNext.GET
       transactions: {
-        getHeadersByRange: TransactionCollection.GETHeadersByRange
-        post: TransactionCollection.POST
+        getHeadersByRange: Transactions.GETHeadersByRange
+        post: Transactions.POST
         transaction: {
-          get: TransactionSingleton.GET
-          put: TransactionSingleton.PUT
+          get: Transaction.GET
+          put: Transaction.PUT
         }
       }
     }
@@ -50,28 +58,33 @@ export const mkRestClient : (baseURL: string) =>  RestAPI =
               , transformRequest: MarloweJSONCodec.encode
               , transformResponse: MarloweJSONCodec.decode
             })
+        //  , (axiosInstance) => {curlirize(axiosInstance) ;return axiosInstance }   
          , (axiosInstance) =>
              ({ healthcheck: () => HTTP.Get(axiosInstance)('/healthcheck')
+              , payouts : 
+                { getHeadersByRange: Payouts.getHeadersByRangeViaAxios(axiosInstance)
+                , get: Payout.getViaAxios(axiosInstance)
+                }
               , withdrawals:
-                  { getHeadersByRange: WithdrawalCollection.getHeadersByRangeViaAxios(axiosInstance)
-                  , post: WithdrawalCollection.postViaAxios(axiosInstance)
+                  { getHeadersByRange: Withdrawals.getHeadersByRangeViaAxios(axiosInstance)
+                  , post: Withdrawals.postViaAxios(axiosInstance)
                   , withdrawal:
-                    { get: WithdrawalSingleton.getViaAxios(axiosInstance)
-                    , put: WithdrawalSingleton.putViaAxios(axiosInstance)}
+                    { get: Withdrawal.getViaAxios(axiosInstance)
+                    , put: Withdrawal.putViaAxios(axiosInstance)}
                   }
               , contracts:
-                { getHeadersByRange:  ContractCollection.getHeadersByRangeViaAxios(axiosInstance)
-                , post: ContractCollection.postViaAxios(axiosInstance)
+                { getHeadersByRange:  Contracts.getHeadersByRangeViaAxios(axiosInstance)
+                , post: Contracts.postViaAxios(axiosInstance)
                 , contract:
-                    { get: ContractSingleton.getViaAxios(axiosInstance)
-                    , put: ContractSingleton.putViaAxios(axiosInstance)
+                    { get: Contract.getViaAxios(axiosInstance)
+                    , put: Contract.putViaAxios(axiosInstance)
                     , next: ContractNext.getViaAxios(axiosInstance)
                     , transactions:
-                      { getHeadersByRange: TransactionCollection.getHeadersByRangeViaAxios(axiosInstance)
-                      , post: TransactionCollection.postViaAxios(axiosInstance)
+                      { getHeadersByRange: Transactions.getHeadersByRangeViaAxios(axiosInstance)
+                      , post: Transactions.postViaAxios(axiosInstance)
                       , transaction:
-                        { get: TransactionSingleton.getViaAxios(axiosInstance)
-                        , put: TransactionSingleton.putViaAxios(axiosInstance)
+                        { get: Transaction.getViaAxios(axiosInstance)
+                        , put: Transaction.putViaAxios(axiosInstance)
                       }
                     }
                   }

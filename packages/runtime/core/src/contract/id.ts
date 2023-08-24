@@ -13,7 +13,7 @@ export const unContractId =  iso<ContractId>().unwrap
 export const contractId =  iso<ContractId>().wrap
 
 
-export const idToTxId : (contractId : ContractId) => TxId
+export const contractIdToTxId : (contractId : ContractId) => TxId
     = (contractId) =>
         pipe( contractId
             , unContractId
