@@ -1,9 +1,8 @@
 
 import * as t from "io-ts/lib/index.js";
 
-import { ContractId, AssetId, PayoutId } from "@marlowe.io/runtime-core";
+import { ContractId, AssetId, PayoutId, WithdrawalId } from "@marlowe.io/runtime-core";
 import { PayoutStatus } from "./status.js";
-import { WithdrawalId } from "../contract/withdrawal/id.js";
 import { optionFromNullable } from "io-ts-types";
 
 export type PayoutHeader = t.TypeOf<typeof PayoutHeader>

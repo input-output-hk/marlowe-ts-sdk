@@ -19,7 +19,7 @@ dotenv.config({ path: relative('../../../../../env/.env.test') })
 
 const config = {
   testEnvironment: "node",
-  displayName: "runtime-e2e",
+  displayName: "Runtime Rest Client e2e Tests",
   extensionsToTreatAsEsm: ['.ts'],
   testRegex: ".*e2e.ts$",
   modulePaths: [relative('.')],

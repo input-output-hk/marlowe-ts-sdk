@@ -32,14 +32,14 @@ export type GETHeadersByRange = (rangeOption: O.Option<ContractsRange>)
     => (statusOption : O.Option<PayoutStatus>) 
     => TE.TaskEither<Error | DecodingError,GETByRangeResponse>
 
-const roleToParameter = (role : AssetId) => `${unPolicyId(role.policyId)}.${role.assetName}`
+const roleToParameter = (roleToken : AssetId) => `${unPolicyId(roleToken.policyId)}.${roleToken.assetName}`
 const contractIdToParameter = (contractId : ContractId) => unContractId(contractId)
 const statusOptionToParameter = (statusOption : O.Option<PayoutStatus>) => pipe ( statusOption, O.match(() => '', a => `status=${a}&`))
 
 export const getHeadersByRangeViaAxios:(axiosInstance: AxiosInstance) => GETHeadersByRange
     = (axiosInstance) => (rangeOption) => (contractIds) =>  (roles) => (statusOption) => 
         pipe( ({ url : '/payouts?' + statusOptionToParameter(statusOption) + stringify(({contractId:contractIds.map(contractIdToParameter)
-                                                ,roles:roles.map(roleToParameter)}), { indices: false })
+                                                ,roleToken:roles.map(roleToParameter)}), { indices: false })
                , configs : pipe(rangeOption
                     , O.match(   ()  => ({})
                              , range => ({ headers: { Range: unContractsRange(range) }})))})

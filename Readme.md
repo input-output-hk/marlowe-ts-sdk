@@ -26,7 +26,7 @@ It is composed of the following [npm workspaces](https://docs.npmjs.com/cli/v7/u
       - Wallet Extension Capabalities (Browser / CIP-30)
       - Single Wallet Address Capabalities(NodeJS / Version used for e2e tests only)
 - Runtime 
-  - [@marlowe.io/runtime](./packages/runtime/api/) : Entry Point for Running remotely Marlowe Contracts over a backend instance of the runtime using a connected wallet. 
+  - [@marlowe.io/runtime-lifecycle](./packages/runtime/lifecycle/) : Entry Point for Running remotely Marlowe Contracts over a backend instance of the runtime using a connected wallet. 
       - Marlowe Tx Commands 
         - Create 
         - Applying Inputs

@@ -4,8 +4,8 @@ import * as O from 'fp-ts/lib/Option.js'
 import { pipe } from 'fp-ts/lib/function.js';
 import * as TE from 'fp-ts/lib/TaskEither.js'
 
-import { AddressBech32, AddressesAndCollaterals, HexTransactionWitnessSet, MarloweTxCBORHex, TxOutRef } from '@marlowe.io/runtime-core'
-import { TokenValue } from '@marlowe.io/language-core-v1/semantics/contract/common/tokenValue.js';
+import { AddressBech32, AddressesAndCollaterals, HexTransactionWitnessSet, MarloweTxCBORHex, Token, TxOutRef } from '@marlowe.io/runtime-core'
+
 
 
 // N.B : Network Id returned by CIP30 Interface doesn't provide information on which Testnet Network
@@ -19,7 +19,8 @@ export interface WalletAPI {
     getUsedAddresses : T.Task<AddressBech32[]>
     getCollaterals : T.Task<TxOutRef[]>
     getCIP30Network: T.Task<CIP30Network> 
-    getTokenValues : TE.TaskEither<Error,TokenValue[]>
+    getTokens : TE.TaskEither<Error,Token[]>
+    getLovelaces : TE.TaskEither<Error,bigint>
 }
 
 export const getAddressesAndCollaterals : (walletAPI : WalletAPI)  => T.Task<AddressesAndCollaterals> =
