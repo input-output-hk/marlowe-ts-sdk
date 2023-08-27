@@ -19,7 +19,7 @@ const nodePlugin = nodeResolve(
 export default {
     // input: 'packages/language/core/v1/dist/semantics/contract/index.js',
     // input: 'packages/adapter/dist/index.js',
-    input: 'packages/runtime/api/dist/index.js',
+    input: 'packages/runtime/lifecycle/dist/index.js',
     output: {
         dir: outputDir,
         format: 'esm',

@@ -9,14 +9,19 @@ import * as HTTP from '@marlowe.io/adapter/http';
 import * as Payouts from './payout/endpoints/collection.js';
 import * as Payout from './payout/endpoints/singleton.js';
 
-import * as Withdrawal from './contract/withdrawal/endpoints/singleton.js';
-import * as Withdrawals from './contract/withdrawal/endpoints/collection.js';
+import * as Withdrawal from './withdrawal/endpoints/singleton.js';
+import * as Withdrawals from './withdrawal/endpoints/collection.js';
 import * as Contract from './contract/endpoints/singleton.js';
 import * as Contracts from './contract/endpoints/collection.js';
 import * as Transaction from './contract/transaction/endpoints/singleton.js';
 import * as Transactions from './contract/transaction/endpoints/collection.js';
 import * as ContractNext from './contract/next/endpoint.js';
 import curlirize from 'axios-curlirize';
+
+
+export * from './contract/index.js'
+export * from './withdrawal/index.js'
+export * from './payout/index.js'
 
 export interface RestAPI {
   healthcheck : () => TE.TaskEither<Error,Boolean>

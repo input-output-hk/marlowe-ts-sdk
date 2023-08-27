@@ -3,13 +3,10 @@ import * as TE from 'fp-ts/lib/TaskEither.js'
 import { pipe } from 'fp-ts/lib/function.js';
 import * as A from 'fp-ts/lib/Array.js'
 
-import { token } from '@marlowe.io/language-core-v1/token';
-import { TokenValue, lovelaceValue, tokenValue } from '@marlowe.io/language-core-v1/tokenValue';
-
 import { CIP30Network, WalletAPI } from '../api.js';
 import { C,Core } from 'lucid-cardano';
 import { hex, utf8 } from '@47ng/codec'
-import { MarloweTxCBORHex, HexTransactionWitnessSet, AddressBech32, TxOutRef, addressBech32, txOutRef } from '@marlowe.io/runtime-core';
+import { MarloweTxCBORHex, HexTransactionWitnessSet, AddressBech32, TxOutRef, addressBech32, txOutRef, Token, token,lovelaces, assetId, mkPolicyId } from '@marlowe.io/runtime-core';
 
 
 export const getExtensionInstance : (extensionName : string) => T.Task<WalletAPI> = (extensionName) =>
@@ -20,7 +17,8 @@ export const getExtensionInstance : (extensionName : string) => T.Task<WalletAPI
              , getChangeAddress : fetchChangeAddress(extensionCIP30Instance)
              , getUsedAddresses : fetchUsedAddresses(extensionCIP30Instance)
              , getCollaterals : fetchCollaterals(extensionCIP30Instance)
-             , getTokenValues : fetchTokenValues(extensionCIP30Instance)
+             , getTokens : fetchTokens(extensionCIP30Instance)
+             , getLovelaces : fetchLovelaces(extensionCIP30Instance)
              , getCIP30Network : fetchCIP30Network(extensionCIP30Instance)
             })) )
 
@@ -104,17 +102,17 @@ type ExperimentalFeatures = {
   };
 
 
-const fetchTokenValues : (extensionCIP30Instance : BroswerExtensionCIP30Api) => TE.TaskEither<Error,TokenValue[]>
+const fetchTokens : (extensionCIP30Instance : BroswerExtensionCIP30Api) => TE.TaskEither<Error,Token[]>
   = (extensionCIP30Instance) =>
     pipe
     ( () => extensionCIP30Instance.getBalance()
-    , T.map((balances) => fromValue(deserializeValue(balances)))
+    , T.map((balances) => pipe(balances,deserializeValue,valueToTokens))
     , TE.fromTask)
 
 const deserializeValue = (value: string) => C.Value.from_bytes(hex.decode(value));
 
-const fromValue = (value: Core.Value) => {
-  const tokenValues: TokenValue[] = [ lovelaceValue(BigInt(value.coin().to_str()).valueOf())]
+const valueToTokens = (value: Core.Value) => {
+  const tokenValues: Token[] = [ lovelaces(valueToLovelaces(value))]
 
   const multiAsset = value.multiasset();
   if (multiAsset !== undefined) {
@@ -128,11 +126,11 @@ const fromValue = (value: Core.Value) => {
           const assetName = policyAssetNames.get(j);
           const quantity = policyAssets.get(assetName) ?? C.BigNum.from_str('0');
           tokenValues.push(
-            tokenValue
+            token
               (BigInt(quantity.to_str()).valueOf())
-              (token
-                (policyId.to_hex()
-                ,utf8.decode(assetName.to_bytes()).substring(1) // N.H : investigate why 1 aditional character is returned
+              (assetId
+                (mkPolicyId(policyId.to_hex()))
+                (utf8.decode(assetName.to_bytes()).substring(1) // N.H : investigate why 1 aditional character is returned
               )));
         }
       }
@@ -141,3 +139,14 @@ const fromValue = (value: Core.Value) => {
 
   return tokenValues;
 };
+
+const fetchLovelaces : (extensionCIP30Instance : BroswerExtensionCIP30Api) => TE.TaskEither<Error,bigint>
+  = (extensionCIP30Instance) =>
+    pipe
+    ( () => extensionCIP30Instance.getBalance()
+    , T.map((balances) => pipe(balances,deserializeValue,valueToLovelaces))
+    , TE.fromTask)
+
+const valueToLovelaces = (value: Core.Value) => BigInt(value.coin().to_str()).valueOf()
+
+  
