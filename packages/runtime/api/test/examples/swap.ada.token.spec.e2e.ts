@@ -15,7 +15,7 @@ import console from "console"
 
 global.console = console
 
-describe.skip('swap', () => {
+describe('swap', () => {
   it('can execute the nominal case', async () => {
     const provisionScheme =
       { provider : { adaAmount : 20_000_000n}
@@ -54,6 +54,7 @@ describe.skip('swap', () => {
                                       (O.none) 
                                       ([contractId]) 
                                       ([])
+                                      (O.none)
                                     , TE.map((result) => result.headers)))
                       , TE.chainW ((payouts) =>
                           TE.sequenceArray(

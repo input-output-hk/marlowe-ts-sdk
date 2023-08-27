@@ -10,19 +10,19 @@ import * as HTTP from '@marlowe.io/adapter/http';
 import {formatValidationErrors} from 'jsonbigint-io-ts-reporters'
 
 import { unWithdrawalId, WithdrawalId } from '../id.js';
-import { Details } from '../details.js';
+import { WithdrawalDetails } from '../details.js';
 import { DecodingError } from '@marlowe.io/adapter/codec';
 import { HexTransactionWitnessSet, transactionWitnessSetTextEnvelope } from '@marlowe.io/runtime-core';
 
 
-export type GET = ( withdrawalId: WithdrawalId) => TE.TaskEither<Error | DecodingError, Details>
+export type GET = ( withdrawalId: WithdrawalId) => TE.TaskEither<Error | DecodingError, WithdrawalDetails>
 
 export const getViaAxios:(axiosInstance: AxiosInstance) => GET
     = (axiosInstance) => (withdrawalId) =>
         pipe(HTTP.Get(axiosInstance)
                 ( endpointURI(withdrawalId)
                 , { headers: { Accept: 'application/json','Content-Type':'application/json'}})
-            , TE.chainW((data) => TE.fromEither(E.mapLeft(formatValidationErrors)(Details.decode(data)))))
+            , TE.chainW((data) => TE.fromEither(E.mapLeft(formatValidationErrors)(WithdrawalDetails.decode(data)))))
 
 export type PUT = ( withdrawalId: WithdrawalId
                   , hexTransactionWitnessSet: HexTransactionWitnessSet)

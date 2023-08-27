@@ -14,7 +14,7 @@ import console from "console"
 
 global.console = console
 
-describe.skip('Marlowe Tx Commands', () => {
+describe('Marlowe Tx Commands', () => {
 
   it('can Apply Inputs', async () => {
     await

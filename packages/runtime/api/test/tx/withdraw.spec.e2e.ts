@@ -56,6 +56,7 @@ describe('Marlowe Tx Commands', () => {
                       (O.none) 
                       ([contractId]) 
                       ([])
+                      (O.none)
                     , TE.map((result) => result.headers))
            ))
 

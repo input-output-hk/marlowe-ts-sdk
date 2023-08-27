@@ -1,7 +1,7 @@
 
 import * as TE from 'fp-ts/lib/TaskEither.js'
 
-import { pipe } from 'fp-ts/lib/function.js'
+import { constVoid, pipe } from 'fp-ts/lib/function.js'
 import { RestAPI } from '@marlowe.io/runtime-rest-client/index.js';
 import { WalletAPI, getAddressesAndCollaterals } from '@marlowe.io/wallet/api';
 import { DecodingError } from '@marlowe.io/adapter/codec';
@@ -67,7 +67,7 @@ export const withdraw
     :  (client : RestAPI)
     => (wallet : WalletAPI)
     => (payoutIds : PayoutIds)
-    => TE.TaskEither<Error | DecodingError,Withdrawal.Details>
+    => TE.TaskEither<Error | DecodingError,void>
     = (client) => (wallet) => (payoutIds) =>
         pipe( getAddressesAndCollaterals (wallet)
             , TE.fromTask
@@ -77,4 +77,4 @@ export const withdraw
                      , TE.chain ((hexTransactionWitnessSet) => client.withdrawals.withdrawal.put(withdrawalTextEnvelope.withdrawalId,hexTransactionWitnessSet))
                      , TE.map (() => withdrawalTextEnvelope.withdrawalId)))
             , TE.chainFirstW((withdrawalId) => wallet.waitConfirmation(pipe(withdrawalId, Withdrawal.idToTxId)))
-            , TE.chainW ((withdrawalId) => client.withdrawals.withdrawal.get(withdrawalId)) )
+            , TE.map (constVoid)) 

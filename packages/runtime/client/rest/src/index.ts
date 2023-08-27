@@ -16,7 +16,7 @@ import * as Contracts from './contract/endpoints/collection.js';
 import * as Transaction from './contract/transaction/endpoints/singleton.js';
 import * as Transactions from './contract/transaction/endpoints/collection.js';
 import * as ContractNext from './contract/next/endpoint.js';
-// import curlirize from 'axios-curlirize';
+import curlirize from 'axios-curlirize';
 
 export interface RestAPI {
   healthcheck : () => TE.TaskEither<Error,Boolean>
@@ -58,7 +58,7 @@ export const mkRestClient : (baseURL: string) =>  RestAPI =
               , transformRequest: MarloweJSONCodec.encode
               , transformResponse: MarloweJSONCodec.decode
             })
-        //  , (axiosInstance) => {curlirize(axiosInstance) ;return axiosInstance }   
+         , (axiosInstance) => {curlirize(axiosInstance) ;return axiosInstance }   
          , (axiosInstance) =>
              ({ healthcheck: () => HTTP.Get(axiosInstance)('/healthcheck')
               , payouts : 

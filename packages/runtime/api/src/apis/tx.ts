@@ -10,14 +10,13 @@ import { Next } from '@marlowe.io/language-core-v1/semantics/next/index.js';
 
 import { Tags, Metadata,ContractId, PayoutIds } from '@marlowe.io/runtime-core';
 
-import { RoleName, RolesConfig } from '@marlowe.io/runtime-rest-client/contract/role.js';
-import * as Withdrawal from '@marlowe.io/runtime-rest-client/contract/withdrawal/details.js';
+import { RolesConfig } from '@marlowe.io/runtime-rest-client/contract/role.js';
 
 
 export type TxAPI = {
   create      : (payload: CreateRequest)   => TE.TaskEither<Error | DecodingError,ContractId>
   applyInputs : (contractId: ContractId)  => (provideInput : ProvideInput) => TE.TaskEither<Error | DecodingError,ContractId>
-  withdraw    : (payoutIds : PayoutIds)    => TE.TaskEither<Error | DecodingError,Withdrawal.Details> 
+  withdraw    : (payoutIds : PayoutIds)    => TE.TaskEither<Error | DecodingError,void> 
   }
 
 export type ProvideInput = (next:Next) => ApplyInputsRequest
