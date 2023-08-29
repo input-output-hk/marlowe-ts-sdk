@@ -6,6 +6,7 @@
     { "path": "./packages/wallet/src" },
     { "path": "./packages/runtime/client/rest/src" },
     { "path": "./packages/runtime/core/src" },
-    { "path": "./packages/runtime/api/src" }
+    { "path": "./packages/runtime/api/src" },
+    { "path": "./packages/token-metadata-client/src" }
   ]
 }
