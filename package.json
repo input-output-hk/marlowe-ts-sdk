@@ -1,6 +1,6 @@
 {
   "name": "marlowe-ts-sdk",
-  "version": "0.1.0-beta",
+  "version": "0.1.3-beta",
   "description": "Marlowe Runtime SDK for building and managing Marlowe Contracts",
   "engines": {
     "node": ">=14.20.1"
@@ -28,7 +28,7 @@
     "packages/wallet",
     "packages/runtime/client/rest",
     "packages/runtime/core",
-    "packages/runtime/api"
+    "packages/runtime/lifecycle"
   ],
   "devDependencies": {
     "@blockfrost/blockfrost-js": "5.2.0",
@@ -42,6 +42,7 @@
     "@types/jest": "^26.0.24",
     "@types/json-bigint": "^1.0.1",
     "@types/node": "^18.14.2",
+    "axios-curlirize": "2.0.0",
     "dotenv": "^16.0.3",
     "eslint": "^7.32.0",
     "http-server": "^14.1.1",

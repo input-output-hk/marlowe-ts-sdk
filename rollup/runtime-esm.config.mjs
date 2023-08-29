@@ -9,26 +9,24 @@ const nodePlugin = nodeResolve(
     { browser: true 
     });
 
-// const wasmPlugin = wasm({targetEnv: 'browser', sync: ['**/*.wasm']});
+const copyWasm = copy({
+    targets: [
+        { src: 'node_modules/lucid-cardano/esm/src/core/wasm_modules/cardano_multiplatform_lib_web/*.wasm', dest: `${outputDir}/wasm_modules/cardano_multiplatform_lib_web/` },
+        { src: 'node_modules/lucid-cardano/esm/src/core/wasm_modules/cardano_message_signing_web/*.wasm', dest: `${outputDir}/wasm_modules/cardano_message_signing_web/` },
+    ]})
 
-// const copyWasm = copy({
-//     targets: [
-//         { src: 'node_modules/@emurgo/cardano-serialization-lib-browser/*.wasm', dest: `${outputDir}/` }
-//     ]
-// });
 export default {
     // input: 'packages/language/core/v1/dist/semantics/contract/index.js',
     // input: 'packages/adapter/dist/index.js',
-    input: 'packages/runtime/api/dist/index.js',
+    input: 'packages/runtime/lifecycle/dist/index.js',
     output: {
         dir: outputDir,
         format: 'esm',
     },
     plugins: 
-        [ 
-            // copyWasm
-        , nodePlugin
+        [ nodePlugin
         , commonjs()
+        , copyWasm
         , outputSize()
         , visualizer()],
 }
