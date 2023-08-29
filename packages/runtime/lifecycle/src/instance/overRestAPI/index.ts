@@ -13,9 +13,12 @@ import { Party } from '@marlowe.io/language-core-v1/semantics/contract/common/pa
 import { Filters, RuntimeLifecycle } from '../../apis/runtimeLifecycle.js';
 import { CreateRequest, ProvideInput } from '../../apis/tx.js';
 import { WalletAPI } from '@marlowe.io/wallet/api';
-import { PolicyId,ContractId, PayoutId, PayoutAvailable, AssetId, PayoutWithdrawn, unPolicyId } from '@marlowe.io/runtime-core';
+import { PolicyId,ContractId, PayoutId, PayoutAvailable, AssetId, PayoutWithdrawn, unPolicyId, Assets, Tokens, assetId, mkPolicyId, token } from '@marlowe.io/runtime-core';
 
 import { RestAPI } from '@marlowe.io/runtime-rest-client';
+
+import * as Rest from '@marlowe.io/runtime-rest-client';
+
 import { DecodingError } from '@marlowe.io/adapter/codec';
 import { stringify } from 'json-bigint';
 
@@ -45,7 +48,7 @@ export const mkRuntimeLifecycle
                   (provideInput(next))))}
      , payouts : 
         { available : (filtersOption : O.Option<Filters>) => availablePayouts(restAPI) (walletAPI) (filtersOption)
-        , withdraw : (payoutIds : PayoutId[]) => Command.withdraw (restAPI) (walletAPI) (payoutIds)
+        , withdraw : (payoutIds : PayoutId[]) =>  Command.withdraw (restAPI) (walletAPI) (payoutIds) 
         , withdrawn : (filtersOption : O.Option<Filters>) => withdrawnPayouts(restAPI) (walletAPI) (filtersOption)}})
 
 
@@ -67,7 +70,7 @@ const availablePayouts : (restAPI : RestAPI) => (walletApi : WalletAPI) => (filt
               ({ payoutId: payoutDetails.payoutId
                 , contractId: payoutDetails.contractId
                 , role: payoutDetails.role
-                , assets : payoutDetails.assets
+                , assets : convertAsset(payoutDetails.assets)
                 }))))
 
 const withdrawnPayouts : (restAPI : RestAPI) => (walletApi : WalletAPI) => (filtersOption : O.Option<Filters>) => TE.TaskEither<Error | DecodingError,PayoutWithdrawn[]>
@@ -91,12 +94,27 @@ const withdrawnPayouts : (restAPI : RestAPI) => (walletApi : WalletAPI) => (filt
                             , payoutId: payoutDetails.payoutId
                             , contractId: payoutDetails.contractId
                             , role: payoutDetails.role
-                            , assets : payoutDetails.assets
+                            , assets : convertAsset(payoutDetails.assets)
                             })
                   )))))
                          
 
-               
+const convertAsset : (assets : Rest.Assets) => Assets = 
+  (restAssets) => 
+    ({lovelaces : restAssets.lovelace
+     ,tokens : convertTokens(restAssets.tokens)  })
+
+const convertTokens : (tokens : Rest.Tokens) => Tokens =  
+  (restTokens) => 
+    Object.entries(restTokens).map(([policyId,x]) => 
+      Object.entries(x).map(([assetName,quantity]) => 
+        token
+          (quantity)
+          (assetId
+            (mkPolicyId(policyId))
+            (assetName))) ).flat()
+  
+         
 const getAssetIds
       : (walletApi : WalletAPI)
       => TE.TaskEither<Error,AssetId[]>

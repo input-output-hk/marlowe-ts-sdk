@@ -3,6 +3,7 @@ import { PolicyId, mkPolicyId, unPolicyId } from "../policyId.js";
 
 import * as Marlowe from '@marlowe.io/language-core-v1/tokenValue'
 
+
 export type AssetName =  t.TypeOf<typeof AssetName>
 export const AssetName = t.string
 
@@ -29,12 +30,12 @@ export const token : (quantity : AssetQuantity) => (assetId : AssetId)=> Token =
 export const lovelaces : (quantity : AssetQuantity) => Token = (quantity) => token(quantity)(assetId(mkPolicyId(''))(''))
       
 export type Tokens = t.TypeOf<typeof Tokens>
-export const Tokens = t.record(PolicyId, t.record(AssetName, AssetQuantity))
+export const Tokens = t.array(Token)
 
 export type Assets = t.TypeOf<typeof Assets>
 export const Assets
     = t.type(
-        { lovelace: AssetQuantity
+        { lovelaces: AssetQuantity
         , tokens: Tokens 
       })
 

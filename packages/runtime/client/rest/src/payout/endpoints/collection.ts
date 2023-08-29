@@ -55,8 +55,6 @@ export const getHeadersByRangeViaAxios:(axiosInstance: AxiosInstance) => GETHead
                  , nextRange    : rawResponse.nextRange})))
 
 
-const eqSetString = (xs : Set<string>, ys: Set<string>) => xs.size === ys.size && [...xs].every((x) => ys.has(x));
-
 export type GETByRangeRawResponse = t.TypeOf<typeof GETByRangeRawResponse>;
 export const GETByRangeRawResponse
     = t.type({ data : t.type({ results : t.array(t.type({ links   : t.type({ payout:t.string})
