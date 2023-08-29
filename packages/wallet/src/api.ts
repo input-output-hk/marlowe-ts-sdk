@@ -18,6 +18,7 @@ export interface WalletAPI {
     getChangeAddress : T.Task<AddressBech32>
     getUsedAddresses : T.Task<AddressBech32[]>
     getCollaterals : T.Task<TxOutRef[]>
+    getUTxOs : T.Task<TxOutRef[]>
     getCIP30Network: T.Task<CIP30Network> 
     getTokens : TE.TaskEither<Error,Token[]>
     getLovelaces : TE.TaskEither<Error,bigint>

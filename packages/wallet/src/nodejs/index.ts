@@ -193,7 +193,7 @@ export class SingleAddressWallet implements WalletAPI {
                 ,TE.chainFirst((txHash) => TE.of(log(`<> Tx ${txHash} submitted.`)))
                 ,TE.chain(this.waitConfirmation))
 
-
+    public getUTxOs: T.Task<TxOutRef[]> = T.of([])
 }
 
 const build : (tx : Tx ) => TE.TaskEither<Error,TxComplete>
