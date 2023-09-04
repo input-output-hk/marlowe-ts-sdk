@@ -9,6 +9,6 @@
   },
   "references": [
     { "path": "../../runtime/core/src" },
-    { "path": "../../language/core/v1/src" },
+    { "path": "../../language/core/v1/src" }
   ]
 }

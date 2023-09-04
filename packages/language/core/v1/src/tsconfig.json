@@ -3,10 +3,8 @@
   "compilerOptions": {
     "outDir": "../dist",
     "paths": {
-        "@marlowe.io/adapter/*": ["../../../../adapter/src/*"],
+      "@marlowe.io/adapter/*": ["../../../../adapter/src/*"]
     }
   },
-  "references": [
-    {"path": "../../../../adapter/src"}
-  ]
+  "references": [{ "path": "../../../../adapter/src" }]
 }

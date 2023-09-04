@@ -1,23 +1,27 @@
-import { AxiosInstance, AxiosResponse } from 'axios';
-import * as TE from 'fp-ts/lib/TaskEither.js'
-import { flow, identity } from 'fp-ts/lib/function.js';
-import { MarloweJSON } from '@marlowe.io/adapter/codec';
-
+import { AxiosInstance, AxiosResponse } from "axios";
+import * as TE from "fp-ts/lib/TaskEither.js";
+import { flow, identity } from "fp-ts/lib/function.js";
+import { MarloweJSON } from "@marlowe.io/adapter/codec";
 
 const getOnlyData = TE.bimap(
-  (e: unknown) => (e instanceof Error ? e : new Error(MarloweJSON.stringify(e))),
-  (v: AxiosResponse): any => v.data,
+  (e: unknown) =>
+    e instanceof Error ? e : new Error(MarloweJSON.stringify(e)),
+  (v: AxiosResponse): any => v.data
 );
 
 const getWithDataAndHeaders = TE.bimap(
   (e: unknown) => (e instanceof Error ? e : new Error(String(e))),
-  (v: AxiosResponse): any => [v.headers,v.data],
+  (v: AxiosResponse): any => [v.headers, v.data]
 );
 
-export const Get = (request: AxiosInstance) => flow(TE.tryCatchK(request.get, identity), getOnlyData);
+export const Get = (request: AxiosInstance) =>
+  flow(TE.tryCatchK(request.get, identity), getOnlyData);
 
-export const GetWithDataAndHeaders = (request: AxiosInstance) => flow(TE.tryCatchK(request.get, identity), getWithDataAndHeaders);
+export const GetWithDataAndHeaders = (request: AxiosInstance) =>
+  flow(TE.tryCatchK(request.get, identity), getWithDataAndHeaders);
 
-export const Post  = (request: AxiosInstance) => flow(TE.tryCatchK(request.post, identity), getOnlyData);
+export const Post = (request: AxiosInstance) =>
+  flow(TE.tryCatchK(request.post, identity), getOnlyData);
 
-export const Put  = (request: AxiosInstance) => flow(TE.tryCatchK(request.put, identity), getOnlyData);
+export const Put = (request: AxiosInstance) =>
+  flow(TE.tryCatchK(request.put, identity), getOnlyData);
