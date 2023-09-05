@@ -90,17 +90,6 @@ A: (1) dotfile proliferation
   # Tool Homepage: https://github.com/evilmartians/lefthook
   lefthook = {
     data = {
-      commit-msg = {
-        commands = {
-          conform = {
-            # allow WIP, fixup!/squash! commits locally
-            run = ''
-              [[ "$(head -n 1 {1})" =~ ^WIP(:.*)?$|^wip(:.*)?$|fixup\!.*|squash\!.* ]] ||
-              conform enforce --commit-msg-file {1}'';
-            skip = ["merge" "rebase"];
-          };
-        };
-      };
       pre-commit = {
         commands = {
           treefmt = {
@@ -112,26 +101,4 @@ A: (1) dotfile proliferation
     };
   };
 
-  # Tool Hompeage: https://github.com/apps/settings
-  # Install Setting App in your repo to enable it
-  githubsettings = {
-    data = {
-      repository = {
-        name = "CONFIGURE-ME";
-        inherit (import (inputs.self + /flake.nix)) description;
-        homepage = "CONFIGURE-ME";
-        topics = "CONFIGURE-ME";
-        default_branch = "main";
-        allow_squash_merge = false;
-        allow_merge_commit = false;
-        allow_rebase_merge = true;
-        delete_branch_on_merge = true;
-        private = true;
-        has_issues = false;
-        has_projects = false;
-        has_wiki = false;
-        has_downloads = false;
-      };
-    };
-  };
 }
