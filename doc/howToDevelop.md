@@ -94,3 +94,5 @@ $ scriv create
 ```
 
 edit the new file with appropriate content for your PR and commit it. Read [the documentation for scriv](https://scriv.readthedocs.io/en) to learn more about how to use this tool.
+
+To collect all changelog entries into a single file, execute `std` from the nix shell and run the `build-changelog` script. This command will delete all entries from the `changelog.d` folder and update the `CHANGELOG.md` file.
