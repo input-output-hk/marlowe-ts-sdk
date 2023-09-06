@@ -15,7 +15,7 @@
   "scripts": {
     "build": "tsc --build src",
     "clean": "tsc --build --clean src",
-    "test": "echo 'wallet doesnt have tests for the moment'"
+    "test": "NODE_OPTIONS='--experimental-vm-modules --no-warnings' jest --config test/jest.unit.config.mjs"
   },
   "type": "module",
   "module": "./dist/browser/index.js",
@@ -42,7 +42,7 @@
     "fp-ts": "^2.16.0",
     "io-ts": "2.2.20",
     "newtype-ts": "0.3.5",
-    "@47ng/codec" : "1.1.0",
+    "@47ng/codec": "1.1.0",
     "lucid-cardano": "0.9.4"
   }
 }
