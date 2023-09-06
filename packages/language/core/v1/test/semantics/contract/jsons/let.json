@@ -1,6 +1,5 @@
 {
-	"let": "Price in second window",
-	"be": 0,
-	"then":"close"
-
+  "let": "Price in second window",
+  "be": 0,
+  "then": "close"
 }

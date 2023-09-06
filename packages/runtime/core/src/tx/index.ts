@@ -1,2 +1,2 @@
-export * from './id.js'
-export * from './outRef.js'
+export * from "./id.js";
+export * from "./outRef.js";

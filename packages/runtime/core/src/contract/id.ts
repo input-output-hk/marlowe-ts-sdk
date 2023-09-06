@@ -6,16 +6,14 @@ import { pipe } from "fp-ts/lib/function.js";
 import { head } from "fp-ts/lib/ReadonlyNonEmptyArray.js";
 import { TxId } from "../tx/id.js";
 
+export type ContractId = Newtype<
+  { readonly ContractId: unique symbol },
+  string
+>;
+export const ContractId = fromNewtype<ContractId>(t.string);
+export const unContractId = iso<ContractId>().unwrap;
+export const contractId = iso<ContractId>().wrap;
 
-export type ContractId = Newtype<{ readonly ContractId: unique symbol }, string>
-export const ContractId = fromNewtype<ContractId>(t.string)
-export const unContractId =  iso<ContractId>().unwrap
-export const contractId =  iso<ContractId>().wrap
-
-
-export const contractIdToTxId : (contractId : ContractId) => TxId
-    = (contractId) =>
-        pipe( contractId
-            , unContractId
-            , split('#')
-            , head)
+export const contractIdToTxId: (contractId: ContractId) => TxId = (
+  contractId
+) => pipe(contractId, unContractId, split("#"), head);
