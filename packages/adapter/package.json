@@ -1,6 +1,5 @@
 {
   "name": "@marlowe.io/adapter",
-  "version": "0.1.3-beta",
   "description": "Infrastruture Supporting SubDomains libraries",
   "repository": "https://github.com/input-output-hk/marlowe-ts-sdk",
   "publishConfig": {

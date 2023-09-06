@@ -100,5 +100,4 @@ A: (1) dotfile proliferation
       };
     };
   };
-
 }

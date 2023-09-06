@@ -1,6 +1,5 @@
 {
   "name": "@marlowe.io/runtime-rest-client",
-  "version": "0.1.3-beta",
   "description": "Client of Runtime REST API",
   "repository": "https://github.com/input-output-hk/marlowe-ts-sdk",
   "publishConfig": {

@@ -1,6 +1,5 @@
 {
   "name": "@marlowe.io/runtime-lifecycle",
-  "version": "0.1.3-beta",
   "description": "Entry Point for Running remotely Marlowe Contracts over a backend instance of the runtime using a connected wallet.",
   "repository": "https://github.com/input-output-hk/marlowe-ts-sdk",
   "publishConfig": {
