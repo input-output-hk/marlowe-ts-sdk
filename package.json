@@ -16,7 +16,7 @@
   ],
   "license": "Apache-2.0",
   "scripts": {
-    "build": "tsc --build && rollup --config rollup/runtime-esm.config.mjs",
+    "build": "tsc --build && rollup --config rollup/runtime-esm.config.mjs && rollup --config rollup/wallet-esm.config.mjs",
     "clean": "npm run clean --workspaces && shx rm -rf dist",
     "test": "NODE_OPTIONS='--experimental-vm-modules --no-warnings' jest",
     "docs": "typedoc ."
