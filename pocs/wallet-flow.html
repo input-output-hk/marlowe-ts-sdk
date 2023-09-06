@@ -6,61 +6,65 @@
     <title>withdraw POC</title>
   </head>
   <body>
-    <label for="runtimeUrl">URL to a Marlowe Runtime instance:</label>
-    <input
-      id="runtimeUrl"
-      type="text"
-      autocomplete="on"
-      placeholder="http://localhost:32952"
-    />
-    <br />
     <label for="wallet">Select wallet:</label>
-    <select id="wallet" name="wallet">
-      <option value="nami">Nami</option>
-      <option value="eternl">Eternl</option>
-    </select>
+    <select id="wallet" name="wallet"></select>
     <br />
     <input id="start-flow" type="button" value="Start flow" />
     <hr />
     <div id="console"></div>
 
     <script type="module">
-      import { Browser } from "/dist/runtime/esm/index.js";
+      import {
+        getExtensionInstance,
+        getAvailableWallets,
+      } from "/dist/wallet/esm/index.js";
       const consoleDiv = document.getElementById("console");
+      const walletInput = document.getElementById("wallet");
+      const availableWallets = getAvailableWallets();
+      if (availableWallets.length === 0) {
+        const option = document.createElement("option");
+        option.value = "invalid";
+        option.text = "No wallet available";
+        walletInput.add(option);
+        walletInput.disabled = true;
+      } else {
+        availableWallets.forEach((walletName) => {
+          const option = document.createElement("option");
+          option.value = walletName;
+          option.text =
+            walletName.charAt(0).toUpperCase() + walletName.slice(1);
+          walletInput.add(option);
+        });
+      }
 
       const log = (message) => {
         var currentContent = consoleDiv.innerHTML;
         consoleDiv.innerHTML = currentContent + "<\BR>" + message;
       };
 
-      console.log("Browser", Browser);
-
       async function cip30Flow() {
         // Clear console
         consoleDiv.innerHTML = "";
 
-        const runtimeUrlInput = document.getElementById("runtimeUrl");
-        const runtimeUrl = runtimeUrlInput.value || "http://localhost:32952";
-        const walletInput = document.getElementById("wallet");
-        const wallet = walletInput.value;
+        const walletName = walletInput.value;
 
-        log(`<h2>Accessing ${wallet} Wallet Extension</h2>`);
-        const runtime = await Browser.mkRuntimeLifecycle(runtimeUrl)(wallet)();
+        log(`<h2>Accessing ${walletName} Wallet Extension</h2>`);
+        const wallet = await getExtensionInstance(walletName)();
         log("");
         log("Reading Wallet information...");
         log("");
 
-        const cip30Network = await runtime.wallet.getCIP30Network();
+        const cip30Network = await wallet.getCIP30Network();
         log(`* <b>Network</b>: ${cip30Network}`);
         log(
           "&nbsp;&nbsp;&nbsp;NOTE: The CIP30 standard can't distinguish between testnet networks (preprod/preview/etc)"
         );
-        log("")
+        log("");
 
-        const lovelaces = await runtime.wallet.getLovelaces();
+        const lovelaces = await wallet.getLovelaces();
         log("- <b>Lovelaces</b>: " + lovelaces.right);
-        const tokensResult = await runtime.wallet.getTokens();
-        log("")
+        const tokensResult = await wallet.getTokens();
+        log("");
 
         log(`- <b>Tokens</b>: (${tokensResult.right.length} tokens)`);
         tokensResult.right.map((token) => {
@@ -68,33 +72,34 @@
             token.assetId.assetName == ""
               ? "lovelaces"
               : token.assetId.assetName;
-          log(
-            `&nbsp;&nbsp;&nbsp; <i>${tokenName}</i> - ${token.quantity}`
-          );
+          log(`&nbsp;&nbsp;&nbsp; <i>${tokenName}</i> - ${token.quantity}`);
         });
-        log("")
+        log("");
 
-        const changeAddress = await runtime.wallet.getChangeAddress();
+        const changeAddress = await wallet.getChangeAddress();
         log("- <b>Change Address</b>: " + changeAddress);
-        log("")
+        log("");
 
-        const usedAddresses = await runtime.wallet.getUsedAddresses();
+        const usedAddresses = await wallet.getUsedAddresses();
         log(`- <b>Used Addresses</b>: (${usedAddresses.length} addresses)`);
         usedAddresses.map((usedAddress) =>
           log("&nbsp;&nbsp;&nbsp; - " + usedAddress)
         );
-        log("")
+        log("");
 
-        const collaterals = await runtime.wallet.getCollaterals()
-        log(`- <b>Collaterals</b>: (${collaterals.length} collaterals)`)
-        collaterals.map(collateral=> log( '&nbsp;&nbsp;&nbsp; - '+ collateral ))
-        log("")
+        const collaterals = await wallet.getCollaterals();
+        log(`- <b>Collaterals</b>: (${collaterals.length} collaterals)`);
+        collaterals.map((collateral) =>
+          log("&nbsp;&nbsp;&nbsp; - " + collateral)
+        );
+        log("");
 
-        const utxos = await runtime.wallet.getUTxOs()
-        log(`- <b>UTxOs</b>: (${utxos.length} utxos)`)
-        utxos.map(utxo=> log( '&nbsp;&nbsp;&nbsp; - '+ utxo ))
+        const utxos = await wallet.getUTxOs();
+        log(`- <b>UTxOs</b>: (${utxos.length} utxos)`);
+        utxos.map((utxo) => log("&nbsp;&nbsp;&nbsp; - " + utxo));
+        log("");
+        log("Wallet flow done 🎉");
       }
-
 
       const startFlowButton = document.getElementById("start-flow");
       startFlowButton.addEventListener("click", cip30Flow);

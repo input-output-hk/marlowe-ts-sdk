@@ -21,6 +21,8 @@ import {
   unTxOutRef,
 } from "@marlowe.io/runtime-core";
 
+export type SupportedWallets = "nami" | "eternl";
+
 export const getExtensionInstance: (
   extensionName: string
 ) => T.Task<WalletAPI> = (extensionName) =>
@@ -38,6 +40,21 @@ export const getExtensionInstance: (
       getCIP30Network: fetchCIP30Network(extensionCIP30Instance),
     }))
   );
+
+/**
+ * Get a list of the available wallets installed in the browser
+ */
+export function getAvailableWallets(): SupportedWallets[] {
+  if ("cardano" in window) {
+    // NOTE: it would be nice to have a Type assertion that the supportedWallets array is
+    // the same as the SupportedWallets type union. I've tried the other way (infering the type
+    // from the array) but the exported documentation doesn't look good
+    const supportedWallets = ["nami", "eternl"] as SupportedWallets[];
+    return supportedWallets.filter((wallet) => wallet in window.cardano);
+  } else {
+    return [];
+  }
+}
 
 const waitConfirmation: (
   extensionCIP30Instance: BroswerExtensionCIP30Api
