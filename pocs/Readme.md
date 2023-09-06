@@ -1,6 +1,6 @@
 ## Overview
 
-These pocs demonstrate how to run the different librairies within a simple html page (low-code platform alike environment ).
+The POCs on this folder demonstrate how to run the different libraries within a simple HTML page.
 
 ## How to run
 

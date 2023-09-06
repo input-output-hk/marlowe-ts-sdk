@@ -3,7 +3,7 @@ import * as TE from "fp-ts/lib/TaskEither.js";
 import { pipe } from "fp-ts/lib/function.js";
 import * as A from "fp-ts/lib/Array.js";
 
-import { CIP30Network, WalletAPI } from "../api.js";
+import { WalletAPI } from "../api.js";
 import { C, Core } from "lucid-cardano";
 import { hex, utf8 } from "@47ng/codec";
 import {
@@ -95,16 +95,11 @@ const fetchUsedAddresses: (
     T.map(({ usedAddresses }) => pipe(usedAddresses, A.map(deserializeAddress)))
   );
 
-const fetchCIP30Network: (
-  extensionCIP30Instance: BroswerExtensionCIP30Api
-) => T.Task<CIP30Network> = (extensionCIP30Instance) =>
-  pipe(
-    T.Do,
-    T.bind("networkId", () =>
-      pipe(() => extensionCIP30Instance.getNetworkId())
-    ),
-    T.map(({ networkId }) => (networkId == 1 ? "Mainnet" : "Testnets"))
-  );
+const fetchCIP30Network = (extensionCIP30Instance: BroswerExtensionCIP30Api) =>
+  async function () {
+    const networkId = await extensionCIP30Instance.getNetworkId();
+    return networkId == 1 ? "Mainnet" : "Testnets";
+  };
 
 const fetchUTxOs: (
   extensionCIP30Instance: BroswerExtensionCIP30Api

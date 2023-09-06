@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>withdraw POC</title>
+  </head>
+  <body>
+    <label for="runtimeUrl">URL to a Marlowe Runtime instance:</label>
+    <input
+      id="runtimeUrl"
+      type="text"
+      autocomplete="on"
+      placeholder="http://localhost:32952"
+    />
+    <br />
+    <label for="wallet">Select wallet:</label>
+    <select id="wallet" name="wallet">
+      <option value="nami">Nami</option>
+      <option value="eternl">Eternl</option>
+    </select>
+    <br />
+    <input id="start-flow" type="button" value="Start flow" />
+    <hr />
+    <div id="console"></div>
+
+    <script type="module">
+      import { Browser } from "/dist/runtime/esm/index.js";
+      const consoleDiv = document.getElementById("console");
+
+      const log = (message) => {
+        var currentContent = consoleDiv.innerHTML;
+        consoleDiv.innerHTML = currentContent + "<\BR>" + message;
+      };
+
+      console.log("Browser", Browser);
+
+      async function cip30Flow() {
+        // Clear console
+        consoleDiv.innerHTML = "";
+
+        const runtimeUrlInput = document.getElementById("runtimeUrl");
+        const runtimeUrl = runtimeUrlInput.value || "http://localhost:32952";
+        const walletInput = document.getElementById("wallet");
+        const wallet = walletInput.value;
+
+        log(`<h2>Accessing ${wallet} Wallet Extension</h2>`);
+        const runtime = await Browser.mkRuntimeLifecycle(runtimeUrl)(wallet)();
+        log("");
+        log("Reading Wallet information...");
+        log("");
+
+        const cip30Network = await runtime.wallet.getCIP30Network();
+        log(`* <b>Network</b>: ${cip30Network}`);
+        log(
+          "&nbsp;&nbsp;&nbsp;NOTE: The CIP30 standard can't distinguish between testnet networks (preprod/preview/etc)"
+        );
+        log("")
+
+        const lovelaces = await runtime.wallet.getLovelaces();
+        log("- <b>Lovelaces</b>: " + lovelaces.right);
+        const tokensResult = await runtime.wallet.getTokens();
+        log("")
+
+        log(`- <b>Tokens</b>: (${tokensResult.right.length} tokens)`);
+        tokensResult.right.map((token) => {
+          const tokenName =
+            token.assetId.assetName == ""
+              ? "lovelaces"
+              : token.assetId.assetName;
+          log(
+            `&nbsp;&nbsp;&nbsp; <i>${tokenName}</i> - ${token.quantity}`
+          );
+        });
+        log("")
+
+        const changeAddress = await runtime.wallet.getChangeAddress();
+        log("- <b>Change Address</b>: " + changeAddress);
+        log("")
+
+        const usedAddresses = await runtime.wallet.getUsedAddresses();
+        log(`- <b>Used Addresses</b>: (${usedAddresses.length} addresses)`);
+        usedAddresses.map((usedAddress) =>
+          log("&nbsp;&nbsp;&nbsp; - " + usedAddress)
+        );
+        log("")
+
+        const collaterals = await runtime.wallet.getCollaterals()
+        log(`- <b>Collaterals</b>: (${collaterals.length} collaterals)`)
+        collaterals.map(collateral=> log( '&nbsp;&nbsp;&nbsp; - '+ collateral ))
+        log("")
+
+        const utxos = await runtime.wallet.getUTxOs()
+        log(`- <b>UTxOs</b>: (${utxos.length} utxos)`)
+        utxos.map(utxo=> log( '&nbsp;&nbsp;&nbsp; - '+ utxo ))
+      }
+
+
+      const startFlowButton = document.getElementById("start-flow");
+      startFlowButton.addEventListener("click", cip30Flow);
+    </script>
+  </body>
+</html>
