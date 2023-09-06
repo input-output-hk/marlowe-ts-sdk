@@ -12,6 +12,8 @@ import * as Codec from '@47ng/codec'
 
 const log = (message:string) => console.log(`\t## - ${message}`);
 
+export const foo = 42;
+
 export type PrivateKeysAsHex = string
 export type Address = string;
 
