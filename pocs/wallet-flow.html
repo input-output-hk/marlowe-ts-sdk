@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>withdraw POC</title>
+    <title>WalletAPI smoke test</title>
   </head>
   <body>
     <label for="wallet">Select wallet:</label>
@@ -15,7 +15,7 @@
 
     <script type="module">
       import {
-        getExtensionInstance,
+        createBrowserWallet,
         getAvailableWallets,
       } from "/dist/wallet/esm/index.js";
       const consoleDiv = document.getElementById("console");
@@ -49,7 +49,7 @@
         const walletName = walletInput.value;
 
         log(`<h2>Accessing ${walletName} Wallet Extension</h2>`);
-        const wallet = await getExtensionInstance(walletName)();
+        const wallet = await createBrowserWallet(walletName);
         log("");
         log("Reading Wallet information...");
         log("");
@@ -62,12 +62,12 @@
         log("");
 
         const lovelaces = await wallet.getLovelaces();
-        log("- <b>Lovelaces</b>: " + lovelaces.right);
+        log("- <b>Lovelaces</b>: " + lovelaces);
         const tokensResult = await wallet.getTokens();
         log("");
 
-        log(`- <b>Tokens</b>: (${tokensResult.right.length} tokens)`);
-        tokensResult.right.map((token) => {
+        log(`- <b>Tokens</b>: (${tokensResult.length} tokens)`);
+        tokensResult.map((token) => {
           const tokenName =
             token.assetId.assetName == ""
               ? "lovelaces"
