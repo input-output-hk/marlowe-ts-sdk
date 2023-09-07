@@ -68,7 +68,7 @@ npm install @marlowe.io/adapter @marlowe.io/wallet @marlowe.io/language-core-v1 
 
 ## Examples
 
-- TODO
+- [marlowe-payouts](https://github.com/input-output-hk/marlowe-payouts)
 
 ## Basic usage
 
