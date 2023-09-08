@@ -1,17 +1,36 @@
-import * as T from "fp-ts/lib/Task.js";
-import { pipe } from "fp-ts/lib/function.js";
-
-import { getExtensionInstance } from "@marlowe.io/wallet/browser";
+import {
+  SupportedWallet,
+  createBrowserWallet,
+} from "@marlowe.io/wallet/browser";
 import * as Generic from "../index.js";
-import { RuntimeLifecycle } from "../../../apis/runtimeLifecycle.js";
 
 import { mkRestClient } from "@marlowe.io/runtime-rest-client";
 
-export const mkRuntimeLifecycle: (
-  runtimeURL: string
-) => (extensionName: string) => T.Task<RuntimeLifecycle> =
-  (runtimeURL) => (extensionName) =>
-    pipe(
-      getExtensionInstance(extensionName),
-      T.map(Generic.mkRuntimeLifecycle(mkRestClient(runtimeURL)))
-    );
+/**
+ * Options for creating a RuntimeLifecycle instance using the browser wallet.
+ */
+export interface BrowserRuntimeLifecycleOptions {
+  // DISCUSSION: should we pass a Map of urls instead? Ideally we could distinguish between
+  //             preprod and preview, but the CIP30 standard doesn't allow that
+  /**
+   * The URL of an available Marlowe runtime.
+   */
+  runtimeURL: string;
+  /**
+   * The name of the wallet to connect to.
+   */
+  walletName: SupportedWallet;
+}
+
+/**
+ * Creates an instance of RuntimeLifecycle using the browser wallet.
+ * @param options
+ */
+export async function mkRuntimeLifecycle({
+  runtimeURL,
+  walletName,
+}: BrowserRuntimeLifecycleOptions) {
+  const wallet = await createBrowserWallet(walletName);
+  const restClient = mkRestClient(runtimeURL);
+  return Generic.mkRuntimeLifecycle(restClient, wallet);
+}

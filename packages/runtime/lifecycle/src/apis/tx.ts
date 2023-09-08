@@ -10,6 +10,7 @@ import { Tags, Metadata, ContractId, PayoutId } from "@marlowe.io/runtime-core";
 
 import { RolesConfig } from "@marlowe.io/runtime-rest-client/contract/role.js";
 
+// QUESTION: @N.H is this used?
 export type TxAPI = {
   create: (
     payload: CreateRequest

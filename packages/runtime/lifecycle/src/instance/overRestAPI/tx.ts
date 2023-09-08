@@ -13,6 +13,7 @@ import {
 } from "@marlowe.io/runtime-core";
 
 import * as Tx from "@marlowe.io/runtime-rest-client/transaction";
+import { tryCatchDefault } from "@marlowe.io/adapter/fp-ts";
 
 export const create: (
   client: RestAPI
@@ -42,7 +43,9 @@ export const create: (
       ),
       TE.chainW((contractTextEnvelope) =>
         pipe(
-          wallet.signTxTheCIP30Way(contractTextEnvelope.tx.cborHex),
+          tryCatchDefault(() =>
+            wallet.signTxTheCIP30Way(contractTextEnvelope.tx.cborHex)
+          ),
           TE.chain((hexTransactionWitnessSet) =>
             client.contracts.contract.put(
               contractTextEnvelope.contractId,
@@ -53,7 +56,9 @@ export const create: (
         )
       ),
       TE.chainFirstW((contractId) =>
-        wallet.waitConfirmation(pipe(contractId, contractIdToTxId))
+        tryCatchDefault(() =>
+          wallet.waitConfirmation(pipe(contractId, contractIdToTxId))
+        )
       )
     );
 
@@ -86,7 +91,9 @@ export const applyInputs: (
       ),
       TE.chainW((transactionTextEnvelope) =>
         pipe(
-          wallet.signTxTheCIP30Way(transactionTextEnvelope.tx.cborHex),
+          tryCatchDefault(() =>
+            wallet.signTxTheCIP30Way(transactionTextEnvelope.tx.cborHex)
+          ),
           TE.chain((hexTransactionWitnessSet) =>
             client.contracts.contract.transactions.transaction.put(
               contractId,
@@ -98,7 +105,9 @@ export const applyInputs: (
         )
       ),
       TE.chainFirstW((transactionId) =>
-        wallet.waitConfirmation(pipe(transactionId, Tx.idToTxId))
+        tryCatchDefault(() =>
+          wallet.waitConfirmation(pipe(transactionId, Tx.idToTxId))
+        )
       ),
       TE.map(() => contractId)
     );
@@ -117,7 +126,9 @@ export const withdraw: (
       ),
       TE.chainW((withdrawalTextEnvelope) =>
         pipe(
-          wallet.signTxTheCIP30Way(withdrawalTextEnvelope.tx.cborHex),
+          tryCatchDefault(() =>
+            wallet.signTxTheCIP30Way(withdrawalTextEnvelope.tx.cborHex)
+          ),
           TE.chain((hexTransactionWitnessSet) =>
             client.withdrawals.withdrawal.put(
               withdrawalTextEnvelope.withdrawalId,
@@ -128,7 +139,9 @@ export const withdraw: (
         )
       ),
       TE.chainFirstW((withdrawalId) =>
-        wallet.waitConfirmation(pipe(withdrawalId, withdrawalIdToTxId))
+        tryCatchDefault(() =>
+          wallet.waitConfirmation(pipe(withdrawalId, withdrawalIdToTxId))
+        )
       ),
       TE.map(constVoid)
     );

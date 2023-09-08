@@ -25,6 +25,7 @@ import * as O from "fp-ts/lib/Option.js";
 import * as TE from "fp-ts/lib/TaskEither.js";
 import * as T from "fp-ts/lib/Task.js";
 
+import { unsafeTaskEither } from "@marlowe.io/adapter/fp-ts";
 import {
   AddressBech32,
   TxOutRef,
@@ -100,18 +101,21 @@ export class SingleAddressWallet implements WalletAPI {
   }
 
   // TODO: Extract this to its own function
-  public static Initialise(
+  static async Initialise(
     context: Context,
     privateKeyBech32: string
-  ): T.Task<SingleAddressWallet> {
+  ): Promise<SingleAddressWallet> {
     const account = new SingleAddressWallet(context, privateKeyBech32);
-    return () => account.initialise().then(() => account);
+    await account.initialise();
+    return account;
   }
 
-  static Random(context: Context): T.Task<SingleAddressWallet> {
+  // TODO: Extract this to its own function
+  static async Random(context: Context): Promise<SingleAddressWallet> {
     const privateKey = C.PrivateKey.generate_ed25519().to_bech32();
     const account = new SingleAddressWallet(context, privateKey);
-    return () => account.initialise().then(() => account);
+    await account.initialise();
+    return account;
   }
 
   private async initialise() {
@@ -235,23 +239,24 @@ export class SingleAddressWallet implements WalletAPI {
   }
 
   // see [[testing-wallet-discussion]]
-  public mintRandomTokens(
-    assetName: string,
-    amount: bigint
-  ): TE.TaskEither<Error, Token> {
+  public mintRandomTokens(assetName: string, amount: bigint): Promise<Token> {
     const policyRefs = this.randomPolicyId();
     const [mintingPolicy, policyId] = policyRefs;
-    return pipe(
-      this.lucid
-        .newTx()
-        .mintAssets({
-          [toUnit(policyId, fromText(assetName))]: amount.valueOf(),
-        })
-        .validTo(Date.now() + 100000)
-        .attachMintingPolicy(mintingPolicy),
-      build,
-      TE.chain(this.signSubmitAndWaitConfirmation),
-      TE.map(() => token(amount)(assetId(mkPolicyId(policyRefs[1]))(assetName)))
+    return unsafeTaskEither(
+      pipe(
+        this.lucid
+          .newTx()
+          .mintAssets({
+            [toUnit(policyId, fromText(assetName))]: amount.valueOf(),
+          })
+          .validTo(Date.now() + 100000)
+          .attachMintingPolicy(mintingPolicy),
+        build,
+        TE.chain(this.signSubmitAndWaitConfirmation),
+        TE.map(() =>
+          token(amount)(assetId(mkPolicyId(policyRefs[1]))(assetName))
+        )
+      )
     );
   }
   async signTxTheCIP30Way(cborHex: MarloweTxCBORHex) {

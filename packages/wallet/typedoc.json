@@ -2,5 +2,6 @@
   "$schema": "https://typedoc.org/schema.json",
   "entryPointStrategy": "expand",
   "entryPoints": ["./src"],
-  "tsconfig": "./src/tsconfig.json"
+  "tsconfig": "./src/tsconfig.json",
+  "exclude": ["src/nodejs/**/*.ts"]
 }

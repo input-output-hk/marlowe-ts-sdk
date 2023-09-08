@@ -1,13 +1,19 @@
 import * as Command from "./tx.js";
 import * as TE from "fp-ts/lib/TaskEither.js";
+import * as E from "fp-ts/lib/Either.js";
 import * as T from "fp-ts/lib/Task.js";
 import { pipe } from "fp-ts/lib/function.js";
 import * as O from "fp-ts/lib/Option.js";
 import { mkEnvironment } from "@marlowe.io/language-core-v1/environment";
 import { addMinutes, subMinutes } from "date-fns";
-
+import { tryCatchDefault, unsafeTaskEither } from "@marlowe.io/adapter/fp-ts";
 import { Party } from "@marlowe.io/language-core-v1/semantics/contract/common/payee/party.js";
-import { Filters, RuntimeLifecycle } from "../../apis/runtimeLifecycle.js";
+import {
+  ContractsAPI,
+  Filters,
+  PayoutsAPI,
+  RuntimeLifecycle,
+} from "../../apis/runtimeLifecycle.js";
 import { CreateRequest, ProvideInput } from "../../apis/tx.js";
 import { WalletAPI } from "@marlowe.io/wallet/api";
 import {
@@ -32,43 +38,70 @@ import * as Rest from "@marlowe.io/runtime-rest-client";
 import { DecodingError } from "@marlowe.io/adapter/codec";
 import { stringify } from "json-bigint";
 
-export const mkRuntimeLifecycle: (
-  restAPI: RestAPI
-) => (walletAPI: WalletAPI) => RuntimeLifecycle = (restAPI) => (walletAPI) => ({
-  wallet: walletAPI,
-  contracts: {
-    create: (payload: CreateRequest) =>
-      Command.create(restAPI)(walletAPI)(payload),
-    applyInputs: (contractId: ContractId) => (provideInput: ProvideInput) =>
-      pipe(
-        restAPI.contracts.contract.get(contractId),
-        TE.chain((header) =>
-          TE.fromTask(getParties(walletAPI)(header.roleTokenMintingPolicyId))
-        ),
-        TE.chain((parties) =>
-          restAPI.contracts.contract.next(contractId)(
-            mkEnvironment(pipe(Date.now(), (date) => subMinutes(date, 15)))(
-              pipe(Date.now(), (date) => addMinutes(date, 15))
-            )
-          )(parties)
-        ),
-        TE.chain((next) =>
-          Command.applyInputs(restAPI)(walletAPI)(contractId)(
-            provideInput(next)
-          )
-        )
-      ),
-  },
-  payouts: {
-    available: (filtersOption: O.Option<Filters>) =>
-      availablePayouts(restAPI)(walletAPI)(filtersOption),
-    withdraw: (payoutIds: PayoutId[]) =>
-      Command.withdraw(restAPI)(walletAPI)(payoutIds),
-    withdrawn: (filtersOption: O.Option<Filters>) =>
-      withdrawnPayouts(restAPI)(walletAPI)(filtersOption),
-  },
-});
+class ContractLifecycle implements ContractsAPI {
+  constructor(private wallet: WalletAPI, private rest: RestAPI) {}
+  async create(req: CreateRequest): Promise<ContractId> {
+    return unsafeTaskEither(Command.create(this.rest)(this.wallet)(req));
+  }
 
+  async applyInputs(
+    contractId: ContractId,
+    provideInput: ProvideInput
+  ): Promise<ContractId> {
+    const contractDetails = await unsafeTaskEither(
+      this.rest.contracts.contract.get(contractId)
+    );
+    const parties = await getParties(this.wallet)(
+      contractDetails.roleTokenMintingPolicyId
+    )();
+    const next = await unsafeTaskEither(
+      this.rest.contracts.contract.next(contractId)(
+        mkEnvironment(pipe(Date.now(), (date) => subMinutes(date, 15)))(
+          pipe(Date.now(), (date) => addMinutes(date, 15))
+        )
+      )(parties)
+    );
+
+    return unsafeTaskEither(
+      Command.applyInputs(this.rest)(this.wallet)(contractId)(
+        provideInput(next)
+      )
+    );
+  }
+}
+
+class PayoutLifecycle implements PayoutsAPI {
+  constructor(private wallet: WalletAPI, private rest: RestAPI) {}
+
+  async available(filters?: Filters): Promise<PayoutAvailable[]> {
+    return unsafeTaskEither(
+      availablePayouts(this.rest)(this.wallet)(O.fromNullable(filters))
+    );
+  }
+
+  async withdraw(payoutIds: PayoutId[]): Promise<void> {
+    return unsafeTaskEither(
+      Command.withdraw(this.rest)(this.wallet)(payoutIds)
+    );
+  }
+
+  async withdrawn(filters?: Filters): Promise<PayoutWithdrawn[]> {
+    return unsafeTaskEither(
+      withdrawnPayouts(this.rest)(this.wallet)(O.fromNullable(filters))
+    );
+  }
+}
+
+export function mkRuntimeLifecycle(
+  restAPI: RestAPI,
+  wallet: WalletAPI
+): RuntimeLifecycle {
+  return {
+    wallet: wallet,
+    contracts: new ContractLifecycle(wallet, restAPI),
+    payouts: new PayoutLifecycle(wallet, restAPI),
+  };
+}
 const availablePayouts: (
   restAPI: RestAPI
 ) => (
@@ -194,7 +227,7 @@ const getAssetIds: (walletApi: WalletAPI) => TE.TaskEither<Error, AssetId[]> = (
   walletAPI
 ) =>
   pipe(
-    walletAPI.getTokens,
+    tryCatchDefault(walletAPI.getTokens),
     TE.map((tokens) => tokens.map((token) => token.assetId))
   );
 

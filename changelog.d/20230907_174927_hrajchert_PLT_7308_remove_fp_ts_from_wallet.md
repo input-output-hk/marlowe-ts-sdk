@@ -1,4 +1,3 @@
-
 ### @marlowe.io/wallet
 
 - **BREAKING CHANGE:** Removed `fp-ts` from the user facing API.

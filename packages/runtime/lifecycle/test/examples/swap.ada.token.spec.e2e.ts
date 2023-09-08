@@ -1,5 +1,4 @@
 import { pipe } from "fp-ts/lib/function.js";
-import * as TE from "fp-ts/lib/TaskEither.js";
 import { addDays } from "date-fns/fp";
 
 import { toInput } from "@marlowe.io/language-core-v1/next";
@@ -15,25 +14,31 @@ import { provisionAnAdaAndTokenProvider } from "../provisionning.js";
 import console from "console";
 import { runtimeTokenToMarloweTokenValue } from "@marlowe.io/runtime-core";
 import { onlyByContractIds } from "@marlowe.io/runtime-lifecycle/api";
+import { MINUTES } from "@marlowe.io/adapter/time";
 
 global.console = console;
 
 describe("swap", () => {
-  it("can execute the nominal case", async () => {
-    const provisionScheme = {
-      provider: { adaAmount: 20_000_000n },
-      swapper: {
-        adaAmount: 20_000_000n,
-        tokenAmount: 50n,
-        tokenName: "TokenA",
-      },
-    };
-
-    await pipe(
-      provisionAnAdaAndTokenProvider(mkRestClient(getMarloweRuntimeUrl()))(
-        getBlockfrostContext()
-      )(getBankPrivateKey())(provisionScheme),
-      TE.let(`swapRequest`, ({ tokenValueMinted }) => ({
+  it(
+    "can execute the nominal case",
+    async () => {
+      const provisionScheme = {
+        provider: { adaAmount: 20_000_000n },
+        swapper: {
+          adaAmount: 20_000_000n,
+          tokenAmount: 50n,
+          tokenName: "TokenA",
+        },
+      };
+      const restClient = mkRestClient(getMarloweRuntimeUrl());
+      const { tokenValueMinted, adaProvider, tokenProvider, runtime } =
+        await provisionAnAdaAndTokenProvider(
+          restClient,
+          getBlockfrostContext(),
+          getBankPrivateKey(),
+          provisionScheme
+        );
+      const swapRequest = {
         provider: {
           roleName: "Ada provider",
           depositTimeout: pipe(Date.now(), addDays(1), datetoTimeout),
@@ -44,88 +49,50 @@ describe("swap", () => {
           depositTimeout: pipe(Date.now(), addDays(2), datetoTimeout),
           value: runtimeTokenToMarloweTokenValue(tokenValueMinted),
         },
-      })),
-      TE.let(`swapContract`, ({ swapRequest }) =>
-        Examples.SwapADAToken.mkSwapContract(swapRequest)
-      ),
-      TE.bindW(
-        "swapClosedResult",
-        ({ runtime, adaProvider, tokenProvider, swapRequest, swapContract }) =>
-          pipe(
-            runtime(adaProvider).contracts.create({
-              contract: swapContract,
-              roles: {
-                [swapRequest.provider.roleName]: adaProvider.address,
-                [swapRequest.swapper.roleName]: tokenProvider.address,
-              },
-            }),
-            TE.chainW((contractId) =>
-              runtime(adaProvider).contracts.applyInputs(contractId)(
-                (next) => ({
-                  inputs: [pipe(next.applicable_inputs.deposits[0], toInput)],
-                })
-              )
-            ),
-            TE.chainW((contractId) =>
-              runtime(tokenProvider).contracts.applyInputs(contractId)(
-                (next) => ({
-                  inputs: [pipe(next.applicable_inputs.deposits[0], toInput)],
-                })
-              )
-            ),
-            TE.chainW((contractId) =>
-              TE.sequenceArray([
-                pipe(
-                  runtime(adaProvider).payouts.available(
-                    onlyByContractIds([contractId])
-                  ),
-                  TE.map((payoutsAvalaible) => {
-                    expect(payoutsAvalaible.length).toBe(1);
-                    return payoutsAvalaible.map((payout) => payout.payoutId);
-                  }),
-                  TE.chain((payoutIds) =>
-                    runtime(adaProvider).payouts.withdraw(payoutIds)
-                  ),
-                  TE.chain((_) =>
-                    runtime(adaProvider).payouts.withdrawn(
-                      onlyByContractIds([contractId])
-                    )
-                  ),
-                  TE.map((payoutsWthdrawn) =>
-                    expect(payoutsWthdrawn.length).toBe(1)
-                  )
-                ),
-                pipe(
-                  runtime(tokenProvider).payouts.available(
-                    onlyByContractIds([contractId])
-                  ),
-                  TE.map((payoutsAvalaible) => {
-                    expect(payoutsAvalaible.length).toBe(1);
-                    return payoutsAvalaible.map((payout) => payout.payoutId);
-                  }),
-                  TE.chain((payoutIds) =>
-                    runtime(tokenProvider).payouts.withdraw(payoutIds)
-                  ),
-                  TE.chain((_) =>
-                    runtime(adaProvider).payouts.withdrawn(
-                      onlyByContractIds([contractId])
-                    )
-                  ),
-                  TE.map((payoutsWthdrawn) =>
-                    expect(payoutsWthdrawn.length).toBe(1)
-                  )
-                ),
-              ])
-            )
-          )
-      ),
-      TE.match(
-        (e) => {
-          console.dir(e, { depth: null });
-          expect(e).not.toBeDefined();
+      };
+      const swapContract = Examples.SwapADAToken.mkSwapContract(swapRequest);
+      const contractId = await runtime(adaProvider).contracts.create({
+        contract: swapContract,
+        roles: {
+          [swapRequest.provider.roleName]: adaProvider.address,
+          [swapRequest.swapper.roleName]: tokenProvider.address,
         },
-        () => {}
-      )
-    )();
-  }, 1_000_000);
+      });
+      // see [[apply-inputs-next-provider]]
+      await runtime(adaProvider).contracts.applyInputs(contractId, (next) => ({
+        inputs: [pipe(next.applicable_inputs.deposits[0], toInput)],
+      }));
+      await runtime(tokenProvider).contracts.applyInputs(
+        contractId,
+        (next) => ({
+          inputs: [pipe(next.applicable_inputs.deposits[0], toInput)],
+        })
+      );
+
+      const adaProviderAvalaiblePayouts = await runtime(
+        adaProvider
+      ).payouts.available(onlyByContractIds([contractId]));
+      expect(adaProviderAvalaiblePayouts.length).toBe(1);
+      await runtime(adaProvider).payouts.withdraw([
+        adaProviderAvalaiblePayouts[0].payoutId,
+      ]);
+      const adaProviderWithdrawn = await runtime(adaProvider).payouts.withdrawn(
+        onlyByContractIds([contractId])
+      );
+      expect(adaProviderWithdrawn.length).toBe(1);
+
+      const tokenProviderAvalaiblePayouts = await runtime(
+        tokenProvider
+      ).payouts.available(onlyByContractIds([contractId]));
+      expect(tokenProviderAvalaiblePayouts.length).toBe(1);
+      await runtime(tokenProvider).payouts.withdraw([
+        tokenProviderAvalaiblePayouts[0].payoutId,
+      ]);
+      const tokenProviderWithdrawn = await runtime(
+        tokenProvider
+      ).payouts.withdrawn(onlyByContractIds([contractId]));
+      expect(tokenProviderWithdrawn.length).toBe(1);
+    },
+    10 * MINUTES
+  );
 });
