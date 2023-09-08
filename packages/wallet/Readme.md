@@ -6,4 +6,5 @@ It has the following modules:
 
 - api: provides an abstract interface to work with a wallet.
 - browser: provides a browser implementation of the api using the [CIP30 specification](https://cips.cardano.org/cips/cip30/).
-- nodejs: provides a server implementation of the api using [Lucid](https://github.com/spacebudz/lucid) (NOTE: the underlying library might be replaced in the future)
+
+[comment]: # "nodejs: provides a server implementation of the api using Lucid NOTE: the underlying library might be replaced in the future - for the momment disabled until we discuss the Node module"

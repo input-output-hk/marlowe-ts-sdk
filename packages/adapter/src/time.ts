@@ -11,3 +11,6 @@ export const POSIXTime = t.number;
 export const datetoIso8601 = (date: Date): ISO8601 =>
   pipe(date, (date) => format(date, "yyyy-MM-dd'T'HH:mm:ss'Z'"));
 export const datetoIso8601Bis = (date: Date): ISO8601 => pipe(date, formatISO);
+
+// a minute in milliseconds
+export const MINUTES = 1000 * 60;

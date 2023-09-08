@@ -28,6 +28,7 @@ export const withdrawalIdToTxId: (withdrawalId: WithdrawalId) => TxId = (
   withdrawalId
 ) => pipe(withdrawalId, unWithdrawalId);
 
+// DISCUSSION: PayoutAvailable or AvailablePayout?
 export type PayoutAvailable = t.TypeOf<typeof PayoutAvailable>;
 export const PayoutAvailable = t.type({
   payoutId: PayoutId,

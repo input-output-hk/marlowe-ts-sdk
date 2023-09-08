@@ -1,5 +1,4 @@
 import { pipe } from "fp-ts/lib/function.js";
-import * as TE from "fp-ts/lib/TaskEither.js";
 import * as O from "fp-ts/lib/Option.js";
 import { addDays } from "date-fns/fp";
 
@@ -14,42 +13,36 @@ import {
 } from "../context.js";
 import { initialiseBankAndverifyProvisionning } from "../provisionning.js";
 import console from "console";
+import { unsafeTaskEither } from "@marlowe.io/adapter/fp-ts";
+import { MINUTES } from "@marlowe.io/adapter/time";
 
 global.console = console;
 
 describe("Marlowe Tx Commands", () => {
-  it("can Apply Inputs", async () => {
-    await pipe(
-      initialiseBankAndverifyProvisionning(
-        mkRestClient(getMarloweRuntimeUrl())
-      )(getBlockfrostContext())(getBankPrivateKey()),
-      TE.let(`notifyTimeout`, () =>
-        pipe(Date.now(), addDays(1), datetoTimeout)
-      ),
-      TE.bind("result", ({ restAPI, runtime, bank, notifyTimeout }) =>
-        pipe(
-          runtime.contracts.create({ contract: oneNotifyTrue(notifyTimeout) }),
-          TE.chainW((contractId) =>
-            runtime.contracts.applyInputs(contractId)((next) => ({
-              inputs: [inputNotify],
-            }))
-          ),
-          TE.chainW((contractId) =>
-            restAPI.contracts.contract.transactions.getHeadersByRange(
-              contractId,
-              O.none
-            )
-          ),
-          TE.map((result) => expect(result.headers.length).toBe(1))
+  it(
+    "can Apply Inputs",
+    async () => {
+      const restAPI = mkRestClient(getMarloweRuntimeUrl());
+      const { runtime } = await initialiseBankAndverifyProvisionning(
+        restAPI,
+        getBlockfrostContext(),
+        getBankPrivateKey()
+      );
+      const notifyTimeout = pipe(Date.now(), addDays(1), datetoTimeout);
+      const contractId = await runtime.contracts.create({
+        contract: oneNotifyTrue(notifyTimeout),
+      });
+      await runtime.contracts.applyInputs(contractId, (next) => ({
+        inputs: [inputNotify],
+      }));
+      const result = await unsafeTaskEither(
+        restAPI.contracts.contract.transactions.getHeadersByRange(
+          contractId,
+          O.none
         )
-      ),
-      TE.match(
-        (e) => {
-          console.dir(e, { depth: null });
-          expect(e).not.toBeDefined();
-        },
-        () => {}
-      )
-    )();
-  }, 100_000);
+      );
+      expect(result.headers.length).toBe(1);
+    },
+    10 * MINUTES
+  );
 });

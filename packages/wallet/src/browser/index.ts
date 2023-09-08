@@ -17,7 +17,7 @@ import {
   PolicyId,
 } from "@marlowe.io/runtime-core";
 
-export type SupportedWallets = "nami" | "eternl";
+export type SupportedWallet = "nami" | "eternl";
 
 class BrowserWalletAPI implements WalletAPI {
   constructor(private extension: BroswerExtensionCIP30Api) {}
@@ -88,43 +88,48 @@ class BrowserWalletAPI implements WalletAPI {
  * @param walletName - The name of the wallet to get an instance of.
  * @returns An instance of the BrowserWalletAPI class.
  */
-export async function createBrowserWallet(walletName: SupportedWallets) {
+export async function createBrowserWallet(
+  walletName: SupportedWallet
+): Promise<WalletAPI> {
   if (getAvailableWallets().includes(walletName)) {
     const extension = await window.cardano[walletName.toLowerCase()].enable();
     return new BrowserWalletAPI(extension);
+  } else {
+    throw new Error(`Wallet ${walletName} is not available in the browser`);
   }
 }
 
 /**
  * Get a list of the available wallets installed in the browser
  */
-export function getAvailableWallets(): SupportedWallets[] {
+export function getAvailableWallets(): SupportedWallet[] {
   if ("cardano" in window) {
     // NOTE: it would be nice to have a Type assertion that the supportedWallets array is
     // the same as the SupportedWallets type union. I've tried the other way (infering the type
     // from the array) but the exported documentation doesn't look good
-    const supportedWallets = ["nami", "eternl"] as SupportedWallets[];
+    const supportedWallets = ["nami", "eternl"] as SupportedWallet[];
     return supportedWallets.filter((wallet) => wallet in window.cardano);
   } else {
     return [];
   }
 }
 
-function deserializeAddress (addressHex: string): AddressBech32 {
-  return addressBech32(C.Address.from_bytes(hex.decode(addressHex)).to_bech32(undefined))
+function deserializeAddress(addressHex: string): AddressBech32 {
+  return addressBech32(
+    C.Address.from_bytes(hex.decode(addressHex)).to_bech32(undefined)
+  );
 }
 
-function deserializeTxOutRef (utxoStr: string): TxOutRef {
+function deserializeTxOutRef(utxoStr: string): TxOutRef {
   const utxo = C.TransactionUnspentOutput.from_bytes(hex.decode(utxoStr));
   const input = JSON.parse(utxo.input().to_json());
-  return txOutRef(input.transaction_id + "#" + input.index)
+  return txOutRef(input.transaction_id + "#" + input.index);
 }
 
 type DataSignature = {
   signature: string;
   key: string;
 };
-
 
 type BroswerExtensionCIP30Api = {
   experimental: ExperimentalFeatures;
