@@ -120,15 +120,11 @@ export const postViaAxios: (axiosInstance: AxiosInstance) => POST =
             ),
             "X-Address": pipe(
               addressesAndCollaterals.usedAddresses,
-              A.fromOption,
-              A.flatten,
               A.map(unAddressBech32),
               (a) => a.join(",")
             ),
             "X-Collateral-UTxO": pipe(
               addressesAndCollaterals.collateralUTxOs,
-              A.fromOption,
-              A.flatten,
               A.map(unTxOutRef),
               (a) => a.join(",")
             ),

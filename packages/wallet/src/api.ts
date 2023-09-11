@@ -2,12 +2,6 @@
  * This file contains an interface for working with a wallet, which has a Browser and NodeJS implementation in the appropiate modules.
  * @packageDocumentation
  */
-import * as T from "fp-ts/lib/Task.js";
-import * as O from "fp-ts/lib/Option.js";
-import { pipe } from "fp-ts/lib/function.js";
-import * as TE from "fp-ts/lib/TaskEither.js";
-import * as E from "fp-ts/lib/Either.js";
-
 import {
   AddressBech32,
   AddressesAndCollaterals,
@@ -108,24 +102,20 @@ export interface WalletAPI {
   getLovelaces(): Promise<bigint>;
 }
 
-// TODO: Remove FP-TS from this function
 /**
  * Utility function to access common features required to balance a transaction
  * @param walletAPI An WalletAPI instance
  * @returns Address and collateral information
  */
-export const getAddressesAndCollaterals: (
+export async function getAddressesAndCollaterals(
   walletAPI: WalletAPI
-) => T.Task<AddressesAndCollaterals> = (walletAPI) =>
-  pipe(
-    T.Do,
-    T.bind("changeAddress", () => walletAPI.getChangeAddress),
-    T.bind("usedAddresses", () => walletAPI.getUsedAddresses),
-    T.bind("collateralUTxOs", () => walletAPI.getCollaterals),
-    T.map(({ changeAddress, usedAddresses, collateralUTxOs }) => ({
-      changeAddress: changeAddress,
-      usedAddresses: usedAddresses.length == 0 ? O.none : O.some(usedAddresses),
-      collateralUTxOs:
-        collateralUTxOs.length == 0 ? O.none : O.some(collateralUTxOs),
-    }))
-  );
+): Promise<AddressesAndCollaterals> {
+  const changeAddress = await walletAPI.getChangeAddress();
+  const usedAddresses = await walletAPI.getUsedAddresses();
+  const collateralUTxOs = await walletAPI.getCollaterals();
+  return {
+    changeAddress,
+    usedAddresses,
+    collateralUTxOs,
+  };
+}

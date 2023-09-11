@@ -24,8 +24,7 @@ export const create: (
 ) => TE.TaskEither<Error | DecodingError, ContractId> =
   (client) => (wallet) => (payload) =>
     pipe(
-      getAddressesAndCollaterals(wallet),
-      TE.fromTask,
+      tryCatchDefault(() => getAddressesAndCollaterals(wallet)),
       TE.chain((addressesAndCollaterals) =>
         client.contracts.post(
           {
@@ -73,8 +72,7 @@ export const applyInputs: (
 ) => TE.TaskEither<Error | DecodingError, ContractId> =
   (client) => (wallet) => (contractId) => (payload) =>
     pipe(
-      getAddressesAndCollaterals(wallet),
-      TE.fromTask,
+      tryCatchDefault(() => getAddressesAndCollaterals(wallet)),
       TE.chain((addressesAndCollaterals) =>
         client.contracts.contract.transactions.post(
           contractId,
@@ -119,8 +117,7 @@ export const withdraw: (
 ) => (payoutIds: PayoutId[]) => TE.TaskEither<Error | DecodingError, void> =
   (client) => (wallet) => (payoutIds) =>
     pipe(
-      getAddressesAndCollaterals(wallet),
-      TE.fromTask,
+      tryCatchDefault(() => getAddressesAndCollaterals(wallet)),
       TE.chain((addressesAndCollaterals) =>
         client.withdrawals.post(payoutIds, addressesAndCollaterals)
       ),
