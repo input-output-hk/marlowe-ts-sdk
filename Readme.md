@@ -1,5 +1,5 @@
 <div align="left">
-    <img src="./doc/image/logo.svg" alt="Logo" width="100" height="100"> 
+    <img src="./doc/image/logo.svg" alt="Logo" width="100" height="100">
 </div>
 
 Official Links
@@ -42,19 +42,20 @@ It is composed of the following [npm workspaces](https://docs.npmjs.com/cli/v7/u
 
 ## Prerequesites
 
-- Runtime instance available : How to ? (TODO)
-- Wallet Extension installed : (TODO)
+In order to start working with the Marlowe SDK you need to have a URL to a running instance of the Marlowe Runtime and one of the supported wallet extensions installed in your browser.
+
+To get a running instance of the Runtime, it is recommended to check out the instructions on the [Marlowe Starter Kit](https://github.com/input-output-hk/marlowe-starter-kit)
 
 ## Wallet Extensions
 
 ### Compatible
 
-- Nami
-- Eternl
+- [Nami](https://namiwallet.io/)
+- [Eternl](https://eternl.io/)
 
-### Non Compatiible
+### Non Compatible
 
-- Lace
+- Lace: TODO: add github issue with the current problem
 
 ### Non Tested
 
@@ -66,16 +67,22 @@ It is composed of the following [npm workspaces](https://docs.npmjs.com/cli/v7/u
 npm install @marlowe.io/adapter @marlowe.io/wallet @marlowe.io/language-core-v1 @marlowe.io/runtime @marlowe.io/runtime-core @marlowe.io/runtime-rest-client
 ```
 
-## Examples
-
-- [marlowe-payouts](https://github.com/input-output-hk/marlowe-payouts)
-
 ## Basic usage
 
 ```
 TODO
 ```
 
+## Examples
+
+Inside the [pocs folder](./pocs/Readme.md) you can find a set of minimal examples on how to use different packages of the SDK.
+
+- [wallet flow](./pocs/wallet-flow.html): Simple example on how to use the `@marlowe.io/wallet` package to connect to a wallet extension and get basic info.
+
+More elaborate examples can be found in the following repositories:
+
+- [marlowe-payouts](https://github.com/input-output-hk/marlowe-payouts)
+
 # Development
 
-see documentation [here](./doc/howToDevelop.md).
+To help in the development of this SDK, please refer to [this document](./doc/howToDevelop.md).

@@ -1,7 +1,7 @@
 import * as TE from "fp-ts/lib/TaskEither.js";
 
 import { constVoid, pipe } from "fp-ts/lib/function.js";
-import { RestAPI } from "@marlowe.io/runtime-rest-client/index.js";
+import { RestAPI } from "@marlowe.io/runtime-rest-client";
 import { WalletAPI, getAddressesAndCollaterals } from "@marlowe.io/wallet/api";
 import { DecodingError } from "@marlowe.io/adapter/codec";
 import { CreateRequest, ApplyInputsRequest } from "../../apis/tx.js";

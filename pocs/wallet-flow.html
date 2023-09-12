@@ -12,12 +12,13 @@
     <input id="start-flow" type="button" value="Start flow" />
     <hr />
     <div id="console"></div>
-
+    <script src="/dist/local-importmap.js"></script>
     <script type="module">
       import {
         createBrowserWallet,
         getAvailableWallets,
-      } from "/dist/wallet/esm/index.js";
+      } from "@marlowe.io/wallet";
+
       const consoleDiv = document.getElementById("console");
       const walletInput = document.getElementById("wallet");
       const availableWallets = getAvailableWallets();

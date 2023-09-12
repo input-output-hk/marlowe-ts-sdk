@@ -1,5 +1,6 @@
 {
   "name": "@marlowe.io/runtime-lifecycle",
+  "version": "0.2.0-alpha-0",
   "description": "Entry Point for Running remotely Marlowe Contracts over a backend instance of the runtime using a connected wallet.",
   "repository": "https://github.com/input-output-hk/marlowe-ts-sdk",
   "publishConfig": {
@@ -13,48 +14,53 @@
   "license": "Apache-2.0",
   "scripts": {
     "build": "tsc --build src",
-    "clean": "tsc --build --clean src",
+    "clean": "shx rm -rf dist",
     "test": "echo 'The legact runtime doesnt have unit tests'",
     "test:e2e": "NODE_OPTIONS='--experimental-vm-modules --no-warnings' jest --runInBand --config test/jest.e2e.config.mjs --verbose",
     "build:e2e": "tsc --build test"
   },
   "type": "module",
-  "module": "./dist/index.js",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "module": "./dist/esm/index.js",
+  "main": "./dist/esm/index.js",
+  "types": "./dist/esm/index.d.ts",
   "files": [
     "dist"
   ],
   "exports": {
     ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "import": "./dist/esm/index.js",
+      "require": "./dist/bundled/cjs/runtime-lifecycle.cjs",
+      "types": "./dist/esm/index.d.ts"
     },
     "./api": {
-      "import": "./dist/apis/runtimeLifecycle.js",
-      "types": "./dist/apis/runtimeLifecycle.d.ts"
+      "import": "./dist/esm/apis/runtimeLifecycle.js",
+      "require": "./dist/bundled/cjs/api.cjs",
+      "types": "./dist/esm/apis/runtimeLifecycle.d.ts"
     },
     "./overRestAPI": {
-      "import": "./dist/instance/overRestAPI/index.js",
-      "types": "./dist/instance/overRestAPI/index.d.ts"
+      "import": "./dist/esm/instance/overRestAPI/index.js",
+      "require": "./dist/bundled/cjs/overRestAPI.cjs",
+      "types": "./dist/esm/instance/overRestAPI/index.d.ts"
     },
     "./browser": {
-      "import": "./dist/instance/overRestAPI/browser/index.js",
-      "types": "./dist/instance/overRestAPI/browser/index.d.ts"
+      "import": "./dist/esm/instance/overRestAPI/browser/index.js",
+      "require": "./dist/bundled/cjs/browser.cjs",
+      "types": "./dist/esm/instance/overRestAPI/browser/index.d.ts"
     },
     "./nodejs": {
-      "import": "./dist/instance/overRestAPI/nodejs/index.js",
-      "types": "./dist/instance/overRestAPI/nodejs/index.d.ts"
+      "import": "./dist/esm/instance/overRestAPI/nodejs/index.js",
+      "require": "./dist/bundled/cjs/nodejs.cjs",
+      "types": "./dist/esm/instance/overRestAPI/nodejs/index.d.ts"
     },
-    "./common/*": "./dist/common/*.js",
-    "./wallet/*": "./dist/wallet/*.js",
+    "./common/*": "./dist/esm/common/*.js",
+    "./wallet/*": "./dist/esm/wallet/*.js",
     "./tx": {
-      "import": "./dist/instance/overRestAPI/tx.js",
-      "types": "./dist/instance/overRestAPI/tx.d.ts"
+      "import": "./dist/esm/instance/overRestAPI/tx.js",
+      "types": "./dist/esm/instance/overRestAPI/tx.d.ts"
     }
   },
   "dependencies": {
-    "@types/qs": "6.9.7",
+    "@marlowe.io/runtime-rest-client": "0.2.0-alpha-0",
     "fp-ts": "^2.13.1",
     "io-ts": "2.2.20",
     "newtype-ts": "0.3.5",

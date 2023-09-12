@@ -1,5 +1,6 @@
 {
   "name": "@marlowe.io/runtime-rest-client",
+  "version": "0.2.0-alpha-0",
   "description": "Client of Runtime REST API",
   "repository": "https://github.com/input-output-hk/marlowe-ts-sdk",
   "publishConfig": {
@@ -13,34 +14,40 @@
   "license": "Apache-2.0",
   "scripts": {
     "build": "tsc --build src",
-    "clean": "tsc --build --clean src",
+    "clean": "shx rm -rf dist",
     "test": "echo 'The client rest doesnt have unit tests'",
     "test:e2e": "NODE_OPTIONS='--experimental-vm-modules --no-warnings' jest --runInBand --config test/jest.e2e.config.mjs --verbose"
   },
   "type": "module",
-  "module": "./dist/index.js",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "module": "./dist/esm/index.js",
+  "main": "./dist/esm/index.js",
+  "types": "./dist/esm/index.d.ts",
   "files": [
     "dist"
   ],
   "exports": {
     ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "import": "./dist/esm/index.js",
+      "require": "./dist/bundled/cjs/runtime-rest-client.cjs",
+      "types": "./dist/esm/index.d.ts"
     },
     "./transaction": {
-      "import": "./dist/contract/transaction/index.js",
-      "types": "./dist/contract/transaction/index.d.ts"
+      "import": "./dist/esm/contract/transaction/index.js",
+      "require": "./dist/bundled/cjs/transaction.cjs",
+      "types": "./dist/esm/contract/transaction/index.d.ts"
     },
     "./withdrawal": {
-      "import": "./dist/contract/withdrawal/index.js",
-      "types": "./dist/contract/withdrawal/index.d.ts"
+      "import": "./dist/esm/withdrawal/index.js",
+      "require": "./dist/bundled/cjs/withdrawal.cjs",
+      "types": "./dist/esm/withdrawal/index.d.ts"
     },
-    "./contract/*": "./dist/contract/*.js"
+    "./contract/*": "./dist/esm/contract/*.js"
   },
   "dependencies": {
-    "@types/qs": "6.9.7",
+    "@marlowe.io/adapter": "0.2.0-alpha-0",
+    "@marlowe.io/language-core-v1": "0.2.0-alpha-0",
+    "@marlowe.io/runtime-core": "0.2.0-alpha-0",
+    "qs": "^6.11.2",
     "fp-ts": "^2.13.1",
     "io-ts": "2.2.20",
     "newtype-ts": "0.3.5",

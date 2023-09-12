@@ -1,7 +1,7 @@
 {
   "extends": "../../../tsconfig-base.json",
   "compilerOptions": {
-    "outDir": "../dist",
+    "outDir": "../dist/esm",
     "paths": {
       "@marlowe.io/runtime-core/*": ["../../runtime/core/src/*"],
       "@marlowe.io/language-core-v1/*": ["../../language/core/v1/src/*"]

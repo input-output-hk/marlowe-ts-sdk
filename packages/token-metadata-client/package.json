@@ -1,6 +1,6 @@
 {
-  "name": "@marlowe/token-metadata-client",
-  "version": "0.1.3-beta",
+  "name": "@marlowe.io/token-metadata-client",
+  "version": "0.2.0-alpha-0",
   "description": "TODO",
   "repository": "https://github.com/input-output-hk/marlowe-ts-sdk",
   "publishConfig": {
@@ -14,12 +14,15 @@
   "license": "Apache-2.0",
   "scripts": {
     "build": "tsc --build src",
-    "clean": "tsc --build --clean src",
+    "clean": "shx rm -rf dist",
     "test": "echo '@marlowe/token-metadata-client doesnt have unit tests'"
   },
   "type": "module",
   "exports": {
-    ".": "./dist/index.js"
+    ".": {
+      "import": "./dist/esm/index.js",
+      "types": "./dist/esm/index.d.ts"
+    }
   },
   "dependencies": {}
 }

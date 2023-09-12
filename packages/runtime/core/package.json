@@ -1,5 +1,6 @@
 {
   "name": "@marlowe.io/runtime-core",
+  "version": "0.2.0-alpha-0",
   "description": "Core concepts used throughout the Marlowe Runtime libraries",
   "repository": "https://github.com/input-output-hk/marlowe-ts-sdk",
   "publishConfig": {
@@ -13,20 +14,21 @@
   "license": "Apache-2.0",
   "scripts": {
     "build": "tsc --build src",
-    "clean": "tsc --build --clean src",
+    "clean": "shx rm -rf dist",
     "test": "echo 'adapter doesnt have tests for the moment'"
   },
   "type": "module",
-  "module": "./dist/index.js",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "module": "./dist/esm/index.js",
+  "main": "./dist/esm/index.js",
+  "types": "./dist/esm/index.d.ts",
   "files": [
     "dist"
   ],
   "exports": {
     ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "import": "./dist/esm/index.js",
+      "require": "./dist/bundled/cjs/runtime-core.cjs",
+      "types": "./dist/esm/index.d.ts"
     }
   },
   "dependencies": {
