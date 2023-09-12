@@ -1,7 +1,8 @@
 {
   "$schema": "https://typedoc.org/schema.json",
+  "name": "Marlowe ts-sdk",
   "entryPointStrategy": "packages",
   "out": "./docs",
-  "readme": "none",
+  "readme": "./packages/api.md",
   "includeVersion": true
 }
