@@ -1,2 +1,2 @@
-export * from "./api";
-export { createBrowserWallet, getAvailableWallets } from "./browser";
+export * from "./api.js";
+export { createBrowserWallet, getAvailableWallets } from "./browser/index.js";

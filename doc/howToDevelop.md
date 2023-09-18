@@ -101,7 +101,22 @@ To collect all changelog entries into a single file, execute `std` from the nix 
 
 For the moment the SDK is manually published to npm. Task PLT-6939 captures the work to automate this process through the CI.
 
-Before publishing it is convinient to check that the artifacts works as expected. To test this you can pack all the different packages into tarballs using
+Before publishing it is convinient to check that the artifacts works as expected :
+
+- Clean & Build
+
+```bash
+$ npm run clean && npm run build
+```
+
+- Test
+
+```bash
+$ npm t && npm run test:e2e
+```
+
+- Check the packages
+  To test this you can pack all the different packages into tarballs using
 
 ```bash
 $ npm --workspaces pack --pack-destination dist

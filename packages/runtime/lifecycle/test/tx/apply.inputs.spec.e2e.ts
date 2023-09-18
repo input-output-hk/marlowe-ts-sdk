@@ -1,6 +1,6 @@
 import { pipe } from "fp-ts/lib/function.js";
 import * as O from "fp-ts/lib/Option.js";
-import { addDays } from "date-fns/fp";
+import addDays from "date-fns/fp/addDays/index.js";
 
 import { datetoTimeout, inputNotify } from "@marlowe.io/language-core-v1";
 import { oneNotifyTrue } from "@marlowe.io/language-core-v1/examples";

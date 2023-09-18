@@ -1,5 +1,6 @@
 import { pipe } from "fp-ts/lib/function.js";
-import { addDays } from "date-fns/fp";
+// import addDays  from "date-fns/fp/addDays/index.js";
+import addDays from "date-fns/esm/addDays/index.js";
 
 import { toInput } from "@marlowe.io/language-core-v1/next";
 import * as Examples from "@marlowe.io/language-core-v1/examples";
@@ -41,12 +42,12 @@ describe("swap", () => {
       const swapRequest = {
         provider: {
           roleName: "Ada provider",
-          depositTimeout: pipe(Date.now(), addDays(1), datetoTimeout),
+          depositTimeout: pipe(addDays(Date.now(), 1), datetoTimeout),
           value: adaValue(2n),
         },
         swapper: {
           roleName: "Token provider",
-          depositTimeout: pipe(Date.now(), addDays(2), datetoTimeout),
+          depositTimeout: pipe(addDays(Date.now(), 2), datetoTimeout),
           value: runtimeTokenToMarloweTokenValue(tokenValueMinted),
         },
       };

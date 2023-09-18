@@ -1,5 +1,5 @@
 import { pipe } from "fp-ts/lib/function.js";
-import { addDays } from "date-fns/fp";
+import addDays from "date-fns/fp/addDays/index.js";
 
 import * as Examples from "@marlowe.io/language-core-v1/examples";
 import { datetoTimeout, adaValue } from "@marlowe.io/language-core-v1";
