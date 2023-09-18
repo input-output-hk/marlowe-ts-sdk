@@ -124,3 +124,16 @@ And in a separate project you can install the tarballs using a file url when dec
 
 TODO [[Publish pre-check]] Local map and this pack instructions
 TODO instructions on how to manually publish
+In order to check that the export/import mechanism works on the browser using import maps you can:
+
+1. Create a testing branch in a fork of the repo
+1. Clean and build the project `npm run clean && npm run build`
+1. Remove `dist` from `.gitignore`
+1. Commit the `dist` folders of the different packages
+1. Get the full git hash of the commit using `git rev-parse HEAD`
+1. Publish the branch in your fork
+1. Modify `rollup/config.mjs` and set the correct `owner` and `version` when we build the import map for jsdelivr-gh.
+1. Rebuild the project `npm run build`
+1. Modify the html in the `pocs` folder to use `/dist/jsdelivr-gh-importmap.js`
+1. From the root folder run `npx http-server --port 1337 -c-1  -o ./`
+1. Verify that each poc example works properly.
