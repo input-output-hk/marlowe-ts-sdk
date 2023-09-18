@@ -14,31 +14,9 @@ Official Links
 
 # Overview
 
-`marlowe-ts-sdk` is a suite of **TypeScript/JavaScript** libraries for Web Cardano Dapp Development using Marlowe Technologies.
+The **Marlowe TS-SDK** is a suite of *TypeScript/JavaScript* libraries for developing Web-Dapp in the Cardano Blockchain using Marlowe Technologies.
 
-It is composed of the following [npm workspaces](https://docs.npmjs.com/cli/v7/using-npm/workspaces) :
-
-- Language
-  - [@marlowe.io/language-core-v1](./packages/language/core/v1/)
-    - Marlowe Core V1 constructs
-    - JSON Codec
-- Cardano Wallet
-  - [@marlowe.io/wallet](./packages/runtime/core/)
-    - Wallet Extension Capabalities (Browser / CIP-30)
-    - Single Wallet Address Capabalities(NodeJS / Version used for e2e tests only)
-- Runtime
-  - [@marlowe.io/runtime-lifecycle](./packages/runtime/lifecycle/) : Entry Point for Running remotely Marlowe Contracts over a backend instance of the runtime using a connected wallet.
-    - Marlowe Tx Commands
-      - Create
-      - Applying Inputs
-      - Withdraws
-    - Query capabilities for supporting these commands
-  - [@marlowe.io/runtime-core](./packages/runtime/core/) : core concepts used throughout the runtime libraries.
-  - [@marlowe.io/runtime-rest-client](./packages/runtime/client/rest/) : client of the runtime rest api.
-- Infrastruture Supporting SubDomains
-  - [@marlowe.io/adapter](./packages/adapter) : supporting set of libraries for Marlowe and Runtime Core Domains.
-
-# Get Started
+It is composed of several npm packages documented in the [API reference](https://input-output-hk.github.io/marlowe-ts-sdk/) page.
 
 ## Prerequesites
 
@@ -60,18 +38,6 @@ To get a running instance of the Runtime, it is recommended to check out the ins
 ### Non Tested
 
 - TODO
-
-## NPM
-
-```bash
-npm install @marlowe.io/adapter @marlowe.io/wallet @marlowe.io/language-core-v1 @marlowe.io/runtime @marlowe.io/runtime-core @marlowe.io/runtime-rest-client
-```
-
-## Basic usage
-
-```
-TODO
-```
 
 ## Examples
 
