@@ -1,5 +1,6 @@
 {
   "name": "@marlowe.io/adapter",
+  "version": "0.2.0-alpha-0",
   "description": "Infrastruture Supporting SubDomains libraries",
   "repository": "https://github.com/input-output-hk/marlowe-ts-sdk",
   "publishConfig": {
@@ -13,7 +14,7 @@
   "license": "Apache-2.0",
   "scripts": {
     "build": "tsc --build src",
-    "clean": "tsc --build --clean src",
+    "clean": "shx rm -rf dist",
     "test": "echo 'adapter doesnt have tests for the moment'"
   },
   "type": "module",
@@ -22,28 +23,34 @@
   ],
   "exports": {
     ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "import": "./dist/esm/index.js",
+      "require": "./dist/bundled/cjs/adapter.cjs",
+      "types": "./dist/esm/index.d.ts"
     },
     "./time": {
-      "import": "./dist/time.js",
-      "types": "./dist/time.d.ts"
+      "import": "./dist/esm/time.js",
+      "require": "./dist/bundled/cjs/time.cjs",
+      "types": "./dist/esm/time.d.ts"
     },
     "./codec": {
-      "import": "./dist/codec.js",
-      "types": "./dist/codec.d.ts"
+      "import": "./dist/esm/codec.js",
+      "require": "./dist/bundled/cjs/codec.cjs",
+      "types": "./dist/esm/codec.d.ts"
     },
     "./file": {
-      "import": "./dist/file.js",
-      "types": "./dist/file.d.ts"
+      "import": "./dist/esm/file.js",
+      "require": "./dist/bundled/cjs/file.cjs",
+      "types": "./dist/esm/file.d.ts"
     },
     "./http": {
-      "import": "./dist/http.js",
-      "types": "./dist/http.d.ts"
+      "import": "./dist/esm/http.js",
+      "require": "./dist/bundled/cjs/http.cjs",
+      "types": "./dist/esm/http.d.ts"
     },
     "./fp-ts": {
-      "import": "./dist/fp-ts.js",
-      "types": "./dist/fp-ts.d.ts"
+      "import": "./dist/esm/fp-ts.js",
+      "require": "./dist/bundled/cjs/fp-ts.cjs",
+      "types": "./dist/esm/fp-ts.d.ts"
     }
   },
   "dependencies": {

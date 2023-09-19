@@ -1,4 +1,4 @@
-import { mkRestClient } from "@marlowe.io/runtime-rest-client/index.js";
+import { mkRestClient } from "@marlowe.io/runtime-rest-client";
 import * as S from "@marlowe.io/wallet/nodejs";
 import * as Generic from "../index.js";
 

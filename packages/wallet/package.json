@@ -1,5 +1,6 @@
 {
   "name": "@marlowe.io/wallet",
+  "version": "0.2.0-alpha-0",
   "description": "Cardano Wallet Capabalities for Marlowe specific environment",
   "repository": "https://github.com/input-output-hk/marlowe-ts-sdk",
   "publishConfig": {
@@ -13,28 +14,36 @@
   "license": "Apache-2.0",
   "scripts": {
     "build": "tsc --build src",
-    "clean": "tsc --build --clean src",
+    "clean": "shx rm -rf dist",
     "test": "NODE_OPTIONS='--experimental-vm-modules --no-warnings' jest --config test/jest.unit.config.mjs"
   },
   "type": "module",
-  "module": "./dist/browser/index.js",
-  "main": "./dist/browser/index.js",
-  "types": "./dist/browser/index.d.ts",
+  "module": "./dist/esm/browser/index.js",
+  "main": "./dist/esm/browser/index.js",
+  "types": "./dist/esm/browser/index.d.ts",
   "files": [
     "dist"
   ],
   "exports": {
+    ".": {
+      "import": "./dist/esm/index.js",
+      "require": "./dist/bundled/cjs/index.cjs",
+      "types": "./dist/esm/index.d.ts"
+    },
     "./api": {
-      "import": "./dist/api.js",
-      "types": "./dist/api.d.ts"
+      "import": "./dist/esm/api.js",
+      "require": "./dist/bundled/cjs/api.cjs",
+      "types": "./dist/esm/api.d.ts"
     },
     "./browser": {
-      "import": "./dist/browser/index.js",
-      "types": "./dist/browser/index.d.ts"
+      "import": "./dist/esm/browser/index.js",
+      "require": "./dist/bundled/cjs/browser.cjs",
+      "types": "./dist/esm/browser/index.d.ts"
     },
     "./nodejs": {
-      "import": "./dist/nodejs/index.js",
-      "types": "./dist/nodejs/index.d.ts"
+      "import": "./dist/esm/nodejs/index.js",
+      "require": "./dist/bundled/cjs/nodejs.cjs",
+      "types": "./dist/esm/nodejs/index.d.ts"
     }
   },
   "dependencies": {
@@ -42,6 +51,7 @@
     "io-ts": "2.2.20",
     "newtype-ts": "0.3.5",
     "@47ng/codec": "1.1.0",
-    "lucid-cardano": "0.9.4"
+    "lucid-cardano": "0.9.4",
+    "@blockfrost/blockfrost-js": "^5.4.0"
   }
 }

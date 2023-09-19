@@ -14,7 +14,6 @@ import {
   assetId,
   mkPolicyId,
   unTxOutRef,
-  PolicyId,
 } from "@marlowe.io/runtime-core";
 
 export type SupportedWallet = "nami" | "eternl";

@@ -1,5 +1,6 @@
 {
   "name": "@marlowe.io/language-core-v1",
+  "version": "0.2.0-alpha-0",
   "description": "Library to manipulate Marlowe Core contracts",
   "repository": "https://github.com/input-output-hk/marlowe-ts-sdk",
   "publishConfig": {
@@ -13,50 +14,58 @@
   "license": "Apache-2.0",
   "scripts": {
     "build": "tsc --build src",
-    "clean": "tsc --build --clean src ",
+    "clean": "shx rm -rf dist",
     "test": "NODE_OPTIONS='--experimental-vm-modules --no-warnings' jest --config test/jest.unit.config.mjs"
   },
   "type": "module",
-  "module": "./dist/semantics/contract/index.js",
-  "main": "./dist/semantics/contract/index.js",
-  "types": "./dist/semantics/contract/index.d.ts",
+  "module": "./dist/esm/semantics/contract/index.js",
+  "main": "./dist/esm/semantics/contract/index.js",
+  "types": "./dist/esm/semantics/contract/index.d.ts",
   "files": [
     "dist"
   ],
   "exports": {
     ".": {
-      "import": "./dist/semantics/contract/index.js",
-      "types": "./dist/semantics/contract/index.d.ts"
+      "import": "./dist/esm/semantics/contract/index.js",
+      "require": "./dist/bundled/cjs/language-core-v1.cjs",
+      "types": "./dist/esm/semantics/contract/index.d.ts"
     },
     "./next": {
-      "import": "./dist/semantics/next/index.js",
-      "types": "./dist/semantics/next/index.d.ts"
+      "import": "./dist/esm/semantics/next/index.js",
+      "require": "./dist/bundled/cjs/next.cjs",
+      "types": "./dist/esm/semantics/next/index.d.ts"
     },
     "./environment": {
-      "import": "./dist/semantics/environment.js",
-      "types": "./dist/semantics/environment.d.ts"
+      "import": "./dist/esm/semantics/environment.js",
+      "require": "./dist/bundled/cjs/environment.cjs",
+      "types": "./dist/esm/semantics/environment.d.ts"
     },
     "./state": {
-      "import": "./dist/semantics/state.js",
-      "types": "./dist/semantics/state.d.ts"
+      "import": "./dist/esm/semantics/state.js",
+      "require": "./dist/bundled/cjs/state.cjs",
+      "types": "./dist/esm/semantics/state.d.ts"
     },
     "./token": {
-      "import": "./dist/semantics/contract/common/token.js",
-      "types": "./dist/semantics/contract/common/token.d.ts"
+      "import": "./dist/esm/semantics/contract/common/token.js",
+      "require": "./dist/bundled/cjs/token.cjs",
+      "types": "./dist/esm/semantics/contract/common/token.d.ts"
     },
     "./tokenValue": {
-      "import": "./dist/semantics/contract/common/tokenValue.js",
-      "types": "./dist/semantics/contract/common/tokenValue.d.ts"
+      "import": "./dist/esm/semantics/contract/common/tokenValue.js",
+      "require": "./dist/bundled/cjs/tokenValue.cjs",
+      "types": "./dist/esm/semantics/contract/common/tokenValue.d.ts"
     },
     "./version": {
-      "import": "./dist/semantics/version.js",
-      "types": "./dist/semantics/version.d.ts"
+      "import": "./dist/esm/semantics/version.js",
+      "require": "./dist/bundled/cjs/version.cjs",
+      "types": "./dist/esm/semantics/version.d.ts"
     },
     "./examples": {
-      "import": "./dist/examples/index.js",
-      "types": "./dist/examples/index.d.ts"
+      "import": "./dist/esm/examples/index.js",
+      "require": "./dist/bundled/cjs/examples.cjs",
+      "types": "./dist/esm/examples/index.d.ts"
     },
-    "./contract/*": "./dist/semantics/contract/*.js"
+    "./contract/*": "./dist/esm/semantics/contract/*.js"
   },
   "dependencies": {
     "date-fns": "2.29.3",
