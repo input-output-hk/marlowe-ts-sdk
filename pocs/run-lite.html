@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Marlowe Run Very Lite POC</title>
+  </head>
+  <body>
+    <h1>Marlowe Run Lite Lite</h1>
+    <div>
+      <h2>1. Setup contract and Runtime</h2>
+
+      <label for="runtimeUrl">URL to a Marlowe Runtime instance:</label>
+      <input
+        id="runtimeUrl"
+        type="text"
+        autocomplete="on"
+        placeholder="http://localhost:32952"
+      />
+      <br />
+      <label for="wallet">Select wallet:</label>
+      <select id="wallet" name="wallet">
+        <option value="nami">Nami</option>
+        <option value="eternl">Eternl</option>
+      </select>
+      <div>
+        <h3>1.1 Create contract</h3>
+        <label for="contract">JSON Contract:</label>
+        <textarea id="contract" type="text" style="width: 100%; height: 20em">
+"close"</textarea
+        >
+      </div>
+      <br />
+      <input id="create-contract" type="button" value="Create contract" />
+    </div>
+    <div>
+      <h3>1.2 Load contract</h3>
+      <label for="contract-id">Contract ID:</label>
+      <input id="contract-id" type="text" />
+    </div>
+    <hr />
+    <div>
+      <h2>2. Run contract</h2>
+      <i>ContractId</i>: <a id="contract-id-indicator">-</a>
+      <h4>Actions</h4>
+      <br />
+      <div>
+        <div>
+          Deposit
+          <input type="number" id="deposit-amount" value="0" />
+          of token with policy id
+          <input type="text" id="deposit-policy-id" />
+          and token name
+          <input type="text" id="deposit-token-name" />
+          into account of
+          <select id="deposit-into-type">
+            <option value="address">Address</option>
+            <!--option value="role">Role</option-->
+          </select>
+          <input type="text" id="deposit-token-name" />
+          <input id="deposit" type="button" value="Deposit" />
+        </div>
+        <div>Choice</div>
+        <div>Notify</div>
+      </div>
+    </div>
+
+    <h2>Console</h2>
+    <div id="console"></div>
+    <input id="clear-console" type="button" value="Clear console" />
+
+    <script src="/dist/local-importmap.js"></script>
+    <script type="module">
+      import { clearConsole, log } from "./js/poc-helpers.js";
+      import * as H from "./js/poc-helpers.js";
+      import { Browser } from "@marlowe.io/runtime-lifecycle";
+      import { getAddressesAndCollaterals } from "@marlowe.io/wallet/api";
+
+      window.Browser = Browser;
+      window.wallet = getAddressesAndCollaterals;
+      const consoleDiv = document.getElementById("console");
+
+      function setContractIdIndicator(contractId) {
+        const contractIdIndicator = document.getElementById(
+          "contract-id-indicator"
+        );
+        contractIdIndicator.innerHTML = contractId;
+        // TODO: Add a network selector
+        const url = `https://preprod.marlowescan.com/contractView?tab=state&contractId=${contractId.replace(
+          "#",
+          "%23"
+        )}`;
+        contractIdIndicator.href = url;
+        contractIdIndicator.target = "_blank";
+      }
+
+      async function createContract() {
+        const runtimeUrlInput = document.getElementById("runtimeUrl");
+        const runtimeURL = runtimeUrlInput.value || "http://localhost:32952";
+        const walletInput = document.getElementById("wallet");
+        const walletName = walletInput.value;
+        const contractInput = document.getElementById("contract");
+        const contract = JSON.parse(contractInput.value);
+
+        const runtime = await Browser.mkRuntimeLifecycle({
+          runtimeURL,
+          walletName,
+        });
+
+        const contractId = await runtime.contracts.create({ contract });
+        log("Contract created with id: " + contractId);
+        setContractIdIndicator(contractId);
+      }
+
+      H.setupLocalStorageRuntimeUrl();
+
+      const createContractButton = document.getElementById("create-contract");
+      createContractButton.addEventListener("click", createContract);
+
+      const clearConsoleButton = document.getElementById("clear-console");
+      clearConsoleButton.addEventListener("click", clearConsole);
+    </script>
+  </body>
+</html>

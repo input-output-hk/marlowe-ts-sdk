@@ -1,7 +1,9 @@
 import * as t from "io-ts/lib/index.js";
 import { iso, Newtype } from "newtype-ts";
 import { fromNewtype } from "io-ts-types";
-
+/**
+ * A reference to a transaction output.
+ */
 export type TxOutRef = Newtype<{ readonly TxOutRef: unique symbol }, string>;
 export const TxOutRef = fromNewtype<TxOutRef>(t.string);
 export const unTxOutRef = iso<TxOutRef>().unwrap;

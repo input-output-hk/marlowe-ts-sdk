@@ -8,6 +8,7 @@ import { TxId } from "../tx/id.js";
 import { ContractId } from "../contract/id.js";
 import { AssetId, Assets } from "../asset/index.js";
 
+// QUESTION: @N.H: What is the difference between PayoutId and WithdrawalId?
 export type PayoutId = Newtype<{ readonly ContractId: unique symbol }, string>;
 export const PayoutId = fromNewtype<PayoutId>(t.string);
 export const unPayoutId = iso<PayoutId>().unwrap;

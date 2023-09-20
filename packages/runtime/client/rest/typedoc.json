@@ -1,5 +1,7 @@
 {
   "entryPointStrategy": "expand",
-  "entryPoints": ["./src"],
-  "tsconfig": "./src/tsconfig.json"
+  "entryPoints": ["./src/index.ts", "./src/contract/index.ts", "./src/payout/index.ts", "./src/withdrawal/index.ts"],
+  "tsconfig": "./src/tsconfig.json",
+  "categorizeByGroup": false,
+  "defaultCategory": "General"
 }

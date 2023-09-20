@@ -12,14 +12,27 @@ import {
 
 import { TxStatus } from "./transaction/status.js";
 import { ContractId } from "@marlowe.io/runtime-core";
-
-export type Header = t.TypeOf<typeof Header>;
-export const Header = t.type({
+/**
+ * A contract header contains minimal contract information that can be used to identify a contract.
+ * Use TODO to get full contract details
+ *
+ * @see The {@link ContractHeader:var | dynamic validator} for this type.
+ * @see The {@link https://github.com/input-output-hk/marlowe-cardano/blob/b39fe3c3ed67d41cdea6d45700093e7ffa4fad62/marlowe-runtime-web/src/Language/Marlowe/Runtime/Web/Types.hs#L502 | The backend definition } of this type
+ * @category GetContractsResponse
+ */
+export interface ContractHeader extends t.TypeOf<typeof ContractHeader> {};
+/**
+ * This is a {@link !io-ts-usage | Dynamic type validator} for a {@link ContractHeader:type}.
+ * @category Validator
+ * @category GetContractsResponse
+ */
+export const ContractHeader = t.type({
   contractId: ContractId,
   roleTokenMintingPolicyId: PolicyId,
   version: MarloweVersion,
+  // TODO: Add continuations
+  tags: Tags,
+  metadata: Metadata,
   status: TxStatus,
   block: optionFromNullable(BlockHeader),
-  metadata: Metadata,
-  tags: Tags,
 });

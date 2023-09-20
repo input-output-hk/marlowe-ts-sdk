@@ -16,10 +16,40 @@ import {
   PolicyId,
 } from "@marlowe.io/runtime-core";
 
+// QUESTION: Where do we have global documentation about how Roles and payouts work?
+/**
+ * Identifies a payout that can be withdrawn from a contract.
+ * @see The {@link Payout:var | dynamic validator} for this type.
+ * @interface
+ */
 export type Payout = t.TypeOf<typeof Payout>;
-export const Payout = t.type({ payoutId: TxOutRef, role: RoleName });
 
+/**
+ * This is a {@link !io-ts-usage | Dynamic type validator} for a {@link Payout:type}.
+ * @category Validator
+ */
+export const Payout = t.type({
+  /**
+   * A reference to the payout script that contains the assets to be withdrawn.
+   */
+  payoutId: TxOutRef,
+  /**
+   * The {@link RoleName} of the participant that has the unclaimed Payout.
+   */
+  role: RoleName
+});
+
+/**
+ * Represents the response of the {@link index.ContractsAPI | Get contract by id } endpoint
+ * @see The {@link ContractDetails:var | dynamic validator} for this type.
+ * @interface
+ */
 export type ContractDetails = t.TypeOf<typeof ContractDetails>;
+
+/**
+ * This is a {@link !io-ts-usage | Dynamic type validator} for the {@link ContractDetails:type}.
+ * @category Validator
+ */
 export const ContractDetails = t.type({
   contractId: ContractId,
   roleTokenMintingPolicyId: PolicyId,

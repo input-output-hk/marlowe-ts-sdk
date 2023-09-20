@@ -6,6 +6,7 @@ import { MarloweJSON } from "@marlowe.io/adapter/codec";
 const getOnlyData = TE.bimap(
   (e: unknown) =>
     e instanceof Error ? e : new Error(MarloweJSON.stringify(e)),
+  // FIXME: This should be `unknown` rather than any, but it is causing multiple compile errors
   (v: AxiosResponse): any => v.data
 );
 
