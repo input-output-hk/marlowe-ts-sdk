@@ -13,9 +13,28 @@ The `@marlowe.io/lifecycle` package is [released as an ESM module](https://githu
   <body>
     <script src="https://cdn.jsdelivr.net/gh/input-output-hk/marlowe-ts-sdk/jsdelivr-npm-importmap.js"></script>
     <script type="module">
-      import * as L from "@marlowe.io/runtime-lifecycle";
-      console.log("TODO", L);
-      debugger;
+      import { mkRuntimeLifecycle } from "@marlowe.io/runtime-lifecycle/browser";
+      const walletName = "nami";
+      const runtimeURL = "http://localhost:32788";
+
+      console.log(
+        `<h2>Connecting the runtime instance at ${runtimeURL} and the ${walletName} Wallet Extension</h2>`
+      );
+      const runtimeLifecycle = await mkRuntimeLifecycle({
+        walletName: walletName,
+        runtimeURL: runtimeURL,
+      });
+      console.log("");
+      console.log("Connected to runtime...");
+      console.log("");
+
+      const avalaiblePayouts = await runtimeLifecycle.payouts
+        .available()
+        .catch((err) =>
+          log(`Error while retrieving availaible payouts : ${err}`)
+        );
+      console.log(`nbPayouts retrieved : ${avalaiblePayouts.length}`);
+      console.log("Payouts flow done 🎉");
     </script>
   </body>
 </html>

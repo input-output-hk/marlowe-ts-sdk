@@ -1,7 +1,7 @@
 import { pipe } from "fp-ts/lib/function.js";
-import addDays from "date-fns/esm/addDays/index.js";
+import { addDays } from "date-fns";
 
-import { toInput } from "@marlowe.io/language-core-v1/next";
+import { Next, toInput } from "@marlowe.io/language-core-v1/next";
 import * as Examples from "@marlowe.io/language-core-v1/examples";
 import { datetoTimeout, adaValue } from "@marlowe.io/language-core-v1";
 import { mkRestClient } from "@marlowe.io/runtime-rest-client/index.js";
@@ -59,12 +59,15 @@ describe("swap", () => {
         },
       });
       // see [[apply-inputs-next-provider]]
-      await runtime(adaProvider).contracts.applyInputs(contractId, (next) => ({
-        inputs: [pipe(next.applicable_inputs.deposits[0], toInput)],
-      }));
+      await runtime(adaProvider).contracts.applyInputs(
+        contractId,
+        (next: Next) => ({
+          inputs: [pipe(next.applicable_inputs.deposits[0], toInput)],
+        })
+      );
       await runtime(tokenProvider).contracts.applyInputs(
         contractId,
-        (next) => ({
+        (next: Next) => ({
           inputs: [pipe(next.applicable_inputs.deposits[0], toInput)],
         })
       );

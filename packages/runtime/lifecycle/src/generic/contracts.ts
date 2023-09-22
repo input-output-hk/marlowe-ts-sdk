@@ -1,21 +1,79 @@
 import * as TE from "fp-ts/lib/TaskEither.js";
-
-import { constVoid, pipe } from "fp-ts/lib/function.js";
-import { RestAPI } from "@marlowe.io/runtime-rest-client";
-import { WalletAPI, getAddressesAndCollaterals } from "@marlowe.io/wallet/api";
-import { DecodingError } from "@marlowe.io/adapter/codec";
-import { CreateRequest, ApplyInputsRequest } from "../../apis/tx.js";
+import * as T from "fp-ts/lib/Task.js";
+import { pipe } from "fp-ts/lib/function.js";
+import { mkEnvironment } from "@marlowe.io/language-core-v1/environment";
+import { addMinutes, subMinutes } from "date-fns";
+import { tryCatchDefault, unsafeTaskEither } from "@marlowe.io/adapter/fp-ts";
+import { Party } from "@marlowe.io/language-core-v1/semantics/contract/common/payee/party.js";
 import {
+  ApplyInputsRequest,
+  ContractsAPI,
+  ContractsDI,
+  CreateRequest,
+  ProvideInput,
+  RuntimeLifecycle,
+} from "../api.js";
+
+import { getAddressesAndCollaterals, WalletAPI } from "@marlowe.io/wallet/api";
+import {
+  PolicyId,
   ContractId,
-  PayoutId,
   contractIdToTxId,
-  withdrawalIdToTxId,
 } from "@marlowe.io/runtime-core";
 
+import { RestAPI } from "@marlowe.io/runtime-rest-client";
+import { DecodingError } from "@marlowe.io/adapter/codec";
 import * as Tx from "@marlowe.io/runtime-rest-client/transaction";
-import { tryCatchDefault } from "@marlowe.io/adapter/fp-ts";
 
-export const create: (
+export function mkContractLifecycle(
+  wallet: WalletAPI,
+  rest: RestAPI
+): ContractsAPI {
+  const di = { wallet, rest };
+  return {
+    create: createContract(di),
+    applyInputs: applyInputsToContract(di),
+  };
+}
+
+const createContract =
+  ({ wallet, rest }: ContractsDI) =>
+  (req: CreateRequest): Promise<ContractId> => {
+    return unsafeTaskEither(createContractFpTs(rest)(wallet)(req));
+  };
+
+const applyInputsToContract =
+  ({ wallet, rest }: ContractsDI) =>
+  async (
+    contractId: ContractId,
+    provideInput: ProvideInput
+  ): Promise<ContractId> => {
+    const contractDetails = await unsafeTaskEither(
+      rest.contracts.contract.get(contractId)
+    );
+    const parties = await getParties(wallet)(
+      contractDetails.roleTokenMintingPolicyId
+    )();
+    const next = await unsafeTaskEither(
+      rest.contracts.contract.next(contractId)(
+        mkEnvironment(pipe(Date.now(), (date) => subMinutes(date, 15)))(
+          pipe(Date.now(), (date) => addMinutes(date, 15))
+        )
+      )(parties)
+    );
+
+    return unsafeTaskEither(
+      applyInputsFpTs(rest)(wallet)(contractId)(provideInput(next))
+    );
+  };
+
+const getParties: (
+  walletApi: WalletAPI
+) => (roleTokenMintingPolicyId: PolicyId) => T.Task<Party[]> =
+  (walletAPI) => (roleMintingPolicyId) =>
+    T.of([]);
+
+export const createContractFpTs: (
   client: RestAPI
 ) => (
   wallet: WalletAPI
@@ -61,7 +119,7 @@ export const create: (
       )
     );
 
-export const applyInputs: (
+export const applyInputsFpTs: (
   client: RestAPI
 ) => (
   wallet: WalletAPI
@@ -108,37 +166,4 @@ export const applyInputs: (
         )
       ),
       TE.map(() => contractId)
-    );
-
-export const withdraw: (
-  client: RestAPI
-) => (
-  wallet: WalletAPI
-) => (payoutIds: PayoutId[]) => TE.TaskEither<Error | DecodingError, void> =
-  (client) => (wallet) => (payoutIds) =>
-    pipe(
-      tryCatchDefault(() => getAddressesAndCollaterals(wallet)),
-      TE.chain((addressesAndCollaterals) =>
-        client.withdrawals.post(payoutIds, addressesAndCollaterals)
-      ),
-      TE.chainW((withdrawalTextEnvelope) =>
-        pipe(
-          tryCatchDefault(() =>
-            wallet.signTxTheCIP30Way(withdrawalTextEnvelope.tx.cborHex)
-          ),
-          TE.chain((hexTransactionWitnessSet) =>
-            client.withdrawals.withdrawal.put(
-              withdrawalTextEnvelope.withdrawalId,
-              hexTransactionWitnessSet
-            )
-          ),
-          TE.map(() => withdrawalTextEnvelope.withdrawalId)
-        )
-      ),
-      TE.chainFirstW((withdrawalId) =>
-        tryCatchDefault(() =>
-          wallet.waitConfirmation(pipe(withdrawalId, withdrawalIdToTxId))
-        )
-      ),
-      TE.map(constVoid)
     );

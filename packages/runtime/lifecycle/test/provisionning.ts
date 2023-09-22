@@ -1,5 +1,5 @@
 import { TokenName } from "@marlowe.io/language-core-v1";
-import { mkRuntimeLifecycle } from "@marlowe.io/runtime-lifecycle/overRestAPI";
+import { mkRuntimeLifecycle } from "@marlowe.io/runtime-lifecycle/generic";
 import { RestAPI } from "@marlowe.io/runtime-rest-client/index.js";
 import {
   Context,

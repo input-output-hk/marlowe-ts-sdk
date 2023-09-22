@@ -1,9 +1,9 @@
 import { pipe } from "fp-ts/lib/function.js";
-import addDays from "date-fns/fp/addDays/index.js";
+import { addDays } from "date-fns";
 
 import * as Examples from "@marlowe.io/language-core-v1/examples";
 import { datetoTimeout, adaValue } from "@marlowe.io/language-core-v1";
-import { toInput } from "@marlowe.io/language-core-v1/next";
+import { Next, toInput } from "@marlowe.io/language-core-v1/next";
 import { mkRestClient } from "@marlowe.io/runtime-rest-client/index.js";
 
 import {
@@ -37,12 +37,12 @@ describe("Payouts", () => {
     const swapRequest = {
       provider: {
         roleName: "Ada provider",
-        depositTimeout: pipe(Date.now(), addDays(1), datetoTimeout),
+        depositTimeout: pipe(addDays(Date.now(), 1), datetoTimeout),
         value: adaValue(2n),
       },
       swapper: {
         roleName: "Token provider",
-        depositTimeout: pipe(Date.now(), addDays(2), datetoTimeout),
+        depositTimeout: pipe(addDays(Date.now(), 2), datetoTimeout),
         value: runtimeTokenToMarloweTokenValue(tokenValueMinted),
       },
     };
@@ -57,13 +57,19 @@ describe("Payouts", () => {
 
     // see [[apply-inputs-next-provider]], I think it would be clearer to separate the "what are the
     // next possible inputs from the apply inputs call"
-    await runtime(adaProvider).contracts.applyInputs(contractId, (next) => ({
-      inputs: [pipe(next.applicable_inputs.deposits[0], toInput)],
-    }));
+    await runtime(adaProvider).contracts.applyInputs(
+      contractId,
+      (next: Next) => ({
+        inputs: [pipe(next.applicable_inputs.deposits[0], toInput)],
+      })
+    );
 
-    await runtime(tokenProvider).contracts.applyInputs(contractId, (next) => ({
-      inputs: [pipe(next.applicable_inputs.deposits[0], toInput)],
-    }));
+    await runtime(tokenProvider).contracts.applyInputs(
+      contractId,
+      (next: Next) => ({
+        inputs: [pipe(next.applicable_inputs.deposits[0], toInput)],
+      })
+    );
     return {
       contractId,
       runtime,

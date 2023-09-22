@@ -3,7 +3,6 @@
     "allowJs": true,
     "allowSyntheticDefaultImports": true,
     "declaration": true,
-    "declarationMap": true,
     "esModuleInterop": true,
     "inlineSourceMap": false,
     "lib": ["es2020", "dom"],

@@ -21,7 +21,7 @@ import {
  *
  */
 export type CIP30Network = "Mainnet" | "Testnets";
-
+export type WalletDI = { wallet: WalletAPI };
 /**
  * The WalletAPI is an interface for interacting with a Cardano wallet.
  */

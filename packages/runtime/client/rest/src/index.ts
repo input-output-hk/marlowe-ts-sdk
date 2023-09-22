@@ -21,6 +21,8 @@ export * from "./contract/index.js";
 export * from "./withdrawal/index.js";
 export * from "./payout/index.js";
 
+export type RestDI = { rest: RestAPI };
+
 export interface RestAPI {
   healthcheck: () => TE.TaskEither<Error, Boolean>;
   payouts: {
