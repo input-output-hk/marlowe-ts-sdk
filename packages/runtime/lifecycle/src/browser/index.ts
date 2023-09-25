@@ -1,8 +1,5 @@
-import {
-  SupportedWallet,
-  createBrowserWallet,
-} from "@marlowe.io/wallet/browser";
-import * as Generic from "../index.js";
+import { SupportedWallet, mkBrowserWallet } from "@marlowe.io/wallet/browser";
+import * as Generic from "../generic/runtime.js";
 
 import { mkRestClient } from "@marlowe.io/runtime-rest-client";
 
@@ -30,7 +27,7 @@ export async function mkRuntimeLifecycle({
   runtimeURL,
   walletName,
 }: BrowserRuntimeLifecycleOptions) {
-  const wallet = await createBrowserWallet(walletName);
+  const wallet = await mkBrowserWallet(walletName);
   const restClient = mkRestClient(runtimeURL);
   return Generic.mkRuntimeLifecycle(restClient, wallet);
 }

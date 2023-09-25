@@ -1,17 +1,36 @@
-import * as TE from "fp-ts/lib/TaskEither.js";
-import * as F from "fp-ts/lib";
-import { WalletAPI } from "@marlowe.io/wallet/api";
-import * as O from "fp-ts/lib/Option.js";
-import { CreateRequest, ProvideInput } from "./tx.js";
+import { WalletAPI, WalletDI } from "@marlowe.io/wallet/api";
 import {
   AssetId,
   ContractId,
+  Metadata,
   PayoutAvailable,
   PayoutId,
   PayoutWithdrawn,
+  Tags,
 } from "@marlowe.io/runtime-core";
-import { DecodingError } from "@marlowe.io/adapter/codec";
+import { RestDI, RolesConfig } from "@marlowe.io/runtime-rest-client";
+import { ISO8601 } from "@marlowe.io/adapter/time";
+import { Contract, Input } from "@marlowe.io/language-core-v1";
+import { Next } from "@marlowe.io/language-core-v1/next";
 
+export type ContractsDI = WalletDI & RestDI;
+export type ProvideInput = (next: Next) => ApplyInputsRequest;
+
+export type CreateRequest = {
+  contract: Contract;
+  roles?: RolesConfig;
+  tags?: Tags;
+  metadata?: Metadata;
+  minUTxODeposit?: number;
+};
+
+export type ApplyInputsRequest = {
+  inputs: Input[];
+  tags?: Tags;
+  metadata?: Metadata;
+  invalidBefore?: ISO8601;
+  invalidHereafter?: ISO8601;
+};
 /**
  * TODO: comment
  */
@@ -35,6 +54,7 @@ export interface ContractsAPI {
     provideInput: ProvideInput
   ): Promise<ContractId>;
 }
+export type PayoutsDI = WalletDI & RestDI;
 
 export interface PayoutsAPI {
   /**

@@ -1,5 +1,5 @@
 {
   "entryPointStrategy": "expand",
-  "entryPoints": ["./src"],
+  "entryPoints": ["./src/api.ts", "./src/browser/index.ts"],
   "tsconfig": "./src/tsconfig.json"
 }

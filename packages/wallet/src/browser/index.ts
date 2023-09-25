@@ -1,5 +1,5 @@
 import { CIP30Network, WalletAPI } from "../api.js";
-import { C, Core } from "lucid-cardano";
+import { C, Core, WalletApi } from "lucid-cardano";
 import { hex, utf8 } from "@47ng/codec";
 // DISCUSSION: these should be imported from a cardano helpers library.
 //       They are independent of the runtime. Maybe the adaptor library?
@@ -18,85 +18,108 @@ import {
 
 export type SupportedWallet = "nami" | "eternl";
 
-class BrowserWalletAPI implements WalletAPI {
-  constructor(private extension: BroswerExtensionCIP30Api) {}
-
-  // DISCUSSION: This can currently wait forever. Maybe we should add
-  //             an abort controller or a timeout
-  waitConfirmation(txHash: string, checkInterval = 3000) {
-    const self = this;
-    return new Promise<boolean>((txConfirm) => {
-      const pollingId = setInterval(async () => {
-        const utxos = await self.getUTxOs();
-        const isConfirmed =
-          utxos.filter((utxo) => unTxOutRef(utxo).split("#", 2)[0] == txHash)
-            .length > 0;
-        if (isConfirmed) {
-          clearInterval(pollingId);
-          // QUESTION @N.H: Why do we need to wait 1 second before returning true?
-          await new Promise((res) => setTimeout(() => res(1), 1000));
-          return txConfirm(true);
-        }
-      }, checkInterval);
-    });
-  }
-
-  signTxTheCIP30Way(tx: string) {
-    return this.extension.signTx(tx, true);
-  }
-
-  async getChangeAddress() {
-    const changeAddress = await this.extension.getChangeAddress();
-    return deserializeAddress(changeAddress);
-  }
-
-  async getUsedAddresses() {
-    const usedAddresses = await this.extension.getUsedAddresses();
-    return usedAddresses.map(deserializeAddress);
-  }
-
-  async getCollaterals() {
-    const collaterals =
-      (await this.extension.experimental.getCollateral()) ?? [];
-    return collaterals.map(deserializeTxOutRef);
-  }
-
-  async getUTxOs() {
-    const utxos = (await this.extension.getUtxos()) ?? [];
-    return utxos.map(deserializeTxOutRef);
-  }
-
-  async getCIP30Network(): Promise<CIP30Network> {
-    const networkId = await this.extension.getNetworkId();
-    return networkId == 1 ? "Mainnet" : "Testnets";
-  }
-
-  async getTokens() {
-    const balances = await this.extension.getBalance();
-    return valueToTokens(deserializeValue(balances));
-  }
-
-  async getLovelaces(): Promise<bigint> {
-    const balances = await this.extension.getBalance();
-    return valueToLovelaces(deserializeValue(balances));
-  }
-}
+export type ExtensionDI = { extension: WalletApi };
 
 /**
  * Returns an instance of the browser wallet API for the specified wallet.
  * @param walletName - The name of the wallet to get an instance of.
  * @returns An instance of the BrowserWalletAPI class.
  */
-export async function createBrowserWallet(
+export async function mkBrowserWallet(
   walletName: SupportedWallet
 ): Promise<WalletAPI> {
   if (getAvailableWallets().includes(walletName)) {
     const extension = await window.cardano[walletName.toLowerCase()].enable();
-    return new BrowserWalletAPI(extension);
+    const di = { extension };
+    return {
+      waitConfirmation: waitConfirmation(di),
+      signTxTheCIP30Way: signTxTheCIP30Way(di),
+      getChangeAddress: getChangeAddress(di),
+      getUsedAddresses: getUsedAddresses(di),
+      getCollaterals: getCollaterals(di),
+      getUTxOs: getUTxOs(di),
+      getCIP30Network: getCIP30Network(di),
+      getTokens: getTokens(di),
+      getLovelaces: getLovelaces(di),
+    };
   } else {
     throw new Error(`Wallet ${walletName} is not available in the browser`);
   }
 }
+
+// DISCUSSION: This can currently wait forever. Maybe we should add
+//             an abort controller or a timeout
+const waitConfirmation =
+  (di: ExtensionDI) =>
+  (txHash: string, checkInterval = 3000) => {
+    return new Promise<boolean>((txConfirm) => {
+      const pollingId = setInterval(async () => {
+        const utxos = await getUTxOs(di)();
+        const isConfirmed =
+          utxos.filter((utxo) => unTxOutRef(utxo).split("#", 2)[0] == txHash)
+            .length > 0;
+        if (isConfirmed) {
+          clearInterval(pollingId);
+          return txConfirm(true);
+        }
+      }, checkInterval);
+    });
+  };
+
+const signTxTheCIP30Way =
+  ({ extension }: ExtensionDI) =>
+  (tx: string) => {
+    return extension.signTx(tx, true);
+  };
+
+const getChangeAddress =
+  ({ extension }: ExtensionDI) =>
+  async () => {
+    const changeAddress = await extension.getChangeAddress();
+    return deserializeAddress(changeAddress);
+  };
+
+const getUsedAddresses =
+  ({ extension }: ExtensionDI) =>
+  async () => {
+    const usedAddresses = await extension.getUsedAddresses();
+    return usedAddresses.map(deserializeAddress);
+  };
+
+const getUTxOs =
+  ({ extension }: ExtensionDI) =>
+  async () => {
+    const utxos = (await extension.getUtxos()) ?? [];
+    return utxos.map(deserializeTxOutRef);
+  };
+
+const getCollaterals =
+  ({ extension }: ExtensionDI) =>
+  async () => {
+    const collaterals = (await extension.experimental.getCollateral()) ?? [];
+    return collaterals.map(deserializeTxOutRef);
+  };
+
+const getCIP30Network =
+  ({ extension }: ExtensionDI) =>
+  async () => {
+    const networkId = await extension.getNetworkId();
+    return networkId == 1 ? "Mainnet" : "Testnets";
+  };
+
+const getTokens =
+  ({ extension }: ExtensionDI) =>
+  async () => {
+    const balances = await extension.getBalance();
+    return valueToTokens(deserializeValue(balances));
+  };
+
+const getLovelaces =
+  ({ extension }: ExtensionDI) =>
+  async () => {
+    const balances = await extension.getBalance();
+    return valueToLovelaces(deserializeValue(balances));
+  };
 
 /**
  * Get a list of the available wallets installed in the browser

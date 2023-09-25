@@ -1,6 +1,6 @@
 {
   "name": "@marlowe.io/runtime-lifecycle",
-  "version": "0.2.0-alpha-0",
+  "version": "0.2.0-alpha-1",
   "description": "Entry Point for Running remotely Marlowe Contracts over a backend instance of the runtime using a connected wallet.",
   "repository": "https://github.com/input-output-hk/marlowe-ts-sdk",
   "publishConfig": {
@@ -29,38 +29,27 @@
   "exports": {
     ".": {
       "import": "./dist/esm/index.js",
-      "require": "./dist/bundled/cjs/runtime-lifecycle.cjs",
+      "require": "./dist/bundled/cjs/index.cjs",
       "types": "./dist/esm/index.d.ts"
     },
     "./api": {
-      "import": "./dist/esm/apis/runtimeLifecycle.js",
+      "import": "./dist/esm/api.js",
       "require": "./dist/bundled/cjs/api.cjs",
-      "types": "./dist/esm/apis/runtimeLifecycle.d.ts"
-    },
-    "./overRestAPI": {
-      "import": "./dist/esm/instance/overRestAPI/index.js",
-      "require": "./dist/bundled/cjs/overRestAPI.cjs",
-      "types": "./dist/esm/instance/overRestAPI/index.d.ts"
+      "types": "./dist/esm/apis/api.d.ts"
     },
     "./browser": {
-      "import": "./dist/esm/instance/overRestAPI/browser/index.js",
+      "import": "./dist/esm/browser/index.js",
       "require": "./dist/bundled/cjs/browser.cjs",
-      "types": "./dist/esm/instance/overRestAPI/browser/index.d.ts"
+      "types": "./dist/esm/browser/index.d.ts"
     },
-    "./nodejs": {
-      "import": "./dist/esm/instance/overRestAPI/nodejs/index.js",
+    "./generic": {
+      "import": "./dist/esm/generic/runtime.js",
       "require": "./dist/bundled/cjs/nodejs.cjs",
-      "types": "./dist/esm/instance/overRestAPI/nodejs/index.d.ts"
-    },
-    "./common/*": "./dist/esm/common/*.js",
-    "./wallet/*": "./dist/esm/wallet/*.js",
-    "./tx": {
-      "import": "./dist/esm/instance/overRestAPI/tx.js",
-      "types": "./dist/esm/instance/overRestAPI/tx.d.ts"
+      "types": "./dist/esm/generic/runtime.d.ts"
     }
   },
   "dependencies": {
-    "@marlowe.io/runtime-rest-client": "0.2.0-alpha-0",
+    "@marlowe.io/runtime-rest-client": "0.2.0-alpha-1",
     "fp-ts": "^2.13.1",
     "io-ts": "2.2.20",
     "newtype-ts": "0.3.5",
