@@ -87,7 +87,7 @@ class BrowserWalletAPI implements WalletAPI {
  * @param walletName - The name of the wallet to get an instance of.
  * @returns An instance of the BrowserWalletAPI class.
  */
-export async function createBrowserWallet(
+export async function mkBrowserWallet(
   walletName: SupportedWallet
 ): Promise<WalletAPI> {
   if (getAvailableWallets().includes(walletName)) {

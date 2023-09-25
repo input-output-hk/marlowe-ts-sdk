@@ -14,10 +14,7 @@
     <div id="console"></div>
     <script src="/dist/jsdelivr-gh-importmap.js"></script>
     <script type="module">
-      import {
-        createBrowserWallet,
-        getAvailableWallets,
-      } from "@marlowe.io/wallet";
+      import { mkBrowserWallet, getAvailableWallets } from "@marlowe.io/wallet";
 
       const consoleDiv = document.getElementById("console");
       const walletInput = document.getElementById("wallet");
@@ -50,7 +47,7 @@
         const walletName = walletInput.value;
 
         log(`<h2>Accessing ${walletName} Wallet Extension</h2>`);
-        const wallet = await createBrowserWallet(walletName);
+        const wallet = await mkBrowserWallet(walletName);
         log("");
         log("Reading Wallet information...");
         log("");

@@ -20,11 +20,11 @@ The `@marlowe.io/wallet` package is [released as an ESM module](https://github.c
   <body>
     <script src="https://cdn.jsdelivr.net/gh/input-output-hk/marlowe-ts-sdk/jsdelivr-npm-importmap.js"></script>
     <script type="module">
-      import { createBrowserWallet, getAvailableWallets } from "@marlowe.io/wallet";
+      import { mkBrowserWallet, getAvailableWallets } from "@marlowe.io/wallet";
 
       const availableWallets = getAvailableWallets();
       console.log(`Available wallets: ${availableWallets}`);
-      const wallet = await createBrowserWallet(availableWallets[0]);
+      const wallet = await mkBrowserWallet(availableWallets[0]);
     </script>
   </body>
 </html>
