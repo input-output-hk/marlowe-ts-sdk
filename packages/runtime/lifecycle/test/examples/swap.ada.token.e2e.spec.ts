@@ -4,7 +4,7 @@ import { addDays } from "date-fns";
 import { Next, toInput } from "@marlowe.io/language-core-v1/next";
 import * as Examples from "@marlowe.io/language-core-v1/examples";
 import { datetoTimeout, adaValue } from "@marlowe.io/language-core-v1";
-import { mkRestClient } from "@marlowe.io/runtime-rest-client/index.js";
+import { mkFPTSRestClient } from "@marlowe.io/runtime-rest-client/index.js";
 import {
   getBankPrivateKey,
   getBlockfrostContext,
@@ -30,7 +30,7 @@ describe("swap", () => {
           tokenName: "TokenA",
         },
       };
-      const restClient = mkRestClient(getMarloweRuntimeUrl());
+      const restClient = mkFPTSRestClient(getMarloweRuntimeUrl());
       const { tokenValueMinted, adaProvider, tokenProvider, runtime } =
         await provisionAnAdaAndTokenProvider(
           restClient,

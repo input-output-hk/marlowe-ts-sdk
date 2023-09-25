@@ -21,13 +21,13 @@ import {
   contractIdToTxId,
 } from "@marlowe.io/runtime-core";
 
-import { RestAPI } from "@marlowe.io/runtime-rest-client";
+import { FPTSRestAPI } from "@marlowe.io/runtime-rest-client";
 import { DecodingError } from "@marlowe.io/adapter/codec";
 import * as Tx from "@marlowe.io/runtime-rest-client/transaction";
 
 export function mkContractLifecycle(
   wallet: WalletAPI,
-  rest: RestAPI
+  rest: FPTSRestAPI
 ): ContractsAPI {
   const di = { wallet, rest };
   return {
@@ -74,7 +74,7 @@ const getParties: (
     T.of([]);
 
 export const createContractFpTs: (
-  client: RestAPI
+  client: FPTSRestAPI
 ) => (
   wallet: WalletAPI
 ) => (
@@ -120,7 +120,7 @@ export const createContractFpTs: (
     );
 
 export const applyInputsFpTs: (
-  client: RestAPI
+  client: FPTSRestAPI
 ) => (
   wallet: WalletAPI
 ) => (

@@ -48,12 +48,12 @@ export const unContractsRange = iso<ContractsRange>().unwrap;
 export const contractsRange = iso<ContractsRange>().wrap;
 
 /**
- * Request options for the {@link index.RuntimeFlatApi#getContracts | Get contracts } endpoint
+ * Request options for the {@link index.RestAPI#getContracts | Get contracts } endpoint
  * @category Endpoints
  */
 export type GetContractsRequest = {
   /**
-   * Optional pagination request. Note that when you call {@link index.RuntimeFlatApi#getContracts | Get contracts }
+   * Optional pagination request. Note that when you call {@link index.RestAPI#getContracts | Get contracts }
    * the response includes the next and previous range headers.
    */
   // QUESTION: @Jamie, is this supposed to be constructed by the user? or solely from other endpoints?
@@ -133,7 +133,7 @@ export const GETByRangeRawResponse = t.type({
 });
 
 /**
- * Represents the response of the {@link index.RuntimeFlatApi | Get contracts } endpoint
+ * Represents the response of the {@link index.RestAPI#getContracts | Get contracts } endpoint
  * @see The {@link GetContractsResponse:var | dynamic validator} for this type.
  * @category GetContractsResponse
  */
@@ -169,7 +169,7 @@ export const GetContractsResponse = t.type({
 });
 
 /**
- * Request options for the {@link index.RuntimeFlatApi#createContract | Create contract } endpoint
+ * Request options for the {@link index.RestAPI#createContract | Create contract } endpoint
  * @category Endpoints
  */
 export type CreateContractRequest = {

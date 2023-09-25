@@ -1,6 +1,6 @@
 import { TokenName } from "@marlowe.io/language-core-v1";
 import { mkRuntimeLifecycle } from "@marlowe.io/runtime-lifecycle/generic";
-import { RestAPI } from "@marlowe.io/runtime-rest-client/index.js";
+import { FPTSRestAPI } from "@marlowe.io/runtime-rest-client/index.js";
 import {
   Context,
   SingleAddressWallet,
@@ -19,7 +19,7 @@ export type ProvisionScheme = {
 };
 
 export async function provisionAnAdaAndTokenProvider(
-  restAPI: RestAPI,
+  restAPI: FPTSRestAPI,
   walletContext: Context,
   bankPrivateKey: PrivateKeysAsHex,
   scheme: ProvisionScheme
@@ -77,7 +77,7 @@ export async function provisionAnAdaAndTokenProvider(
 }
 
 export async function initialiseBankAndverifyProvisionning(
-  restAPI: RestAPI,
+  restAPI: FPTSRestAPI,
   walletContext: Context,
   bankPrivateKey: PrivateKeysAsHex
 ) {

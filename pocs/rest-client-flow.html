@@ -51,13 +51,13 @@
     <script type="module">
       import { clearConsole, log } from "./js/poc-helpers.js";
       import * as H from "./js/poc-helpers.js";
-      import { mkFlatRestClient } from "@marlowe.io/runtime-rest-client";
+      import { mkRestClient } from "@marlowe.io/runtime-rest-client";
 
       let restClient = null;
       function getRestClient() {
         if (restClient === null) {
           const runtimeURL = H.getRuntimeUrl();
-          restClient = mkFlatRestClient(runtimeURL);
+          restClient = mkRestClient(runtimeURL);
         }
         return restClient;
       }

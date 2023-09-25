@@ -46,7 +46,7 @@ export { RolesConfig } from "./contract/index.js";
 /**
  * This interface is a 1-1 mapping of the {@link https://docs.marlowe.iohk.io/api/ | Marlowe API endpoints}.
  */
-export interface RuntimeFlatApi {
+export interface RestAPI {
     /**
      * Gets a paginated list of contracts {@link contract.ContractHeader }
      * @param request Optional filtering and pagination options.
@@ -111,7 +111,7 @@ export interface RuntimeFlatApi {
  * @param baseURL An http url pointing to the Marlowe API.
  * @see {@link https://github.com/input-output-hk/marlowe-starter-kit#quick-overview} To get a Marlowe runtime instance up and running.
  */
-export function mkFlatRestClient(baseURL: string): RuntimeFlatApi {
+export function mkRestClient(baseURL: string): RestAPI {
   const axiosInstance = axios.create({
     baseURL: baseURL,
     transformRequest: MarloweJSONCodec.encode,
@@ -241,12 +241,12 @@ export interface ContractsAPI {
 /**
  * @hidden
  */
-export type RestDI = { rest: RestAPI };
+export type RestDI = { rest: FPTSRestAPI };
 
 /**
  * @hidden
  */
-export interface RestAPI {
+export interface FPTSRestAPI {
   // NOTE: In FP-TS this should probably be T.Task<boolean>, the current implementation returns true or Error.
   /**
    * @see {@link }
@@ -258,12 +258,10 @@ export interface RestAPI {
 }
 
 /**
- * Instantiates a REST client for the Marlowe API.
+ * Legacy FP-TS version
  * @hidden
- * @param baseURL An http url pointing to the Marlowe API.
- * @see {@link https://github.com/input-output-hk/marlowe-starter-kit#quick-overview} To get a Marlowe runtime instance up and running.
  */
-export function mkRestClient(baseURL: string): RestAPI {
+export function mkFPTSRestClient(baseURL: string): FPTSRestAPI {
   const axiosInstance = axios.create({
     baseURL: baseURL,
     transformRequest: MarloweJSONCodec.encode,
