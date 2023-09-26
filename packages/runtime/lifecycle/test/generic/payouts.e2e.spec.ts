@@ -4,7 +4,7 @@ import { addDays } from "date-fns";
 import * as Examples from "@marlowe.io/language-core-v1/examples";
 import { datetoTimeout, adaValue } from "@marlowe.io/language-core-v1";
 import { Next, toInput } from "@marlowe.io/language-core-v1/next";
-import { mkRestClient } from "@marlowe.io/runtime-rest-client/index.js";
+import { mkFPTSRestClient } from "@marlowe.io/runtime-rest-client/index.js";
 
 import {
   getBankPrivateKey,
@@ -20,7 +20,7 @@ import { MINUTES } from "@marlowe.io/adapter/time";
 global.console = console;
 
 describe("Payouts", () => {
-  const restAPI = mkRestClient(getMarloweRuntimeUrl());
+  const restAPI = mkFPTSRestClient(getMarloweRuntimeUrl());
   const provisionScheme = {
     provider: { adaAmount: 20_000_000n },
     swapper: { adaAmount: 20_000_000n, tokenAmount: 50n, tokenName: "TokenA" },

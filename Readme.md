@@ -14,7 +14,7 @@ Official Links
 
 # Overview
 
-The **Marlowe TS-SDK** is a suite of *TypeScript/JavaScript* libraries for developing Web-Dapp in the Cardano Blockchain using Marlowe Technologies.
+The **Marlowe TS-SDK** is a suite of _TypeScript/JavaScript_ libraries for developing Web-Dapp in the Cardano Blockchain using Marlowe Technologies.
 
 It is composed of several npm packages documented in the [API reference](https://input-output-hk.github.io/marlowe-ts-sdk/) page.
 

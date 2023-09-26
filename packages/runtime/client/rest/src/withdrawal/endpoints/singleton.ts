@@ -21,6 +21,9 @@ export type GET = (
   withdrawalId: WithdrawalId
 ) => TE.TaskEither<Error | DecodingError, WithdrawalDetails>;
 
+/**
+ * @see {@link https://docs.marlowe.iohk.io/api/get-withdrawal-by-id}
+ */
 export const getViaAxios: (axiosInstance: AxiosInstance) => GET =
   (axiosInstance) => (withdrawalId) =>
     pipe(
@@ -42,6 +45,9 @@ export type PUT = (
   hexTransactionWitnessSet: HexTransactionWitnessSet
 ) => TE.TaskEither<Error, void>;
 
+/**
+ * @see {@link https://docs.marlowe.iohk.io/api/create-withdrawal}
+ */
 export const putViaAxios: (axiosInstance: AxiosInstance) => PUT =
   (axiosInstance) => (withdrawalId, hexTransactionWitnessSet) =>
     pipe(

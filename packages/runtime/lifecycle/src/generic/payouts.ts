@@ -17,7 +17,7 @@ import {
   withdrawalIdToTxId,
 } from "@marlowe.io/runtime-core";
 
-import { RestAPI } from "@marlowe.io/runtime-rest-client";
+import { FPTSRestAPI } from "@marlowe.io/runtime-rest-client";
 
 import * as Rest from "@marlowe.io/runtime-rest-client";
 
@@ -26,7 +26,7 @@ import { stringify } from "json-bigint";
 
 export function mkPayoutLifecycle(
   wallet: WalletAPI,
-  rest: RestAPI
+  rest: FPTSRestAPI
 ): PayoutsAPI {
   const di = { wallet, rest };
   return {
@@ -57,7 +57,7 @@ const fetchWithdrawnPayouts =
   };
 
 const fetchAvailablePayoutsFpTs: (
-  restAPI: RestAPI
+  restAPI: FPTSRestAPI
 ) => (
   walletApi: WalletAPI
 ) => (
@@ -104,7 +104,7 @@ const fetchAvailablePayoutsFpTs: (
     );
 
 const fetchWithdrawnPayoutsFpTs: (
-  restAPI: RestAPI
+  restAPI: FPTSRestAPI
 ) => (
   walletApi: WalletAPI
 ) => (
@@ -186,7 +186,7 @@ const getAssetIds: (walletApi: WalletAPI) => TE.TaskEither<Error, AssetId[]> = (
   );
 
 export const withdrawPayoutsFpTs: (
-  client: RestAPI
+  client: FPTSRestAPI
 ) => (
   wallet: WalletAPI
 ) => (payoutIds: PayoutId[]) => TE.TaskEither<Error | DecodingError, void> =

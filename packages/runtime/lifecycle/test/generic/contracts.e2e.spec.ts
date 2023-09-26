@@ -8,7 +8,7 @@ import {
   close,
 } from "@marlowe.io/language-core-v1";
 import { oneNotifyTrue } from "@marlowe.io/language-core-v1/examples";
-import { mkRestClient } from "@marlowe.io/runtime-rest-client/index.js";
+import { mkFPTSRestClient } from "@marlowe.io/runtime-rest-client/index.js";
 
 import {
   getBankPrivateKey,
@@ -27,7 +27,7 @@ describe("Runtime Contract Lifecycle ", () => {
   it(
     "can create a Marlowe Contract ",
     async () => {
-      const restClient = mkRestClient(getMarloweRuntimeUrl());
+      const restClient = mkFPTSRestClient(getMarloweRuntimeUrl());
       const { runtime } = await initialiseBankAndverifyProvisionning(
         restClient,
         getBlockfrostContext(),
@@ -42,7 +42,7 @@ describe("Runtime Contract Lifecycle ", () => {
     it(
       "can Apply Inputs to a Contract",
       async () => {
-        const restClient = mkRestClient(getMarloweRuntimeUrl());
+        const restClient = mkFPTSRestClient(getMarloweRuntimeUrl());
         const { runtime } = await initialiseBankAndverifyProvisionning(
           restClient,
           getBlockfrostContext(),

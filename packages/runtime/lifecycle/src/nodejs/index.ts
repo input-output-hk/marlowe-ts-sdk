@@ -1,4 +1,4 @@
-import { mkRestClient } from "@marlowe.io/runtime-rest-client";
+import { mkFPTSRestClient } from "@marlowe.io/runtime-rest-client";
 import * as S from "@marlowe.io/wallet/nodejs";
 import * as Generic from "../generic/runtime.js";
 
@@ -16,6 +16,6 @@ export async function mkRuntimeLifecycle({
     privateKeyBech32
   );
 
-  const restClient = mkRestClient(runtimeURL);
+  const restClient = mkFPTSRestClient(runtimeURL);
   return Generic.mkRuntimeLifecycle(restClient, wallet);
 }

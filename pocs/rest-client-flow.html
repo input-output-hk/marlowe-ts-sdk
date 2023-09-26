@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Rest Client Flow</title>
+  </head>
+  <body>
+    <h1>Rest Client Flow</h1>
+    <div>
+      <h2>Setup Runtime</h2>
+
+      <label for="runtimeUrl">URL to a Marlowe Runtime instance:</label>
+      <input
+        id="runtimeUrl"
+        type="text"
+        autocomplete="on"
+        placeholder="http://localhost:32952"
+      />
+    </div>
+    <hr />
+    <div>
+      <h2>Request</h2>
+      <div>
+        <label for="parameter-json">Function parameters:</label>
+        <p>
+          This should be filled with a JSON object that starts with an array,
+          where each element is a numbered parameter.
+        </p>
+        <textarea
+          id="parameter-json"
+          type="text"
+          style="width: 100%; height: 20em"
+        >
+[]</textarea
+        >
+      </div>
+      <br />
+      <input id="healthcheck" type="button" value="Healthcheck" />
+      <br />
+      <input id="get-contracts" type="button" value="Get Contracts" />
+      <br />
+      <input id="get-contract-by-id" type="button" value="Get Contract by id" />
+      <br />
+      <input id="create-contract" type="button" value="Create Contract" />
+      <br />
+      <input id="submit-contract" type="button" value="Submit Contract" />
+      <br />
+    </div>
+
+    <h2>Console</h2>
+    <div id="console"></div>
+    <input id="clear-console" type="button" value="Clear console" />
+
+    <script src="https://cdn.jsdelivr.net/npm/json-bigint-parser-browser@1.0.4/json-bigint-browser.min.js"></script>
+    <script src="/dist/local-importmap.js"></script>
+    <script type="module">
+      import { clearConsole, log } from "./js/poc-helpers.js";
+      import * as H from "./js/poc-helpers.js";
+      import { mkRestClient } from "@marlowe.io/runtime-rest-client";
+
+      let restClient = null;
+      function getRestClient() {
+        if (restClient === null) {
+          const runtimeURL = H.getRuntimeUrl();
+          restClient = mkRestClient(runtimeURL);
+        }
+        return restClient;
+      }
+      const runtimeUrlInput = document.getElementById("runtimeUrl");
+      runtimeUrlInput.addEventListener("change", () => {
+        restClient = null;
+      });
+
+      function getParams() {
+        const jsonParams = document.getElementById("parameter-json").value;
+        const params = JSON.parse(jsonParams);
+        if (!Array.isArray(params)) {
+          throw new Error("Parameters must be an array");
+        }
+        return params;
+      }
+      async function getContracts() {
+        log(`Getting contracts from ${H.getRuntimeUrl()}`);
+        const restClient = getRestClient();
+        const result = await restClient.getContracts(...getParams());
+        // log(`Contracts: ${JSON.stringify(result)}`);
+        console.log("Contracts", result);
+        const nextRange = result.nextRange?.value ?? "-";
+        const prevRange = result.prevRange?.value ?? "-";
+        log(
+          `Number of contracts in this range: ${result.headers.length} (full list in the browsers console)`
+        );
+        log(`next range: ${nextRange}`);
+        log(`prev range: ${prevRange}`);
+        log("<hr/>");
+      }
+
+      async function getContractById() {
+        log(`Getting contract by id from ${H.getRuntimeUrl()}`);
+        const restClient = getRestClient();
+        const result = await restClient.getContractById(...getParams());
+        log(`Contract: ${JSONbig.stringify(result, null, 2)}`);
+        log("<hr/>");
+      }
+
+      async function createContract() {
+        log(`Creating contract on ${H.getRuntimeUrl()}`);
+        const restClient = getRestClient();
+        const result = await restClient.createContract(...getParams());
+        log(`Contract id: ${result.contractId}`);
+        log(`Unsigned Tx: ${JSON.stringify(result.tx)}`);
+      }
+
+      async function submitContract() {
+        log(`Submitting contract on ${H.getRuntimeUrl()}`);
+        const restClient = getRestClient();
+        const result = await restClient.submitContract(...getParams());
+        log(`Done`);
+      }
+
+      async function healthcheck() {
+        log(`Checking healthcheck on ${H.getRuntimeUrl()}`);
+        const restClient = getRestClient();
+        const result = await restClient.healthcheck();
+        log(`Healthcheck result: ${JSON.stringify(result)}`);
+        log("<hr/>");
+      }
+
+      H.setupLocalStorageRuntimeUrl();
+
+      const healthcheckButton = document.getElementById("healthcheck");
+      healthcheckButton.addEventListener("click", healthcheck);
+
+      const getContractsButton = document.getElementById("get-contracts");
+      getContractsButton.addEventListener("click", getContracts);
+
+      const createContractButton = document.getElementById("create-contract");
+      createContractButton.addEventListener("click", createContract);
+
+      const submitContractButton = document.getElementById("submit-contract");
+      submitContractButton.addEventListener("click", submitContract);
+
+      const getContractByIdButton =
+        document.getElementById("get-contract-by-id");
+      getContractByIdButton.addEventListener("click", getContractById);
+
+      const clearConsoleButton = document.getElementById("clear-console");
+      clearConsoleButton.addEventListener("click", clearConsole);
+    </script>
+  </body>
+</html>

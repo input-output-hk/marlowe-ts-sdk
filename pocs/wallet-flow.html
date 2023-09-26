@@ -10,13 +10,25 @@
     <select id="wallet" name="wallet"></select>
     <br />
     <input id="start-flow" type="button" value="Start flow" />
+    <br />
+    <div>
+      <label for="unsigned-tx">Unsigned TX:</label>
+      <textarea
+        id="unsigned-tx"
+        type="text"
+        style="width: 100%; height: 20em"
+      ></textarea>
+      <input id="sign-tx" type="button" value="Sign tx" />
+      <br />
+    </div>
     <hr />
+
     <div id="console"></div>
-    <script src="/dist/jsdelivr-gh-importmap.js"></script>
+    <script src="/dist/local-importmap.js"></script>
     <script type="module">
+      import { clearConsole, log } from "./js/poc-helpers.js";
       import { mkBrowserWallet, getAvailableWallets } from "@marlowe.io/wallet";
 
-      const consoleDiv = document.getElementById("console");
       const walletInput = document.getElementById("wallet");
       const availableWallets = getAvailableWallets();
       if (availableWallets.length === 0) {
@@ -35,14 +47,8 @@
         });
       }
 
-      const log = (message) => {
-        var currentContent = consoleDiv.innerHTML;
-        consoleDiv.innerHTML = currentContent + "<\BR>" + message;
-      };
-
       async function cip30Flow() {
-        // Clear console
-        consoleDiv.innerHTML = "";
+        clearConsole();
 
         const walletName = walletInput.value;
 
@@ -99,8 +105,22 @@
         log("Wallet flow done 🎉");
       }
 
+      async function signTx() {
+        const walletName = walletInput.value;
+
+        log(`<h2>Accessing ${walletName} Wallet Extension</h2>`);
+        const wallet = await createBrowserWallet(walletName);
+        const unsignedTx = document.getElementById("unsigned-tx").value;
+        const signed = await wallet.signTxTheCIP30Way(unsignedTx);
+        log(`<h2>Signed TX</h2>`);
+        log(signed);
+      }
+
       const startFlowButton = document.getElementById("start-flow");
       startFlowButton.addEventListener("click", cip30Flow);
+
+      const signTxButton = document.getElementById("sign-tx");
+      signTxButton.addEventListener("click", signTx);
     </script>
   </body>
 </html>
