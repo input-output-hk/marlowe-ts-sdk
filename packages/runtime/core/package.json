@@ -1,6 +1,6 @@
 {
   "name": "@marlowe.io/runtime-core",
-  "version": "0.2.0-alpha-2",
+  "version": "0.2.0-alpha-3",
   "description": "Core concepts used throughout the Marlowe Runtime libraries",
   "repository": "https://github.com/input-output-hk/marlowe-ts-sdk",
   "publishConfig": {
