@@ -8,6 +8,7 @@ import { TxId } from "../tx/id.js";
 import { ContractId } from "../contract/id.js";
 import { AssetId, Assets } from "../asset/index.js";
 
+// QUESTION: @N.H: What is the difference between PayoutId and WithdrawalId?
 export type PayoutId = Newtype<{ readonly ContractId: unique symbol }, string>;
 export const PayoutId = fromNewtype<PayoutId>(t.string);
 export const unPayoutId = iso<PayoutId>().unwrap;
@@ -28,6 +29,7 @@ export const withdrawalIdToTxId: (withdrawalId: WithdrawalId) => TxId = (
   withdrawalId
 ) => pipe(withdrawalId, unWithdrawalId);
 
+// DISCUSSION: PayoutAvailable or AvailablePayout?
 export type PayoutAvailable = t.TypeOf<typeof PayoutAvailable>;
 export const PayoutAvailable = t.type({
   payoutId: PayoutId,

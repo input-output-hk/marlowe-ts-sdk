@@ -15,6 +15,6 @@ export const addressBech32 = iso<AddressBech32>().wrap;
 export type AddressesAndCollaterals = t.TypeOf<typeof AddressesAndCollaterals>;
 export const AddressesAndCollaterals = t.type({
   changeAddress: AddressBech32,
-  usedAddresses: optionFromNullable(t.array(AddressBech32)),
-  collateralUTxOs: optionFromNullable(t.array(TxOutRef)),
+  usedAddresses: t.array(AddressBech32),
+  collateralUTxOs: t.array(TxOutRef),
 });

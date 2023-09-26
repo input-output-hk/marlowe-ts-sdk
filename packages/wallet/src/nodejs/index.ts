@@ -16,7 +16,6 @@ import {
   Script,
   fromHex,
   toHex,
-  Core,
   fromUnit,
   Unit,
 } from "lucid-cardano";
@@ -26,13 +25,13 @@ import * as O from "fp-ts/lib/Option.js";
 import * as TE from "fp-ts/lib/TaskEither.js";
 import * as T from "fp-ts/lib/Task.js";
 
+import { unsafeTaskEither } from "@marlowe.io/adapter/fp-ts";
 import {
   AddressBech32,
   TxOutRef,
   addressBech32,
   unAddressBech32,
   MarloweTxCBORHex,
-  HexTransactionWitnessSet,
   Token,
   lovelaces,
   token,
@@ -41,16 +40,16 @@ import {
   unPolicyId,
   AssetId,
 } from "@marlowe.io/runtime-core";
-import { WalletAPI, CIP30Network } from "../api.js";
+import { WalletAPI } from "../api.js";
 import * as Codec from "@47ng/codec";
 
 const log = (message: string) => console.log(`\t## - ${message}`);
 
-export const foo = 42;
-
+// TODO: Make nominal
 export type PrivateKeysAsHex = string;
 export type Address = string;
 
+// TODO: This is a pure datatype, convert to type alias or interface
 export class Context {
   projectId: string;
   network: Network;
@@ -66,9 +65,22 @@ export class Context {
     this.blockfrostUrl = blockfrostUrl;
   }
 }
-export const getPrivateKeyFromHexString = (privateKeyHex: string): PrivateKey =>
-  C.PrivateKey.from_bytes(Buffer.from(privateKeyHex, "hex")).to_bech32();
 
+// [[testing-wallet-discussion]]
+// DISCUSSION: Currently this class is more of a testing helper rather than being a NodeJS
+//             implementation of the WalletAPI. It has extra methods for funding a wallet
+//             and minting test tokens and it is missing some required methods like getUTxOs.
+//
+//             If we want to support a NodeJS implementation of the WalletAPI we should
+//             probably remove the extra methods and find a way to share the Blockfrost
+//             (or eventual underlying service) for testing.
+//
+//             It we don't want to support a NodeJS library for the moment, then this could
+//             be moved to a @marlowe.io/runtime-xxx package, as it is not helping test the
+//             wallet, but the runtime.
+/**
+ * @hidden
+ */
 export class SingleAddressWallet implements WalletAPI {
   private privateKeyBech32: string;
   private context: Context;
@@ -88,18 +100,22 @@ export class SingleAddressWallet implements WalletAPI {
     });
   }
 
-  public static Initialise(
+  // TODO: Extract this to its own function
+  static async Initialise(
     context: Context,
     privateKeyBech32: string
-  ): T.Task<SingleAddressWallet> {
+  ): Promise<SingleAddressWallet> {
     const account = new SingleAddressWallet(context, privateKeyBech32);
-    return () => account.initialise().then(() => account);
+    await account.initialise();
+    return account;
   }
 
-  public static Random(context: Context): T.Task<SingleAddressWallet> {
+  // TODO: Extract this to its own function
+  static async Random(context: Context): Promise<SingleAddressWallet> {
     const privateKey = C.PrivateKey.generate_ed25519().to_bech32();
     const account = new SingleAddressWallet(context, privateKey);
-    return () => account.initialise().then(() => account);
+    await account.initialise();
+    return account;
   }
 
   private async initialise() {
@@ -114,21 +130,20 @@ export class SingleAddressWallet implements WalletAPI {
     this.getCollaterals = T.of([]);
   }
 
-  public getCIP30Network: T.Task<CIP30Network> = () => {
+  async getCIP30Network() {
     if (this.lucid.network === "Mainnet") {
-      return Promise.resolve("Mainnet");
+      return "Mainnet" as const;
     } else {
-      return Promise.resolve("Testnets");
+      return "Testnets" as const;
     }
-  };
+  }
 
-  public getTokens: TE.TaskEither<Error, Token[]> = pipe(
-    TE.tryCatch(
-      () => this.blockfrostApi.addresses(unAddressBech32(this.address)),
-      (reason) => new Error(`Error while retrieving assetBalance : ${reason}`)
-    ),
-    TE.map((content) =>
-      pipe(
+  async getTokens(): Promise<Token[]> {
+    try {
+      const content = await this.blockfrostApi.addresses(
+        unAddressBech32(this.address)
+      );
+      return pipe(
         content.amount ?? [],
         A.map((tokenBlockfrost) =>
           tokenBlockfrost.unit === "lovelace"
@@ -139,25 +154,28 @@ export class SingleAddressWallet implements WalletAPI {
                 )
               )
         )
-      )
-    )
-  );
+      );
+    } catch (reason) {
+      throw new Error(`Error while retrieving assetBalance : ${reason}`);
+    }
+  }
 
-  public getLovelaces: TE.TaskEither<Error, bigint> = pipe(
-    TE.tryCatch(
-      () => this.blockfrostApi.addresses(unAddressBech32(this.address)),
-      (reason) => new Error(`Error while retrieving assetBalance : ${reason}`)
-    ),
-    TE.map((content) =>
-      pipe(
+  async getLovelaces(): Promise<bigint> {
+    try {
+      const content = await this.blockfrostApi.addresses(
+        unAddressBech32(this.address)
+      );
+      return pipe(
         content.amount ?? [],
         A.filter((amount) => amount.unit === "lovelace"),
         A.map((amount) => BigInt(amount.quantity)),
         A.head,
         O.getOrElse(() => 0n)
-      )
-    )
-  );
+      );
+    } catch (reason) {
+      throw new Error(`Error while retrieving assetBalance : ${reason}`);
+    }
+  }
 
   public tokenBalance: (assetId: AssetId) => TE.TaskEither<Error, bigint> = (
     assetId
@@ -182,6 +200,7 @@ export class SingleAddressWallet implements WalletAPI {
       )
     );
 
+  // see [[testing-wallet-discussion]]
   public provision: (
     provisionning: [SingleAddressWallet, bigint][]
   ) => TE.TaskEither<Error, Boolean> = (provisionning) =>
@@ -198,6 +217,7 @@ export class SingleAddressWallet implements WalletAPI {
       TE.chain(this.signSubmitAndWaitConfirmation)
     );
 
+  // see [[testing-wallet-discussion]]
   public randomPolicyId(): [Script, PolicyId] {
     const { paymentCredential } = getAddressDetails(
       unAddressBech32(this.address)
@@ -218,45 +238,36 @@ export class SingleAddressWallet implements WalletAPI {
     return [script, policyId];
   }
 
-  public mintRandomTokens(
-    assetName: string,
-    amount: bigint
-  ): TE.TaskEither<Error, Token> {
+  // see [[testing-wallet-discussion]]
+  public mintRandomTokens(assetName: string, amount: bigint): Promise<Token> {
     const policyRefs = this.randomPolicyId();
     const [mintingPolicy, policyId] = policyRefs;
-    return pipe(
-      this.lucid
-        .newTx()
-        .mintAssets({
-          [toUnit(policyId, fromText(assetName))]: amount.valueOf(),
-        })
-        .validTo(Date.now() + 100000)
-        .attachMintingPolicy(mintingPolicy),
-      build,
-      TE.chain(this.signSubmitAndWaitConfirmation),
-      TE.map(() => token(amount)(assetId(mkPolicyId(policyRefs[1]))(assetName)))
+    return unsafeTaskEither(
+      pipe(
+        this.lucid
+          .newTx()
+          .mintAssets({
+            [toUnit(policyId, fromText(assetName))]: amount.valueOf(),
+          })
+          .validTo(Date.now() + 100000)
+          .attachMintingPolicy(mintingPolicy),
+        build,
+        TE.chain(this.signSubmitAndWaitConfirmation),
+        TE.map(() =>
+          token(amount)(assetId(mkPolicyId(policyRefs[1]))(assetName))
+        )
+      )
     );
   }
-
-  public signTxTheCIP30Way: (
-    cborHex: MarloweTxCBORHex
-  ) => TE.TaskEither<Error, HexTransactionWitnessSet> = (cborHex) =>
-    pipe(
-      this.fromTxCBOR(cborHex),
-      this.signTx,
-      TE.map((txSigned) => toHex(txSigned.to_bytes()))
-    );
-
-  private fromTxCBOR(cbor: string): Core.Transaction {
-    return C.Transaction.from_bytes(fromHex(cbor));
+  async signTxTheCIP30Way(cborHex: MarloweTxCBORHex) {
+    const tx = C.Transaction.from_bytes(fromHex(cborHex));
+    try {
+      const txSigned = await this.lucid.wallet.signTx(tx);
+      return toHex(txSigned.to_bytes());
+    } catch (reason) {
+      throw new Error(`Error while signing : ${reason}`);
+    }
   }
-  private signTx: (
-    tx: Core.Transaction
-  ) => TE.TaskEither<Error, Core.TransactionWitnessSet> = (tx) =>
-    TE.tryCatch(
-      () => this.lucid.wallet.signTx(tx),
-      (reason) => new Error(`Error while signing : ${reason}`)
-    );
 
   public sign: (txBuilt: TxComplete) => TE.TaskEither<Error, TxSigned> = (
     txBuilt
@@ -274,14 +285,14 @@ export class SingleAddressWallet implements WalletAPI {
       (reason) => new Error(`Error while submitting : ${reason}`)
     );
 
-  public waitConfirmation: (txHash: string) => TE.TaskEither<Error, boolean> = (
-    txHash
-  ) =>
-    TE.tryCatch(
-      () => this.lucid.awaitTx(txHash),
-      (reason) => new Error(`Error while submitting : ${reason}`)
-    );
-
+  waitConfirmation(txHash: string) {
+    try {
+      return this.lucid.awaitTx(txHash);
+    } catch (reason) {
+      throw new Error(`Error while awiting : ${reason}`);
+    }
+  }
+  // see [[testing-wallet-discussion]]
   public signSubmitAndWaitConfirmation: (
     txBuilt: TxComplete
   ) => TE.TaskEither<Error, boolean> = (txBuilt) =>
@@ -289,9 +300,16 @@ export class SingleAddressWallet implements WalletAPI {
       this.sign(txBuilt),
       TE.chain(this.submit),
       TE.chainFirst((txHash) => TE.of(log(`<> Tx ${txHash} submitted.`))),
-      TE.chain(this.waitConfirmation)
+      TE.chain((txHash) =>
+        TE.tryCatch(
+          () => this.waitConfirmation(txHash),
+          (reason) =>
+            new Error(`Error while retrieving assetBalance : ${reason}`)
+        )
+      )
     );
-
+  // FIXME: Implement
+  // see [[testing-wallet-discussion]]
   public getUTxOs: T.Task<TxOutRef[]> = T.of([]);
 }
 
@@ -305,3 +323,11 @@ const getAssetName: (unit: Unit) => string = (unit) => {
   const assetName = fromUnit(unit).assetName;
   return assetName ? Codec.hexToUTF8(assetName) : "";
 };
+
+/**
+ * Currently used for testing
+ * see [[testing-wallet-discussion]]
+ * @hidden
+ */
+export const getPrivateKeyFromHexString = (privateKeyHex: string): PrivateKey =>
+  C.PrivateKey.from_bytes(Buffer.from(privateKeyHex, "hex")).to_bech32();

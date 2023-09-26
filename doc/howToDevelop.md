@@ -94,3 +94,61 @@ $ scriv create
 ```
 
 edit the new file with appropriate content for your PR and commit it. Read [the documentation for scriv](https://scriv.readthedocs.io/en) to learn more about how to use this tool.
+
+To collect all changelog entries into a single file, execute `std` from the nix shell and run the `build-changelog` script. This command will delete all entries from the `changelog.d` folder and update the `CHANGELOG.md` file.
+
+## Publish
+
+For the moment the SDK is manually published to npm. Task PLT-6939 captures the work to automate this process through the CI.
+
+Before publishing it is convinient to check that the artifacts works as expected :
+
+- Clean & Build
+
+```bash
+$ npm run clean && npm run build
+```
+
+- Test
+
+```bash
+$ npm t && npm run test:e2e
+```
+
+- Check the packages
+  To test this you can pack all the different packages into tarballs using
+
+```bash
+$ npm --workspaces pack --pack-destination dist
+```
+
+And in a separate project you can install the tarballs using a file url when declaring the dependency
+
+```json
+{
+  "dependencies": {
+    "@marlowe.io/runtime-lifecycle": "file:<path-to-dist>/marlowe.io-runtime-lifecycle-0.2.0-alpha-3.tgz",
+    "@marlowe.io/runtime-rest-client": "file:<path-to-dist>/marlowe.io-runtime-rest-client-0.2.0-alpha-3.tgz",
+    "@marlowe.io/adapter": "file:<path-to-dist>/marlowe.io-adapter-0.2.0-alpha-3.tgz",
+    "@marlowe.io/runtime-core": "file:<path-to-dist>/marlowe.io-runtime-core-0.2.0-alpha-3.tgz",
+    "@marlowe.io/language-core-v1": "file:<path-to-dist>/marlowe.io-language-core-v1-0.2.0-alpha-3.tgz",
+    "@marlowe.io/wallet": "file:<path-to-dist>/marlowe.io-wallet-0.2.0-alpha-3.tgz"
+  }
+}
+```
+
+TODO [[Publish pre-check]] Local map and this pack instructions
+TODO instructions on how to manually publish
+In order to check that the export/import mechanism works on the browser using import maps you can:
+
+1. Create a testing branch in a fork of the repo
+1. Clean and build the project `npm run clean && npm run build`
+1. Remove `dist` from `.gitignore`
+1. Commit the `dist` folders of the different packages
+1. Get the full git hash of the commit using `git rev-parse HEAD`
+1. Publish the branch in your fork
+1. Modify `rollup/config.mjs` and set the correct `owner` and `version` when we build the import map for jsdelivr-gh.
+1. Rebuild the project `npm run build`
+1. Modify the html in the `pocs` folder to use `/dist/jsdelivr-gh-importmap.js`
+1. From the root folder run `npx http-server --port 1337 -c-1  -o ./`
+1. Verify that each poc example works properly.

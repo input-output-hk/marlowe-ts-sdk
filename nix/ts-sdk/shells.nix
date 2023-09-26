@@ -31,12 +31,8 @@
         category = "JavaScript";
       }
       {
-        package = nixpkgs.treefmt;
-        category = "std";
-      }
-      {
         package = std.cli.default;
-        category = "std";
+        category = "general commands";
       }
     ];
   };

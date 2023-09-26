@@ -19,7 +19,10 @@ export const assetId: (
   assetName: assetName,
 });
 
-export type Token = t.TypeOf<typeof Token>;
+// NOTE: this is exported as interface to prevent typedoc from expanding its attributes when
+//       generating documentation.
+//       https://github.com/TypeStrong/typedoc/issues/2209#issuecomment-1493189988
+export interface Token extends t.TypeOf<typeof Token> {}
 export const Token = t.type({ quantity: AssetQuantity, assetId: AssetId });
 
 export const token: (quantity: AssetQuantity) => (assetId: AssetId) => Token =

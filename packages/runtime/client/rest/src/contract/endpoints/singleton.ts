@@ -12,6 +12,7 @@ import { DecodingError } from "@marlowe.io/adapter/codec";
 
 import {
   HexTransactionWitnessSet,
+  TextEnvelope,
   transactionWitnessSetTextEnvelope,
 } from "@marlowe.io/runtime-core";
 
@@ -25,6 +26,9 @@ export type GET = (
 type GETPayload = t.TypeOf<typeof GETPayload>;
 const GETPayload = t.type({ links: t.type({}), resource: ContractDetails });
 
+/**
+ * @see {@link https://docs.marlowe.iohk.io/api/get-contracts-by-id}
+ */
 export const getViaAxios: (axiosInstance: AxiosInstance) => GET =
   (axiosInstance) => (contractId) =>
     pipe(
@@ -47,6 +51,23 @@ export type PUT = (
   hexTransactionWitnessSet: HexTransactionWitnessSet
 ) => TE.TaskEither<Error, void>;
 
+export const submitContractViaAxios =
+  (axiosInstance: AxiosInstance) =>
+  (contractId: ContractId, envelope: TextEnvelope) =>
+    axiosInstance
+      .put(contractEndpoint(contractId), envelope, {
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+      })
+      .then((_) => {
+        return;
+      });
+/**
+ * @deprecated
+ * @see {@link https://docs.marlowe.iohk.io/api/create-contracts-by-id}
+ */
 export const putViaAxios: (axiosInstance: AxiosInstance) => PUT =
   (axiosInstance) => (contractId, hexTransactionWitnessSet) =>
     pipe(

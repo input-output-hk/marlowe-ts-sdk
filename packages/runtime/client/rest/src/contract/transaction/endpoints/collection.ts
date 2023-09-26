@@ -25,7 +25,7 @@ import {
   unTxOutRef,
 } from "@marlowe.io/runtime-core";
 
-import { Header } from "../header.js";
+import { TxHeader } from "../header.js";
 import { TransactionId } from "../id.js";
 import { ContractId, unContractId } from "@marlowe.io/runtime-core";
 
@@ -61,7 +61,7 @@ export const getHeadersByRangeViaAxios: (
     })),
     TE.chainW((data) =>
       TE.fromEither(
-        E.mapLeft(formatValidationErrors)(GETByRangeRawResponse.decode(data))
+        E.mapLeft(formatValidationErrors)(GetContractsRawResponse.decode(data))
       )
     ),
     TE.map((rawResponse) => ({
@@ -74,10 +74,10 @@ export const getHeadersByRangeViaAxios: (
     }))
   );
 
-type GETByRangeRawResponse = t.TypeOf<typeof GETByRangeRawResponse>;
-const GETByRangeRawResponse = t.type({
+type GetContractsRawResponse = t.TypeOf<typeof GetContractsRawResponse>;
+const GetContractsRawResponse = t.type({
   data: t.type({
-    results: t.array(t.type({ links: t.type({}), resource: Header })),
+    results: t.array(t.type({ links: t.type({}), resource: TxHeader })),
   }),
   previousRange: optionFromNullable(TransactionsRange),
   nextRange: optionFromNullable(TransactionsRange),
@@ -85,7 +85,7 @@ const GETByRangeRawResponse = t.type({
 
 export type GETByRangeResponse = t.TypeOf<typeof GETByRangeResponse>;
 export const GETByRangeResponse = t.type({
-  headers: t.array(Header),
+  headers: t.array(TxHeader),
   previousRange: optionFromNullable(TransactionsRange),
   nextRange: optionFromNullable(TransactionsRange),
 });
@@ -120,15 +120,11 @@ export const postViaAxios: (axiosInstance: AxiosInstance) => POST =
             ),
             "X-Address": pipe(
               addressesAndCollaterals.usedAddresses,
-              A.fromOption,
-              A.flatten,
               A.map(unAddressBech32),
               (a) => a.join(",")
             ),
             "X-Collateral-UTxO": pipe(
               addressesAndCollaterals.collateralUTxOs,
-              A.fromOption,
-              A.flatten,
               A.map(unTxOutRef),
               (a) => a.join(",")
             ),

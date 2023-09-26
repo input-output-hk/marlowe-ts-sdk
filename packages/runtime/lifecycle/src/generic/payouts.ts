@@ -1,76 +1,63 @@
-import * as Command from "./tx.js";
 import * as TE from "fp-ts/lib/TaskEither.js";
-import * as T from "fp-ts/lib/Task.js";
-import { pipe } from "fp-ts/lib/function.js";
+import { constVoid, pipe } from "fp-ts/lib/function.js";
 import * as O from "fp-ts/lib/Option.js";
-import { mkEnvironment } from "@marlowe.io/language-core-v1/environment";
-import { addMinutes, subMinutes } from "date-fns";
-
-import { Party } from "@marlowe.io/language-core-v1/semantics/contract/common/payee/party.js";
-import { Filters, RuntimeLifecycle } from "../../apis/runtimeLifecycle.js";
-import { CreateRequest, ProvideInput } from "../../apis/tx.js";
-import { WalletAPI } from "@marlowe.io/wallet/api";
+import { tryCatchDefault, unsafeTaskEither } from "@marlowe.io/adapter/fp-ts";
+import { Filters, PayoutsDI, PayoutsAPI } from "../api.js";
+import { getAddressesAndCollaterals, WalletAPI } from "@marlowe.io/wallet/api";
 import {
-  PolicyId,
-  ContractId,
   PayoutId,
   PayoutAvailable,
   AssetId,
   PayoutWithdrawn,
-  unPolicyId,
   Assets,
   Tokens,
   assetId,
   mkPolicyId,
   token,
+  withdrawalIdToTxId,
 } from "@marlowe.io/runtime-core";
 
-import { RestAPI } from "@marlowe.io/runtime-rest-client";
+import { FPTSRestAPI } from "@marlowe.io/runtime-rest-client";
 
 import * as Rest from "@marlowe.io/runtime-rest-client";
 
 import { DecodingError } from "@marlowe.io/adapter/codec";
 import { stringify } from "json-bigint";
 
-export const mkRuntimeLifecycle: (
-  restAPI: RestAPI
-) => (walletAPI: WalletAPI) => RuntimeLifecycle = (restAPI) => (walletAPI) => ({
-  wallet: walletAPI,
-  contracts: {
-    create: (payload: CreateRequest) =>
-      Command.create(restAPI)(walletAPI)(payload),
-    applyInputs: (contractId: ContractId) => (provideInput: ProvideInput) =>
-      pipe(
-        restAPI.contracts.contract.get(contractId),
-        TE.chain((header) =>
-          TE.fromTask(getParties(walletAPI)(header.roleTokenMintingPolicyId))
-        ),
-        TE.chain((parties) =>
-          restAPI.contracts.contract.next(contractId)(
-            mkEnvironment(pipe(Date.now(), (date) => subMinutes(date, 15)))(
-              pipe(Date.now(), (date) => addMinutes(date, 15))
-            )
-          )(parties)
-        ),
-        TE.chain((next) =>
-          Command.applyInputs(restAPI)(walletAPI)(contractId)(
-            provideInput(next)
-          )
-        )
-      ),
-  },
-  payouts: {
-    available: (filtersOption: O.Option<Filters>) =>
-      availablePayouts(restAPI)(walletAPI)(filtersOption),
-    withdraw: (payoutIds: PayoutId[]) =>
-      Command.withdraw(restAPI)(walletAPI)(payoutIds),
-    withdrawn: (filtersOption: O.Option<Filters>) =>
-      withdrawnPayouts(restAPI)(walletAPI)(filtersOption),
-  },
-});
+export function mkPayoutLifecycle(
+  wallet: WalletAPI,
+  rest: FPTSRestAPI
+): PayoutsAPI {
+  const di = { wallet, rest };
+  return {
+    available: fetchAvailablePayouts(di),
+    withdraw: withdrawPayouts(di),
+    withdrawn: fetchWithdrawnPayouts(di),
+  };
+}
 
-const availablePayouts: (
-  restAPI: RestAPI
+const fetchAvailablePayouts =
+  ({ wallet, rest }: PayoutsDI) =>
+  (filters?: Filters): Promise<PayoutAvailable[]> => {
+    return unsafeTaskEither(
+      fetchAvailablePayoutsFpTs(rest)(wallet)(O.fromNullable(filters))
+    );
+  };
+const withdrawPayouts =
+  ({ wallet, rest }: PayoutsDI) =>
+  (payoutIds: PayoutId[]): Promise<void> => {
+    return unsafeTaskEither(withdrawPayoutsFpTs(rest)(wallet)(payoutIds));
+  };
+const fetchWithdrawnPayouts =
+  ({ wallet, rest }: PayoutsDI) =>
+  (filters?: Filters): Promise<PayoutWithdrawn[]> => {
+    return unsafeTaskEither(
+      fetchWithdrawnPayoutsFpTs(rest)(wallet)(O.fromNullable(filters))
+    );
+  };
+
+const fetchAvailablePayoutsFpTs: (
+  restAPI: FPTSRestAPI
 ) => (
   walletApi: WalletAPI
 ) => (
@@ -116,8 +103,8 @@ const availablePayouts: (
       )
     );
 
-const withdrawnPayouts: (
-  restAPI: RestAPI
+const fetchWithdrawnPayoutsFpTs: (
+  restAPI: FPTSRestAPI
 ) => (
   walletApi: WalletAPI
 ) => (
@@ -194,12 +181,39 @@ const getAssetIds: (walletApi: WalletAPI) => TE.TaskEither<Error, AssetId[]> = (
   walletAPI
 ) =>
   pipe(
-    walletAPI.getTokens,
+    tryCatchDefault(walletAPI.getTokens),
     TE.map((tokens) => tokens.map((token) => token.assetId))
   );
 
-const getParties: (
-  walletApi: WalletAPI
-) => (roleTokenMintingPolicyId: PolicyId) => T.Task<Party[]> =
-  (walletAPI) => (roleMintingPolicyId) =>
-    T.of([]);
+export const withdrawPayoutsFpTs: (
+  client: FPTSRestAPI
+) => (
+  wallet: WalletAPI
+) => (payoutIds: PayoutId[]) => TE.TaskEither<Error | DecodingError, void> =
+  (client) => (wallet) => (payoutIds) =>
+    pipe(
+      tryCatchDefault(() => getAddressesAndCollaterals(wallet)),
+      TE.chain((addressesAndCollaterals) =>
+        client.withdrawals.post(payoutIds, addressesAndCollaterals)
+      ),
+      TE.chainW((withdrawalTextEnvelope) =>
+        pipe(
+          tryCatchDefault(() =>
+            wallet.signTxTheCIP30Way(withdrawalTextEnvelope.tx.cborHex)
+          ),
+          TE.chain((hexTransactionWitnessSet) =>
+            client.withdrawals.withdrawal.put(
+              withdrawalTextEnvelope.withdrawalId,
+              hexTransactionWitnessSet
+            )
+          ),
+          TE.map(() => withdrawalTextEnvelope.withdrawalId)
+        )
+      ),
+      TE.chainFirstW((withdrawalId) =>
+        tryCatchDefault(() =>
+          wallet.waitConfirmation(pipe(withdrawalId, withdrawalIdToTxId))
+        )
+      ),
+      TE.map(constVoid)
+    );

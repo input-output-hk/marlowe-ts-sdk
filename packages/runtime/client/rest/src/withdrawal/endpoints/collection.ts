@@ -36,6 +36,9 @@ export type GETHeadersByRange = (
   rangeOption: O.Option<WithdrawalsRange>
 ) => TE.TaskEither<Error | DecodingError, GETByRangeResponse>;
 
+/**
+ * @see {@link https://docs.marlowe.iohk.io/api/get-withdrawals}
+ */
 export const getHeadersByRangeViaAxios: (
   axiosInstance: AxiosInstance
 ) => GETHeadersByRange = (axiosInstance) => (rangeOption) =>
@@ -108,6 +111,9 @@ export const PostResponse = t.type({
   resource: WithdrawalTextEnvelope,
 });
 
+/**
+ * @see {@link https://docs.marlowe.iohk.io/api/create-withdrawals}
+ */
 export const postViaAxios: (axiosInstance: AxiosInstance) => POST =
   (axiosInstance) => (payoutIds, addressesAndCollaterals) =>
     pipe(
@@ -123,15 +129,11 @@ export const postViaAxios: (axiosInstance: AxiosInstance) => POST =
             ),
             "X-Address": pipe(
               addressesAndCollaterals.usedAddresses,
-              A.fromOption,
-              A.flatten,
               A.map(unAddressBech32),
               (a) => a.join(",")
             ),
             "X-Collateral-UTxO": pipe(
               addressesAndCollaterals.collateralUTxOs,
-              A.fromOption,
-              A.flatten,
               A.map(unTxOutRef),
               (a) => a.join(",")
             ),

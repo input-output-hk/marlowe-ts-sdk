@@ -1,14 +1,9 @@
-import * as T from "fp-ts/lib/Task.js";
-import * as TE from "fp-ts/lib/TaskEither.js";
-import { pipe } from "fp-ts/lib/function.js";
-import * as A from "fp-ts/lib/Array.js";
-
 import { CIP30Network, WalletAPI } from "../api.js";
-import { C, Core } from "lucid-cardano";
+import { C, Core, WalletApi } from "lucid-cardano";
 import { hex, utf8 } from "@47ng/codec";
+// DISCUSSION: these should be imported from a cardano helpers library.
+//       They are independent of the runtime. Maybe the adaptor library?
 import {
-  MarloweTxCBORHex,
-  HexTransactionWitnessSet,
   AddressBech32,
   TxOutRef,
   addressBech32,
@@ -21,143 +16,141 @@ import {
   unTxOutRef,
 } from "@marlowe.io/runtime-core";
 
-export const getExtensionInstance: (
-  extensionName: string
-) => T.Task<WalletAPI> = (extensionName) =>
-  pipe(
-    () => window.cardano[extensionName.toLowerCase()].enable(),
-    T.map((extensionCIP30Instance) => ({
-      waitConfirmation: waitConfirmation(extensionCIP30Instance),
-      signTxTheCIP30Way: signMarloweTx(extensionCIP30Instance),
-      getChangeAddress: fetchChangeAddress(extensionCIP30Instance),
-      getUsedAddresses: fetchUsedAddresses(extensionCIP30Instance),
-      getCollaterals: fetchCollaterals(extensionCIP30Instance),
-      getUTxOs: fetchUTxOs(extensionCIP30Instance),
-      getTokens: fetchTokens(extensionCIP30Instance),
-      getLovelaces: fetchLovelaces(extensionCIP30Instance),
-      getCIP30Network: fetchCIP30Network(extensionCIP30Instance),
-    }))
-  );
+export type SupportedWallet = "nami" | "eternl";
 
-const waitConfirmation: (
-  extensionCIP30Instance: BroswerExtensionCIP30Api
-) => (txHash: string) => TE.TaskEither<Error, boolean> =
-  (extensionCIP30Instance) => (txHash) =>
-    pipe(() => awaitTx(extensionCIP30Instance, txHash), TE.fromTask);
+export type ExtensionDI = { extension: WalletApi };
 
-function awaitTx(
-  extensionCIP30Instance: BroswerExtensionCIP30Api,
-  txHash: string,
-  checkInterval: number = 3000
-): Promise<boolean> {
-  return new Promise((res) => {
-    const confirmation = setInterval(async () => {
-      const isConfirmed =
-        (await fetchUTxOs(extensionCIP30Instance)()).filter(
-          (txOutRef) => unTxOutRef(txOutRef).split("#", 2)[0] == txHash
-        ).length > 0;
-      if (isConfirmed) {
-        clearInterval(confirmation);
-        await new Promise((res) => setTimeout(() => res(1), 1000));
-        return res(true);
-      }
-    }, checkInterval);
-  });
+/**
+ * Returns an instance of the browser wallet API for the specified wallet.
+ * @param walletName - The name of the wallet to get an instance of.
+ * @returns An instance of the BrowserWalletAPI class.
+ */
+export async function mkBrowserWallet(
+  walletName: SupportedWallet
+): Promise<WalletAPI> {
+  if (getAvailableWallets().includes(walletName)) {
+    const extension = await window.cardano[walletName.toLowerCase()].enable();
+    const di = { extension };
+    return {
+      waitConfirmation: waitConfirmation(di),
+      signTxTheCIP30Way: signTxTheCIP30Way(di),
+      getChangeAddress: getChangeAddress(di),
+      getUsedAddresses: getUsedAddresses(di),
+      getCollaterals: getCollaterals(di),
+      getUTxOs: getUTxOs(di),
+      getCIP30Network: getCIP30Network(di),
+      getTokens: getTokens(di),
+      getLovelaces: getLovelaces(di),
+    };
+  } else {
+    throw new Error(`Wallet ${walletName} is not available in the browser`);
+  }
 }
 
-const signMarloweTx: (
-  extensionCIP30Instance: BroswerExtensionCIP30Api
-) => (
-  cborHex: MarloweTxCBORHex
-) => TE.TaskEither<Error, HexTransactionWitnessSet> =
-  (extensionCIP30Instance) => (cborHex) =>
-    pipe(() => extensionCIP30Instance.signTx(cborHex, true), TE.fromTask);
+// DISCUSSION: This can currently wait forever. Maybe we should add
+//             an abort controller or a timeout
+const waitConfirmation =
+  (di: ExtensionDI) =>
+  (txHash: string, checkInterval = 3000) => {
+    return new Promise<boolean>((txConfirm) => {
+      const pollingId = setInterval(async () => {
+        const utxos = await getUTxOs(di)();
+        const isConfirmed =
+          utxos.filter((utxo) => unTxOutRef(utxo).split("#", 2)[0] == txHash)
+            .length > 0;
+        if (isConfirmed) {
+          clearInterval(pollingId);
+          return txConfirm(true);
+        }
+      }, checkInterval);
+    });
+  };
 
-const fetchChangeAddress: (
-  extensionCIP30Instance: BroswerExtensionCIP30Api
-) => T.Task<AddressBech32> = (extensionCIP30Instance) =>
-  pipe(
-    T.Do,
-    T.bind("changeAddress", () =>
-      pipe(() => extensionCIP30Instance.getChangeAddress())
-    ),
-    T.map(({ changeAddress }) => deserializeAddress(changeAddress))
-  );
+const signTxTheCIP30Way =
+  ({ extension }: ExtensionDI) =>
+  (tx: string) => {
+    return extension.signTx(tx, true);
+  };
 
-const fetchUsedAddresses: (
-  extensionCIP30Instance: BroswerExtensionCIP30Api
-) => T.Task<AddressBech32[]> = (extensionCIP30Instance) =>
-  pipe(
-    T.Do,
-    T.bind("usedAddresses", () =>
-      pipe(() => extensionCIP30Instance.getUsedAddresses())
-    ),
-    T.map(({ usedAddresses }) => pipe(usedAddresses, A.map(deserializeAddress)))
-  );
+const getChangeAddress =
+  ({ extension }: ExtensionDI) =>
+  async () => {
+    const changeAddress = await extension.getChangeAddress();
+    return deserializeAddress(changeAddress);
+  };
 
-const fetchCIP30Network: (
-  extensionCIP30Instance: BroswerExtensionCIP30Api
-) => T.Task<CIP30Network> = (extensionCIP30Instance) =>
-  pipe(
-    T.Do,
-    T.bind("networkId", () =>
-      pipe(() => extensionCIP30Instance.getNetworkId())
-    ),
-    T.map(({ networkId }) => (networkId == 1 ? "Mainnet" : "Testnets"))
-  );
+const getUsedAddresses =
+  ({ extension }: ExtensionDI) =>
+  async () => {
+    const usedAddresses = await extension.getUsedAddresses();
+    return usedAddresses.map(deserializeAddress);
+  };
 
-const fetchUTxOs: (
-  extensionCIP30Instance: BroswerExtensionCIP30Api
-) => T.Task<TxOutRef[]> = (extensionCIP30Instance) =>
-  pipe(
-    T.Do,
-    T.bind("uxtxos", () => pipe(() => extensionCIP30Instance.getUtxos())),
-    T.map(({ uxtxos }) =>
-      uxtxos == undefined ? [] : pipe(uxtxos, A.map(deserializeCollateral))
-    )
-  );
-const fetchCollaterals: (
-  extensionCIP30Instance: BroswerExtensionCIP30Api
-) => T.Task<TxOutRef[]> = (extensionCIP30Instance) =>
-  pipe(
-    T.Do,
-    T.bind("collaterals", () =>
-      pipe(() => extensionCIP30Instance.experimental.getCollateral())
-    ),
-    T.map(({ collaterals }) =>
-      collaterals == undefined
-        ? []
-        : pipe(collaterals, A.map(deserializeCollateral))
-    )
-  );
+const getUTxOs =
+  ({ extension }: ExtensionDI) =>
+  async () => {
+    const utxos = (await extension.getUtxos()) ?? [];
+    return utxos.map(deserializeTxOutRef);
+  };
 
-const deserializeAddress: (addressHex: string) => AddressBech32 = (
-  addressHex
-) =>
-  pipe(
-    C.Address.from_bytes(hex.decode(addressHex)).to_bech32(undefined),
-    addressBech32
-  );
+const getCollaterals =
+  ({ extension }: ExtensionDI) =>
+  async () => {
+    const collaterals = (await extension.experimental.getCollateral()) ?? [];
+    return collaterals.map(deserializeTxOutRef);
+  };
 
-const deserializeCollateral: (collateral: string) => TxOutRef = (collateral) =>
-  pipe(C.TransactionUnspentOutput.from_bytes(hex.decode(collateral)), (utxo) =>
-    pipe(utxo.input().to_json(), JSON.parse, (x) =>
-      txOutRef(x.transaction_id + "#" + x.index)
-    )
+const getCIP30Network =
+  ({ extension }: ExtensionDI) =>
+  async () => {
+    const networkId = await extension.getNetworkId();
+    return networkId == 1 ? "Mainnet" : "Testnets";
+  };
+
+const getTokens =
+  ({ extension }: ExtensionDI) =>
+  async () => {
+    const balances = await extension.getBalance();
+    return valueToTokens(deserializeValue(balances));
+  };
+
+const getLovelaces =
+  ({ extension }: ExtensionDI) =>
+  async () => {
+    const balances = await extension.getBalance();
+    return valueToLovelaces(deserializeValue(balances));
+  };
+
+/**
+ * Get a list of the available wallets installed in the browser
+ */
+export function getAvailableWallets(): SupportedWallet[] {
+  if ("cardano" in window) {
+    // NOTE: it would be nice to have a Type assertion that the supportedWallets array is
+    // the same as the SupportedWallets type union. I've tried the other way (infering the type
+    // from the array) but the exported documentation doesn't look good
+    const supportedWallets = ["nami", "eternl"] as SupportedWallet[];
+    return supportedWallets.filter((wallet) => wallet in window.cardano);
+  } else {
+    return [];
+  }
+}
+
+function deserializeAddress(addressHex: string): AddressBech32 {
+  return addressBech32(
+    C.Address.from_bytes(hex.decode(addressHex)).to_bech32(undefined)
   );
+}
+
+function deserializeTxOutRef(utxoStr: string): TxOutRef {
+  const utxo = C.TransactionUnspentOutput.from_bytes(hex.decode(utxoStr));
+  const input = JSON.parse(utxo.input().to_json());
+  return txOutRef(input.transaction_id + "#" + input.index);
+}
 
 type DataSignature = {
   signature: string;
   key: string;
-};
-
-type Cardano = {
-  [key: string]: {
-    name: string;
-    icon: string;
-    apiVersion: string;
-    enable: () => Promise<BroswerExtensionCIP30Api>;
-  };
 };
 
 type BroswerExtensionCIP30Api = {
@@ -177,15 +170,6 @@ type BroswerExtensionCIP30Api = {
 type ExperimentalFeatures = {
   getCollateral(): Promise<string[] | undefined>;
 };
-
-const fetchTokens: (
-  extensionCIP30Instance: BroswerExtensionCIP30Api
-) => TE.TaskEither<Error, Token[]> = (extensionCIP30Instance) =>
-  pipe(
-    () => extensionCIP30Instance.getBalance(),
-    T.map((balances) => pipe(balances, deserializeValue, valueToTokens)),
-    TE.fromTask
-  );
 
 const deserializeValue = (value: string) =>
   C.Value.from_bytes(hex.decode(value));
@@ -219,15 +203,6 @@ const valueToTokens = (value: Core.Value) => {
 
   return tokenValues;
 };
-
-const fetchLovelaces: (
-  extensionCIP30Instance: BroswerExtensionCIP30Api
-) => TE.TaskEither<Error, bigint> = (extensionCIP30Instance) =>
-  pipe(
-    () => extensionCIP30Instance.getBalance(),
-    T.map((balances) => pipe(balances, deserializeValue, valueToLovelaces)),
-    TE.fromTask
-  );
 
 const valueToLovelaces = (value: Core.Value) =>
   BigInt(value.coin().to_str()).valueOf();
