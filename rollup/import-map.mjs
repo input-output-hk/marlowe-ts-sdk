@@ -86,7 +86,7 @@ export async function buildImportMapScript (packagesInfo, importFrom, distFolder
   } else if (importFrom.type === "jsdelivr-npm") {
     const importUrlBuilder = (pkg, flatImportName) =>
       path.join(
-            `https://cdn.jsdelivr.net/npm/marlowe.io/${pkg.name}@${importFrom.version}/`,
+            `https://cdn.jsdelivr.net/npm/@marlowe.io/${pkg.name}@${importFrom.version}/`,
             "dist",
             "bundled",
             "esm",
