@@ -14,7 +14,7 @@
   },
   "externalSymbolLinkMappings": {
     "global": {
-      "io-ts-usage": "https://github.com/gcanti/io-ts/blob/master/index.md#basic-usage",
+      "io-ts-usage": "https://github.com/gcanti/io-ts/blob/master/index.md#basic-usage"
     }
   }
 }

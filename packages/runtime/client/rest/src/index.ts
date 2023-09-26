@@ -29,6 +29,7 @@ import * as ContractNext from "./contract/next/endpoint.js";
 import { unsafeTaskEither } from "@marlowe.io/adapter/fp-ts";
 import { ContractId, TextEnvelope } from "@marlowe.io/runtime-core";
 import { submitContractViaAxios } from "./contract/endpoints/singleton.js";
+import { ContractDetails } from "./contract/details.js";
 // import curlirize from 'axios-curlirize';
 
 // TODO: DELETE
@@ -47,34 +48,48 @@ export { RolesConfig } from "./contract/index.js";
  * This interface is a 1-1 mapping of the {@link https://docs.marlowe.iohk.io/api/ | Marlowe API endpoints}.
  */
 export interface RestAPI {
-    /**
-     * Gets a paginated list of contracts {@link contract.ContractHeader }
-     * @param request Optional filtering and pagination options.
-     * @throws DecodingError If the response from the server can't be decoded
-     * @see {@link https://docs.marlowe.iohk.io/api/get-contracts}
-     */
-    getContracts(request?: Contracts.GetContractsRequest): Promise<Contracts.GetContractsResponse>;
+  /**
+   * Gets a paginated list of contracts {@link contract.ContractHeader }
+   * @param request Optional filtering and pagination options.
+   * @throws DecodingError If the response from the server can't be decoded
+   * @see {@link https://docs.marlowe.iohk.io/api/get-contracts}
+   */
+  getContracts(
+    request?: Contracts.GetContractsRequest
+  ): Promise<Contracts.GetContractsResponse>;
 
-    /**
-     * Builds an unsigned transaction to create an instance of a Marlowe Contract.
-     *
-     * @param request Request parameters including the Contract to create, role information, metadata, etc.
-     * @returns An object with the CBOR encoded transaction to sign (using the `wallet` package) and submit to the blockchain (using the TODO method).
-     * @throws DecodingError - If the response from the server can't be decoded
-     * @see {@link https://docs.marlowe.iohk.io/api/create-contracts | The backend documentation}
-     */
-     // TODO: fix link cross package
-    // TODO: Jamie, remove the `s from the end of the endpoint name in the docs site
-    // DISCUSSION: @Jamie, @N.H: Should this be called `buildCreateContractTx` instead? As it is not creating the
-    //             contract, rather it is creating the transaction to be signed
-    createContract(request: Contracts.CreateContractRequest): Promise<Contracts.ContractTextEnvelope>;
+  /**
+   * Builds an unsigned transaction to create an instance of a Marlowe Contract.
+   *
+   * @param request Request parameters including the Contract to create, role information, metadata, etc.
+   * @returns An object with the CBOR encoded transaction to sign (using the `wallet` package) and submit to the blockchain (using the TODO method).
+   * @throws DecodingError - If the response from the server can't be decoded
+   * @see {@link https://docs.marlowe.iohk.io/api/create-contracts | The backend documentation}
+   */
+  // TODO: fix link cross package
+  // TODO: Jamie, remove the `s from the end of the endpoint name in the docs site
+  // DISCUSSION: @Jamie, @N.H: Should this be called `buildCreateContractTx` instead? As it is not creating the
+  //             contract, rather it is creating the transaction to be signed
+  createContract(
+    request: Contracts.CreateContractRequest
+  ): Promise<Contracts.ContractTextEnvelope>;
 
-  //   getContractById: Contract.GET; // - https://docs.marlowe.iohk.io/api/get-contracts-by-id // TODO: Jamie, remove the `s from the end of the endpoint name
+  /**
+   * Gets a single contract by id
+   * @param contractId The id of the contract to get
+   * @throws DecodingError - If the response from the server can't be decoded
+   * @see {@link https://docs.marlowe.iohk.io/api/get-contracts-by-id}
+   */
+  // TODO: Jamie, remove the `s from the end of the endpoint name in the docs site
+  getContractById(contractId: ContractId): Promise<ContractDetails>; // - https://docs.marlowe.iohk.io/api/get-contracts-by-id
   //   In the docs site, after getContractsById there is https://docs.marlowe.iohk.io/api/create-contracts-by-id, not sure what method it corresponds or what is that method supposed to do.
-    /**
-     * Submits a signed contract creation transaction
-     */
-    submitContract(contractId: ContractId, txEnvelope: TextEnvelope): Promise<void>;
+  /**
+   * Submits a signed contract creation transaction
+   */
+  submitContract(
+    contractId: ContractId,
+    txEnvelope: TextEnvelope
+  ): Promise<void>;
   //
   //   getTransactionsForContract: Transactions.GET; // - https://docs.marlowe.iohk.io/api/get-transactions // TODO: Jamie, lets unify names
   //   createTransactionForContract: Transactions.POST; // - https://docs.marlowe.iohk.io/api/create-transactions // TODO: Jamie, lets unify names
@@ -105,7 +120,6 @@ export interface RestAPI {
   //   getPayoutById: Payout.GET;
 }
 
-
 /**
  * Instantiates a REST client for the Marlowe API.
  * @param baseURL An http url pointing to the Marlowe API.
@@ -126,6 +140,9 @@ export function mkRestClient(baseURL: string): RestAPI {
         Contracts.getHeadersByRangeViaAxios(axiosInstance)(rangeOption)(tags)
       );
     },
+    getContractById(contractId) {
+      return unsafeTaskEither(Contract.getViaAxios(axiosInstance)(contractId));
+    },
     createContract(request) {
       const postContractsRequest = {
         contract: request.contract,
@@ -141,18 +158,26 @@ export function mkRestClient(baseURL: string): RestAPI {
         collateralUTxOs: request.collateralUTxOs ?? [],
       };
       return unsafeTaskEither(
-        Contracts.postViaAxios(axiosInstance)(postContractsRequest, addressesAndCollaterals)
-      )
+        Contracts.postViaAxios(axiosInstance)(
+          postContractsRequest,
+          addressesAndCollaterals
+        )
+      );
     },
 
     submitContract(contractId, txEnvelope) {
       return submitContractViaAxios(axiosInstance)(contractId, txEnvelope);
     },
     healthcheck: () =>
-      pipe(HTTP.Get(axiosInstance)("/healthcheck"), TE.match(()=> false, () => true))(),
-  }
+      pipe(
+        HTTP.Get(axiosInstance)("/healthcheck"),
+        TE.match(
+          () => false,
+          () => true
+        )
+      )(),
+  };
 }
-
 
 // TODO: Move to Payouts?
 /**
@@ -269,8 +294,11 @@ export function mkFPTSRestClient(baseURL: string): FPTSRestAPI {
   });
 
   return {
-
-    healthcheck: () => pipe(HTTP.Get(axiosInstance)("/healthcheck"), TE.map(() => true)),
+    healthcheck: () =>
+      pipe(
+        HTTP.Get(axiosInstance)("/healthcheck"),
+        TE.map(() => true)
+      ),
     payouts: {
       getHeadersByRange: Payouts.getHeadersByRangeViaAxios(axiosInstance),
       get: Payout.getViaAxios(axiosInstance),

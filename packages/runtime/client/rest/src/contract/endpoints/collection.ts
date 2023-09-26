@@ -219,7 +219,6 @@ export type CreateContractRequest = {
    * The validator version to use.
    */
   version: MarloweVersion;
-
 };
 
 export type POST = (

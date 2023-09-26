@@ -23,23 +23,29 @@
       <h2>Request</h2>
       <div>
         <label for="parameter-json">Function parameters:</label>
-        <p>This should be filled with a JSON object that starts with an array, where each element is a numbered parameter.</p>
+        <p>
+          This should be filled with a JSON object that starts with an array,
+          where each element is a numbered parameter.
+        </p>
         <textarea
           id="parameter-json"
           type="text"
           style="width: 100%; height: 20em"
-        >[]</textarea>
+        >
+[]</textarea
+        >
       </div>
       <br />
       <input id="healthcheck" type="button" value="Healthcheck" />
       <br />
       <input id="get-contracts" type="button" value="Get Contracts" />
       <br />
+      <input id="get-contract-by-id" type="button" value="Get Contract by id" />
+      <br />
       <input id="create-contract" type="button" value="Create Contract" />
       <br />
       <input id="submit-contract" type="button" value="Submit Contract" />
       <br />
-
     </div>
 
     <h2>Console</h2>
@@ -79,13 +85,23 @@
         const restClient = getRestClient();
         const result = await restClient.getContracts(...getParams());
         // log(`Contracts: ${JSON.stringify(result)}`);
-        console.log("Contracts", result)
-        const nextRange = result.nextRange?.value ?? "-"
-        const prevRange = result.prevRange?.value ?? "-"
-        log(`Number of contracts in this range: ${result.headers.length} (full list in the browsers console)`);
+        console.log("Contracts", result);
+        const nextRange = result.nextRange?.value ?? "-";
+        const prevRange = result.prevRange?.value ?? "-";
+        log(
+          `Number of contracts in this range: ${result.headers.length} (full list in the browsers console)`
+        );
         log(`next range: ${nextRange}`);
         log(`prev range: ${prevRange}`);
-        log("<hr/>")
+        log("<hr/>");
+      }
+
+      async function getContractById() {
+        log(`Getting contract by id from ${H.getRuntimeUrl()}`);
+        const restClient = getRestClient();
+        const result = await restClient.getContractById(...getParams());
+        log(`Contract: ${JSONbig.stringify(result, null, 2)}`);
+        log("<hr/>");
       }
 
       async function createContract() {
@@ -103,13 +119,12 @@
         log(`Done`);
       }
 
-      async function healthcheck () {
+      async function healthcheck() {
         log(`Checking healthcheck on ${H.getRuntimeUrl()}`);
         const restClient = getRestClient();
         const result = await restClient.healthcheck();
         log(`Healthcheck result: ${JSON.stringify(result)}`);
-        log("<hr/>")
-
+        log("<hr/>");
       }
 
       H.setupLocalStorageRuntimeUrl();
@@ -125,6 +140,10 @@
 
       const submitContractButton = document.getElementById("submit-contract");
       submitContractButton.addEventListener("click", submitContract);
+
+      const getContractByIdButton =
+        document.getElementById("get-contract-by-id");
+      getContractByIdButton.addEventListener("click", getContractById);
 
       const clearConsoleButton = document.getElementById("clear-console");
       clearConsoleButton.addEventListener("click", clearConsole);

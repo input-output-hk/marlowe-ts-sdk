@@ -13,12 +13,10 @@ The `@marlowe.io/runtime-rest-client` package is [released as an ESM module](htt
 ```html
 <html>
   <body>
-    <script src="https://cdn.jsdelivr.net/gh/input-output-hk/marlowe-ts-sdk/jsdelivr-npm-importmap.js">
-    </script>
+    <script src="https://cdn.jsdelivr.net/gh/input-output-hk/marlowe-ts-sdk/jsdelivr-npm-importmap.js"></script>
     <script type="module">
       import { mkRestClient } from "@marlowe.io/runtime-rest-client";
       // TODO
-
     </script>
   </body>
 </html>

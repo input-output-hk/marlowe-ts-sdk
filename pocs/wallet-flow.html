@@ -18,9 +18,8 @@
         type="text"
         style="width: 100%; height: 20em"
       ></textarea>
-    <input id="sign-tx" type="button" value="Sign tx" />
-    <br />
-
+      <input id="sign-tx" type="button" value="Sign tx" />
+      <br />
     </div>
     <hr />
 
@@ -28,10 +27,7 @@
     <script src="/dist/local-importmap.js"></script>
     <script type="module">
       import { clearConsole, log } from "./js/poc-helpers.js";
-      import {
-        mkBrowserWallet,
-        getAvailableWallets,
-      } from "@marlowe.io/wallet";
+      import { mkBrowserWallet, getAvailableWallets } from "@marlowe.io/wallet";
 
       const walletInput = document.getElementById("wallet");
       const availableWallets = getAvailableWallets();

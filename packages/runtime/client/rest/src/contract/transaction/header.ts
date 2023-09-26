@@ -20,7 +20,7 @@ import { TxStatus } from "./status.js";
  * @see The {@link TxHeader:var | dynamic validator} for this type.
  * @see The {@link https://github.com/input-output-hk/marlowe-cardano/blob/b39fe3c3ed67d41cdea6d45700093e7ffa4fad62/marlowe-runtime-web/src/Language/Marlowe/Runtime/Web/Types.hs#L502 | The backend definition } of this type
  */
-export interface TxHeader extends t.TypeOf<typeof TxHeader> {};
+export interface TxHeader extends t.TypeOf<typeof TxHeader> {}
 
 /**
  * This is a {@link !io-ts-usage | Dynamic type validator} for a {@link TxHeader:type}.

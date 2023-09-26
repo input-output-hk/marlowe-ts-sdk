@@ -36,15 +36,15 @@ export const Payout = t.type({
   /**
    * The {@link RoleName} of the participant that has the unclaimed Payout.
    */
-  role: RoleName
+  role: RoleName,
 });
 
 /**
- * Represents the response of the {@link index.ContractsAPI | Get contract by id } endpoint
+ * Represents the response of the {@link index.RestAPI#getContractById | Get contract by id } endpoint
  * @see The {@link ContractDetails:var | dynamic validator} for this type.
  * @interface
  */
-export type ContractDetails = t.TypeOf<typeof ContractDetails>;
+export interface ContractDetails extends t.TypeOf<typeof ContractDetails> {}
 
 /**
  * This is a {@link !io-ts-usage | Dynamic type validator} for the {@link ContractDetails:type}.
