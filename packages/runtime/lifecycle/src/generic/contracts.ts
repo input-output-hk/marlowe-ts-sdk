@@ -1,5 +1,4 @@
 import * as TE from "fp-ts/lib/TaskEither.js";
-import * as T from "fp-ts/lib/Task.js";
 import { pipe } from "fp-ts/lib/function.js";
 import { mkEnvironment, Party } from "@marlowe.io/language-core-v1";
 import { addMinutes, subMinutes } from "date-fns";
@@ -17,11 +16,17 @@ import {
   PolicyId,
   ContractId,
   contractIdToTxId,
+  TxId,
+  AddressesAndCollaterals,
+  HexTransactionWitnessSet,
+  unAddressBech32,
+  unPolicyId,
 } from "@marlowe.io/runtime-core";
 
 import { FPTSRestAPI } from "@marlowe.io/runtime-rest-client";
 import { DecodingError } from "@marlowe.io/adapter/codec";
-import * as Tx from "@marlowe.io/runtime-rest-client/transaction";
+import { TransactionTextEnvelope } from "@marlowe.io/runtime-rest-client/contract/transaction/endpoints/collection";
+import { Next } from "@marlowe.io/language-core-v1/next";
 
 export function mkContractLifecycle(
   wallet: WalletAPI,
@@ -29,37 +34,60 @@ export function mkContractLifecycle(
 ): ContractsAPI {
   const di = { wallet, rest };
   return {
-    create: createContract(di),
-    applyInputs: applyInputsToContract(di),
+    submitCreateTx: submitCreateTx(di),
+    create: create(di),
+    submitApplyInputsTx: submitApplyInputsTx(di),
+    getNext: getNext(di),
+    applyInputs: applyInputs(di),
+    waitConfirmation: wallet.waitConfirmation,
   };
 }
 
-const createContract =
+const submitCreateTx =
+  ({ wallet, rest }: ContractsDI) =>
+  (req: CreateRequest): Promise<[ContractId, TxId]> => {
+    return unsafeTaskEither(submitCreateTxFpTs(rest)(wallet)(req));
+  };
+
+const create =
   ({ wallet, rest }: ContractsDI) =>
   (req: CreateRequest): Promise<ContractId> => {
     return unsafeTaskEither(createContractFpTs(rest)(wallet)(req));
   };
 
-const applyInputsToContract =
+const submitApplyInputsTx =
   ({ wallet, rest }: ContractsDI) =>
   async (
     contractId: ContractId,
-    provideInput: ProvideInput
-  ): Promise<ContractId> => {
+    request: ApplyInputsRequest
+  ): Promise<TxId> => {
+    return unsafeTaskEither(
+      submitApplyInputsTxFpTs(rest)(wallet)(contractId)(request)
+    );
+  };
+
+const getNext =
+  ({ wallet, rest }: ContractsDI) =>
+  async (contractId: ContractId): Promise<Next> => {
     const contractDetails = await unsafeTaskEither(
       rest.contracts.contract.get(contractId)
     );
     const parties = await getParties(wallet)(
       contractDetails.roleTokenMintingPolicyId
-    )();
-    const next = await unsafeTaskEither(
+    );
+    return await unsafeTaskEither(
       rest.contracts.contract.next(contractId)(
         mkEnvironment(pipe(Date.now(), (date) => subMinutes(date, 15)))(
           pipe(Date.now(), (date) => addMinutes(date, 15))
         )
       )(parties)
     );
+  };
 
+const applyInputs =
+  ({ wallet, rest }: ContractsDI) =>
+  async (contractId: ContractId, provideInput: ProvideInput): Promise<TxId> => {
+    const next = await getNext({ wallet, rest })(contractId);
     return unsafeTaskEither(
       applyInputsFpTs(rest)(wallet)(contractId)(provideInput(next))
     );
@@ -67,30 +95,44 @@ const applyInputsToContract =
 
 const getParties: (
   walletApi: WalletAPI
-) => (roleTokenMintingPolicyId: PolicyId) => T.Task<Party[]> =
-  (walletAPI) => (roleMintingPolicyId) =>
-    T.of([]);
+) => (roleTokenMintingPolicyId: PolicyId) => Promise<Party[]> =
+  (walletAPI) => async (roleMintingPolicyId) => {
+    const changeAddress: Party = await walletAPI
+      .getChangeAddress()
+      .then((addressBech32) => ({ address: unAddressBech32(addressBech32) }));
+    const usedAddresses: Party[] = await walletAPI
+      .getUsedAddresses()
+      .then((addressesBech32) =>
+        addressesBech32.map((addressBech32) => ({
+          address: unAddressBech32(addressBech32),
+        }))
+      );
+    const roles: Party[] = (await walletAPI.getTokens())
+      .filter((token) => token.assetId.policyId == roleMintingPolicyId)
+      .map((token) => ({ role_token: unPolicyId(token.assetId.policyId) }));
+    return roles.concat([changeAddress]).concat(usedAddresses);
+  };
 
-export const createContractFpTs: (
+export const submitCreateTxFpTs: (
   client: FPTSRestAPI
 ) => (
   wallet: WalletAPI
 ) => (
   payload: CreateRequest
-) => TE.TaskEither<Error | DecodingError, ContractId> =
-  (client) => (wallet) => (payload) =>
+) => TE.TaskEither<Error | DecodingError, [ContractId, TxId]> =
+  (client) => (wallet) => (request) =>
     pipe(
       tryCatchDefault(() => getAddressesAndCollaterals(wallet)),
       TE.chain((addressesAndCollaterals) =>
         client.contracts.post(
           {
-            contract: payload.contract,
+            contract: request.contract,
             version: "v1",
-            roles: payload.roles,
-            tags: payload.tags ? payload.tags : {},
-            metadata: payload.metadata ? payload.metadata : {},
-            minUTxODeposit: payload.minUTxODeposit
-              ? payload.minUTxODeposit
+            roles: request.roles,
+            tags: request.tags ? request.tags : {},
+            metadata: request.metadata ? request.metadata : {},
+            minUTxODeposit: request.minUTxODeposit
+              ? request.minUTxODeposit
               : 3_000_000,
           },
           addressesAndCollaterals
@@ -108,14 +150,27 @@ export const createContractFpTs: (
           TE.map(() => contractTextEnvelope.contractId)
         )
       ),
-      TE.chainFirstW((contractId) =>
+      TE.map((contractId) => [contractId, contractIdToTxId(contractId)])
+    );
+
+export const createContractFpTs: (
+  client: FPTSRestAPI
+) => (
+  wallet: WalletAPI
+) => (
+  payload: CreateRequest
+) => TE.TaskEither<Error | DecodingError, ContractId> =
+  (client) => (wallet) => (request) =>
+    pipe(
+      submitCreateTxFpTs(client)(wallet)(request),
+      TE.chainW(([contractId, txId]) =>
         tryCatchDefault(() =>
-          wallet.waitConfirmation(pipe(contractId, contractIdToTxId))
+          wallet.waitConfirmation(txId).then((_) => contractId)
         )
       )
     );
 
-export const applyInputsFpTs: (
+export const submitApplyInputsTxFpTs: (
   client: FPTSRestAPI
 ) => (
   wallet: WalletAPI
@@ -123,11 +178,11 @@ export const applyInputsFpTs: (
   contractId: ContractId
 ) => (
   payload: ApplyInputsRequest
-) => TE.TaskEither<Error | DecodingError, ContractId> =
+) => TE.TaskEither<Error | DecodingError, TxId> =
   (client) => (wallet) => (contractId) => (payload) =>
     pipe(
       tryCatchDefault(() => getAddressesAndCollaterals(wallet)),
-      TE.chain((addressesAndCollaterals) =>
+      TE.chain((addressesAndCollaterals: AddressesAndCollaterals) =>
         client.contracts.contract.transactions.post(
           contractId,
           {
@@ -141,12 +196,12 @@ export const applyInputsFpTs: (
           addressesAndCollaterals
         )
       ),
-      TE.chainW((transactionTextEnvelope) =>
+      TE.chainW((transactionTextEnvelope: TransactionTextEnvelope) =>
         pipe(
           tryCatchDefault(() =>
             wallet.signTx(transactionTextEnvelope.tx.cborHex)
           ),
-          TE.chain((hexTransactionWitnessSet) =>
+          TE.chain((hexTransactionWitnessSet: HexTransactionWitnessSet) =>
             client.contracts.contract.transactions.transaction.put(
               contractId,
               transactionTextEnvelope.transactionId,
@@ -155,11 +210,22 @@ export const applyInputsFpTs: (
           ),
           TE.map(() => transactionTextEnvelope.transactionId)
         )
-      ),
-      TE.chainFirstW((transactionId) =>
-        tryCatchDefault(() =>
-          wallet.waitConfirmation(pipe(transactionId, Tx.idToTxId))
-        )
-      ),
-      TE.map(() => contractId)
+      )
+    );
+
+export const applyInputsFpTs: (
+  client: FPTSRestAPI
+) => (
+  wallet: WalletAPI
+) => (
+  contractId: ContractId
+) => (
+  payload: ApplyInputsRequest
+) => TE.TaskEither<Error | DecodingError, TxId> =
+  (client) => (wallet) => (contractId) => (request) =>
+    pipe(
+      submitApplyInputsTxFpTs(client)(wallet)(contractId)(request),
+      TE.chainW((txId) =>
+        tryCatchDefault(() => wallet.waitConfirmation(txId).then((_) => txId))
+      )
     );

@@ -20,13 +20,12 @@ import {
 } from "@marlowe.io/runtime-core";
 
 import { ContractId } from "@marlowe.io/runtime-core";
-import { TransactionId } from "./id.js";
 import { TxStatus } from "./status.js";
 
 export type Details = t.TypeOf<typeof Details>;
 export const Details = t.type({
   contractId: ContractId,
-  transactionId: TransactionId,
+  transactionId: TxId,
   continuations: optionFromNullable(BuiltinByteString),
   tags: Tags,
   metadata: Metadata,
