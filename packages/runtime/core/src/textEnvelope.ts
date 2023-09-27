@@ -13,7 +13,7 @@ import * as t from "io-ts/lib/index.js";
 //             at the type level.
 //             We could also parametrize the type on the `type` property. I noticed that when we build the transaction
 //             the runtime responds with `Tx BabbageEra` but when we submit it we need to use `ShelleyTxWitness BabbageEra`
-export type TextEnvelope = t.TypeOf<typeof TextEnvelope>;
+export interface TextEnvelope extends t.TypeOf<typeof TextEnvelope> {}
 export const TextEnvelope = t.type({
   type: t.string,
   description: t.string,

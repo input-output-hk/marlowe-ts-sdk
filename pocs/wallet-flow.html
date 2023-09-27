@@ -111,7 +111,7 @@
         log(`<h2>Accessing ${walletName} Wallet Extension</h2>`);
         const wallet = await createBrowserWallet(walletName);
         const unsignedTx = document.getElementById("unsigned-tx").value;
-        const signed = await wallet.signTxTheCIP30Way(unsignedTx);
+        const signed = await wallet.signTx(unsignedTx);
         log(`<h2>Signed TX</h2>`);
         log(signed);
       }

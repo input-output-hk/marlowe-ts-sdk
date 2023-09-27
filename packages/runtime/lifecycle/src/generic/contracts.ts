@@ -100,9 +100,7 @@ export const createContractFpTs: (
       ),
       TE.chainW((contractTextEnvelope) =>
         pipe(
-          tryCatchDefault(() =>
-            wallet.signTxTheCIP30Way(contractTextEnvelope.tx.cborHex)
-          ),
+          tryCatchDefault(() => wallet.signTx(contractTextEnvelope.tx.cborHex)),
           TE.chain((hexTransactionWitnessSet) =>
             client.contracts.contract.put(
               contractTextEnvelope.contractId,
@@ -148,7 +146,7 @@ export const applyInputsFpTs: (
       TE.chainW((transactionTextEnvelope) =>
         pipe(
           tryCatchDefault(() =>
-            wallet.signTxTheCIP30Way(transactionTextEnvelope.tx.cborHex)
+            wallet.signTx(transactionTextEnvelope.tx.cborHex)
           ),
           TE.chain((hexTransactionWitnessSet) =>
             client.contracts.contract.transactions.transaction.put(
