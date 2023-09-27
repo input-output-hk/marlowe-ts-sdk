@@ -58,8 +58,8 @@
         log("Reading Wallet information...");
         log("");
 
-        const cip30Network = await wallet.getCIP30Network();
-        log(`* <b>Network</b>: ${cip30Network}`);
+        const isMainnet = await wallet.isMainnet();
+        log(`* <b>Network</b>: ${isMainnet ? "Mainnet" : "Testnet"}`);
         log(
           "&nbsp;&nbsp;&nbsp;NOTE: The CIP30 standard can't distinguish between testnet networks (preprod/preview/etc)"
         );

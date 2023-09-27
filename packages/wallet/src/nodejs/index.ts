@@ -130,12 +130,8 @@ export class SingleAddressWallet implements WalletAPI {
     this.getCollaterals = T.of([]);
   }
 
-  async getCIP30Network() {
-    if (this.lucid.network === "Mainnet") {
-      return "Mainnet" as const;
-    } else {
-      return "Testnets" as const;
-    }
+  async isMainnet() {
+    return this.lucid.network === "Mainnet";
   }
 
   async getTokens(): Promise<Token[]> {
