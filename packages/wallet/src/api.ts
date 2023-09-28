@@ -11,16 +11,6 @@ import {
   TxOutRef,
 } from "@marlowe.io/runtime-core";
 
-/**
- * Represents the connected network as seen by the CIP30.
- *
- * @remarks
- * The Network Id returned by CIP30 Interface doesn't provide information on which Testnet Network
- *       the extension in configured.
- * {@link https://github.com/cardano-foundation/CIPs/pull/323 | See github issue}
- *
- */
-export type CIP30Network = "Mainnet" | "Testnets";
 export type WalletDI = { wallet: WalletAPI };
 /**
  * The WalletAPI is an interface for interacting with a Cardano wallet.
@@ -76,13 +66,16 @@ export interface WalletAPI {
    * @returns The list of UTXOs available to the wallet.
    */
   getUTxOs(): Promise<TxOutRef[]>;
-  // DISCUSSION: should we keep CIP30 as part of the name of the api?
   /**
-   * What type of network is the wallet connected to.
-   * @returns The connected network as seen by the CIP30.
-   * @experimental
+   * Returns a flag that indicates wether the wallet is connected to the Mainnet or a Testnet.
+   *
+   * @remarks
+   * The Network Id returned by CIP30 Interface doesn't provide information on which Testnet Network
+   *       the extension in configured.
+   * {@link https://github.com/cardano-foundation/CIPs/pull/323 | See github issue}
+   *
    */
-  getCIP30Network(): Promise<CIP30Network>;
+  isMainnet(): Promise<boolean>;
   // DISCUSSION: should we rename this function to getAssets?
   // DISCUSSION: Being this a Marlowe Wallet API, should we return a Marlowe Asset (Marlowe Token + Quantity) instead of
   //             CIP30 Token?

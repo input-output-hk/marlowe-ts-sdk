@@ -1,4 +1,4 @@
-import { CIP30Network, WalletAPI } from "../api.js";
+import { WalletAPI } from "../api.js";
 import { C, Core, WalletApi } from "lucid-cardano";
 import { hex, utf8 } from "@47ng/codec";
 // DISCUSSION: these should be imported from a cardano helpers library.
@@ -38,7 +38,7 @@ export async function mkBrowserWallet(
       getUsedAddresses: getUsedAddresses(di),
       getCollaterals: getCollaterals(di),
       getUTxOs: getUTxOs(di),
-      getCIP30Network: getCIP30Network(di),
+      isMainnet: isMainnet(di),
       getTokens: getTokens(di),
       getLovelaces: getLovelaces(di),
     };
@@ -100,11 +100,11 @@ const getCollaterals =
     return collaterals.map(deserializeTxOutRef);
   };
 
-const getCIP30Network =
+const isMainnet =
   ({ extension }: ExtensionDI) =>
   async () => {
     const networkId = await extension.getNetworkId();
-    return networkId == 1 ? "Mainnet" : "Testnets";
+    return networkId == 1;
   };
 
 const getTokens =
