@@ -243,7 +243,6 @@
       runtimeLifeCycle.contracts.applyInputs(contractId, (next) => ({
         inputs: [],
       }));
-      console.log("... contract has been poked!");
     }, 5000 + payoutTime1 - Date.now());
 
     setTimeout(() => {
@@ -253,7 +252,6 @@
       runtimeLifeCycle.contracts.applyInputs(contractId, (next) => ({
         inputs: [],
       }));
-      console.log("... contract has been poked!");
     }, 5000 + payoutTime2 - Date.now());
 
     setTimeout(() => {
@@ -263,7 +261,6 @@
       runtimeLifeCycle.contracts.applyInputs(contractId, (next) => ({
         inputs: [],
       }));
-      console.log("... contract has been poked!");
     }, 5000 + payoutTime3 - Date.now());
 
     // Invoke in the browser REPL: getAvailablePayouts().then(x => console.log(x))
