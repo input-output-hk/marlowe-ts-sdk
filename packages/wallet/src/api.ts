@@ -47,7 +47,7 @@ export interface WalletAPI {
    * The header is `Accept "application/vendor.iog.marlowe-runtime.contract-tx-json"`
    * and it is automatically included in the @marlowe.io/runtime-* packages.
    */
-  signTxTheCIP30Way(tx: MarloweTxCBORHex): Promise<HexTransactionWitnessSet>;
+  signTx(tx: MarloweTxCBORHex): Promise<HexTransactionWitnessSet>;
   /**
    * Returns an address to be used as Change Address when balancing transactions.
    */

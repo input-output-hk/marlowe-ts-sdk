@@ -11,7 +11,7 @@
 import axios from "axios";
 import * as TE from "fp-ts/lib/TaskEither.js";
 import * as O from "fp-ts/lib/Option.js";
-import { flow, pipe } from "fp-ts/lib/function.js";
+import { pipe } from "fp-ts/lib/function.js";
 
 import { MarloweJSONCodec } from "@marlowe.io/adapter/codec";
 import * as HTTP from "@marlowe.io/adapter/http";
@@ -62,11 +62,10 @@ export interface RestAPI {
    * Builds an unsigned transaction to create an instance of a Marlowe Contract.
    *
    * @param request Request parameters including the Contract to create, role information, metadata, etc.
-   * @returns An object with the CBOR encoded transaction to sign (using the `wallet` package) and submit to the blockchain (using the TODO method).
+   * @returns An object with the CBOR encoded transaction to sign (using the {@link @marlowe.io/wallet!api.WalletAPI#signTx} function) and submit to the blockchain (using the TODO method).
    * @throws DecodingError - If the response from the server can't be decoded
    * @see {@link https://docs.marlowe.iohk.io/api/create-contracts | The backend documentation}
    */
-  // TODO: fix link cross package
   // TODO: Jamie, remove the `s from the end of the endpoint name in the docs site
   // DISCUSSION: @Jamie, @N.H: Should this be called `buildCreateContractTx` instead? As it is not creating the
   //             contract, rather it is creating the transaction to be signed
@@ -100,8 +99,7 @@ export interface RestAPI {
   //   createWithdrawal: Withdrawals.POST; // - https://docs.marlowe.iohk.io/api/create-withdrawals
   //   getWithdrawalById: Withdrawal.GET; // - https://docs.marlowe.iohk.io/api/get-withdrawal-by-id
   //   submitWithdrawal: Withdrawal.PUT; - is it this one? https://docs.marlowe.iohk.io/api/create-withdrawal? or the one for createWithdrawal?
-  // TODO: Create ticket to also export return headers information
-  // Node-Tip Runtime-Chain-Tip Runtime-Tip Runtime-Version Network-Id
+  // TODO: PLT-7719 we should also export the return headers information (Node-Tip Runtime-Chain-Tip Runtime-Tip Runtime-Version Network-Id)
   /**
    * Checks if the Marlowe API is up and running.
    *

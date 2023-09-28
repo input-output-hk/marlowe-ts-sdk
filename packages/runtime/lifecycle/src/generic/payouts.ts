@@ -199,7 +199,7 @@ export const withdrawPayoutsFpTs: (
       TE.chainW((withdrawalTextEnvelope) =>
         pipe(
           tryCatchDefault(() =>
-            wallet.signTxTheCIP30Way(withdrawalTextEnvelope.tx.cborHex)
+            wallet.signTx(withdrawalTextEnvelope.tx.cborHex)
           ),
           TE.chain((hexTransactionWitnessSet) =>
             client.withdrawals.withdrawal.put(

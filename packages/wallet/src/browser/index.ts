@@ -33,7 +33,7 @@ export async function mkBrowserWallet(
     const di = { extension };
     return {
       waitConfirmation: waitConfirmation(di),
-      signTxTheCIP30Way: signTxTheCIP30Way(di),
+      signTx: signTx(di),
       getChangeAddress: getChangeAddress(di),
       getUsedAddresses: getUsedAddresses(di),
       getCollaterals: getCollaterals(di),
@@ -66,7 +66,7 @@ const waitConfirmation =
     });
   };
 
-const signTxTheCIP30Way =
+const signTx =
   ({ extension }: ExtensionDI) =>
   (tx: string) => {
     return extension.signTx(tx, true);

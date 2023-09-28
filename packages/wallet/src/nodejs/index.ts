@@ -255,7 +255,7 @@ export class SingleAddressWallet implements WalletAPI {
       )
     );
   }
-  async signTxTheCIP30Way(cborHex: MarloweTxCBORHex) {
+  async signTx(cborHex: MarloweTxCBORHex) {
     const tx = C.Transaction.from_bytes(fromHex(cborHex));
     try {
       const txSigned = await this.lucid.wallet.signTx(tx);
