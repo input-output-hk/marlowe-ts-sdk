@@ -1,7 +1,7 @@
 import * as t from "io-ts/lib/index.js";
 import { PolicyId, mkPolicyId, unPolicyId } from "../policyId.js";
 
-import * as Marlowe from "@marlowe.io/language-core-v1/tokenValue";
+import * as Marlowe from "@marlowe.io/language-core-v1";
 
 export type AssetName = t.TypeOf<typeof AssetName>;
 export const AssetName = t.string;

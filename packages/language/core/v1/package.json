@@ -18,49 +18,28 @@
     "test": "NODE_OPTIONS='--experimental-vm-modules --no-warnings' jest --config test/jest.unit.config.mjs"
   },
   "type": "module",
-  "module": "./dist/esm/semantics/contract/index.js",
-  "main": "./dist/esm/semantics/contract/index.js",
-  "types": "./dist/esm/semantics/contract/index.d.ts",
+  "module": "./dist/esm/index.js",
+  "main": "./dist/esm/index.js",
+  "types": "./dist/esm/index.d.ts",
   "files": [
     "dist"
   ],
   "exports": {
     ".": {
-      "import": "./dist/esm/semantics/contract/index.js",
+      "import": "./dist/esm/index.js",
       "require": "./dist/bundled/cjs/language-core-v1.cjs",
-      "types": "./dist/esm/semantics/contract/index.d.ts"
+      "types": "./dist/esm/index.d.ts"
     },
     "./next": {
-      "import": "./dist/esm/semantics/next/index.js",
+      "import": "./dist/esm/next/index.js",
       "require": "./dist/bundled/cjs/next.cjs",
-      "types": "./dist/esm/semantics/next/index.d.ts"
-    },
-    "./environment": {
-      "import": "./dist/esm/semantics/environment.js",
-      "require": "./dist/bundled/cjs/environment.cjs",
-      "types": "./dist/esm/semantics/environment.d.ts"
-    },
-    "./state": {
-      "import": "./dist/esm/semantics/state.js",
-      "require": "./dist/bundled/cjs/state.cjs",
-      "types": "./dist/esm/semantics/state.d.ts"
-    },
-    "./token": {
-      "import": "./dist/esm/semantics/contract/common/token.js",
-      "require": "./dist/bundled/cjs/token.cjs",
-      "types": "./dist/esm/semantics/contract/common/token.d.ts"
-    },
-    "./tokenValue": {
-      "import": "./dist/esm/semantics/contract/common/tokenValue.js",
-      "require": "./dist/bundled/cjs/tokenValue.cjs",
-      "types": "./dist/esm/semantics/contract/common/tokenValue.d.ts"
+      "types": "./dist/esm/next/index.d.ts"
     },
     "./version": {
-      "import": "./dist/esm/semantics/version.js",
+      "import": "./dist/esm/version.js",
       "require": "./dist/bundled/cjs/version.cjs",
-      "types": "./dist/esm/semantics/version.d.ts"
-    },
-    "./contract/*": "./dist/esm/semantics/contract/*.js"
+      "types": "./dist/esm/version.d.ts"
+    }
   },
   "dependencies": {
     "date-fns": "2.29.3",

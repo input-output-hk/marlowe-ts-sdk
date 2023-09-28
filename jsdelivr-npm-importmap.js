@@ -14,20 +14,12 @@ const importMap = {
       "https:/cdn.jsdelivr.net/npm/@marlowe.io/adapter@0.2.0-alpha-3/dist/bundled/esm/time.js",
     "@marlowe.io/language-core-v1":
       "https:/cdn.jsdelivr.net/npm/@marlowe.io/language-core-v1@0.2.0-alpha-3/dist/bundled/esm/language-core-v1.js",
-    "@marlowe.io/language-core-v1/environment":
-      "https:/cdn.jsdelivr.net/npm/@marlowe.io/language-core-v1@0.2.0-alpha-3/dist/bundled/esm/environment.js",
-    "@marlowe.io/language-core-v1/examples":
-      "https:/cdn.jsdelivr.net/npm/@marlowe.io/language-core-v1@0.2.0-alpha-3/dist/bundled/esm/examples.js",
     "@marlowe.io/language-core-v1/next":
       "https:/cdn.jsdelivr.net/npm/@marlowe.io/language-core-v1@0.2.0-alpha-3/dist/bundled/esm/next.js",
-    "@marlowe.io/language-core-v1/state":
-      "https:/cdn.jsdelivr.net/npm/@marlowe.io/language-core-v1@0.2.0-alpha-3/dist/bundled/esm/state.js",
-    "@marlowe.io/language-core-v1/token":
-      "https:/cdn.jsdelivr.net/npm/@marlowe.io/language-core-v1@0.2.0-alpha-3/dist/bundled/esm/token.js",
-    "@marlowe.io/language-core-v1/tokenValue":
-      "https:/cdn.jsdelivr.net/npm/@marlowe.io/language-core-v1@0.2.0-alpha-3/dist/bundled/esm/tokenValue.js",
     "@marlowe.io/language-core-v1/version":
       "https:/cdn.jsdelivr.net/npm/@marlowe.io/language-core-v1@0.2.0-alpha-3/dist/bundled/esm/version.js",
+    "@marlowe.io/language-examples":
+      "https:/cdn.jsdelivr.net/npm/@marlowe.io/language-examples@0.2.0-alpha-3/dist/bundled/esm/language-examples.js",
     "@marlowe.io/token-metadata-client":
       "https:/cdn.jsdelivr.net/npm/@marlowe.io/token-metadata-client@0.2.0-alpha-3/dist/bundled/esm/token-metadata-client.js",
     "@marlowe.io/wallet":

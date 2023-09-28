@@ -1,6 +1,8 @@
 import * as t from "io-ts/lib/index.js";
-import { AccountId } from "./account.js";
-import { Party } from "./party.js";
+import { Party } from "./participants.js";
+
+export type AccountId = t.TypeOf<typeof Party>;
+export const AccountId = Party;
 
 export type Payee = t.TypeOf<typeof Payee>;
 export const Payee = t.union([

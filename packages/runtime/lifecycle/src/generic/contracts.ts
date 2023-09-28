@@ -1,17 +1,15 @@
 import * as TE from "fp-ts/lib/TaskEither.js";
 import * as T from "fp-ts/lib/Task.js";
 import { pipe } from "fp-ts/lib/function.js";
-import { mkEnvironment } from "@marlowe.io/language-core-v1/environment";
+import { mkEnvironment, Party } from "@marlowe.io/language-core-v1";
 import { addMinutes, subMinutes } from "date-fns";
 import { tryCatchDefault, unsafeTaskEither } from "@marlowe.io/adapter/fp-ts";
-import { Party } from "@marlowe.io/language-core-v1/semantics/contract/common/payee/party.js";
 import {
   ApplyInputsRequest,
   ContractsAPI,
   ContractsDI,
   CreateRequest,
   ProvideInput,
-  RuntimeLifecycle,
 } from "../api.js";
 
 import { getAddressesAndCollaterals, WalletAPI } from "@marlowe.io/wallet/api";

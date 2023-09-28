@@ -1,11 +1,11 @@
 import { optionFromNullable } from "io-ts-types";
 import * as t from "io-ts/lib/index.js";
-import { AccountId } from "../../contract/common/payee/account.js";
-import { Party } from "../../contract/common/payee/party.js";
-import { Token } from "../../contract/common/token.js";
+import { Token } from "../../token.js";
 import { IsMerkleizedContinuation } from "../common/IsMerkleizedContinuation.js";
 import { CaseIndex } from "../common/caseIndex.js";
-import { InputDeposit } from "../../contract/when/input/deposit.js";
+import { InputDeposit } from "../../inputs.js";
+import { Party } from "../../participants.js";
+import { AccountId } from "../../payee.js";
 
 export type CanDeposit = t.TypeOf<typeof CanDeposit>;
 export const CanDeposit = t.type({

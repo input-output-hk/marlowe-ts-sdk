@@ -1,9 +1,9 @@
 import * as t from "io-ts/lib/index.js";
-import { Bound } from "../../contract/when/action/choice.js";
-import { ChoiceId } from "../../contract/common/value.js";
+import { ChoiceId } from "../../value-and-observation.js";
 import { IsMerkleizedContinuation } from "../common/IsMerkleizedContinuation.js";
 import { CaseIndex } from "../common/caseIndex.js";
-import { ChosenNum, InputChoice } from "../../contract/when/input/choice.js";
+import { ChosenNum, InputChoice } from "../../inputs.js";
+import { Bound } from "../../actions.js";
 
 export type CanChoose = t.TypeOf<typeof CanChoose>;
 export const CanChoose = t.type({
