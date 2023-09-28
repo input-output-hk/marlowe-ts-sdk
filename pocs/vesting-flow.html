@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>Vesting Flow</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script type="importmap">
+      {
+        "imports": {
+          "@marlowe.io/adapter": "/packages/adapter/dist/bundled/esm/adapter.js",
+          "@marlowe.io/adapter/codec": "/packages/adapter/dist/bundled/esm/codec.js",
+          "@marlowe.io/adapter/file": "/packages/adapter/dist/bundled/esm/file.js",
+          "@marlowe.io/adapter/fp-ts": "/packages/adapter/dist/bundled/esm/fp-ts.js",
+          "@marlowe.io/adapter/http": "/packages/adapter/dist/bundled/esm/http.js",
+          "@marlowe.io/adapter/time": "/packages/adapter/dist/bundled/esm/time.js",
+          "@marlowe.io/language-core-v1": "/packages/language/core/v1/dist/bundled/esm/language-core-v1.js",
+          "@marlowe.io/language-core-v1/environment": "/packages/language/core/v1/dist/bundled/esm/environment.js",
+          "@marlowe.io/language-core-v1/examples": "/packages/language/core/v1/dist/bundled/esm/examples.js",
+          "@marlowe.io/language-core-v1/next": "/packages/language/core/v1/dist/bundled/esm/next.js",
+          "@marlowe.io/language-core-v1/state": "/packages/language/core/v1/dist/bundled/esm/state.js",
+          "@marlowe.io/language-core-v1/token": "/packages/language/core/v1/dist/bundled/esm/token.js",
+          "@marlowe.io/language-core-v1/tokenValue": "/packages/language/core/v1/dist/bundled/esm/tokenValue.js",
+          "@marlowe.io/language-core-v1/version": "/packages/language/core/v1/dist/bundled/esm/version.js",
+          "@marlowe.io/token-metadata-client": "/packages/token-metadata-client/dist/bundled/esm/token-metadata-client.js",
+          "@marlowe.io/wallet": "/packages/wallet/dist/bundled/esm/wallet.js",
+          "@marlowe.io/wallet/api": "/packages/wallet/dist/bundled/esm/api.js",
+          "@marlowe.io/wallet/browser": "/packages/wallet/dist/bundled/esm/browser.js",
+          "@marlowe.io/wallet/nodejs": "/packages/wallet/dist/bundled/esm/nodejs.js",
+          "@marlowe.io/runtime-rest-client": "/packages/runtime/client/rest/dist/bundled/esm/runtime-rest-client.js",
+          "@marlowe.io/runtime-rest-client/transaction": "/packages/runtime/client/rest/dist/bundled/esm/transaction.js",
+          "@marlowe.io/runtime-rest-client/withdrawal": "/packages/runtime/client/rest/dist/bundled/esm/withdrawal.js",
+          "@marlowe.io/runtime-core": "/packages/runtime/core/dist/bundled/esm/runtime-core.js",
+          "@marlowe.io/runtime-lifecycle": "/packages/runtime/lifecycle/dist/bundled/esm/runtime-lifecycle.js",
+          "@marlowe.io/runtime-lifecycle/api": "/packages/runtime/lifecycle/dist/bundled/esm/api.js",
+          "@marlowe.io/runtime-lifecycle/browser": "/packages/runtime/lifecycle/dist/bundled/esm/browser.js",
+          "@marlowe.io/runtime-lifecycle/generic": "/packages/runtime/lifecycle/dist/bundled/esm/generic.js",
+          "lucid-cardano": "https://unpkg.com/lucid-cardano@0.10.7/web/mod.js"
+        }
+      }
+    </script>
+  </head>
+  <body></body>
+  <script type="module">
+    import { Browser } from "@marlowe.io/runtime-lifecycle";
+
+    function vestingContract(
+      numberOfPeriods,
+      periodLength, // TODO: Modify to duration instead of number
+      // withdrawalsPerPeriod: number; // TODO: The code is hardcoded to do one withdrawal/cancel per period.
+      vestingToken,
+      vestingAmountPerPeriod, // NB: Using "per period" to avoid fractions
+      contractStart, // TODO: Modify as a date
+      employerDepositDeadline, // TODO: Modify as date
+      employee,
+      employer
+    ) {
+      if (vestingAmountPerPeriod <= 0)
+        throw "Vesting amount per period needs to be a positive number";
+      if (employerDepositDeadline < contractStart)
+        throw "Employer needs to deposit funds after contract start";
+      if (employerDepositDeadline >= contractStart + periodLength)
+        throw "Employer needs to deposit before the first vesting period";
+      if (numberOfPeriods < 1)
+        throw "The number of Periods needs to be greater or equal to 1";
+
+      const employerCancel = function () {
+        return "close";
+      };
+
+      const employerDepositsFunds = function (continuation) {
+        return {
+          when: [
+            {
+              case: {
+                party: employer,
+                deposits: numberOfPeriods * vestingAmountPerPeriod,
+                of_token: vestingToken,
+                into_account: employer,
+              },
+              then: continuation,
+            },
+          ],
+          timeout: employerDepositDeadline,
+          timeout_continuation: "close",
+        };
+      };
+
+      const contractForPeriod = function (currentPeriod) {
+        // NOTE: Currently this logic presents the withdrawal and cancel for the last period, even though it doesn't make sense
+        // because there is nothing to cancel, and even if the employee does a partial withdrwal, they receive the balance in their account.
+        const continuation =
+          currentPeriod == numberOfPeriods
+            ? "close"
+            : contractForPeriod(currentPeriod + 1);
+        const vestingDate = contractStart + currentPeriod * periodLength;
+        const nextVestingDate = vestingDate + periodLength;
+
+        // On every period, we allow an employee to do a withdrawal.
+        const employeeWithdrawCase = {
+          case: {
+            choose_between: [
+              {
+                from: 1,
+                to: currentPeriod * vestingAmountPerPeriod,
+              },
+            ],
+            for_choice: {
+              choice_name: "withdraw",
+              choice_owner: employee,
+            },
+          },
+          then: {
+            pay: {
+              value_of_choice: {
+                choice_name: "withdraw",
+                choice_owner: employee,
+              },
+            },
+            token: vestingToken,
+            from_account: employee,
+            to: {
+              party: employee,
+            },
+            then: continuation,
+          },
+        };
+
+        const employerCancelCase = {
+          case: {
+            choose_between: [
+              {
+                from: 1,
+                to: 1,
+              },
+            ],
+            for_choice: {
+              choice_name: "cancel",
+              choice_owner: employer,
+            },
+          },
+          then: employerCancel(),
+        };
+
+        // 1) Wait for the vesting period.
+        // 2) Release vested funds
+        // 3) Allow the employee to withdraw or the employer to cancel future vesting periods
+        return {
+          when: [employerCancelCase],
+          timeout: vestingDate,
+          timeout_continuation: {
+            pay: vestingAmountPerPeriod,
+            token: vestingToken,
+            from_account: employer,
+            to: {
+              account: employee,
+            },
+            then: {
+              when:
+                currentPeriod == numberOfPeriods
+                  ? [employeeWithdrawCase]
+                  : [employeeWithdrawCase, employerCancelCase],
+              timeout: nextVestingDate,
+              timeout_continuation: continuation,
+            },
+          },
+        };
+      };
+
+      return employerDepositsFunds(contractForPeriod(1));
+    }
+
+    const now = new Date().valueOf();
+
+    const periodLength = 1000 * 60 * 2; // two minutes
+    const contractStart = now + 1000 * 60 * 2; // Contract starts one minute from now
+    const employerDepositDeadline = now + 1000 * 60 * 3; // Employer deposit deadline one and a half minutes from now
+    const amount = 300;
+    const periods = 3;
+
+    const vesting_contract_example_1 = vestingContract(
+      periods,
+      periodLength,
+      { currency_symbol: "", token_name: "" },
+      amount,
+      contractStart,
+      employerDepositDeadline,
+      { role_token: "Employee" },
+      { role_token: "Employer" }
+    );
+
+    console.log(vesting_contract_example_1);
+
+    console.log(`Contract defined to start at ${new Date(contractStart)}`);
+    console.log(
+      `Contract defined with employer deadline at ${new Date(
+        employerDepositDeadline
+      )}`
+    );
+
+    debugger;
+
+    const runtimeLifeCycle = await Browser.mkRuntimeLifecycle({
+      runtimeURL: "https://marlowe-runtime-preview-web.scdev.aws.iohkdev.io/",
+      walletName: "nami", // choose one with getAvailableWallets
+    });
+
+    console.log("Employer creates contract.");
+    const contractId = await runtimeLifeCycle.contracts.create({
+      contract: vesting_contract_example_1,
+      roles: {
+        Employer: await runtimeLifeCycle.wallet.getChangeAddress(),
+        Employee: await runtimeLifeCycle.wallet.getChangeAddress(),
+      },
+    });
+
+    console.log("Employer injects initial funds.");
+    await runtimeLifeCycle.contracts.applyInputs(contractId, (next) => {
+      return {
+        inputs: [
+          {
+            input_from_party: { role_token: "Employer" },
+            that_deposits: amount * periods,
+            of_token: { currency_symbol: "", token_name: "" },
+            into_account: { role_token: "Employer" },
+          },
+        ],
+      };
+    });
+
+    const payoutTime1 = contractStart + 1 * periodLength;
+    const payoutTime2 = contractStart + 2 * periodLength;
+    const payoutTime3 = contractStart + 3 * periodLength;
+
+    console.log(`1st payout available on: ${new Date(payoutTime1)}`);
+    console.log(`2nd payout available on: ${new Date(payoutTime2)}`);
+    console.log(`3rd payout available on: ${new Date(payoutTime3)}`);
+
+    setTimeout(() => {
+      console.log("1st payout is available!");
+      console.log("Poking contract...");
+      // Doesn't seem to work:
+      runtimeLifeCycle.contracts.applyInputs(contractId, (next) => ({
+        inputs: [],
+      }));
+    }, 5000 + payoutTime1 - Date.now());
+
+    setTimeout(() => {
+      console.log("2nd payout is available!");
+      console.log("Poking contract...");
+      // Doesn't seem to work:
+      runtimeLifeCycle.contracts.applyInputs(contractId, (next) => ({
+        inputs: [],
+      }));
+    }, 5000 + payoutTime2 - Date.now());
+
+    setTimeout(() => {
+      console.log("3rd payout is available!");
+      console.log("Poking contract...");
+      // Doesn't seem to work:
+      runtimeLifeCycle.contracts.applyInputs(contractId, (next) => ({
+        inputs: [],
+      }));
+    }, 5000 + payoutTime3 - Date.now());
+
+    // Invoke in the browser REPL: getAvailablePayouts().then(x => console.log(x))
+    window.getAvailablePayouts = () => runtimeLifeCycle.payouts.available();
+
+    // Employee withdraws
+    // runtimeLifeCycle.payouts.withdraw([]);
+  </script>
+</html>
