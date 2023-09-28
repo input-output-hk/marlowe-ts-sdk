@@ -7,7 +7,7 @@ import {
   inputNotify,
   close,
 } from "@marlowe.io/language-core-v1";
-import { oneNotifyTrue } from "@marlowe.io/language-core-v1/examples";
+import { oneNotifyTrue } from "@marlowe.io/language-examples";
 import { mkFPTSRestClient } from "@marlowe.io/runtime-rest-client/index.js";
 
 import {

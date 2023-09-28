@@ -60,11 +60,6 @@
       "require": "./dist/bundled/cjs/version.cjs",
       "types": "./dist/esm/semantics/version.d.ts"
     },
-    "./examples": {
-      "import": "./dist/esm/examples/index.js",
-      "require": "./dist/bundled/cjs/examples.cjs",
-      "types": "./dist/esm/examples/index.d.ts"
-    },
     "./contract/*": "./dist/esm/semantics/contract/*.js"
   },
   "dependencies": {

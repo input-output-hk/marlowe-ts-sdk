@@ -2,7 +2,7 @@ import { pipe } from "fp-ts/lib/function.js";
 import { addDays } from "date-fns";
 
 import { Next, toInput } from "@marlowe.io/language-core-v1/next";
-import * as Examples from "@marlowe.io/language-core-v1/examples";
+import * as Examples from "@marlowe.io/language-examples";
 import { datetoTimeout, adaValue } from "@marlowe.io/language-core-v1";
 import { mkFPTSRestClient } from "@marlowe.io/runtime-rest-client/index.js";
 import {

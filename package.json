@@ -24,6 +24,7 @@
   "workspaces": [
     "packages/adapter",
     "packages/language/core/v1",
+    "packages/language/examples",
     "packages/token-metadata-client",
     "packages/wallet",
     "packages/runtime/client/rest",
