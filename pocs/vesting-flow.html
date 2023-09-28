@@ -244,7 +244,7 @@
         inputs: [],
       }));
       console.log("... contract has been poked!");
-    }, 1000 + payoutTime1 - Date.now());
+    }, 5000 + payoutTime1 - Date.now());
 
     setTimeout(() => {
       console.log("2nd payout is available!");
@@ -254,7 +254,7 @@
         inputs: [],
       }));
       console.log("... contract has been poked!");
-    }, 1000 + payoutTime2 - Date.now());
+    }, 5000 + payoutTime2 - Date.now());
 
     setTimeout(() => {
       console.log("3rd payout is available!");
@@ -264,7 +264,7 @@
         inputs: [],
       }));
       console.log("... contract has been poked!");
-    }, 1000 + payoutTime3 - Date.now());
+    }, 5000 + payoutTime3 - Date.now());
 
     // Invoke in the browser REPL: getAvailablePayouts().then(x => console.log(x))
     window.getAvailablePayouts = () => runtimeLifeCycle.payouts.available();
@@ -273,4 +273,3 @@
     // runtimeLifeCycle.payouts.withdraw([]);
   </script>
 </html>
-<!-- eFgLZq3lIeScjIIPJl5m -->
