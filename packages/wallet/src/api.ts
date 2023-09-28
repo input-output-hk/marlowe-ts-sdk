@@ -84,7 +84,7 @@ export interface WalletAPI {
    * @experimental
    *
    * @remarks
-   * The {@link @marlowe.io/runtime-core!asset.Token} type here refers to the `runtime-core` type and not the `language-core-v1` {@link @marlowe.io/language-core-v1!semantics/token.Token}.
+   * The {@link @marlowe.io/runtime-core!asset.Token} type here refers to the `runtime-core` type and not the `language-core-v1` {@link @marlowe.io/language-core-v1!token.Token}.
    */
   getTokens(): Promise<Token[]>;
   // DISCUSSION: Should we make this a separate function similar to `getAddressesAndCollaterals`?
