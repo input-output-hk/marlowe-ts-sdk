@@ -3,9 +3,12 @@ import * as t from "io-ts/lib/index.js";
 
 import { ISO8601 } from "@marlowe.io/adapter/time";
 
-import { BuiltinByteString, Input } from "@marlowe.io/language-core-v1";
-import { MarloweState } from "@marlowe.io/language-core-v1/state";
-import { Contract } from "@marlowe.io/language-core-v1";
+import {
+  BuiltinByteString,
+  Input,
+  MarloweState,
+  Contract,
+} from "@marlowe.io/language-core-v1";
 
 import {
   Tags,

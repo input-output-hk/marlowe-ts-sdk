@@ -1,8 +1,6 @@
 /* eslint-disable sort-keys-fix/sort-keys-fix */
 
-import { Contract } from "../semantics/contract/index.js";
-import { close } from "../semantics/contract/close.js";
-import { Timeout } from "../semantics/contract/when/index.js";
+import { Contract, close, Timeout } from "@marlowe.io/language-core-v1";
 
 /**
  * Marlowe Example : A contract with One Step (one true notify)

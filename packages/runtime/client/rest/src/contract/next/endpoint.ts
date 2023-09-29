@@ -5,9 +5,8 @@ import { pipe } from "fp-ts/lib/function.js";
 import * as HTTP from "@marlowe.io/adapter/http";
 import { formatValidationErrors } from "jsonbigint-io-ts-reporters";
 import { ContractId, unContractId } from "@marlowe.io/runtime-core";
-import { Environment } from "@marlowe.io/language-core-v1/environment";
+import { Environment, Party } from "@marlowe.io/language-core-v1";
 import { Next } from "@marlowe.io/language-core-v1/next";
-import { Party } from "@marlowe.io/language-core-v1/semantics/contract/common/payee/party.js";
 import { stringify } from "qs";
 import { DecodingError } from "@marlowe.io/adapter/codec";
 

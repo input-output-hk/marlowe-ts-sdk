@@ -6,6 +6,7 @@
     "paths": {
       "@marlowe.io/adapter/*": ["../../../adapter/src/*"],
       "@marlowe.io/language-core-v1/*": ["../../../language/core/v1/src/*"],
+      "@marlowe.io/language-examples/*": ["../../../language/examples/src/*"],
       "@marlowe.io/wallet/*": ["../../../wallet/src/*"],
       "@marlowe.io/runtime-core/*": ["../../core/src/*"],
       "@marlowe.io/runtime-rest-client/*": ["../../client/rest/src/*"],
@@ -16,6 +17,7 @@
   "references": [
     { "path": "../../../adapter/src" },
     { "path": "../../../language/core/v1/src" },
+    { "path": "../../../language/examples/src" },
     { "path": "../../../wallet/src" },
     { "path": "../../client/rest/src" },
     { "path": "../../core/src" },

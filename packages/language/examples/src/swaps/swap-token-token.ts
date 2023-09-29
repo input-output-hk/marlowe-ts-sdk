@@ -1,8 +1,10 @@
-import { Contract } from "../../semantics/contract/index.js";
-import { close } from "../../semantics/contract/close.js";
-import { role } from "../../semantics/contract/common/payee/party.js";
-import { TokenValue } from "../../semantics/contract/common/tokenValue.js";
-import { Timeout } from "../../semantics/contract/when/index.js";
+import {
+  Contract,
+  close,
+  role,
+  TokenValue,
+  Timeout,
+} from "@marlowe.io/language-core-v1";
 
 /**
  * Marlowe Example : Swap

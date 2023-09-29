@@ -1,10 +1,10 @@
 {
-  "name": "@marlowe.io/runtime-core",
+  "name": "@marlowe.io/language-examples",
   "version": "0.2.0-alpha-3",
-  "description": "Core concepts used throughout the Marlowe Runtime libraries",
+  "description": "Example contracts using language-core-v1",
   "repository": "https://github.com/input-output-hk/marlowe-ts-sdk",
   "publishConfig": {
-    "access": "public"
+    "access": "restricted"
   },
   "contributors": [
     "Nicolas Henin <nicolas.henin@iohk.io> (https://iohk.io)",
@@ -15,7 +15,7 @@
   "scripts": {
     "build": "tsc --build src",
     "clean": "shx rm -rf dist",
-    "test": "echo 'adapter doesnt have tests for the moment'"
+    "test": "echo 'no test defined for marlowe-examples'"
   },
   "type": "module",
   "module": "./dist/esm/index.js",
@@ -27,14 +27,11 @@
   "exports": {
     ".": {
       "import": "./dist/esm/index.js",
-      "require": "./dist/bundled/cjs/runtime-core.cjs",
+      "require": "./dist/bundled/cjs/language-examples.cjs",
       "types": "./dist/esm/index.d.ts"
     }
   },
   "dependencies": {
-    "@marlowe.io/language-core-v1": "0.2.0-alpha-3",
-    "fp-ts": "^2.16.0",
-    "io-ts": "2.2.20",
-    "newtype-ts": "0.3.5"
+    "@marlowe.io/language-core-v1": "0.2.0-alpha-3"
   }
 }
