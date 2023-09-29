@@ -19,7 +19,6 @@ import { initialiseBankAndverifyProvisionning } from "../provisionning.js";
 import console from "console";
 import { unsafeTaskEither } from "@marlowe.io/adapter/fp-ts";
 import { MINUTES } from "@marlowe.io/adapter/time";
-import { Next } from "@marlowe.io/language-core-v1/next";
 
 global.console = console;
 
@@ -33,8 +32,9 @@ describe("Runtime Contract Lifecycle ", () => {
         getBlockfrostContext(),
         getBankPrivateKey()
       );
-      const contractId = await runtime.contracts.create({ contract: close });
-
+      const [contractId, txIdContractCreated] =
+        await runtime.contracts.createContract({ contract: close });
+      await runtime.wallet.waitConfirmation(txIdContractCreated);
       console.log("contractID created", contractId);
     },
     10 * MINUTES
@@ -49,12 +49,20 @@ describe("Runtime Contract Lifecycle ", () => {
           getBankPrivateKey()
         );
         const notifyTimeout = pipe(addDays(Date.now(), 1), datetoTimeout);
-        const contractId = await runtime.contracts.create({
-          contract: oneNotifyTrue(notifyTimeout),
-        });
-        await runtime.contracts.applyInputs(contractId, (_next: Next) => ({
-          inputs: [inputNotify],
-        }));
+        const [contractId, txIdContractCreated] =
+          await runtime.contracts.createContract({
+            contract: oneNotifyTrue(notifyTimeout),
+          });
+        await runtime.wallet.waitConfirmation(txIdContractCreated);
+
+        const txIdInputsApplied = await runtime.contracts.applyInputs(
+          contractId,
+          {
+            inputs: [inputNotify],
+          }
+        );
+        await runtime.wallet.waitConfirmation(txIdInputsApplied);
+
         const result = await unsafeTaskEither(
           restClient.contracts.contract.transactions.getHeadersByRange(
             contractId,

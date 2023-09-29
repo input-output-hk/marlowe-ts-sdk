@@ -1,8 +1,10 @@
 import { pipe } from "fp-ts/lib/function.js";
 import { addDays } from "date-fns";
 
-import { Next, toInput } from "@marlowe.io/language-core-v1/next";
+
+import { toInput } from "@marlowe.io/language-core-v1/next";
 import * as Examples from "@marlowe.io/language-examples";
+
 import { datetoTimeout, adaValue } from "@marlowe.io/language-core-v1";
 import { mkFPTSRestClient } from "@marlowe.io/runtime-rest-client/index.js";
 import {
@@ -51,27 +53,43 @@ describe("swap", () => {
         },
       };
       const swapContract = Examples.SwapADAToken.mkSwapContract(swapRequest);
-      const contractId = await runtime(adaProvider).contracts.create({
+
+      // Creation of the Contract
+      const [contractId, txIdContractCreated] = await runtime(
+        adaProvider
+      ).contracts.createContract({
         contract: swapContract,
         roles: {
           [swapRequest.provider.roleName]: adaProvider.address,
           [swapRequest.swapper.roleName]: tokenProvider.address,
         },
       });
-      // see [[apply-inputs-next-provider]]
-      await runtime(adaProvider).contracts.applyInputs(
-        contractId,
-        (next: Next) => ({
-          inputs: [pipe(next.applicable_inputs.deposits[0], toInput)],
-        })
-      );
-      await runtime(tokenProvider).contracts.applyInputs(
-        contractId,
-        (next: Next) => ({
-          inputs: [pipe(next.applicable_inputs.deposits[0], toInput)],
-        })
+      await runtime(adaProvider).wallet.waitConfirmation(txIdContractCreated);
+      // Applying the first Deposit
+      let next = await runtime(
+        adaProvider
+      ).contracts.getNextApplicabilityAndReducibility(contractId);
+      const txFirstTokensDeposited = await runtime(
+        adaProvider
+      ).contracts.applyInputs(contractId, {
+        inputs: [pipe(next.applicable_inputs.deposits[0], toInput)],
+      });
+      await runtime(adaProvider).wallet.waitConfirmation(
+        txFirstTokensDeposited
       );
 
+      // Applying the second Deposit
+      next = await runtime(
+        tokenProvider
+      ).contracts.getNextApplicabilityAndReducibility(contractId);
+      await runtime(tokenProvider).contracts.applyInputs(contractId, {
+        inputs: [pipe(next.applicable_inputs.deposits[0], toInput)],
+      });
+      await runtime(tokenProvider).wallet.waitConfirmation(
+        txFirstTokensDeposited
+      );
+
+      // Retrieving Payouts
       const adaProviderAvalaiblePayouts = await runtime(
         adaProvider
       ).payouts.available(onlyByContractIds([contractId]));

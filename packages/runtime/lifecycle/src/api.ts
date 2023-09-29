@@ -27,9 +27,7 @@ export type RuntimeLifecycle = {
  */
 export type ContractsDI = WalletDI & RestDI;
 
-export type ProvideInput = (next: Next) => ApplyInputsRequest;
-
-export type CreateRequest = {
+export type CreateContractRequest = {
   contract: Contract;
   roles?: RolesConfig;
   tags?: Tags;
@@ -50,64 +48,35 @@ export type ApplyInputsRequest = {
 export interface ContractsAPI {
   /**
    * Submit to the Cardano Ledger, the Transaction(Tx) that will create the Marlowe Contract passed in the request.
-   * @param request Request parameters for creating a Marlowe Contract on Cardano
+   * @param createContractRequest Request parameters for creating a Marlowe Contract on Cardano
    * @throws DecodingError
    */
-  submitCreateTx(request: CreateRequest): Promise<[ContractId, TxId]>;
+  createContract(
+    createContractRequest: CreateContractRequest
+  ): Promise<[ContractId, TxId]>;
 
   /**
-   * @experimental
-   * Submit to the Cardano Ledger & Wait Confirmation, the Transaction(Tx) that will create the Marlowe Contract passed in the request.
-   * It's higher level capabilities compared to `submitCreateTx`.
-   * It combines `submitCreateTx` & waitConfirmation for you to abstract Cardano infrastructure concerns.
-   * @param request Request parameters for creating a Marlowe Contract on Cardano
-   * @throws DecodingError
-   */
-  create(request: CreateRequest): Promise<ContractId>;
-
-  /**
-   * Submit to the Cardano Ledger, the Transaction(Tx) that will apply inputs to a given created contract (see `submitCreateTx`).
-   * It's lower level version of `applyInputs`.
+   * Submit to the Cardano Ledger, the Transaction(Tx) that will apply inputs to a given created contract.
    * @param contractId Contract Id where inputs will be applied
-   * @param inputsRequest inputs to apply
-   * @throws DecodingError
-   */
-  submitApplyInputsTx(
-    contractId: ContractId,
-    inputsRequest: ApplyInputsRequest
-  ): Promise<TxId>;
-
-  /**
-   * Provide Applicable Inputs and Reducibility Information for a given contract for the connected wallet.
-   * @param contractId Contract Id of a created contract
-   * @throws DecodingError
-   */
-  getNext(contractId: ContractId): Promise<Next>;
-
-  /**
-   * @experimental
-   * Submit to the Cardano Ledger & Wait Confirmation, the Transaction(Tx) that will apply inputs to a given created contract (see `create`).
-   * It's higher level version of `submitApplyInputsTx`.
-   * It combines `submitApplyInputsTx`, `getNext` & waitConfirmation for you to abstract Cardano infrastructure concerns
-   * and gives you the ability to describe the execution of a Marlowe Contract in a more declarative way.
-   * @param contractId Contract Id where inputs will be applied
-   * @param provideInput It's a function to provide where the current `Next` of the given `contractId` is feeded
-   *                     and some applicable inputs needs to be returned.
+   * @param applyInputsRequest inputs to apply
    * @throws DecodingError
    */
   applyInputs(
     contractId: ContractId,
-    provideInput: ProvideInput
+    applyInputsRequest: ApplyInputsRequest
   ): Promise<TxId>;
 
   /**
-   * Waits for a transaction to be confirmed.
    * @experimental
-   * @param txId the transaction hash/id to wait for confirmation
-   * @returns true if the transaction is confirmed, false otherwise
+   * Provide Applicability and Reducibility Information moving forward for a given contract connected to a wallet.
+   * @description
+   *  This piece of information should help you :
+   *  - 1) Deciding which inputs to provide for the current state of the given contract
+   *  - 2) Constructing the inputs to apply for a given contract
+   * @param contractId Contract Id of a created contract
+   * @throws DecodingError
    */
-
-  waitConfirmation(txId: TxId): Promise<boolean>;
+  getNextApplicabilityAndReducibility(contractId: ContractId): Promise<Next>;
 }
 export type PayoutsDI = WalletDI & RestDI;
 

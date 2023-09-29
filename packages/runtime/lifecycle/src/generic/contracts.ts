@@ -7,8 +7,7 @@ import {
   ApplyInputsRequest,
   ContractsAPI,
   ContractsDI,
-  CreateRequest,
-  ProvideInput,
+  CreateContractRequest,
 } from "../api.js";
 
 import { getAddressesAndCollaterals, WalletAPI } from "@marlowe.io/wallet/api";
@@ -34,39 +33,35 @@ export function mkContractLifecycle(
 ): ContractsAPI {
   const di = { wallet, rest };
   return {
-    submitCreateTx: submitCreateTx(di),
-    create: create(di),
-    submitApplyInputsTx: submitApplyInputsTx(di),
-    getNext: getNext(di),
-    applyInputs: applyInputs(di),
-    waitConfirmation: wallet.waitConfirmation,
+    createContract: submitCreateTx(di),
+    applyInputs: submitApplyInputsTx(di),
+    getNextApplicabilityAndReducibility:
+      getNextApplicabilityAndReducibility(di),
   };
 }
 
 const submitCreateTx =
   ({ wallet, rest }: ContractsDI) =>
-  (req: CreateRequest): Promise<[ContractId, TxId]> => {
-    return unsafeTaskEither(submitCreateTxFpTs(rest)(wallet)(req));
-  };
-
-const create =
-  ({ wallet, rest }: ContractsDI) =>
-  (req: CreateRequest): Promise<ContractId> => {
-    return unsafeTaskEither(createContractFpTs(rest)(wallet)(req));
+  (
+    createContractRequest: CreateContractRequest
+  ): Promise<[ContractId, TxId]> => {
+    return unsafeTaskEither(
+      submitCreateTxFpTs(rest)(wallet)(createContractRequest)
+    );
   };
 
 const submitApplyInputsTx =
   ({ wallet, rest }: ContractsDI) =>
   async (
     contractId: ContractId,
-    request: ApplyInputsRequest
+    applyInputsRequest: ApplyInputsRequest
   ): Promise<TxId> => {
     return unsafeTaskEither(
-      submitApplyInputsTxFpTs(rest)(wallet)(contractId)(request)
+      submitApplyInputsTxFpTs(rest)(wallet)(contractId)(applyInputsRequest)
     );
   };
 
-const getNext =
+const getNextApplicabilityAndReducibility =
   ({ wallet, rest }: ContractsDI) =>
   async (contractId: ContractId): Promise<Next> => {
     const contractDetails = await unsafeTaskEither(
@@ -81,15 +76,6 @@ const getNext =
           pipe(Date.now(), (date) => addMinutes(date, 15))
         )
       )(parties)
-    );
-  };
-
-const applyInputs =
-  ({ wallet, rest }: ContractsDI) =>
-  async (contractId: ContractId, provideInput: ProvideInput): Promise<TxId> => {
-    const next = await getNext({ wallet, rest })(contractId);
-    return unsafeTaskEither(
-      applyInputsFpTs(rest)(wallet)(contractId)(provideInput(next))
     );
   };
 
@@ -118,21 +104,23 @@ export const submitCreateTxFpTs: (
 ) => (
   wallet: WalletAPI
 ) => (
-  payload: CreateRequest
+  createContractRequest: CreateContractRequest
 ) => TE.TaskEither<Error | DecodingError, [ContractId, TxId]> =
-  (client) => (wallet) => (request) =>
+  (client) => (wallet) => (createContractRequest) =>
     pipe(
       tryCatchDefault(() => getAddressesAndCollaterals(wallet)),
       TE.chain((addressesAndCollaterals) =>
         client.contracts.post(
           {
-            contract: request.contract,
+            contract: createContractRequest.contract,
             version: "v1",
-            roles: request.roles,
-            tags: request.tags ? request.tags : {},
-            metadata: request.metadata ? request.metadata : {},
-            minUTxODeposit: request.minUTxODeposit
-              ? request.minUTxODeposit
+            roles: createContractRequest.roles,
+            tags: createContractRequest.tags ? createContractRequest.tags : {},
+            metadata: createContractRequest.metadata
+              ? createContractRequest.metadata
+              : {},
+            minUTxODeposit: createContractRequest.minUTxODeposit
+              ? createContractRequest.minUTxODeposit
               : 3_000_000,
           },
           addressesAndCollaterals
@@ -158,11 +146,11 @@ export const createContractFpTs: (
 ) => (
   wallet: WalletAPI
 ) => (
-  payload: CreateRequest
+  createContractRequest: CreateContractRequest
 ) => TE.TaskEither<Error | DecodingError, ContractId> =
-  (client) => (wallet) => (request) =>
+  (client) => (wallet) => (createContractRequest) =>
     pipe(
-      submitCreateTxFpTs(client)(wallet)(request),
+      submitCreateTxFpTs(client)(wallet)(createContractRequest),
       TE.chainW(([contractId, txId]) =>
         tryCatchDefault(() =>
           wallet.waitConfirmation(txId).then((_) => contractId)
@@ -177,21 +165,23 @@ export const submitApplyInputsTxFpTs: (
 ) => (
   contractId: ContractId
 ) => (
-  payload: ApplyInputsRequest
+  applyInputsRequest: ApplyInputsRequest
 ) => TE.TaskEither<Error | DecodingError, TxId> =
-  (client) => (wallet) => (contractId) => (payload) =>
+  (client) => (wallet) => (contractId) => (applyInputsRequest) =>
     pipe(
       tryCatchDefault(() => getAddressesAndCollaterals(wallet)),
       TE.chain((addressesAndCollaterals: AddressesAndCollaterals) =>
         client.contracts.contract.transactions.post(
           contractId,
           {
-            inputs: payload.inputs,
+            inputs: applyInputsRequest.inputs,
             version: "v1",
-            tags: payload.tags ? payload.tags : {},
-            metadata: payload.metadata ? payload.metadata : {},
-            invalidBefore: payload.invalidBefore,
-            invalidHereafter: payload.invalidHereafter,
+            tags: applyInputsRequest.tags ? applyInputsRequest.tags : {},
+            metadata: applyInputsRequest.metadata
+              ? applyInputsRequest.metadata
+              : {},
+            invalidBefore: applyInputsRequest.invalidBefore,
+            invalidHereafter: applyInputsRequest.invalidHereafter,
           },
           addressesAndCollaterals
         )
@@ -220,11 +210,11 @@ export const applyInputsFpTs: (
 ) => (
   contractId: ContractId
 ) => (
-  payload: ApplyInputsRequest
+  applyInputsRequest: ApplyInputsRequest
 ) => TE.TaskEither<Error | DecodingError, TxId> =
-  (client) => (wallet) => (contractId) => (request) =>
+  (client) => (wallet) => (contractId) => (applyInputsRequest) =>
     pipe(
-      submitApplyInputsTxFpTs(client)(wallet)(contractId)(request),
+      submitApplyInputsTxFpTs(client)(wallet)(contractId)(applyInputsRequest),
       TE.chainW((txId) =>
         tryCatchDefault(() => wallet.waitConfirmation(txId).then((_) => txId))
       )
