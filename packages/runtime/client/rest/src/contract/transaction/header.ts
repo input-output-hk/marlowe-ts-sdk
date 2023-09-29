@@ -1,7 +1,7 @@
 import * as t from "io-ts/lib/index.js";
 import { optionFromNullable } from "io-ts-types";
 
-import { BuiltinByteString } from "@marlowe.io/language-core-v1";
+import * as G from "@marlowe.io/language-core-v1/guards";
 import {
   Tags,
   Metadata,
@@ -32,7 +32,7 @@ export const TxHeader = t.type({
    */
   contractId: ContractId,
   transactionId: TxId,
-  continuations: optionFromNullable(BuiltinByteString),
+  continuations: optionFromNullable(G.BuiltinByteString),
   tags: Tags,
   metadata: Metadata,
   status: TxStatus,

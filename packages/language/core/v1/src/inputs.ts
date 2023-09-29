@@ -1,49 +1,145 @@
 import * as t from "io-ts/lib/index.js";
-import { Contract } from "./contract.js";
-import { ChoiceId } from "./value-and-observation.js";
-import { Party } from "./participants.js";
-import { AccountId } from "./payee.js";
-import { Token } from "./token.js";
+import { ContractGuard } from "./contract.js";
+import {
+  ChoiceId,
+  ChoiceIdGuard,
+  ChosenNum,
+  ChosenNumGuard,
+} from "./choices.js";
+import { Party, PartyGuard } from "./participants.js";
+import { AccountId, AccountIdGuard } from "./payee.js";
+import { Token, TokenGuard } from "./token.js";
 
-export type ChosenNum = t.TypeOf<typeof ChosenNum>;
-export const ChosenNum = t.bigint;
+/**
+ * TODO: Comment
+ * @see Section 2.1.6 and appendix E.11 of the {@link https://github.com/input-output-hk/marlowe/releases/download/v3/Marlowe.pdf | Marlowe spec}
+ * @category Input
+ */
+export interface IChoice {
+  for_choice_id: ChoiceId;
+  input_that_chooses_num: ChosenNum;
+}
 
-export type InputChoice = t.TypeOf<typeof InputChoice>;
-export const InputChoice = t.type({
-  for_choice_id: ChoiceId,
-  input_that_chooses_num: ChosenNum,
+/**
+ * TODO: Comment
+ * @see Section 2.1.6 and appendix E.11 of the {@link https://github.com/input-output-hk/marlowe/releases/download/v3/Marlowe.pdf | Marlowe spec}
+ * @category Input
+ */
+export const IChoiceGuard: t.Type<IChoice> = t.type({
+  for_choice_id: ChoiceIdGuard,
+  input_that_chooses_num: ChosenNumGuard,
 });
 
-export type InputDeposit = t.TypeOf<typeof InputDeposit>;
-export const InputDeposit = t.type({
-  input_from_party: Party,
+/**
+ * TODO: Comment
+ * @see Section 2.1.6 and appendix E.11 of the {@link https://github.com/input-output-hk/marlowe/releases/download/v3/Marlowe.pdf | Marlowe spec}
+ * @category Input
+ */
+export interface IDeposit {
+  input_from_party: Party;
+  that_deposits: bigint;
+  of_token: Token;
+  into_account: AccountId;
+}
+
+/**
+ * TODO: Comment
+ * @see Section 2.1.6 and appendix E.11 of the {@link https://github.com/input-output-hk/marlowe/releases/download/v3/Marlowe.pdf | Marlowe spec}
+ * @category Input
+ */
+export const IDepositGuard = t.type({
+  input_from_party: PartyGuard,
   that_deposits: t.bigint,
-  of_token: Token,
-  into_account: AccountId,
+  of_token: TokenGuard,
+  into_account: AccountIdGuard,
 });
 
+/**
+ * Search [[lower-name-builders]]
+ * @hidden
+ */
 export const inputNotify = "input_notify";
-export type InputNotify = t.TypeOf<typeof InputNotify>;
-export const InputNotify = t.literal("input_notify");
+
+/**
+ * TODO: Comment
+ * @see Section 2.1.6 and appendix E.11 of the {@link https://github.com/input-output-hk/marlowe/releases/download/v3/Marlowe.pdf | Marlowe spec}
+ * @category Input
+ */
+export type INotify = "input_notify";
+
+/**
+ * TODO: Comment
+ * @see Section 2.1.6 and appendix E.11 of the {@link https://github.com/input-output-hk/marlowe/releases/download/v3/Marlowe.pdf | Marlowe spec}
+ * @category Input
+ */
+export const INotifyGuard: t.Type<INotify> = t.literal("input_notify");
 
 // Maybe this should be a newtype
-export type BuiltinByteString = t.TypeOf<typeof BuiltinByteString>;
-export const BuiltinByteString = t.string;
+/**
+ * TODO: Comment
+ * @category Input
+ */
+export type BuiltinByteString = string;
 
-export type InputContent = t.TypeOf<typeof InputContent>;
-export const InputContent = t.union([InputDeposit, InputChoice, InputNotify]);
+/**
+ * TODO: Comment
+ * @category Input
+ */
+export const BuiltinByteStringGuard: t.Type<BuiltinByteString> = t.string;
+/**
+ * TODO: Comment
+ * @category Input
+ */
+export type InputContent = IDeposit | IChoice | INotify;
+/**
+ * TODO: Comment
+ * @category Input
+ */
+export const InputContentGuard: t.Type<InputContent> = t.union([
+  IDepositGuard,
+  IChoiceGuard,
+  INotifyGuard,
+]);
 
-export type NormalInput = t.TypeOf<typeof NormalInput>;
-export const NormalInput = InputContent;
+/**
+ * TODO: Comment
+ * @category Input
+ */
+export type NormalInput = InputContent;
 
-export type MerkleizedInput = t.TypeOf<typeof MerkleizedInput>;
-export const MerkleizedInput = t.intersection([
-  InputContent,
+/**
+ * TODO: Comment
+ * @category Input
+ */
+export const NormalInputGuard = InputContentGuard;
+
+/**
+ * TODO: Revisit
+ * @category Input
+ */
+export type MerkleizedInput = t.TypeOf<typeof MerkleizedInputGuard>;
+/**
+ * TODO: Revisit
+ * @category Input
+ */
+export const MerkleizedInputGuard = t.intersection([
+  InputContentGuard,
   t.partial({
-    continuation_hash: BuiltinByteString,
-    merkleized_continuation: Contract,
+    continuation_hash: BuiltinByteStringGuard,
+    merkleized_continuation: ContractGuard,
   }),
 ]);
 
-export type Input = t.TypeOf<typeof Input>;
-export const Input = t.union([NormalInput, MerkleizedInput]);
+/**
+ * TODO: Revisit
+ * @category Input
+ */
+export type Input = NormalInput | MerkleizedInput;
+/**
+ * TODO: Revisit
+ * @category Input
+ */
+export const InputGuard: t.Type<Input> = t.union([
+  NormalInputGuard,
+  MerkleizedInputGuard,
+]);

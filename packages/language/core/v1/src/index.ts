@@ -1,34 +1,89 @@
-// TODO: REVISIT
+/**
+ * TODO: comment
+   ```
+  import {Value, Contract} from "@marlowe/language-core-v1"
+  const four: Value = { add: 2n, and: 2n};
+  const contract: Contract = {
+    "when": [
+      {
+        "then": "close",
+        "case": {
+          "party": { "role_token": "Bob" },
+          "of_token": { "token_name": "", "currency_symbol": "" },
+          "into_account": { "role_token": "Alice" },
+          "deposits": 1n
+        }
+      }
+    ],
+    "timeout_continuation": "close",
+    "timeout": 1696345114737n
+  }
+  ```
+ * @packageDocumentation
+ */
 
+export { Action, Deposit, Notify, Choice } from "./actions.js";
+export { ChoiceName, ChoiceId, Bound } from "./choices.js";
 export {
-  Contract,
-  Case,
-  Assert,
   Close,
-  close,
+  Pay,
   If,
   Let,
-  Pay,
+  Assert,
+  Contract,
   When,
+  Case,
+  close,
   datetoTimeout,
-  timeoutToDate,
   Timeout,
 } from "./contract.js";
-export { role, Party } from "./participants.js";
-export { Action } from "./actions.js";
-export { inputNotify } from "./inputs.js";
-export { Input, BuiltinByteString } from "./inputs.js";
-export { Value } from "./value-and-observation.js";
-export { Accounts } from "./state.js";
+export { Environment, mkEnvironment, TimeInterval } from "./environment.js";
+
 export {
-  Token,
-  TokenName,
-  tokenToString,
-  token,
-  adaToken,
-  lovelaceToken,
-} from "./token.js";
+  Input,
+  IDeposit,
+  IChoice,
+  INotify,
+  BuiltinByteString,
+  inputNotify,
+  InputContent,
+  NormalInput,
+  MerkleizedInput,
+} from "./inputs.js";
+
+export { role, Party, Address, Role } from "./participants.js";
+
+export { Payee, PayeeAccount, PayeeParty, AccountId } from "./payee.js";
+
+export { Token, TokenName, tokenToString, token } from "./token.js";
+
+export { MarloweState } from "./state.js";
+
+export {
+  Value,
+  AvailableMoney,
+  Constant,
+  NegValue,
+  AddValue,
+  SubValue,
+  MulValue,
+  DivValue,
+  ChoiceValue,
+  TimeIntervalStart,
+  TimeIntervalEnd,
+  UseValue,
+  Cond,
+  Observation,
+  AndObs,
+  OrObs,
+  NotObs,
+  ChoseSomething,
+  ValueEQ,
+  ValueGT,
+  ValueGE,
+  ValueLT,
+  ValueLE,
+} from "./value-and-observation.js";
+
 export { TokenValue, tokenValue, adaValue } from "./tokenValue.js";
 export { PolicyId } from "./policyId.js";
-export { MarloweState } from "./state.js";
-export { Environment, mkEnvironment } from "./environment.js";

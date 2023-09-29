@@ -1,6 +1,7 @@
 import { optionFromNullable } from "io-ts-types";
 import * as t from "io-ts/lib/index.js";
 import { Contract, MarloweState } from "@marlowe.io/language-core-v1";
+import * as G from "@marlowe.io/language-core-v1/guards";
 import { MarloweVersion } from "@marlowe.io/language-core-v1/version";
 import { ContractId } from "@marlowe.io/runtime-core";
 
@@ -56,9 +57,9 @@ export const ContractDetails = t.type({
   status: TxStatus,
   block: optionFromNullable(BlockHeader),
   metadata: Metadata,
-  initialContract: Contract,
-  currentContract: optionFromNullable(Contract), // 3 actions
-  state: optionFromNullable(MarloweState),
+  initialContract: G.Contract,
+  currentContract: optionFromNullable(G.Contract), // 3 actions
+  state: optionFromNullable(G.MarloweState),
   txBody: optionFromNullable(TextEnvelope),
   utxo: optionFromNullable(TxOutRef),
   unclaimedPayouts: t.array(Payout),
