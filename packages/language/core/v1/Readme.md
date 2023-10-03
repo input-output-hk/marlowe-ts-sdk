@@ -1,12 +1,14 @@
 # Description
 
-This package contains code to work with the version 1 of Marlowe Core.
+This package contains code to work with the version 1 of Marlowe Core. It exports three modules:
 
-TODO: PLT-7500 create compatibility API to work with the Playgrounds interface.
+- @{@link index | marlowe.io/language-core-v1} - Exports static types (TypeScript only) for the JSON schema as specified in the Appendix E of the {@link https://github.com/input-output-hk/marlowe/releases/download/v3/Marlowe.pdf | Marlowe specification}
+- @{@link guards | marlowe.io/language-core-v1/guards} - Exports {@link !io-ts-usage | Dynamic type guards} (both JavaScript and TypeScript) for the same schema. These are used to validate the JSON objects at runtime.
+- @{@link next | marlowe.io/language-core-v1/next} - Exports types to ask for _next_ applicable inputs for a Marlowe Contract.
 
 ## Getting started
 
-The `@marlowe.io/language-core-v1` package is [released as an ESM module](https://github.com/input-output-hk/marlowe-ts-sdk/blob/main/doc/modules-system.md) and can be used with a modern bundler or imported directly in the browser (without any bundler) as long as you use an import map.
+This package is [released as an ESM module](https://github.com/input-output-hk/marlowe-ts-sdk/blob/main/doc/modules-system.md) and can be used with a modern bundler or imported directly in the browser (without any bundler) as long as you use an import map.
 
 ### Browser
 
@@ -15,9 +17,14 @@ The `@marlowe.io/language-core-v1` package is [released as an ESM module](https:
   <body>
     <script src="https://cdn.jsdelivr.net/gh/input-output-hk/marlowe-ts-sdk/jsdelivr-npm-importmap.js"></script>
     <script type="module">
-      import * as C from "@marlowe.io/language-core-v1";
-      console.log("TODO", C);
-      debugger;
+      import { Contract } from "@marlowe.io/language-core-v1/guards";
+      const jsonObject = JSON.parse(httpResponse);
+
+      if (Contract.is(jsonObject)) {
+        // The jsonObject respects the JSON schema for Contract
+      } else {
+        // The jsonObject does not respect the JSON schema for Contract
+      }
     </script>
   </body>
 </html>

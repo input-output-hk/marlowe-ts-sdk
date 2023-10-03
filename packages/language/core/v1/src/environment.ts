@@ -13,7 +13,7 @@ export const mkEnvironment =
 
 /**
  * TODO: Comment
- * @see Appendix E.16 of the {@link https://github.com/input-output-hk/marlowe/releases/download/v3/Marlowe.pdf | Marlowe spec}
+ * @see Appendix E.16 of the {@link https://github.com/input-output-hk/marlowe/releases/download/v3/Marlowe.pdf | Marlowe specification}
  * @category Environment
  */
 export interface TimeInterval {
@@ -23,7 +23,7 @@ export interface TimeInterval {
 
 /**
  * TODO: Comment
- * @see Appendix E.16 of the {@link https://github.com/input-output-hk/marlowe/releases/download/v3/Marlowe.pdf | Marlowe spec}
+ * @see Appendix E.16 of the {@link https://github.com/input-output-hk/marlowe/releases/download/v3/Marlowe.pdf | Marlowe specification}
  * @category Environment
  */
 export const TimeIntervalGuard: t.Type<TimeInterval> = t.type({
@@ -33,7 +33,7 @@ export const TimeIntervalGuard: t.Type<TimeInterval> = t.type({
 
 /**
  * TODO: Comment
- * @see Section 2.1.10 and appendix E.22 of the {@link https://github.com/input-output-hk/marlowe/releases/download/v3/Marlowe.pdf | Marlowe spec}
+ * @see Section 2.1.10 and appendix E.22 of the {@link https://github.com/input-output-hk/marlowe/releases/download/v3/Marlowe.pdf | Marlowe specification}
  * @category Environment
  */
 export interface Environment {
@@ -42,7 +42,7 @@ export interface Environment {
 
 /**
  * TODO: Comment
- * @see Section 2.1.10 and appendix E.22 of the {@link https://github.com/input-output-hk/marlowe/releases/download/v3/Marlowe.pdf | Marlowe spec}
+ * @see Section 2.1.10 and appendix E.22 of the {@link https://github.com/input-output-hk/marlowe/releases/download/v3/Marlowe.pdf | Marlowe specification}
  * @category Environment
  */
 export const EnvironmentGuard: t.Type<Environment> = t.type({

@@ -1,11 +1,13 @@
 /**
-  * This module offers dynamic type guards for the different types of this package.
+  * This module offers {@link !io-ts-usage | dynamic type guards} for the for the JSON schema as specified in the Appendix E of the {@link https://github.com/input-output-hk/marlowe/releases/download/v3/Marlowe.pdf | Marlowe specification}.
   ```
   import * as G from "@marlowe/language-core-v1/guards"
+  const jsonObject = JSON.parse(fileContents)
+
   if (G.Contract.is(jsonObject)) {
-    // The jsonObject is a correct Contract
+    // The jsonObject respects the JSON schema for Contract
   } else {
-    // The jsonObject is not a correct Contract
+    // The jsonObject does not respect the JSON schema for Contract
   }
   ```
   @packageDocumentation
