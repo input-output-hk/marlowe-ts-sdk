@@ -67,7 +67,10 @@ export {
   AccountIdGuard as AccountId,
 } from "./payee.js";
 
-export { MarloweStateGuard as MarloweState } from "./state.js";
+export {
+  MarloweStateGuard as MarloweState,
+  AccountsGuard as Accounts,
+} from "./state.js";
 
 export { TokenGuard as Token, TokenNameGuard as TokenName } from "./token.js";
 

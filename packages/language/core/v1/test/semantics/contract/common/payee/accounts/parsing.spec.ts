@@ -6,7 +6,7 @@ import { formatValidationErrors } from "jsonbigint-io-ts-reporters";
 import * as path from "path";
 import { MarloweJSONCodec, minify } from "@marlowe.io/adapter/codec";
 import { fileURLToPath } from "url";
-import { Accounts } from "@marlowe.io/language-core-v1";
+import { Accounts } from "@marlowe.io/language-core-v1/guards";
 import { getFileContents } from "@marlowe.io/adapter/file";
 
 const getfilename = () => fileURLToPath(import.meta.url);

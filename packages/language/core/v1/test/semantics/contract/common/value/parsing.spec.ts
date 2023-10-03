@@ -3,7 +3,7 @@ import * as E from "fp-ts/lib/Either.js";
 
 import { pipe } from "fp-ts/lib/function.js";
 import { formatValidationErrors } from "jsonbigint-io-ts-reporters";
-import { Value } from "@marlowe.io/language-core-v1";
+import { Value } from "@marlowe.io/language-core-v1/guards";
 import * as path from "path";
 import { MarloweJSONCodec, minify } from "@marlowe.io/adapter/codec";
 import { fileURLToPath } from "url";
