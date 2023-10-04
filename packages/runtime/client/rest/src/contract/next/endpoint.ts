@@ -21,7 +21,7 @@ export const getViaAxios: (axiosInstance: AxiosInstance) => GET =
     pipe(
       HTTP.Get(axiosInstance)(
         contractNextEndpoint(contractId) +
-          `?validityStart=${environment.validityStart}&validityEnd=${environment.validityEnd}` +
+          `?validityStart=${environment.validityStart}&validityEnd=${environment.validityEnd}&` +
           stringify({ party: parties }, { indices: false }),
         {
           headers: {

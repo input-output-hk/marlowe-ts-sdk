@@ -1,7 +1,10 @@
 import * as TE from "fp-ts/lib/TaskEither.js";
 import { pipe } from "fp-ts/lib/function.js";
-import { mkEnvironment, Party } from "@marlowe.io/language-core-v1";
-import { addMinutes, subMinutes } from "date-fns";
+import {
+  Environment,
+  mkEnvironment,
+  Party,
+} from "@marlowe.io/language-core-v1";
 import { tryCatchDefault, unsafeTaskEither } from "@marlowe.io/adapter/fp-ts";
 import {
   ApplyInputsRequest,
@@ -25,7 +28,8 @@ import {
 import { FPTSRestAPI } from "@marlowe.io/runtime-rest-client";
 import { DecodingError } from "@marlowe.io/adapter/codec";
 import { TransactionTextEnvelope } from "@marlowe.io/runtime-rest-client/contract/transaction/endpoints/collection";
-import { Next } from "@marlowe.io/language-core-v1/next";
+import { Next, noNext } from "@marlowe.io/language-core-v1/next";
+import { isNone } from "fp-ts/lib/Option.js";
 
 export function mkContractLifecycle(
   wallet: WalletAPI,
@@ -63,20 +67,20 @@ const submitApplyInputsTx =
 
 const getNextApplicabilityAndReducibility =
   ({ wallet, rest }: ContractsDI) =>
-  async (contractId: ContractId): Promise<Next> => {
+  async (contractId: ContractId, environement: Environment): Promise<Next> => {
     const contractDetails = await unsafeTaskEither(
       rest.contracts.contract.get(contractId)
     );
-    const parties = await getParties(wallet)(
-      contractDetails.roleTokenMintingPolicyId
-    );
-    return await unsafeTaskEither(
-      rest.contracts.contract.next(contractId)(
-        mkEnvironment(pipe(Date.now(), (date) => subMinutes(date, 15)))(
-          pipe(Date.now(), (date) => addMinutes(date, 15))
-        )
-      )(parties)
-    );
+    if (isNone(contractDetails.currentContract)) {
+      return noNext;
+    } else {
+      const parties = await getParties(wallet)(
+        contractDetails.roleTokenMintingPolicyId
+      );
+      return await unsafeTaskEither(
+        rest.contracts.contract.next(contractId)(environement)(parties)
+      );
+    }
   };
 
 const getParties: (

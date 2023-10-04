@@ -2,6 +2,7 @@
 
 export {
   Contract,
+  Case,
   Assert,
   Close,
   close,
@@ -10,6 +11,7 @@ export {
   Pay,
   When,
   datetoTimeout,
+  timeoutToDate,
   Timeout,
 } from "./contract.js";
 export { role, Party } from "./participants.js";

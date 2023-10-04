@@ -1,8 +1,7 @@
 import { pipe } from "fp-ts/lib/function.js";
 import { addDays } from "date-fns";
 
-
-import { toInput } from "@marlowe.io/language-core-v1/next";
+import { Deposit } from "@marlowe.io/language-core-v1/next";
 import * as Examples from "@marlowe.io/language-examples";
 
 import { datetoTimeout, adaValue } from "@marlowe.io/language-core-v1";
@@ -72,7 +71,7 @@ describe("swap", () => {
       const txFirstTokensDeposited = await runtime(
         adaProvider
       ).contracts.applyInputs(contractId, {
-        inputs: [pipe(next.applicable_inputs.deposits[0], toInput)],
+        inputs: [pipe(next.applicable_inputs.deposits[0], Deposit.toInput)],
       });
       await runtime(adaProvider).wallet.waitConfirmation(
         txFirstTokensDeposited
@@ -83,7 +82,7 @@ describe("swap", () => {
         tokenProvider
       ).contracts.getNextApplicabilityAndReducibility(contractId);
       await runtime(tokenProvider).contracts.applyInputs(contractId, {
-        inputs: [pipe(next.applicable_inputs.deposits[0], toInput)],
+        inputs: [pipe(next.applicable_inputs.deposits[0], Deposit.toInput)],
       });
       await runtime(tokenProvider).wallet.waitConfirmation(
         txFirstTokensDeposited

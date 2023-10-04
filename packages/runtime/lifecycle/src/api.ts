@@ -11,7 +11,7 @@ import {
 } from "@marlowe.io/runtime-core";
 import { RestDI, RolesConfig } from "@marlowe.io/runtime-rest-client";
 import { ISO8601 } from "@marlowe.io/adapter/time";
-import { Contract, Input } from "@marlowe.io/language-core-v1";
+import { Contract, Environment, Input } from "@marlowe.io/language-core-v1";
 import { Next } from "@marlowe.io/language-core-v1/next";
 
 export type RuntimeLifecycle = {
@@ -76,7 +76,10 @@ export interface ContractsAPI {
    * @param contractId Contract Id of a created contract
    * @throws DecodingError
    */
-  getNextApplicabilityAndReducibility(contractId: ContractId): Promise<Next>;
+  getNextApplicabilityAndReducibility(
+    contractId: ContractId,
+    environement: Environment
+  ): Promise<Next>;
 }
 export type PayoutsDI = WalletDI & RestDI;
 
