@@ -40,7 +40,9 @@
       }
     </script>
   </head>
-  <body></body>
+  <body>
+    Press F12 to open developer console
+  </body>
   <script type="module">
     import { Browser } from "@marlowe.io/runtime-lifecycle";
 
@@ -236,37 +238,25 @@
     console.log(`2nd payout available on: ${new Date(payoutTime2)}`);
     console.log(`3rd payout available on: ${new Date(payoutTime3)}`);
 
-    setTimeout(() => {
-      console.log("1st payout is available!");
-      console.log("Poking contract...");
-      // Doesn't seem to work:
+    // Invoke in the browser REPL: pokeContract()
+    window.pokeContract = () =>
       runtimeLifeCycle.contracts.applyInputs(contractId, (next) => ({
         inputs: [],
       }));
-    }, 5000 + payoutTime1 - Date.now());
-
-    setTimeout(() => {
-      console.log("2nd payout is available!");
-      console.log("Poking contract...");
-      // Doesn't seem to work:
-      runtimeLifeCycle.contracts.applyInputs(contractId, (next) => ({
-        inputs: [],
-      }));
-    }, 5000 + payoutTime2 - Date.now());
-
-    setTimeout(() => {
-      console.log("3rd payout is available!");
-      console.log("Poking contract...");
-      // Doesn't seem to work:
-      runtimeLifeCycle.contracts.applyInputs(contractId, (next) => ({
-        inputs: [],
-      }));
-    }, 5000 + payoutTime3 - Date.now());
 
     // Invoke in the browser REPL: getAvailablePayouts().then(x => console.log(x))
     window.getAvailablePayouts = () => runtimeLifeCycle.payouts.available();
 
-    // Employee withdraws
-    // runtimeLifeCycle.payouts.withdraw([]);
+    setTimeout(() => {
+      console.log("1st payout is available!");
+    }, payoutTime1 - Date.now());
+
+    setTimeout(() => {
+      console.log("2nd payout is available!");
+    }, payoutTime2 - Date.now());
+
+    setTimeout(() => {
+      console.log("3rd payout is available!");
+    }, payoutTime3 - Date.now());
   </script>
 </html>
