@@ -67,12 +67,17 @@ export interface GetContractsRequest {
   //           string supposed to be? I have some contracts with tag "{SurveyContract: CryptoPall2023}" that I don't know how to search for.
   tags?: Tag[];
   // FIXME: create ticket to Add RoleCurrency filter
-}
+  /**
+   * Optional partyAddresses to filter the contracts by.
+   */
+  partyAddresses?: AddressBech32[];
+};
 
 export type GETHeadersByRange = (
   rangeOption: O.Option<ContractsRange>
 ) => (kwargs: {
   tags: Tag[];
+  partyAddresses: AddressBech32[];
 }) => TE.TaskEither<Error | DecodingError, GetContractsResponse>;
 
 /**
@@ -83,10 +88,15 @@ export const getHeadersByRangeViaAxios: (
 ) => GETHeadersByRange =
   (axiosInstance) =>
   (rangeOption) =>
-  ({ tags }) =>
+  ({ tags, partyAddresses }) =>
     pipe(
       {
-        url: "/contracts?" + stringify({ tag: tags }, { indices: false }),
+        url:
+          "/contracts?" +
+          stringify(
+            { tag: tags, partyAddress: partyAddresses },
+            { indices: false }
+          ),
         configs: pipe(
           rangeOption,
           O.match(
