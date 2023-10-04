@@ -144,7 +144,9 @@ export function mkRestClient(baseURL: string): RestAPI {
       const rangeOption = O.fromNullable(request?.range);
       const tags = request?.tags ?? [];
       return unsafeTaskEither(
-        Contracts.getHeadersByRangeViaAxios(axiosInstance)(rangeOption)(tags)
+        Contracts.getHeadersByRangeViaAxios(axiosInstance)(rangeOption)({
+          tags,
+        })
       );
     },
     getContractById(contractId) {

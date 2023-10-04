@@ -71,51 +71,54 @@ export interface GetContractsRequest {
 
 export type GETHeadersByRange = (
   rangeOption: O.Option<ContractsRange>
-) => (
-  tags: Tag[]
-) => TE.TaskEither<Error | DecodingError, GetContractsResponse>;
+) => (kwargs: {
+  tags: Tag[];
+}) => TE.TaskEither<Error | DecodingError, GetContractsResponse>;
 
 /**
  * @see {@link https://docs.marlowe.iohk.io/api/get-contracts}
  */
 export const getHeadersByRangeViaAxios: (
   axiosInstance: AxiosInstance
-) => GETHeadersByRange = (axiosInstance) => (rangeOption) => (tags) =>
-  pipe(
-    {
-      url: "/contracts?" + stringify({ tag: tags }, { indices: false }),
-      configs: pipe(
-        rangeOption,
-        O.match(
-          () => ({}),
-          (range) => ({ headers: { Range: unContractsRange(range) } })
+) => GETHeadersByRange =
+  (axiosInstance) =>
+  (rangeOption) =>
+  ({ tags }) =>
+    pipe(
+      {
+        url: "/contracts?" + stringify({ tag: tags }, { indices: false }),
+        configs: pipe(
+          rangeOption,
+          O.match(
+            () => ({}),
+            (range) => ({ headers: { Range: unContractsRange(range) } })
+          )
+        ),
+      },
+      ({ url, configs }) =>
+        HTTP.GetWithDataAndHeaders(axiosInstance)(url, configs),
+      TE.map(([headers, data]) => ({
+        data: data,
+        previousRange: headers["prev-range"],
+        nextRange: headers["next-range"],
+      })),
+      TE.chainW((data) =>
+        TE.fromEither(
+          E.mapLeft(formatValidationErrors)(GETByRangeRawResponse.decode(data))
         )
       ),
-    },
-    ({ url, configs }) =>
-      HTTP.GetWithDataAndHeaders(axiosInstance)(url, configs),
-    TE.map(([headers, data]) => ({
-      data: data,
-      previousRange: headers["prev-range"],
-      nextRange: headers["next-range"],
-    })),
-    TE.chainW((data) =>
-      TE.fromEither(
-        E.mapLeft(formatValidationErrors)(GETByRangeRawResponse.decode(data))
-      )
-    ),
-    TE.map((rawResponse) => ({
-      headers: pipe(
-        rawResponse.data.results,
-        A.map((result) => result.resource),
-        A.filter((header) =>
-          eqSetString(new Set(Object.keys(header.tags)), new Set(tags))
-        )
-      ), // All logic instead of Any, TODO : Add the flexibility to chose between Any and All
-      previousRange: rawResponse.previousRange,
-      nextRange: rawResponse.nextRange,
-    }))
-  );
+      TE.map((rawResponse) => ({
+        headers: pipe(
+          rawResponse.data.results,
+          A.map((result) => result.resource),
+          A.filter((header) =>
+            eqSetString(new Set(Object.keys(header.tags)), new Set(tags))
+          )
+        ), // All logic instead of Any, TODO : Add the flexibility to chose between Any and All
+        previousRange: rawResponse.previousRange,
+        nextRange: rawResponse.nextRange,
+      }))
+    );
 
 const eqSetString = (xs: Set<string>, ys: Set<string>) =>
   xs.size === ys.size && [...xs].every((x) => ys.has(x));
