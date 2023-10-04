@@ -83,6 +83,8 @@ export interface ContractsAPI {
     contractId: ContractId,
     environement: Environment
   ): Promise<Next>;
+
+  getContractIds(): Promise<ContractId[]>;
 }
 export type PayoutsDI = WalletDI & RestDI;
 

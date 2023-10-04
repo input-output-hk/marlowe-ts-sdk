@@ -41,6 +41,7 @@ export function mkContractLifecycle(
     createContract: submitCreateTx(di),
     applyInputs: submitApplyInputsTx(di),
     getApplicableInputs: getApplicableInputs(di),
+    getContractIds: getContractIds(di),
   };
 }
 
@@ -82,6 +83,11 @@ const getApplicableInputs =
       );
     }
   };
+
+const getContractIds =
+  ({}: ContractsDI) =>
+  (): Promise<ContractId[]> =>
+    Promise.resolve([]);
 
 const getParties: (
   walletApi: WalletAPI
