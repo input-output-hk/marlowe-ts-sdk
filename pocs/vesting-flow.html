@@ -174,7 +174,7 @@
 
     const now = new Date().valueOf();
 
-    const periodLength = 1000 * 60 * 2; // two minutes
+    const periodLength = 1000 * 60 * 3; // three minutes
     const contractStart = now + 1000 * 60 * 2; // Contract starts one minute from now
     const employerDepositDeadline = now + 1000 * 60 * 3; // Employer deposit deadline one and a half minutes from now
     const amount = 300;
@@ -238,6 +238,8 @@
     console.log(`2nd payout available on: ${new Date(payoutTime2)}`);
     console.log(`3rd payout available on: ${new Date(payoutTime3)}`);
 
+    window.runtimeLifeCycle = runtimeLifeCycle;
+
     // Invoke in the browser REPL: pokeContract()
     window.pokeContract = () =>
       runtimeLifeCycle.contracts.applyInputs(contractId, (next) => ({
@@ -247,8 +249,48 @@
     // Invoke in the browser REPL: getAvailablePayouts().then(x => console.log(x))
     window.getAvailablePayouts = () => runtimeLifeCycle.payouts.available();
 
+    // Invoke in the browser REPL: employeeWithdrawStep1()
+    window.employeeWithdrawStep1 = (amountToWithdraw) =>
+      runtimeLifeCycle.contracts.applyInputs(contractId, (next) => ({
+        inputs: [
+          {
+            for_choice_id: {
+              choice_name: "withdraw",
+              choice_owner: { role_token: "Employee" },
+            },
+            input_that_chooses_num: amountToWithdraw,
+          },
+        ],
+      }));
+
+    // Invoke in the browser REPL: employeeWithdrawStep2()
+    window.employeeWithdrawStep2 = (payoutId) =>
+      runtimeLifeCycle.payouts.withdraw([payoutId]);
+
     setTimeout(() => {
       console.log("1st payout is available!");
+      const retry = async () => {
+        let contractPokePromise = null;
+        try {
+          contractPokePromise = window.pokeContract();
+          debugger;
+        } catch (e) {
+          console.log("Failed to poke contract, trying again...");
+          retry();
+        }
+        await contractPokePromise;
+        console.log("Contract poked!");
+        const availablePayouts1 = await window.getAvailablePayouts();
+        debugger;
+        console.log("Employee chooses to withdraw 75 Lovelace");
+        const withdrawChoiceResult = await window.employeeWithdrawStep1(75);
+        console.log("Employee chose to withdraw 75 Lovelace!");
+        // console.log("Employee withdraws their Lovelace");
+        const availablePayouts2 = await window.getAvailablePayouts();
+        debugger;
+      };
+      console.log("Poking contract.");
+      retry();
     }, payoutTime1 - Date.now());
 
     setTimeout(() => {
@@ -258,5 +300,7 @@
     setTimeout(() => {
       console.log("3rd payout is available!");
     }, payoutTime3 - Date.now());
+
+    // let withdrawPromise = fetch("https://marlowe-runtime-preview-web.scdev.aws.iohkdev.io/withdrawals", {method: "POST", mode: "cors", headers: {"X-Change-Address": "addr_test1qzlstf3wpgj6rn0gkmemtvxn86nqlh56nmy0v9gkjjfu02g0rce7waexs2sr4h0qyzaf38vhxwwfk0ej55t25pt2n37qm5jzs3", "Content-Type": "application/json"}, redirect: "follow", body: JSON.stringify({payouts: ["a3a84f1f7569cfb9800483243e7c9612c6473c98cb2e97fc6febd272386b076b#2"]})})
   </script>
 </html>
