@@ -30,7 +30,7 @@ import { FPTSRestAPI } from "@marlowe.io/runtime-rest-client";
 import { DecodingError } from "@marlowe.io/adapter/codec";
 import { TransactionTextEnvelope } from "@marlowe.io/runtime-rest-client/contract/transaction/endpoints/collection";
 import { Next, noNext } from "@marlowe.io/language-core-v1/next";
-import { isNone } from "fp-ts/lib/Option.js";
+import { isNone, none } from "fp-ts/lib/Option.js";
 
 export function mkContractLifecycle(
   wallet: WalletAPI,
@@ -85,9 +85,18 @@ const getApplicableInputs =
   };
 
 const getContractIds =
-  ({}: ContractsDI) =>
-  (): Promise<ContractId[]> =>
-    Promise.resolve([]);
+  ({ rest, wallet }: ContractsDI) =>
+  async (): Promise<ContractId[]> => {
+    const changeAddress = await wallet.getChangeAddress();
+    const usedAddress = await wallet.getUsedAddresses();
+    const result = await rest.contracts.getHeadersByRange(none)({
+      tags: [],
+      partyAddresses: [changeAddress, ...usedAddress],
+    })();
+    if (result._tag === "Left") throw result.left;
+    const response = result.right;
+    return response.headers.map(({ contractId }) => contractId);
+  };
 
 const getParties: (
   walletApi: WalletAPI
