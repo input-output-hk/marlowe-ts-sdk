@@ -29,8 +29,9 @@ import { pipe } from "fp-ts/lib/function.js";
  * @description : a Token `Provider` block funds on a Marlowe Contract and allow a Token `Claimer` to retrieve them
  * based on a Vesting Scheme.
  * Cancel Policy :
- * 1) At any Vesting Period, The Token Provider can cancel the vesting schedule, then all the downstream vested period will be canceled too.
- * 2) Once a vested period is claimable by the Claimer, The Provider can't cancel the transaction.
+ * 1) At any Vesting Period, The Token Provider can cancel the vesting schedule, then all the remaining vested period will be canceled too.
+ * 2) The Provider can't cancel previously vested tokens
+ *
  * @param request Request For Creating a Vesting Marlowe Contract
  */
 export const mkContract = function (request: VestingRequest): Contract {
@@ -73,6 +74,7 @@ export type Frequency =
   | "half-yearly"
   | "quarterly"
   | "monthly"
+  | "weekly"
   | "daily"
   | "hourly";
 
@@ -239,6 +241,8 @@ const getPeriodInMilliseconds = function (frequency: Frequency): bigint {
       return 3n * getPeriodInMilliseconds("monthly");
     case "monthly":
       return 30n * getPeriodInMilliseconds("daily");
+    case "weekly":
+      return 7n * getPeriodInMilliseconds("daily");
     case "daily":
       return 24n * getPeriodInMilliseconds("hourly");
     case "hourly":

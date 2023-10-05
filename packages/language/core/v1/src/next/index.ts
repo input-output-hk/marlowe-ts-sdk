@@ -5,12 +5,18 @@ export * as Deposit from "./applicables/canDeposit.js";
 export * as Choice from "./applicables/canChoose.js";
 export * as Notify from "./applicables/canNotify.js";
 
+/**
+ * Provides reducibility and input applicability information for a contract
+ */
 export type Next = t.TypeOf<typeof Next>;
 export const Next = t.type({
   can_reduce: t.boolean,
   applicable_inputs: ApplicableInputs,
 });
 
+/**
+ * empty Applicables indicates if the contract is in a state where no inputs can be applied.
+ */
 export const emptyApplicables = (next: Next) => {
   return (
     next.applicable_inputs.choices.length === 0 &&
@@ -19,6 +25,9 @@ export const emptyApplicables = (next: Next) => {
   );
 };
 
+/**
+ * noNext is a state where no apply or reduce on a contract
+ */
 export const noNext: Next = {
   can_reduce: false,
   applicable_inputs: {

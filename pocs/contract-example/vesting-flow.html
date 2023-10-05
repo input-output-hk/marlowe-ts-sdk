@@ -56,16 +56,16 @@
     </div>
   </body>
   <script type="module">
-    import { clearConsole, log } from "../js/poc-helpers.js";
+    import { clearConsole, log, getRuntimeUrl } from "../js/poc-helpers.js";
     import { mkRuntimeLifecycle } from "@marlowe.io/runtime-lifecycle/browser";
     import { Vesting } from "@marlowe.io/language-examples";
     import { MarloweJSON } from "@marlowe.io/adapter/codec";
     import { mkRestClient } from "@marlowe.io/runtime-rest-client";
+    import { adaToken } from "@marlowe.io/language-core-v1";
     import { Deposit, Choice } from "@marlowe.io/language-core-v1/next";
     const dappId = "marlowe.ts.sdk.example.vesting.v1.0.4";
-    const runtimeURL =
-      document.getElementById("runtimeUrl").value ||
-      "https://marlowe-runtime-preprod-web.scdev.aws.iohkdev.io/";
+    const runtimeURL = getRuntimeUrl();
+
     const walletName = document.getElementById("wallet").value;
     const restClient = mkRestClient(runtimeURL);
     const runtimeLifeCycle = await mkRuntimeLifecycle({
@@ -76,7 +76,6 @@
 
     function generateVestingContract() {
       clearConsole();
-      const adaToken = { currency_symbol: "", token_name: "" };
 
       const vestingRequest = {
         tokenValue: { token: adaToken, amount: 30_00_000n },
@@ -145,7 +144,7 @@
             details.tags[dappId].request,
             details.state,
             (environment) =>
-              runtimeLifeCycle.contracts.getNextApplicabilityAndReducibility(
+              runtimeLifeCycle.contracts.getApplicableInputs(
                 contractId,
                 environment
               )

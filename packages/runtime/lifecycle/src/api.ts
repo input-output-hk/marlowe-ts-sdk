@@ -35,6 +35,8 @@ export type CreateContractRequest = {
   minUTxODeposit?: number;
 };
 
+export const minUTxODepositDefault: number = 3_000_000;
+
 export type ApplyInputsRequest = {
   inputs: Input[];
   tags?: Tags;
@@ -74,9 +76,10 @@ export interface ContractsAPI {
    *  - 1) Deciding which inputs to provide for the current state of the given contract
    *  - 2) Constructing the inputs to apply for a given contract
    * @param contractId Contract Id of a created contract
+   * @param environement Time interval in which inputs would like to be applied
    * @throws DecodingError
    */
-  getNextApplicabilityAndReducibility(
+  getApplicableInputs(
     contractId: ContractId,
     environement: Environment
   ): Promise<Next>;

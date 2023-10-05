@@ -11,6 +11,7 @@ import {
   ContractsAPI,
   ContractsDI,
   CreateContractRequest,
+  minUTxODepositDefault,
 } from "../api.js";
 
 import { getAddressesAndCollaterals, WalletAPI } from "@marlowe.io/wallet/api";
@@ -39,8 +40,7 @@ export function mkContractLifecycle(
   return {
     createContract: submitCreateTx(di),
     applyInputs: submitApplyInputsTx(di),
-    getNextApplicabilityAndReducibility:
-      getNextApplicabilityAndReducibility(di),
+    getApplicableInputs: getApplicableInputs(di),
   };
 }
 
@@ -65,7 +65,7 @@ const submitApplyInputsTx =
     );
   };
 
-const getNextApplicabilityAndReducibility =
+const getApplicableInputs =
   ({ wallet, rest }: ContractsDI) =>
   async (contractId: ContractId, environement: Environment): Promise<Next> => {
     const contractDetails = await unsafeTaskEither(
@@ -125,7 +125,7 @@ export const submitCreateTxFpTs: (
               : {},
             minUTxODeposit: createContractRequest.minUTxODeposit
               ? createContractRequest.minUTxODeposit
-              : 3_000_000,
+              : minUTxODepositDefault,
           },
           addressesAndCollaterals
         )

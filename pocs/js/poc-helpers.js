@@ -12,7 +12,10 @@ export function log(message) {
 
 export function getRuntimeUrl() {
   const runtimeUrlInput = document.getElementById("runtimeUrl");
-  return runtimeUrlInput.value || "http://localhost:32952";
+  return (
+    runtimeUrlInput.value ||
+    "https://marlowe-runtime-preprod-web.scdev.aws.iohkdev.io/"
+  );
 }
 
 export function setupLocalStorageRuntimeUrl() {
