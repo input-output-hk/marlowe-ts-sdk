@@ -35,6 +35,7 @@ export {
   Case,
   close,
   datetoTimeout,
+  timeoutToDate,
   Timeout,
 } from "./contract.js";
 export { Environment, mkEnvironment, TimeInterval } from "./environment.js";
@@ -55,7 +56,7 @@ export { role, Party, Address, Role } from "./participants.js";
 
 export { Payee, PayeeAccount, PayeeParty, AccountId } from "./payee.js";
 
-export { Token, TokenName, tokenToString, token } from "./token.js";
+export { Token, TokenName, tokenToString, token, adaToken } from "./token.js";
 
 export { MarloweState } from "./state.js";
 

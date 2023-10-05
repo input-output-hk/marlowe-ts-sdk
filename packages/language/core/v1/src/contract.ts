@@ -235,6 +235,7 @@ export const datetoTimeout = (date: Date): Timeout =>
  */
 export const timeoutToDate = (timeout: Timeout): Date =>
   new Date(Number(timeout));
+
 export type Contract = Close | Pay | If | When | Let | Assert;
 
 /**
