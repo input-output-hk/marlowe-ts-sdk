@@ -262,6 +262,8 @@ export interface ContractsAPI {
 }
 
 /**
+ *
+ * @description Dependency Injection for the Rest Client API
  * @hidden
  */
 export type RestDI = { rest: FPTSRestAPI };

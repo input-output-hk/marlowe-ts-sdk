@@ -21,12 +21,12 @@ import {
   Metadata,
   Tags,
   TextEnvelope,
+  TxId,
   unAddressBech32,
   unTxOutRef,
 } from "@marlowe.io/runtime-core";
 
 import { TxHeader } from "../header.js";
-import { TransactionId } from "../id.js";
 import { ContractId, unContractId } from "@marlowe.io/runtime-core";
 
 export interface TransactionsRange
@@ -93,7 +93,7 @@ export const GETByRangeResponse = t.type({
 export type TransactionTextEnvelope = t.TypeOf<typeof TransactionTextEnvelope>;
 export const TransactionTextEnvelope = t.type({
   contractId: ContractId,
-  transactionId: TransactionId,
+  transactionId: TxId,
   tx: TextEnvelope,
 });
 

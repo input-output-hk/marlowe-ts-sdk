@@ -3,7 +3,7 @@ import { addDays } from "date-fns";
 
 import * as Examples from "@marlowe.io/language-examples";
 import { datetoTimeout, adaValue } from "@marlowe.io/language-core-v1";
-import { Next, toInput } from "@marlowe.io/language-core-v1/next";
+import { Next, Deposit } from "@marlowe.io/language-core-v1/next";
 import { mkFPTSRestClient } from "@marlowe.io/runtime-rest-client/index.js";
 
 import {
@@ -47,29 +47,39 @@ describe("Payouts", () => {
       },
     };
     const swapContract = Examples.SwapADAToken.mkSwapContract(swapRequest);
-    const contractId = await runtime(adaProvider).contracts.create({
+    const [contractId, txCreatedContract] = await runtime(
+      adaProvider
+    ).contracts.createContract({
       contract: swapContract,
       roles: {
         [swapRequest.provider.roleName]: adaProvider.address,
         [swapRequest.swapper.roleName]: tokenProvider.address,
       },
     });
+    await runtime(adaProvider).wallet.waitConfirmation(txCreatedContract);
 
-    // see [[apply-inputs-next-provider]], I think it would be clearer to separate the "what are the
-    // next possible inputs from the apply inputs call"
-    await runtime(adaProvider).contracts.applyInputs(
-      contractId,
-      (next: Next) => ({
-        inputs: [pipe(next.applicable_inputs.deposits[0], toInput)],
-      })
+    // Applying the first Deposit
+    let next = await runtime(adaProvider).contracts.getApplicableInputs(
+      contractId
+    );
+    const txFirstTokensDeposited = await runtime(
+      adaProvider
+    ).contracts.applyInputs(contractId, {
+      inputs: [pipe(next.applicable_inputs.deposits[0], Deposit.toInput)],
+    });
+    await runtime(adaProvider).wallet.waitConfirmation(txFirstTokensDeposited);
+
+    // Applying the second Deposit
+    next = await runtime(tokenProvider).contracts.getApplicableInputs(
+      contractId
+    );
+    await runtime(tokenProvider).contracts.applyInputs(contractId, {
+      inputs: [pipe(next.applicable_inputs.deposits[0], Deposit.toInput)],
+    });
+    await runtime(tokenProvider).wallet.waitConfirmation(
+      txFirstTokensDeposited
     );
 
-    await runtime(tokenProvider).contracts.applyInputs(
-      contractId,
-      (next: Next) => ({
-        inputs: [pipe(next.applicable_inputs.deposits[0], toInput)],
-      })
-    );
     return {
       contractId,
       runtime,

@@ -11,6 +11,10 @@ import {
   TxOutRef,
 } from "@marlowe.io/runtime-core";
 
+/**
+ * @description Dependency Injection for the Wallet API
+ * @hidden
+ */
 export type WalletDI = { wallet: WalletAPI };
 /**
  * The WalletAPI is an interface for interacting with a Cardano wallet.

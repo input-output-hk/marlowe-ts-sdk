@@ -7,10 +7,10 @@ import {
   Metadata,
   BlockHeader,
   TxOutRef,
+  TxId,
 } from "@marlowe.io/runtime-core";
 
 import { ContractId } from "@marlowe.io/runtime-core";
-import { TransactionId } from "./id.js";
 import { TxStatus } from "./status.js";
 
 // TODO: Link to getTransactions endpoint
@@ -31,7 +31,7 @@ export const TxHeader = t.type({
    * The ID of the Marlowe contract instance
    */
   contractId: ContractId,
-  transactionId: TransactionId,
+  transactionId: TxId,
   continuations: optionFromNullable(BuiltinByteString),
   tags: Tags,
   metadata: Metadata,

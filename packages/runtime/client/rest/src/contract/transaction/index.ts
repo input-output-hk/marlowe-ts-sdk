@@ -1,1 +1,2 @@
-export * from "./id.js";
+export * from "./details.js";
+export * from "./header.js";

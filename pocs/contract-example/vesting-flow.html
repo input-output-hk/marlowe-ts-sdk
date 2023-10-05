@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>Vesting Flow</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script src="/dist/local-importmap.js"></script>
+  </head>
+  <body>
+    <div>
+      <h1>Contract Examples > Vesting</h1>
+      <h2>1. Setup Environment</h2>
+
+      <label for="runtimeUrl">URL to a Marlowe Runtime instance:</label>
+      <input
+        id="runtimeUrl"
+        type="text"
+        autocomplete="on"
+        placeholder="http://localhost:32952"
+      />
+      <br />
+      <label for="wallet">Select wallet:</label>
+      <select id="wallet" name="wallet">
+        <option value="nami">Nami</option>
+        <option value="eternl">Eternl</option>
+      </select>
+      <div>
+        <h3>1.1 Create Vesting contract</h3>
+        <label for="contract">JSON Contract:</label>
+        <textarea
+          id="contract"
+          type="text"
+          style="width: 100%; height: 20em"
+        ></textarea>
+      </div>
+      <br />
+      <input id="generate-contract" type="button" value="Generate Contract" />
+      <input
+        id="create-contract"
+        type="button"
+        value="Generate | Create Marlowe Contract on Cardano"
+      />
+
+      <div>
+        <h3>1.2 Apply Inputs</h3>
+        <label for="contract-id">contract Id : </label>
+        <input id="contract-id" type="text" autocomplete="on" />
+        <input id="apply-input" type="button" value="Apply Input" />
+        <h4>Contracts waiting for an action</h4>
+        <div id="contracts-status"></div>
+      </div>
+      <hr />
+      <h2>Console</h2>
+      <div id="console"></div>
+    </div>
+  </body>
+  <script type="module">
+    import { clearConsole, log, getRuntimeUrl } from "../js/poc-helpers.js";
+    import { mkRuntimeLifecycle } from "@marlowe.io/runtime-lifecycle/browser";
+    import { Vesting } from "@marlowe.io/language-examples";
+    import { MarloweJSON } from "@marlowe.io/adapter/codec";
+    import { mkRestClient } from "@marlowe.io/runtime-rest-client";
+    import { adaToken } from "@marlowe.io/language-core-v1";
+    import { Deposit, Choice } from "@marlowe.io/language-core-v1/next";
+    const dappId = "marlowe.ts.sdk.example.vesting.v1.0.4";
+    const runtimeURL = getRuntimeUrl();
+
+    const walletName = document.getElementById("wallet").value;
+    const restClient = mkRestClient(runtimeURL);
+    const runtimeLifeCycle = await mkRuntimeLifecycle({
+      runtimeURL: runtimeURL,
+      walletName: walletName,
+    });
+    await listContracts();
+
+    function generateVestingContract() {
+      clearConsole();
+
+      const vestingRequest = {
+        tokenValue: { token: adaToken, amount: 30_00_000n },
+        provider: { role_token: "Provider" },
+        claimer: { role_token: "Claimer" },
+        scheme: { start: new Date(), frequency: "hourly", numberOfPeriods: 2n },
+      };
+
+      const vestingContract = Vesting.mkContract(vestingRequest);
+      const contractInput = document.getElementById("contract");
+      contractInput.value = MarloweJSON.stringify(vestingContract, null, 4);
+
+      log(
+        `Contract Defined : <pre>${MarloweJSON.stringify(
+          vestingRequest,
+          null,
+          4
+        )}</pre>`
+      );
+      return [vestingRequest, vestingContract];
+    }
+
+    async function generateAndCreateVestingContract() {
+      clearConsole();
+      const [request, vestingContract] = generateVestingContract();
+
+      const [contractId, txIdCreated] =
+        await runtimeLifeCycle.contracts.createContract({
+          contract: vestingContract,
+          tags: { [dappId]: { request } },
+          roles: {
+            [`${request.provider.role_token}`]:
+              await runtimeLifeCycle.wallet.getChangeAddress(),
+            [`${request.claimer.role_token}`]:
+              await runtimeLifeCycle.wallet.getChangeAddress(),
+          },
+        });
+      log(
+        `Contract Defined : <pre>${MarloweJSON.stringify(
+          request,
+          null,
+          2
+        )}</pre>`
+      );
+      log(`Contract submitted on Cardano with Id : ${contractId}`);
+      log(`Waiting Confirmation : ${txIdCreated}`);
+      await runtimeLifeCycle.wallet.waitConfirmation(txIdCreated);
+      log(`Contract Creation Confirmed on Cardano.`);
+      await listContracts();
+    }
+
+    async function listContracts() {
+      const contractIds = (
+        await restClient.getContracts({ tags: [dappId] })
+      ).headers.map((header) => header.contractId);
+      const contractIdsAndDetails = await Promise.all(
+        contractIds.map((contractId) =>
+          restClient
+            .getContractById(contractId)
+            .then((details) => [contractId, details])
+        )
+      );
+      const contractIdsAnVestingState = await Promise.all(
+        contractIdsAndDetails.map(([contractId, details]) =>
+          Vesting.getState(
+            details.tags[dappId].request,
+            details.state,
+            (environment) =>
+              runtimeLifeCycle.contracts.getApplicableInputs(
+                contractId,
+                environment
+              )
+          ).then((state) => [contractId, state])
+        )
+      );
+
+      document.getElementById(
+        "contracts-status"
+      ).innerHTML = `<pre>${MarloweJSON.stringify(
+        contractIdsAnVestingState,
+        null,
+        4
+      )}</pre>`;
+      return contractIdsAnVestingState;
+    }
+
+    async function applyInput() {
+      clearConsole();
+      const contractIdSelected = document.getElementById("contract-id").value;
+      const contractIdsAnVestingState = await listContracts();
+      const result = contractIdsAnVestingState
+        .filter(([contractId, state]) => contractId === contractIdSelected)
+        .map(([c, state]) => state);
+      if (result.length == 0) {
+        log(`<pre>${contractIdSelected} not found`);
+        return;
+      }
+      const vestingState = result[0];
+
+      log(`<pre>${contractIdSelected} is in state ${vestingState.name}</pre>`);
+      switch (vestingState.name) {
+        case "WaitingDepositByProvider": {
+          if (vestingState.timingOut) {
+            return;
+          }
+          const txId = await runtimeLifeCycle.contracts.applyInputs(
+            contractIdSelected,
+            { inputs: vestingState.depositInput }
+          );
+          log(`Deposit submitted on Cardano with tx Id : ${txId}`);
+          log(`Waiting Confirmation : ${txId}`);
+          await runtimeLifeCycle.wallet.waitConfirmation(txId);
+          log(`Deposit Confirmed on Cardano.`);
+          await listContracts();
+          break;
+        }
+        case "NoDepositBeforeDeadline": {
+          const txId = await runtimeLifeCycle.contracts.applyInputs(
+            contractIdSelected,
+            { inputs: vestingState.payMinUtxoBackInput }
+          );
+          log(`payMinUtxoBack submitted on Cardano with tx Id : ${txId}`);
+          log(`Waiting Confirmation : ${txId}`);
+          await runtimeLifeCycle.wallet.waitConfirmation(txId);
+          log(`payMinUtxoBack Confirmed on Cardano.`);
+          await listContracts();
+          break;
+        }
+        case "WithinVestingPeriod": {
+          if (vestingState.timingOut) {
+          } else if (vestingState.withdrawInput) {
+            const txId = await runtimeLifeCycle.contracts.applyInputs(
+              contractIdSelected,
+              { inputs: vestingState.withdrawInput }
+            );
+            log(`Withdraw submitted on Cardano with tx Id : ${txId}`);
+            log(`Waiting Confirmation : ${txId}`);
+            await runtimeLifeCycle.wallet.waitConfirmation(txId);
+            log(`Withdraw Confirmed on Cardano.`);
+            await listContracts();
+            break;
+          } else if (vestingState.cancelInput) {
+            const txId = await runtimeLifeCycle.contracts.applyInputs(
+              contractIdSelected,
+              { inputs: vestingState.cancelInput }
+            );
+            log(`Cancel submitted on Cardano with tx Id : ${txId}`);
+            log(`Waiting Confirmation : ${txId}`);
+            await runtimeLifeCycle.wallet.waitConfirmation(txId);
+            log(`Cancel Confirmed on Cardano.`);
+            await listContracts();
+            break;
+          }
+        }
+        case "VestingEnded": {
+          const txId = await runtimeLifeCycle.contracts.applyInputs(
+            contractIdSelected,
+            { inputs: vestingState.withdrawInput }
+          );
+          log(`Withdraw submitted on Cardano with tx Id : ${txId}`);
+          log(`Waiting Confirmation : ${txId}`);
+          await runtimeLifeCycle.wallet.waitConfirmation(txId);
+          log(`Withdraw Confirmed on Cardano.`);
+          await listContracts();
+          break;
+        }
+      }
+    }
+
+    // Listeners
+    document
+      .getElementById("generate-contract")
+      .addEventListener("click", generateVestingContract);
+    document
+      .getElementById("create-contract")
+      .addEventListener("click", generateAndCreateVestingContract);
+    document
+      .getElementById("apply-input")
+      .addEventListener("click", applyInput);
+  </script>
+</html>

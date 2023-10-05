@@ -7,22 +7,35 @@ import {
   PayoutId,
   PayoutWithdrawn,
   Tags,
+  TxId,
 } from "@marlowe.io/runtime-core";
 import { RestDI, RolesConfig } from "@marlowe.io/runtime-rest-client";
 import { ISO8601 } from "@marlowe.io/adapter/time";
-import { Contract, Input } from "@marlowe.io/language-core-v1";
+import { Contract, Environment, Input } from "@marlowe.io/language-core-v1";
 import { Next } from "@marlowe.io/language-core-v1/next";
 
-export type ContractsDI = WalletDI & RestDI;
-export type ProvideInput = (next: Next) => ApplyInputsRequest;
+export type RuntimeLifecycle = {
+  wallet: WalletAPI;
+  contracts: ContractsAPI;
+  payouts: PayoutsAPI;
+};
 
-export type CreateRequest = {
+/**
+ *
+ * @description Dependency Injection for the Contract API
+ * @hidden
+ */
+export type ContractsDI = WalletDI & RestDI;
+
+export type CreateContractRequest = {
   contract: Contract;
   roles?: RolesConfig;
   tags?: Tags;
   metadata?: Metadata;
   minUTxODeposit?: number;
 };
+
+export const minUTxODepositDefault: number = 3_000_000;
 
 export type ApplyInputsRequest = {
   inputs: Input[];
@@ -32,33 +45,51 @@ export type ApplyInputsRequest = {
   invalidHereafter?: ISO8601;
 };
 /**
- * TODO: comment
+ * This Interface provides capabilities for runnning a Contract over Cardano.
  */
 export interface ContractsAPI {
   /**
-   * TODO: comment
+   * Submit to the Cardano Ledger, the Transaction(Tx) that will create the Marlowe Contract passed in the request.
+   * @param createContractRequest Request parameters for creating a Marlowe Contract on Cardano
    * @throws DecodingError
    */
-  create(req: CreateRequest): Promise<ContractId>;
-  // [[apply-inputs-next-provider]]
-  // DISCUSSION: Instead of providing a function from "Next" => ApplyInputsRequest, I think
-  //             this as a low level API should just receive the ApplyInputsRequest, and if we want we can
-  //             add a "higher-level" helper
-  //             Search for [apply-inputs-next-provider] for usage
+  createContract(
+    createContractRequest: CreateContractRequest
+  ): Promise<[ContractId, TxId]>;
+
   /**
-   * TODO: comment
+   * Submit to the Cardano Ledger, the Transaction(Tx) that will apply inputs to a given created contract.
+   * @param contractId Contract Id where inputs will be applied
+   * @param applyInputsRequest inputs to apply
    * @throws DecodingError
    */
   applyInputs(
     contractId: ContractId,
-    provideInput: ProvideInput
-  ): Promise<ContractId>;
+    applyInputsRequest: ApplyInputsRequest
+  ): Promise<TxId>;
+
+  /**
+   * @experimental
+   * Provide Applicability and Reducibility Information moving forward for a given contract connected to a wallet.
+   * @description
+   *  This piece of information should help you :
+   *  - 1) Deciding which inputs to provide for the current state of the given contract
+   *  - 2) Constructing the inputs to apply for a given contract
+   * @param contractId Contract Id of a created contract
+   * @param environement Time interval in which inputs would like to be applied
+   * @throws DecodingError
+   */
+  getApplicableInputs(
+    contractId: ContractId,
+    environement: Environment
+  ): Promise<Next>;
 }
 export type PayoutsDI = WalletDI & RestDI;
 
 export interface PayoutsAPI {
   /**
-   * TODO: comment
+   * Provide All the availaible payouts for the connected Wallet
+   * @param filters provide filtering capabilities on the available payouts returned
    * @throws DecodingError
    */
   available(filters?: Filters): Promise<PayoutAvailable[]>;
@@ -69,24 +100,30 @@ export interface PayoutsAPI {
    */
   withdraw(payoutIds: PayoutId[]): Promise<void>;
   /**
-   * TODO: comment
+   * Provide All the withdrawn payouts for the connected Wallet
+   * @param filters provide filtering capabilities on the withdrawn payouts returned
    * @throws DecodingError
    */
   withdrawn(filters?: Filters): Promise<PayoutWithdrawn[]>;
 }
 
-export type RuntimeLifecycle = {
-  wallet: WalletAPI;
-  contracts: ContractsAPI;
-  payouts: PayoutsAPI;
-};
-
+/**
+ * Provide filtering capabilities on the payouts returned only by ContractIds
+ * @param byContractIds filters the payouts by contract Ids
+ * @throws DecodingError
+ */
 export const onlyByContractIds = (contractIds: ContractId[]) =>
   ({
     byContractIds: contractIds,
     byMyRoleTokens: (myRoles) => myRoles,
   } as Filters);
 
+/**
+ * Provide filtering capabilities on the payouts returned
+ * @param byContractIds filters the payouts by contract Ids
+ * @param byMyRoleTokens filters the payouts by role tokens owned in the connected wallet
+ * @throws DecodingError
+ */
 export type Filters = {
   byContractIds: ContractId[];
   byMyRoleTokens: (myRolesOnWallet: AssetId[]) => AssetId[];

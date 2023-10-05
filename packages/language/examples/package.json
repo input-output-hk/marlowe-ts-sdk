@@ -1,6 +1,6 @@
 {
   "name": "@marlowe.io/language-examples",
-  "version": "0.2.0-alpha-3",
+  "version": "0.2.0-alpha-4",
   "description": "Example contracts using language-core-v1",
   "repository": "https://github.com/input-output-hk/marlowe-ts-sdk",
   "publishConfig": {
@@ -32,6 +32,8 @@
     }
   },
   "dependencies": {
-    "@marlowe.io/language-core-v1": "0.2.0-alpha-3"
+    "@marlowe.io/language-core-v1": "0.2.0-alpha-4",
+    "date-fns": "2.29.3",
+    "fp-ts": "^2.16.1"
   }
 }

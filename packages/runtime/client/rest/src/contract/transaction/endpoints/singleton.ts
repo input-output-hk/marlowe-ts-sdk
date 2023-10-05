@@ -11,16 +11,16 @@ import { DecodingError } from "@marlowe.io/adapter/codec";
 
 import {
   HexTransactionWitnessSet,
+  TxId,
   transactionWitnessSetTextEnvelope,
 } from "@marlowe.io/runtime-core";
 
 import { Details } from "../details.js";
 import { ContractId, unContractId } from "@marlowe.io/runtime-core";
-import { TransactionId, unTransactionId } from "../id.js";
 
 export type GET = (
   contractId: ContractId,
-  transactionId: TransactionId
+  transactionId: TxId
 ) => TE.TaskEither<Error | DecodingError, Details>;
 
 type GETPayload = t.TypeOf<typeof GETPayload>;
@@ -45,7 +45,7 @@ export const getViaAxios: (axiosInstance: AxiosInstance) => GET =
 
 export type PUT = (
   contractId: ContractId,
-  transactionId: TransactionId,
+  transactionId: TxId,
   hexTransactionWitnessSet: HexTransactionWitnessSet
 ) => TE.TaskEither<Error, void>;
 
@@ -64,12 +64,9 @@ export const putViaAxios: (axiosInstance: AxiosInstance) => PUT =
       )
     );
 
-const endpointURI = (
-  contractId: ContractId,
-  transactionId: TransactionId
-): string =>
+const endpointURI = (contractId: ContractId, transactionId: TxId): string =>
   `/contracts/${pipe(
     contractId,
     unContractId,
     encodeURIComponent
-  )}/transactions/${pipe(transactionId, unTransactionId, encodeURIComponent)}`;
+  )}/transactions/${pipe(transactionId, encodeURIComponent)}`;
