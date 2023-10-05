@@ -39,67 +39,45 @@
         }
       }
     </script>
-    <style>
-      .table-label {
-        display: flex;
-        flex-direction: row;
-        justify-content: flex-end;
-        align-items: flex-end;
-      }
-    </style>
   </head>
-  <body>
-    <table>
-      <tr>
-        <td class="table-label">Address:</td>
-        <td><input type="text" id="address_input" /></td>
-      </tr>
-      <tr>
-        <td class="table-label">Wallet:</td>
-        <td id="wallet_input">...</td>
-      </tr>
-    </table>
-  </body>
+  <body></body>
   <script type="module">
     import { Browser } from "@marlowe.io/runtime-lifecycle";
     import { getAvailableWallets } from "@marlowe.io/wallet";
 
-    const address_input = document.getElementById("address_input");
-    const wallet_input = document.getElementById("wallet_input");
-
-    const availableWallets = getAvailableWallets();
-
-    const onWalletChoice = (event) => {
-      console.log(event.target.value);
-    };
-
-    if (availableWallets.length === 0)
-      wallet_input.innerHTML = "No wallet extensions found!";
-    else {
-      wallet_input.innerHTML = availableWallets
-        .map(
-          (availableWallet, i) =>
-            `<input type="radio"
-                id="${availableWallet}_choice"
-                name="wallet_choice"
-                value="${availableWallet}"
-                ${i === 0 ? "checked" : ""}/>
-           <label for="${availableWallet}_choice">${availableWallet}</label>`
-        )
-        .join("<br/>");
-
-      for (const availableWallet of availableWallets) {
-        /** @type {HTMLInputElement} */
-        const availableWallet_choice = document.getElementById(
-          `${availableWallet}_choice`
-        );
-        availableWallet_choice.onchange = onWalletChoice;
-      }
-    }
+    const walletName = "nami"; // choose one with getAvailableWallets
 
     window.runtimeLifeCycle = await Browser.mkRuntimeLifecycle({
       runtimeURL: "https://marlowe-runtime-preview-web.scdev.aws.iohkdev.io/",
-      walletName: "nami", // choose one with getAvailableWallets
+      walletName,
     });
+
+    const mkContract = (address, timeout) => ({
+      when: [
+        {
+          then: "close",
+          case: {
+            for_choice: {
+              choice_owner: { address },
+              choice_name: "my-choice",
+            },
+            choose_between: [{ to: 1, from: 0 }],
+          },
+        },
+      ],
+      timeout_continuation: "close",
+      timeout,
+    });
+
+    // const address = await window.runtimeLifeCycle.wallet.getChangeAddress()
+
+    // const contract = mkContract(address, Date.now() + 1000 * 60 * 10);
+    // console.log("Creating contract");
+
+    // window.contractId = await runtimeLifeCycle.contracts.createContract({
+    //   contract,
+    // });
+
+    // console.log("Contract created");
   </script>
 </html>
