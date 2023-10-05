@@ -9,7 +9,7 @@ import { formatValidationErrors } from "jsonbigint-io-ts-reporters";
 import { fromNewtype, optionFromNullable } from "io-ts-types";
 import { AxiosInstance } from "axios";
 
-import { Input } from "@marlowe.io/language-core-v1";
+import * as G from "@marlowe.io/language-core-v1/guards";
 import { MarloweVersion } from "@marlowe.io/language-core-v1/version";
 
 import * as HTTP from "@marlowe.io/adapter/http";
@@ -143,7 +143,7 @@ export type PostTransactionsRequest = t.TypeOf<typeof PostTransactionsRequest>;
 export const PostTransactionsRequest = t.intersection([
   t.type({
     version: MarloweVersion,
-    inputs: t.array(Input),
+    inputs: t.array(G.Input),
     metadata: Metadata,
     tags: Tags,
   }),

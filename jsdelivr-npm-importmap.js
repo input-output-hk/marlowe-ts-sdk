@@ -14,6 +14,8 @@ const importMap = {
       "https:/cdn.jsdelivr.net/npm/@marlowe.io/adapter@0.2.0-alpha-4/dist/bundled/esm/time.js",
     "@marlowe.io/language-core-v1":
       "https:/cdn.jsdelivr.net/npm/@marlowe.io/language-core-v1@0.2.0-alpha-4/dist/bundled/esm/language-core-v1.js",
+    "@marlowe.io/language-core-v1/guards":
+      "https:/cdn.jsdelivr.net/npm/@marlowe.io/language-core-v1@0.2.0-alpha-4/dist/bundled/esm/guards.js",
     "@marlowe.io/language-core-v1/next":
       "https:/cdn.jsdelivr.net/npm/@marlowe.io/language-core-v1@0.2.0-alpha-4/dist/bundled/esm/next.js",
     "@marlowe.io/language-core-v1/version":

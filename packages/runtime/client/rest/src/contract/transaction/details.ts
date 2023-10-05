@@ -9,7 +9,7 @@ import {
   MarloweState,
   Contract,
 } from "@marlowe.io/language-core-v1";
-
+import * as G from "@marlowe.io/language-core-v1/guards";
 import {
   Tags,
   Metadata,
@@ -26,16 +26,16 @@ export type Details = t.TypeOf<typeof Details>;
 export const Details = t.type({
   contractId: ContractId,
   transactionId: TxId,
-  continuations: optionFromNullable(BuiltinByteString),
+  continuations: optionFromNullable(G.BuiltinByteString),
   tags: Tags,
   metadata: Metadata,
   status: TxStatus,
   block: optionFromNullable(BlockHeader),
   inputUtxo: TxOutRef,
-  inputs: t.array(Input),
+  inputs: t.array(G.Input),
   outputUtxo: optionFromNullable(TxOutRef),
-  outputContract: optionFromNullable(Contract),
-  outputState: optionFromNullable(MarloweState),
+  outputContract: optionFromNullable(G.Contract),
+  outputState: optionFromNullable(G.MarloweState),
   consumingTx: optionFromNullable(TxId),
   invalidBefore: ISO8601,
   invalidHereafter: ISO8601,

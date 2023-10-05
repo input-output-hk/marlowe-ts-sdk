@@ -35,6 +35,11 @@
       "require": "./dist/bundled/cjs/next.cjs",
       "types": "./dist/esm/next/index.d.ts"
     },
+    "./guards": {
+      "import": "./dist/esm/guards.js",
+      "require": "./dist/bundled/cjs/guards.cjs",
+      "types": "./dist/esm/guards.d.ts"
+    },
     "./version": {
       "import": "./dist/esm/version.js",
       "require": "./dist/bundled/cjs/version.cjs",

@@ -1,5 +1,18 @@
 {
   "entryPointStrategy": "expand",
-  "entryPoints": ["./src"],
-  "tsconfig": "./src/tsconfig.json"
+  "entryPoints": ["./src/index.ts", "./src/next/index.ts", "./src/guards.ts"],
+  "tsconfig": "./src/tsconfig.json",
+  "categorizeByGroup": false,
+  "defaultCategory": "General",
+  "categoryOrder": [
+    "Contract",
+    "Observation",
+    "Action",
+    "Value",
+    "Payee",
+    "Party",
+    "Token",
+    "Choice",
+    "*"
+  ]
 }

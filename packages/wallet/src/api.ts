@@ -81,14 +81,16 @@ export interface WalletAPI {
    */
   isMainnet(): Promise<boolean>;
   // DISCUSSION: should we rename this function to getAssets?
-  // DISCUSSION: Being this a Marlowe Wallet API, should we return a Marlowe Asset (Marlowe Token + Quantity) instead of
-  //             CIP30 Token?
+  // DISCUSSION: [[token-vs-token_value]] We have the same term (Token) overloaded. In the language-core-v1 package
+  //             Token refers to the policy id and token name, in the runtime-core it refers to that plus quantity.
+  //             In the language-core-v1 we have TokenValue (which doesn't exist in the ecosystem) which is iso to the runtime-core Token.
+  //             We should unify the names and avoid term overload.
   /**
    * Get the tokens available to the wallet.
    * @experimental
    *
    * @remarks
-   * The {@link @marlowe.io/runtime-core!asset.Token} type here refers to the `runtime-core` type and not the `language-core-v1` {@link @marlowe.io/language-core-v1!token.Token}.
+   * The {@link @marlowe.io/runtime-core!asset.Token} type here refers to the `runtime-core` type and not the `language-core-v1` {@link @marlowe.io/language-core-v1!index.Token}.
    */
   getTokens(): Promise<Token[]>;
   // DISCUSSION: Should we make this a separate function similar to `getAddressesAndCollaterals`?

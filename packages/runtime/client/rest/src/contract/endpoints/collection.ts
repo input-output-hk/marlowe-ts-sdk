@@ -12,6 +12,7 @@ import { fromNewtype, optionFromNullable } from "io-ts-types";
 import { stringify } from "qs";
 
 import { Contract } from "@marlowe.io/language-core-v1";
+import * as G from "@marlowe.io/language-core-v1/guards";
 import { MarloweVersion } from "@marlowe.io/language-core-v1/version";
 
 import * as HTTP from "@marlowe.io/adapter/http";
@@ -235,7 +236,7 @@ export type PostContractsRequest = t.TypeOf<typeof PostContractsRequest>;
  */
 export const PostContractsRequest = t.intersection([
   t.type({
-    contract: Contract,
+    contract: G.Contract,
     version: MarloweVersion,
     tags: Tags,
     metadata: Metadata,

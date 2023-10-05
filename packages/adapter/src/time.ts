@@ -8,6 +8,8 @@ export const ISO8601 = t.string;
 export type POSIXTime = t.TypeOf<typeof POSIXTime>;
 export const POSIXTime = t.number;
 
+export const posixTimeToIso8601 = (posixTime: POSIXTime): ISO8601 =>
+  datetoIso8601(new Date(posixTime));
 export const datetoIso8601 = (date: Date): ISO8601 => date.toISOString();
 
 // a minute in milliseconds

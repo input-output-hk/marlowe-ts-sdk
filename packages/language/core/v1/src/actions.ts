@@ -1,46 +1,83 @@
 import * as t from "io-ts/lib/index.js";
 
-import { Observation } from "./value-and-observation.js";
-import { ChoiceId } from "./value-and-observation.js";
-import { Party } from "./participants.js";
-import { AccountId } from "./payee.js";
-import { Token } from "./token.js";
-import { Value } from "./value-and-observation.js";
+import {
+  Observation,
+  ObservationGuard,
+  Value,
+} from "./value-and-observation.js";
+import { ChoiceId, ChoiceIdGuard } from "./choices.js";
+import { Party, PartyGuard } from "./participants.js";
+import { AccountId, AccountIdGuard } from "./payee.js";
+import { Token, TokenGuard } from "./token.js";
+import { ValueGuard } from "./value-and-observation.js";
+import { Bound, BoundGuard } from "./choices.js";
 
-export type Bound = { from: bigint; to: bigint };
+/**
+ * TODO: Comment
+ * @category Action
+ */
+export interface Choice {
+  choose_between: Bound[];
+  for_choice: ChoiceId;
+}
 
-export const Bound: t.Type<Bound> = t.recursion("Bound", () =>
-  t.type({ from: t.bigint, to: t.bigint })
+// TODO: Try to remove recursion
+/**
+ * TODO: Comment
+ * @category Action
+ */
+export const ChoiceGuard: t.Type<Choice> = t.recursion("Choice", () =>
+  t.type({ choose_between: t.array(BoundGuard), for_choice: ChoiceIdGuard })
 );
 
-export type Choice = { choose_between: Bound[]; for_choice: ChoiceId };
-
-export const Choice: t.Type<Choice> = t.recursion("Choice", () =>
-  t.type({ choose_between: t.array(Bound), for_choice: ChoiceId })
-);
-
-export type Deposit = {
+/**
+ * TODO: Comment
+ * @category Action
+ */
+export interface Deposit {
   party: Party;
   deposits: Value;
   of_token: Token;
   into_account: AccountId;
-};
+}
 
-export const Deposit: t.Type<Deposit> = t.type({
-  party: Party,
-  deposits: Value,
-  of_token: Token,
-  into_account: AccountId,
+/**
+ * TODO: Comment
+ * @category Action
+ */
+export const DepositGuard: t.Type<Deposit> = t.type({
+  party: PartyGuard,
+  deposits: ValueGuard,
+  of_token: TokenGuard,
+  into_account: AccountIdGuard,
 });
 
-export type Notify = { notify_if: Observation };
+/**
+ * TODO: Comment
+ * @category Action
+ */
+export interface Notify {
+  notify_if: Observation;
+}
 
-export const Notify: t.Type<Notify> = t.recursion("Notify", () =>
-  t.type({ notify_if: Observation })
+/**
+ * TODO: Comment
+ * @category Action
+ */
+export const NotifyGuard: t.Type<Notify> = t.recursion("Notify", () =>
+  t.type({ notify_if: ObservationGuard })
 );
 
+/**
+ * TODO: Comment
+ * @category Action
+ */
 export type Action = Deposit | Choice | Notify;
 
-export const Action: t.Type<Action> = t.recursion("Action", () =>
-  t.union([Deposit, Choice, Notify])
+/**
+ * TODO: Comment
+ * @category Action
+ */
+export const ActionGuard: t.Type<Action> = t.recursion("Action", () =>
+  t.union([DepositGuard, ChoiceGuard, NotifyGuard])
 );

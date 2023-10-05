@@ -9,22 +9,67 @@ import * as A from "fp-ts/lib/Array.js";
 
 import { AddressBech32 } from "./address.js";
 
-export type Address = t.TypeOf<typeof Address>;
-export const Address = t.type({ address: AddressBech32 });
+/**
+ * TODO: Comment
+ * @category Party
+ */
+export interface Address {
+  address: AddressBech32;
+}
+/**
+ * TODO: Comment
+ * @category Party
+ */
+export const AddressGuard: t.Type<Address> = t.type({ address: AddressBech32 });
 
-type RoleName = t.TypeOf<typeof RoleName>;
-const RoleName = t.string;
+type RoleName = string;
+const RoleNameGuard: t.Type<RoleName> = t.string;
 
+/**
+ * Search [[lower-name-builders]]
+ * @hidden
+ */
 export const role = (roleToken: RoleName) => ({ role_token: roleToken });
-export type Role = t.TypeOf<typeof Role>;
-export const Role = t.type({ role_token: RoleName });
 
+/**
+ * TODO: Comment
+ * @category Party
+ */
+export interface Role {
+  role_token: RoleName;
+}
+
+/**
+ * TODO: Comment
+ * @category Party
+ */
+export const RoleGuard: t.Type<Role> = t.type({ role_token: RoleNameGuard });
+
+/**
+ * Search [[lower-name-builders]]
+ * @hidden
+ */
 export const party = (party: Role | Address) => party;
-export type Party = t.TypeOf<typeof Party>;
-export const Party = t.union([Address, Role]);
 
+/**
+ * TODO: Comment
+ * @category Party
+ */
+export type Party = Address | Role;
+/**
+ * TODO: Comment
+ * @category Party
+ */
+export const PartyGuard = t.union([AddressGuard, RoleGuard]);
+
+/**
+ * @hidden
+ */
 export const partiesToStrings: (parties: Party[]) => string[] = (parties) =>
   pipe(parties, A.map(partyToString));
 
+/**
+ * @hidden
+ */
 export const partyToString: (party: Party) => string = (party) =>
-  Role.is(party) ? party.role_token : party.address;
+  RoleGuard.is(party) ? party.role_token : party.address;

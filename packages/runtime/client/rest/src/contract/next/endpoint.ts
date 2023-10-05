@@ -9,6 +9,7 @@ import { Environment, Party } from "@marlowe.io/language-core-v1";
 import { Next } from "@marlowe.io/language-core-v1/next";
 import { stringify } from "qs";
 import { DecodingError } from "@marlowe.io/adapter/codec";
+import { posixTimeToIso8601 } from "@marlowe.io/adapter/time";
 
 export type GET = (
   contractId: ContractId
@@ -21,7 +22,9 @@ export const getViaAxios: (axiosInstance: AxiosInstance) => GET =
     pipe(
       HTTP.Get(axiosInstance)(
         contractNextEndpoint(contractId) +
-          `?validityStart=${environment.validityStart}&validityEnd=${environment.validityEnd}&` +
+          `?validityStart=${posixTimeToIso8601(
+            environment.timeInterval.from
+          )}&validityEnd=${posixTimeToIso8601(environment.timeInterval.to)}&` +
           stringify({ party: parties }, { indices: false }),
         {
           headers: {
