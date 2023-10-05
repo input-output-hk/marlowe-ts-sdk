@@ -1,0 +1,125 @@
+{
+  "when": [
+    {
+      "then": {
+        "when": [
+          {
+            "then": {
+              "when": [
+                {
+                  "then": {
+                    "when": [
+                      {
+                        "then": "close",
+                        "case": {
+                          "for_choice": {
+                            "choice_owner": { "role_token": "Buyer" },
+                            "choice_name": "Everything is alright"
+                          },
+                          "choose_between": [{ "to": 0, "from": 0 }]
+                        }
+                      },
+                      {
+                        "then": {
+                          "token": { "token_name": "", "currency_symbol": "" },
+                          "to": { "account": { "role_token": "Buyer" } },
+                          "then": {
+                            "when": [
+                              {
+                                "then": "close",
+                                "case": {
+                                  "for_choice": {
+                                    "choice_owner": { "role_token": "Seller" },
+                                    "choice_name": "Confirm problem"
+                                  },
+                                  "choose_between": [{ "to": 1, "from": 1 }]
+                                }
+                              },
+                              {
+                                "then": {
+                                  "token": {
+                                    "token_name": "",
+                                    "currency_symbol": ""
+                                  },
+                                  "to": {
+                                    "party": {
+                                      "address": "addr_test1vqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3lgle2"
+                                    }
+                                  },
+                                  "then": {
+                                    "token": {
+                                      "token_name": "",
+                                      "currency_symbol": ""
+                                    },
+                                    "to": {
+                                      "party": {
+                                        "address": "addr_test1vqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3lgle2"
+                                      }
+                                    },
+                                    "then": "close",
+                                    "pay": 2000000,
+                                    "from_account": { "role_token": "Buyer" }
+                                  },
+                                  "pay": 2000000,
+                                  "from_account": { "role_token": "Seller" }
+                                },
+                                "case": {
+                                  "for_choice": {
+                                    "choice_owner": { "role_token": "Seller" },
+                                    "choice_name": "Dispute problem"
+                                  },
+                                  "choose_between": [{ "to": 0, "from": 0 }]
+                                }
+                              }
+                            ],
+                            "timeout_continuation": "close",
+                            "timeout": 1696303200000
+                          },
+                          "pay": 1000000,
+                          "from_account": { "role_token": "Seller" }
+                        },
+                        "case": {
+                          "for_choice": {
+                            "choice_owner": { "role_token": "Buyer" },
+                            "choice_name": "Report problem"
+                          },
+                          "choose_between": [{ "to": 1, "from": 1 }]
+                        }
+                      }
+                    ],
+                    "timeout_continuation": "close",
+                    "timeout": 1696302900000
+                  },
+                  "case": {
+                    "party": { "role_token": "Buyer" },
+                    "of_token": { "token_name": "", "currency_symbol": "" },
+                    "into_account": { "role_token": "Seller" },
+                    "deposits": 1000000
+                  }
+                }
+              ],
+              "timeout_continuation": "close",
+              "timeout": 1696302600000
+            },
+            "case": {
+              "party": { "role_token": "Buyer" },
+              "of_token": { "token_name": "", "currency_symbol": "" },
+              "into_account": { "role_token": "Buyer" },
+              "deposits": 2000000
+            }
+          }
+        ],
+        "timeout_continuation": "close",
+        "timeout": 1696302300000
+      },
+      "case": {
+        "party": { "role_token": "Seller" },
+        "of_token": { "token_name": "", "currency_symbol": "" },
+        "into_account": { "role_token": "Seller" },
+        "deposits": 2000000
+      }
+    }
+  ],
+  "timeout_continuation": "close",
+  "timeout": 1696302000000
+}
