@@ -84,6 +84,11 @@ export interface ContractsAPI {
     environement: Environment
   ): Promise<Next>;
 
+  /**
+   * @description
+   *  Fetches all contract ids for contracts on chain that mentions an address in your wallet.
+   * @throws Error | DecodingError
+   */
   getContractIds(): Promise<ContractId[]>;
 }
 export type PayoutsDI = WalletDI & RestDI;
