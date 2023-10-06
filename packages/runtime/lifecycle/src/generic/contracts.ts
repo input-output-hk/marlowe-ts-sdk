@@ -92,7 +92,7 @@ const getContractIds =
       await wallet.getChangeAddress(),
       ...(await wallet.getUsedAddresses()),
     ];
-    const kwargs = { tags: [], partyAddresses };
+    const kwargs = { tags: [], partyAddresses, partyRoles: [] };
     const loop = async (
       range: Option<ContractsRange>,
       acc: ContractId[]

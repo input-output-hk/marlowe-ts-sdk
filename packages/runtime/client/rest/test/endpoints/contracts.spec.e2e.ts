@@ -20,6 +20,7 @@ describe("contracts endpoints", () => {
         restClient.contracts.getHeadersByRange(O.none)({
           tags: [],
           partyAddresses: [],
+          partyRoles: [],
         }),
         TE.match(
           (e) => {

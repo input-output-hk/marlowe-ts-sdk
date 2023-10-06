@@ -30,6 +30,8 @@ import {
   AddressesAndCollaterals,
   AddressBech32,
   TxOutRef,
+  AssetId,
+  unPolicyId,
 } from "@marlowe.io/runtime-core";
 
 import { ContractHeader } from "../header.js";
@@ -66,11 +68,14 @@ export interface GetContractsRequest {
   // QUESTION: @Jamie or @N.H, a tag is marked as string, but when creating a contract you need to pass a key and a value, what is this
   //           string supposed to be? I have some contracts with tag "{SurveyContract: CryptoPall2023}" that I don't know how to search for.
   tags?: Tag[];
-  // FIXME: create ticket to Add RoleCurrency filter
   /**
    * Optional partyAddresses to filter the contracts by.
    */
   partyAddresses?: AddressBech32[];
+  /**
+   * Optional partyRoles to filter the contracts by.
+   */
+  partyRoles?: AssetId[];
 };
 
 export type GETHeadersByRange = (
@@ -78,7 +83,11 @@ export type GETHeadersByRange = (
 ) => (kwargs: {
   tags: Tag[];
   partyAddresses: AddressBech32[];
+  partyRoles: AssetId[];
 }) => TE.TaskEither<Error | DecodingError, GetContractsResponse>;
+
+const roleToParameter = (roleToken: AssetId) =>
+  `${unPolicyId(roleToken.policyId)}.${roleToken.assetName}`;
 
 /**
  * @see {@link https://docs.marlowe.iohk.io/api/get-contracts}
@@ -88,13 +97,17 @@ export const getHeadersByRangeViaAxios: (
 ) => GETHeadersByRange =
   (axiosInstance) =>
   (rangeOption) =>
-  ({ tags, partyAddresses }) =>
+  ({ tags, partyAddresses, partyRoles }) =>
     pipe(
       {
         url:
           "/contracts?" +
           stringify(
-            { tag: tags, partyAddress: partyAddresses },
+            {
+              tag: tags,
+              partyAddress: partyAddresses,
+              partyRole: partyRoles.map(roleToParameter),
+            },
             { indices: false }
           ),
         configs: pipe(

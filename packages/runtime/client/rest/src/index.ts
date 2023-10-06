@@ -144,10 +144,12 @@ export function mkRestClient(baseURL: string): RestAPI {
       const rangeOption = O.fromNullable(request?.range);
       const tags = request?.tags ?? [];
       const partyAddresses = request?.partyAddresses ?? [];
+      const partyRoles = request?.partyRoles ?? [];
       return unsafeTaskEither(
         Contracts.getHeadersByRangeViaAxios(axiosInstance)(rangeOption)({
           tags,
           partyAddresses,
+          partyRoles,
         })
       );
     },
