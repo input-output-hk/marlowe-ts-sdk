@@ -10,7 +10,12 @@ import * as A from "fp-ts/lib/Array.js";
 import { AddressBech32 } from "./address.js";
 
 /**
- * TODO: Comment
+ *
+
+ ```
+ const addressExample: Address = {"address" : "example address"}
+ ```
+ * @see Section 2.1.1 and appendix E.1 of the {@link https://github.com/input-output-hk/marlowe/releases/download/v3/Marlowe.pdf | Marlowe specification}
  * @category Party
  */
 export interface Address {

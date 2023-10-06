@@ -1,6 +1,11 @@
 {
   "entryPointStrategy": "expand",
-  "entryPoints": ["./src/index.ts", "./src/next/index.ts", "./src/guards.ts"],
+  "entryPoints": [
+    "./src/index.ts",
+    "./src/next/index.ts",
+    "./src/guards.ts",
+    "./src/playground-v1.ts"
+  ],
   "tsconfig": "./src/tsconfig.json",
   "categorizeByGroup": false,
   "defaultCategory": "General",

@@ -1,6 +1,6 @@
 {
   "name": "@marlowe.io/language-core-v1",
-  "version": "0.2.0-alpha-4",
+  "version": "0.2.0-alpha-5",
   "description": "Library to manipulate Marlowe Core contracts",
   "repository": "https://github.com/input-output-hk/marlowe-ts-sdk",
   "publishConfig": {
@@ -39,6 +39,11 @@
       "import": "./dist/esm/guards.js",
       "require": "./dist/bundled/cjs/guards.cjs",
       "types": "./dist/esm/guards.d.ts"
+    },
+    "./playground-v1": {
+      "import": "./dist/esm/playground-v1.js",
+      "require": "./dist/bundled/cjs/playground-v1.cjs",
+      "types": "./dist/esm/playground-v1.d.ts"
     },
     "./version": {
       "import": "./dist/esm/version.js",
