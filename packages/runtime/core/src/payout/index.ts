@@ -5,7 +5,7 @@ import { split } from "fp-ts/lib/string.js";
 import { pipe } from "fp-ts/lib/function.js";
 import { head } from "fp-ts/lib/ReadonlyNonEmptyArray.js";
 import { TxId } from "../tx/id.js";
-import { ContractId } from "../contract/id.js";
+import { ContractIdGuard } from "../contract/id.js";
 import { AssetId, Assets } from "../asset/index.js";
 
 // QUESTION: @N.H: What is the difference between PayoutId and WithdrawalId?
@@ -33,7 +33,7 @@ export const withdrawalIdToTxId: (withdrawalId: WithdrawalId) => TxId = (
 export type PayoutAvailable = t.TypeOf<typeof PayoutAvailable>;
 export const PayoutAvailable = t.type({
   payoutId: PayoutId,
-  contractId: ContractId,
+  contractId: ContractIdGuard,
   role: AssetId,
   assets: Assets,
 });
@@ -42,7 +42,7 @@ export type PayoutWithdrawn = t.TypeOf<typeof PayoutWithdrawn>;
 export const PayoutWithdrawn = t.type({
   withdrawalId: WithdrawalId,
   payoutId: PayoutId,
-  contractId: ContractId,
+  contractId: ContractIdGuard,
   role: AssetId,
   assets: Assets,
 });

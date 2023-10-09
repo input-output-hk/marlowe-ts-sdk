@@ -18,7 +18,7 @@ import { DecodingError } from "@marlowe.io/adapter/codec";
 import {
   AddressesAndCollaterals,
   PayoutId,
-  TextEnvelope,
+  TextEnvelopeGuard,
   WithdrawalId,
   unAddressBech32,
   unTxOutRef,
@@ -102,7 +102,7 @@ export type POST = (
 export type WithdrawalTextEnvelope = t.TypeOf<typeof WithdrawalTextEnvelope>;
 export const WithdrawalTextEnvelope = t.type({
   withdrawalId: WithdrawalId,
-  tx: TextEnvelope,
+  tx: TextEnvelopeGuard,
 });
 
 export type PostResponse = t.TypeOf<typeof PostResponse>;

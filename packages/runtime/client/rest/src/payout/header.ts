@@ -1,7 +1,7 @@
 import * as t from "io-ts/lib/index.js";
 
 import {
-  ContractId,
+  ContractIdGuard,
   AssetId,
   PayoutId,
   WithdrawalId,
@@ -11,7 +11,7 @@ import { optionFromNullable } from "io-ts-types";
 
 export type PayoutHeader = t.TypeOf<typeof PayoutHeader>;
 export const PayoutHeader = t.type({
-  contractId: ContractId,
+  contractId: ContractIdGuard,
   payoutId: PayoutId,
   withdrawalId: optionFromNullable(WithdrawalId),
   role: AssetId,

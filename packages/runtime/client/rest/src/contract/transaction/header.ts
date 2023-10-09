@@ -3,14 +3,14 @@ import { optionFromNullable } from "io-ts-types";
 
 import * as G from "@marlowe.io/language-core-v1/guards";
 import {
-  Tags,
+  TagsGuard,
   Metadata,
   BlockHeader,
   TxOutRef,
   TxId,
 } from "@marlowe.io/runtime-core";
 
-import { ContractId } from "@marlowe.io/runtime-core";
+import { ContractIdGuard } from "@marlowe.io/runtime-core";
 import { TxStatus } from "./status.js";
 
 // TODO: Link to getTransactions endpoint
@@ -30,10 +30,10 @@ export const TxHeader = t.type({
   /**
    * The ID of the Marlowe contract instance
    */
-  contractId: ContractId,
+  contractId: ContractIdGuard,
   transactionId: TxId,
   continuations: optionFromNullable(G.BuiltinByteString),
-  tags: Tags,
+  tags: TagsGuard,
   metadata: Metadata,
   status: TxStatus,
   block: optionFromNullable(BlockHeader),

@@ -13,4 +13,5 @@ export {
   GetContractsRequest,
   ContractsRange,
   CreateContractRequest,
+  ContractTextEnvelope,
 } from "./endpoints/collection.js";

@@ -7,11 +7,11 @@ import {
   BlockHeader,
   Metadata,
   PolicyId,
-  Tags,
+  TagsGuard,
 } from "@marlowe.io/runtime-core";
 
 import { TxStatus } from "./transaction/status.js";
-import { ContractId } from "@marlowe.io/runtime-core";
+import { ContractIdGuard } from "@marlowe.io/runtime-core";
 /**
  * A contract header contains minimal contract information that can be used to identify a contract.
  * Use TODO to get full contract details
@@ -27,11 +27,11 @@ export interface ContractHeader extends t.TypeOf<typeof ContractHeader> {}
  * @category GetContractsResponse
  */
 export const ContractHeader = t.type({
-  contractId: ContractId,
+  contractId: ContractIdGuard,
   roleTokenMintingPolicyId: PolicyId,
   version: MarloweVersion,
   // TODO: Add continuations
-  tags: Tags,
+  tags: TagsGuard,
   metadata: Metadata,
   status: TxStatus,
   block: optionFromNullable(BlockHeader),

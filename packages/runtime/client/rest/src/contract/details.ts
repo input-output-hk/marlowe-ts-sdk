@@ -3,7 +3,7 @@ import * as t from "io-ts/lib/index.js";
 import { Contract, MarloweState } from "@marlowe.io/language-core-v1";
 import * as G from "@marlowe.io/language-core-v1/guards";
 import { MarloweVersion } from "@marlowe.io/language-core-v1/version";
-import { ContractId } from "@marlowe.io/runtime-core";
+import { ContractIdGuard } from "@marlowe.io/runtime-core";
 
 import { TxStatus } from "./transaction/status.js";
 
@@ -12,7 +12,7 @@ import {
   TxOutRef,
   BlockHeader,
   Metadata,
-  TextEnvelope,
+  TextEnvelopeGuard,
   PolicyId,
 } from "@marlowe.io/runtime-core";
 
@@ -51,7 +51,7 @@ export interface ContractDetails extends t.TypeOf<typeof ContractDetails> {}
  * @category Validator
  */
 export const ContractDetails = t.type({
-  contractId: ContractId,
+  contractId: ContractIdGuard,
   roleTokenMintingPolicyId: PolicyId,
   version: MarloweVersion,
   status: TxStatus,
@@ -60,7 +60,7 @@ export const ContractDetails = t.type({
   initialContract: G.Contract,
   currentContract: optionFromNullable(G.Contract), // 3 actions
   state: optionFromNullable(G.MarloweState),
-  txBody: optionFromNullable(TextEnvelope),
+  txBody: optionFromNullable(TextEnvelopeGuard),
   utxo: optionFromNullable(TxOutRef),
   unclaimedPayouts: t.array(Payout),
 });

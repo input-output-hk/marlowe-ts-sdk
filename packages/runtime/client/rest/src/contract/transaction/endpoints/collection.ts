@@ -19,15 +19,19 @@ import { ISO8601 } from "@marlowe.io/adapter/time";
 import {
   AddressesAndCollaterals,
   Metadata,
-  Tags,
-  TextEnvelope,
+  TagsGuard,
+  TextEnvelopeGuard,
   TxId,
   unAddressBech32,
   unTxOutRef,
 } from "@marlowe.io/runtime-core";
 
 import { TxHeader } from "../header.js";
-import { ContractId, unContractId } from "@marlowe.io/runtime-core";
+import {
+  ContractId,
+  ContractIdGuard,
+  unContractId,
+} from "@marlowe.io/runtime-core";
 
 export interface TransactionsRange
   extends Newtype<{ readonly TransactionsRange: unique symbol }, string> {}
@@ -92,9 +96,9 @@ export const GETByRangeResponse = t.type({
 
 export type TransactionTextEnvelope = t.TypeOf<typeof TransactionTextEnvelope>;
 export const TransactionTextEnvelope = t.type({
-  contractId: ContractId,
+  contractId: ContractIdGuard,
   transactionId: TxId,
-  tx: TextEnvelope,
+  tx: TextEnvelopeGuard,
 });
 
 export type POST = (
@@ -145,7 +149,7 @@ export const PostTransactionsRequest = t.intersection([
     version: MarloweVersion,
     inputs: t.array(G.Input),
     metadata: Metadata,
-    tags: Tags,
+    tags: TagsGuard,
   }),
   t.partial({ invalidBefore: ISO8601 }),
   t.partial({ invalidHereafter: ISO8601 }),

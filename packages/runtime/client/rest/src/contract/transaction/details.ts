@@ -11,23 +11,23 @@ import {
 } from "@marlowe.io/language-core-v1";
 import * as G from "@marlowe.io/language-core-v1/guards";
 import {
-  Tags,
+  TagsGuard,
   Metadata,
   BlockHeader,
   TxOutRef,
   TxId,
-  TextEnvelope,
+  TextEnvelopeGuard,
 } from "@marlowe.io/runtime-core";
 
-import { ContractId } from "@marlowe.io/runtime-core";
+import { ContractIdGuard } from "@marlowe.io/runtime-core";
 import { TxStatus } from "./status.js";
 
 export type Details = t.TypeOf<typeof Details>;
 export const Details = t.type({
-  contractId: ContractId,
+  contractId: ContractIdGuard,
   transactionId: TxId,
   continuations: optionFromNullable(G.BuiltinByteString),
-  tags: Tags,
+  tags: TagsGuard,
   metadata: Metadata,
   status: TxStatus,
   block: optionFromNullable(BlockHeader),
@@ -39,5 +39,5 @@ export const Details = t.type({
   consumingTx: optionFromNullable(TxId),
   invalidBefore: ISO8601,
   invalidHereafter: ISO8601,
-  txBody: optionFromNullable(TextEnvelope),
+  txBody: optionFromNullable(TextEnvelopeGuard),
 });
