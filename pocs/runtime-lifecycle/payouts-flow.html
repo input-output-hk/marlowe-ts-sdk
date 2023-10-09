@@ -12,7 +12,11 @@
     <input id="start-flow" type="button" value="Start flow" />
     <hr />
     <div id="console"></div>
-    <script src="/dist/local-importmap.js"></script>
+    <!-- This import map tells the browser what version of the SDK to use, use the local-importmap for local
+         development and the jsdelivr importmap for the latest published version.
+    -->
+    <script src="https://cdn.jsdelivr.net/gh/input-output-hk/marlowe-ts-sdk/jsdelivr-npm-importmap.js"></script>
+    <!--script src="/dist/local-importmap.js"></!--script-->
     <script type="module">
       import { mkBrowserWallet, getAvailableWallets } from "@marlowe.io/wallet";
       import { mkRuntimeLifecycle } from "@marlowe.io/runtime-lifecycle/browser";
