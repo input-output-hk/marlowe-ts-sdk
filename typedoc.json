@@ -14,6 +14,9 @@
     "Github Repo": "https://github.com/input-output-hk/marlowe-ts-sdk"
   },
   "externalSymbolLinkMappings": {
+    "fp-ts": {
+      "Option": "https://gcanti.github.io/fp-ts/modules/Option.ts.html"
+    },
     "global": {
       "io-ts-usage": "https://github.com/gcanti/io-ts/blob/master/index.md#basic-usage"
     }

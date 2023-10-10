@@ -26,23 +26,26 @@ import {
   unTxOutRef,
 } from "@marlowe.io/runtime-core";
 
-import { TxHeader } from "../header.js";
+import { TxHeader, TxHeaderGuard } from "../header.js";
 import {
   ContractId,
   ContractIdGuard,
   unContractId,
 } from "@marlowe.io/runtime-core";
 
+/**
+ * A transaction range provides pagination options for the {@link index.RestAPI#getTransactionsForContract | Get transactions for contract } endpoint
+ */
 export interface TransactionsRange
   extends Newtype<{ readonly TransactionsRange: unique symbol }, string> {}
-export const TransactionsRange = fromNewtype<TransactionsRange>(t.string);
+export const TransactionsRangeGuard = fromNewtype<TransactionsRange>(t.string);
 export const unTransactionsRange = iso<TransactionsRange>().unwrap;
 export const transactionsRange = iso<TransactionsRange>().wrap;
 
 export type GETHeadersByRange = (
   contractId: ContractId,
   rangeOption: O.Option<TransactionsRange>
-) => TE.TaskEither<Error | DecodingError, GETByRangeResponse>;
+) => TE.TaskEither<Error | DecodingError, GetTransactionsForContractResponse>;
 
 export const getHeadersByRangeViaAxios: (
   axiosInstance: AxiosInstance
@@ -81,17 +84,37 @@ export const getHeadersByRangeViaAxios: (
 type GetContractsRawResponse = t.TypeOf<typeof GetContractsRawResponse>;
 const GetContractsRawResponse = t.type({
   data: t.type({
-    results: t.array(t.type({ links: t.type({}), resource: TxHeader })),
+    results: t.array(t.type({ links: t.type({}), resource: TxHeaderGuard })),
   }),
-  previousRange: optionFromNullable(TransactionsRange),
-  nextRange: optionFromNullable(TransactionsRange),
+  previousRange: optionFromNullable(TransactionsRangeGuard),
+  nextRange: optionFromNullable(TransactionsRangeGuard),
 });
 
-export type GETByRangeResponse = t.TypeOf<typeof GETByRangeResponse>;
-export const GETByRangeResponse = t.type({
-  headers: t.array(TxHeader),
-  previousRange: optionFromNullable(TransactionsRange),
-  nextRange: optionFromNullable(TransactionsRange),
+/**
+ * Represents the response of the {@link index.RestAPI#getTransactionsForContract | Get transactions for contract } endpoint
+ * @category GetTransactionsForContractResponse
+ */
+export interface GetTransactionsForContractResponse {
+  /**
+   * The list of transactions heading information for the contract
+   */
+  headers: TxHeader[];
+  /**
+   * The previous range header. This is used for pagination.
+   */
+  previousRange: O.Option<TransactionsRange>;
+  /**
+   * The next range header. This is used for pagination.
+   */
+  nextRange: O.Option<TransactionsRange>;
+}
+
+// TODO: Fix guard type
+// export const GetTransactionsForContractResponseGuard: t.Type<GetTransactionsForContractResponse> = t.type({
+export const GetTransactionsForContractResponseGuard = t.type({
+  headers: t.array(TxHeaderGuard),
+  previousRange: optionFromNullable(TransactionsRangeGuard),
+  nextRange: optionFromNullable(TransactionsRangeGuard),
 });
 
 export type TransactionTextEnvelope = t.TypeOf<typeof TransactionTextEnvelope>;

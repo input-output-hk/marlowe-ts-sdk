@@ -79,6 +79,8 @@ export const INotifyGuard: t.Type<INotify> = t.literal("input_notify");
  * TODO: Comment
  * @category Input
  */
+// TODO: Try to make nominal as this gets replaced in the documentation and an interface
+//       cannot extend from builting type string.
 export type BuiltinByteString = string;
 
 /**

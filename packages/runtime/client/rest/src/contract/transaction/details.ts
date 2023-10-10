@@ -3,17 +3,11 @@ import * as t from "io-ts/lib/index.js";
 
 import { ISO8601 } from "@marlowe.io/adapter/time";
 
-import {
-  BuiltinByteString,
-  Input,
-  MarloweState,
-  Contract,
-} from "@marlowe.io/language-core-v1";
 import * as G from "@marlowe.io/language-core-v1/guards";
 import {
   TagsGuard,
   Metadata,
-  BlockHeader,
+  BlockHeaderGuard,
   TxOutRef,
   TxId,
   TextEnvelopeGuard,
@@ -30,7 +24,7 @@ export const Details = t.type({
   tags: TagsGuard,
   metadata: Metadata,
   status: TxStatus,
-  block: optionFromNullable(BlockHeader),
+  block: optionFromNullable(BlockHeaderGuard),
   inputUtxo: TxOutRef,
   inputs: t.array(G.Input),
   outputUtxo: optionFromNullable(TxOutRef),

@@ -46,23 +46,28 @@
       <br />
       <input id="submit-contract" type="button" value="Submit Contract" />
       <br />
+      <input
+        id="get-transactions-for-contract"
+        type="button"
+        value="Get Transactions For Contract"
+      />
+      <br />
     </div>
 
     <h2>Console</h2>
     <div id="console"></div>
     <input id="clear-console" type="button" value="Clear console" />
 
-    <script src="https://cdn.jsdelivr.net/npm/json-bigint-parser-browser@1.0.4/json-bigint-browser.min.js"></script>
     <!-- This import map tells the browser what version of the SDK to use, use the local-importmap for local
          development and the jsdelivr importmap for the latest published version.
       -->
     <script src="https://cdn.jsdelivr.net/gh/input-output-hk/marlowe-ts-sdk/jsdelivr-npm-importmap.js"></script>
     <!--script src="/dist/local-importmap.js"></!--script-->
     <script type="module">
-      import { clearConsole, log } from "./js/poc-helpers.js";
-      import * as H from "./js/poc-helpers.js";
       import { mkRestClient } from "@marlowe.io/runtime-rest-client";
-
+      import { MarloweJSON } from "@marlowe.io/adapter/codec";
+      import { clearConsole, log, logJSON } from "./js/poc-helpers.js";
+      import * as H from "./js/poc-helpers.js";
       let restClient = null;
       function getRestClient() {
         if (restClient === null) {
@@ -104,7 +109,7 @@
         log(`Getting contract by id from ${H.getRuntimeUrl()}`);
         const restClient = getRestClient();
         const result = await restClient.getContractById(...getParams());
-        log(`Contract: ${JSONbig.stringify(result, null, 2)}`);
+        logJSON("Contract:", result);
         log("<hr/>");
       }
 
@@ -131,6 +136,16 @@
         log("<hr/>");
       }
 
+      async function getTransactionsForContract() {
+        log(`Getting transactions for contract on ${H.getRuntimeUrl()}`);
+        const restClient = getRestClient();
+        const result = await restClient.getTransactionsForContract(
+          ...getParams()
+        );
+        logJSON("Transactions:", result);
+        log("<hr/>");
+      }
+
       H.setupLocalStorageRuntimeUrl();
 
       const healthcheckButton = document.getElementById("healthcheck");
@@ -151,6 +166,14 @@
 
       const clearConsoleButton = document.getElementById("clear-console");
       clearConsoleButton.addEventListener("click", clearConsole);
+
+      const getTransactionsForContractButton = document.getElementById(
+        "get-transactions-for-contract"
+      );
+      getTransactionsForContractButton.addEventListener(
+        "click",
+        getTransactionsForContract
+      );
     </script>
   </body>
 </html>

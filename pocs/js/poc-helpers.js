@@ -1,3 +1,4 @@
+import { MarloweJSON } from "@marlowe.io/adapter/codec";
 export function clearConsole() {
   const consoleDiv = document.getElementById("console");
   consoleDiv.innerHTML = "";
@@ -8,6 +9,17 @@ export function log(message) {
   var currentContent = consoleDiv.innerHTML;
   consoleDiv.innerHTML = currentContent + "<BR>" + message;
   console.log(message);
+}
+
+export function logJSON(message, json) {
+  const consoleDiv = document.getElementById("console");
+  var currentContent = consoleDiv.innerHTML;
+  consoleDiv.innerHTML = `${currentContent}<BR>${message}<pre>${MarloweJSON.stringify(
+    json,
+    null,
+    4
+  )}</pre>`;
+  console.log(message, json);
 }
 
 export function getRuntimeUrl() {

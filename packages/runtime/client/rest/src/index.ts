@@ -25,6 +25,7 @@ import * as Contract from "./contract/endpoints/singleton.js";
 import * as Contracts from "./contract/endpoints/collection.js";
 import * as Transaction from "./contract/transaction/endpoints/singleton.js";
 import * as Transactions from "./contract/transaction/endpoints/collection.js";
+import { TransactionsRange } from "./contract/transaction/endpoints/collection.js";
 import * as ContractNext from "./contract/next/endpoint.js";
 import { unsafeTaskEither } from "@marlowe.io/adapter/fp-ts";
 import { ContractId, TextEnvelope } from "@marlowe.io/runtime-core";
@@ -52,7 +53,7 @@ export interface RestAPI {
    * Gets a paginated list of contracts {@link contract.ContractHeader }
    * @param request Optional filtering and pagination options.
    * @throws DecodingError If the response from the server can't be decoded
-   * @see {@link https://docs.marlowe.iohk.io/api/get-contracts}
+   * @see {@link https://docs.marlowe.iohk.io/api/get-contracts  | The backend documentation}
    */
   getContracts(
     request?: Contracts.GetContractsRequest
@@ -64,7 +65,7 @@ export interface RestAPI {
    * @param request Request parameters including the Contract to create, role information, metadata, etc.
    * @returns An object with the CBOR encoded transaction to sign (using the {@link @marlowe.io/wallet!api.WalletAPI#signTx} function) and submit to the blockchain (using the TODO method).
    * @throws DecodingError - If the response from the server can't be decoded
-   * @see {@link https://docs.marlowe.iohk.io/api/create-contracts | The backend documentation}
+   * @see {@link https://docs.marlowe.iohk.io/api/create-a-new-contract | The backend documentation}
    */
   // TODO: Jamie, remove the `s from the end of the endpoint name in the docs site
   // DISCUSSION: @Jamie, @N.H: Should this be called `buildCreateContractTx` instead? As it is not creating the
@@ -77,20 +78,28 @@ export interface RestAPI {
    * Gets a single contract by id
    * @param contractId The id of the contract to get
    * @throws DecodingError - If the response from the server can't be decoded
-   * @see {@link https://docs.marlowe.iohk.io/api/get-contracts-by-id}
+   * @see {@link https://docs.marlowe.iohk.io/api/get-contract-by-id | The backend documentation}
    */
-  // TODO: Jamie, remove the `s from the end of the endpoint name in the docs site
-  getContractById(contractId: ContractId): Promise<ContractDetails>; // - https://docs.marlowe.iohk.io/api/get-contracts-by-id
-  //   In the docs site, after getContractsById there is https://docs.marlowe.iohk.io/api/create-contracts-by-id, not sure what method it corresponds or what is that method supposed to do.
+  getContractById(contractId: ContractId): Promise<ContractDetails>;
   /**
    * Submits a signed contract creation transaction
+   * @see {@link https://docs.marlowe.iohk.io/api/submit-contract-to-chain | The backend documentation}
    */
   submitContract(
     contractId: ContractId,
     txEnvelope: TextEnvelope
   ): Promise<void>;
-  //
-  //   getTransactionsForContract: Transactions.GET; // - https://docs.marlowe.iohk.io/api/get-transactions // TODO: Jamie, lets unify names
+  /**
+   * Gets a paginated list of  {@link contract.TxHeader } for a given contract.
+   * @see {@link https://docs.marlowe.iohk.io/api/get-transactions-for-contract | The backend documentation }
+   */
+  // DISCUSSION: What should this return when contractId is not found? Currently it throws an exception
+  //             with an AxiosError 404, we could return a nullable value or wrap the error into a custom
+  //             ContractNotFound error and specify it in the docs.
+  getTransactionsForContract(
+    contractId: ContractId,
+    range?: TransactionsRange
+  ): Promise<Transactions.GetTransactionsForContractResponse>;
   //   createTransactionForContract: Transactions.POST; // - https://docs.marlowe.iohk.io/api/create-transactions // TODO: Jamie, lets unify names
   //   getTransactionById: Transaction.GET; // - https://docs.marlowe.iohk.io/api/get-transaction-by-id
   //   submitTransaction: Transaction.PUT; // - Jamie is it this one? https://docs.marlowe.iohk.io/api/create-transaction-by-id? If so, lets unify
@@ -165,6 +174,14 @@ export function mkRestClient(baseURL: string): RestAPI {
 
     submitContract(contractId, txEnvelope) {
       return submitContractViaAxios(axiosInstance)(contractId, txEnvelope);
+    },
+    getTransactionsForContract(contractId, range) {
+      return unsafeTaskEither(
+        Transactions.getHeadersByRangeViaAxios(axiosInstance)(
+          contractId,
+          O.fromNullable(range)
+        )
+      );
     },
     healthcheck: () =>
       pipe(

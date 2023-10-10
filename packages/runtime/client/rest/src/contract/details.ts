@@ -10,7 +10,7 @@ import { TxStatus } from "./transaction/status.js";
 import { RoleName } from "./role.js";
 import {
   TxOutRef,
-  BlockHeader,
+  BlockHeaderGuard,
   Metadata,
   TextEnvelopeGuard,
   PolicyId,
@@ -55,7 +55,7 @@ export const ContractDetails = t.type({
   roleTokenMintingPolicyId: PolicyId,
   version: MarloweVersion,
   status: TxStatus,
-  block: optionFromNullable(BlockHeader),
+  block: optionFromNullable(BlockHeaderGuard),
   metadata: Metadata,
   initialContract: G.Contract,
   currentContract: optionFromNullable(G.Contract), // 3 actions
