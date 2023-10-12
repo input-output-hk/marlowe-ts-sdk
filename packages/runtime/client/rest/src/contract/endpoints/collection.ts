@@ -34,7 +34,7 @@ import {
   unPolicyId,
 } from "@marlowe.io/runtime-core";
 
-import { ContractHeader } from "../header.js";
+import { ContractHeaderGuard } from "../header.js";
 import { RolesConfig } from "../role.js";
 
 import { ContractId, ContractIdGuard } from "@marlowe.io/runtime-core";
@@ -152,7 +152,7 @@ export const GETByRangeRawResponse = t.type({
     results: t.array(
       t.type({
         links: t.type({ contract: t.string, transactions: t.string }),
-        resource: ContractHeader,
+        resource: ContractHeaderGuard,
       })
     ),
   }),
@@ -179,10 +179,10 @@ export interface GetContractsResponse
  */
 export const GetContractsResponse = t.type({
   /**
-   * An array of {@link ContractHeader:type}
+   * An array of {@link ContractHeaderGuard:type}
    */
   // DISCUSSION: Rename to "contracts" or "results"
-  headers: t.array(ContractHeader),
+  headers: t.array(ContractHeaderGuard),
   // TODO: Change Option for nullable
   // QUESTION: @Jamie, how are these sorted? previousRange means newer contracts? recent activity?
   /**
