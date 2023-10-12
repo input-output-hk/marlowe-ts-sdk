@@ -6,6 +6,12 @@
     <title>Marlowe Run Very Lite POC</title>
   </head>
   <body>
+    <!-- This import map tells the browser what version of the SDK to use, use the local-importmap for local
+         development and the jsdelivr importmap for the latest published version.
+      -->
+    <script src="https://cdn.jsdelivr.net/gh/input-output-hk/marlowe-ts-sdk/jsdelivr-npm-importmap.js"></script>
+    <!--script src="/dist/local-importmap.js"></!--script-->
+
     <h1>Marlowe Run Lite Lite</h1>
     <div>
       <h2>1. Setup contract and Runtime</h2>
@@ -69,15 +75,12 @@
     <div id="console"></div>
     <input id="clear-console" type="button" value="Clear console" />
 
-    <script src="/dist/local-importmap.js"></script>
     <script type="module">
       import { clearConsole, log } from "./js/poc-helpers.js";
       import * as H from "./js/poc-helpers.js";
-      import { Browser } from "@marlowe.io/runtime-lifecycle";
+      import { mkRuntimeLifecycle } from "@marlowe.io/runtime-lifecycle/browser";
       import { getAddressesAndCollaterals } from "@marlowe.io/wallet/api";
 
-      window.Browser = Browser;
-      window.wallet = getAddressesAndCollaterals;
       const consoleDiv = document.getElementById("console");
 
       function setContractIdIndicator(contractId) {
@@ -102,12 +105,12 @@
         const contractInput = document.getElementById("contract");
         const contract = JSON.parse(contractInput.value);
 
-        const runtime = await Browser.mkRuntimeLifecycle({
+        const runtime = await mkRuntimeLifecycle({
           runtimeURL,
           walletName,
         });
 
-        const contractId = await runtime.contracts.create({ contract });
+        const contractId = await runtime.contracts.createContract({ contract });
         log("Contract created with id: " + contractId);
         setContractIdIndicator(contractId);
       }

@@ -2,7 +2,7 @@ import * as t from "io-ts/lib/index.js";
 import { optionFromNullable } from "io-ts-types";
 
 import {
-  ContractId,
+  ContractIdGuard,
   AssetId,
   PayoutId,
   AddressBech32,
@@ -21,7 +21,7 @@ export const Assets = t.type({ lovelace: AssetQuantity, tokens: Tokens });
 export type PayoutDetails = t.TypeOf<typeof PayoutDetails>;
 export const PayoutDetails = t.type({
   payoutId: PayoutId,
-  contractId: ContractId,
+  contractId: ContractIdGuard,
   withdrawalId: optionFromNullable(WithdrawalId),
   role: AssetId,
   payoutValidatorAddress: AddressBech32,

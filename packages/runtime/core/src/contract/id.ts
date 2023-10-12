@@ -10,7 +10,7 @@ export type ContractId = Newtype<
   { readonly ContractId: unique symbol },
   string
 >;
-export const ContractId = fromNewtype<ContractId>(t.string);
+export const ContractIdGuard = fromNewtype<ContractId>(t.string);
 export const unContractId = iso<ContractId>().unwrap;
 export const contractId = iso<ContractId>().wrap;
 

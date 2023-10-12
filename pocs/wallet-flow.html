@@ -24,7 +24,11 @@
     <hr />
 
     <div id="console"></div>
-    <script src="/dist/local-importmap.js"></script>
+    <!-- This import map tells the browser what version of the SDK to use, use the local-importmap for local
+         development and the jsdelivr importmap for the latest published version.
+      -->
+    <script src="https://cdn.jsdelivr.net/gh/input-output-hk/marlowe-ts-sdk/jsdelivr-npm-importmap.js"></script>
+    <!--script src="/dist/local-importmap.js"></script-->
     <script type="module">
       import { clearConsole, log } from "./js/poc-helpers.js";
       import { mkBrowserWallet, getAvailableWallets } from "@marlowe.io/wallet";
@@ -109,7 +113,7 @@
         const walletName = walletInput.value;
 
         log(`<h2>Accessing ${walletName} Wallet Extension</h2>`);
-        const wallet = await createBrowserWallet(walletName);
+        const wallet = await mkBrowserWallet(walletName);
         const unsignedTx = document.getElementById("unsigned-tx").value;
         const signed = await wallet.signTx(unsignedTx);
         log(`<h2>Signed TX</h2>`);

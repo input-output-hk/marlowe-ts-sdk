@@ -1,4 +1,4 @@
-import { AxiosInstance, ParamEncoder, ParamsSerializerOptions } from "axios";
+import { AxiosInstance } from "axios";
 
 import * as t from "io-ts/lib/index.js";
 import * as TE from "fp-ts/lib/TaskEither.js";
@@ -21,8 +21,10 @@ import { DecodingError } from "@marlowe.io/adapter/codec";
 import {
   Tag,
   Tags,
+  TagsGuard,
   Metadata,
   TextEnvelope,
+  TextEnvelopeGuard,
   unAddressBech32,
   unTxOutRef,
   AddressesAndCollaterals,
@@ -33,7 +35,7 @@ import {
 import { ContractHeader } from "../header.js";
 import { RolesConfig } from "../role.js";
 
-import { ContractId } from "@marlowe.io/runtime-core";
+import { ContractId, ContractIdGuard } from "@marlowe.io/runtime-core";
 
 /**
  * @category GetContractsResponse
@@ -52,12 +54,11 @@ export const contractsRange = iso<ContractsRange>().wrap;
  * Request options for the {@link index.RestAPI#getContracts | Get contracts } endpoint
  * @category Endpoints
  */
-export type GetContractsRequest = {
+export interface GetContractsRequest {
   /**
    * Optional pagination request. Note that when you call {@link index.RestAPI#getContracts | Get contracts }
    * the response includes the next and previous range headers.
    */
-  // QUESTION: @Jamie, is this supposed to be constructed by the user? or solely from other endpoints?
   range?: ContractsRange;
   /**
    * Optional tags to filter the contracts by.
@@ -66,7 +67,7 @@ export type GetContractsRequest = {
   //           string supposed to be? I have some contracts with tag "{SurveyContract: CryptoPall2023}" that I don't know how to search for.
   tags?: Tag[];
   // FIXME: create ticket to Add RoleCurrency filter
-};
+}
 
 export type GETHeadersByRange = (
   rangeOption: O.Option<ContractsRange>
@@ -173,12 +174,12 @@ export const GetContractsResponse = t.type({
  * Request options for the {@link index.RestAPI#createContract | Create contract } endpoint
  * @category Endpoints
  */
-export type CreateContractRequest = {
+export interface CreateContractRequest {
   // FIXME: create ticket to add stake address
   // stakeAddress: void;
   /**
    * Address to send any remainders of the transaction.
-   * @see {@link @marlowe.io/wallet.WalletAPI#getChangeAddress}
+   * @see WalletAPI function {@link @marlowe.io/wallet!api.WalletAPI#getChangeAddress}
    * @see {@link https://academy.glassnode.com/concepts/utxo#change-in-utxo-models}
    */
   changeAddress: AddressBech32;
@@ -220,7 +221,7 @@ export type CreateContractRequest = {
    * The validator version to use.
    */
   version: MarloweVersion;
-};
+}
 
 export type POST = (
   postContractsRequest: PostContractsRequest,
@@ -238,7 +239,7 @@ export const PostContractsRequest = t.intersection([
   t.type({
     contract: G.Contract,
     version: MarloweVersion,
-    tags: Tags,
+    tags: TagsGuard,
     metadata: Metadata,
     minUTxODeposit: t.number,
   }),
@@ -249,16 +250,25 @@ export const PostContractsRequest = t.intersection([
 //           of creating a contract that later needs to be signed and submitted.
 //           Should we rename this to something like `UnsignedContractTx` or
 //           `UnsignedCreateContractTx`?
-export type ContractTextEnvelope = t.TypeOf<typeof ContractTextEnvelope>;
-export const ContractTextEnvelope = t.type({
-  contractId: ContractId,
-  tx: TextEnvelope,
+export interface ContractTextEnvelope {
+  contractId: ContractId;
+  tx: TextEnvelope;
+}
+
+/**
+ * @hidden
+ */
+// TODO: Fix Type
+// export const ContractTextEnvelopeGuard: t.Type<ContractTextEnvelope> = t.type({
+export const ContractTextEnvelopeGuard = t.type({
+  contractId: ContractIdGuard,
+  tx: TextEnvelopeGuard,
 });
 
 export type PostResponse = t.TypeOf<typeof PostResponse>;
 export const PostResponse = t.type({
   links: t.type({ contract: t.string }),
-  resource: ContractTextEnvelope,
+  resource: ContractTextEnvelopeGuard,
 });
 /**
  * @see {@link https://docs.marlowe.iohk.io/api/create-contracts}

@@ -13,4 +13,10 @@ export {
   GetContractsRequest,
   ContractsRange,
   CreateContractRequest,
+  ContractTextEnvelope,
 } from "./endpoints/collection.js";
+export { TxHeader } from "./transaction/header.js";
+export {
+  TransactionsRange,
+  GetTransactionsForContractResponse,
+} from "./transaction/endpoints/collection.js";
