@@ -1,18 +1,17 @@
-<div align="left">
-    <img src="./doc/image/logo.svg" alt="Logo" width="100" height="100">
+<h2 align="center">
+  <a href="" target="blank_">
+    <img src="./doc/image/logo.svg" alt="Logo" height="75">
+  </a>
+  <br>
+  Lightweight and typesafe SDK for writing Marlowe Contracts
+</h2>
+
+<div align="center">
+  <a href=""><img src="https://img.shields.io/badge/stability-beta-33bbff.svg" alt="Beta"></a>
+  <a href="./LICENSE"><img src="https://img.shields.io/badge/License-Apache_2.0-blue.svg"></a>
+  <a href="https://discord.com/invite/cmveaxuzBn"><img src="https://img.shields.io/discord/826816523368005654?label=Chat%20on%20Discord"></a>
+  <a href="https://iohk.zendesk.com/hc/en-us/requests/new"><img src="https://img.shields.io/badge/Support-orange"></a>
 </div>
-
-Official Links
-
-- Website : <a href="https://marlowe.iohk.io" > marlowe.iohk.io </a>
-- Documentation :<a href="https://docs.marlowe.iohk.io" > docs.marlowe.iohk.io </a>
-- Playground : <a href="https://play.marlowe.iohk.io" > play.marlowe.iohk.io </a>
-- Blog : <a href="https://marlowe.iohk.io/blog" > marlowe.iohk.io/blog </a>
-- Support : <a href="https://iohk.zendesk.com/hc/en-us/requests/new" > iohk.zendesk.com </a>
-
-**Repository Status** : _Beta_ (Warning : Work still under progress)
-
-# Overview
 
 The **Marlowe TS-SDK** is a suite of _TypeScript/JavaScript_ libraries for developing Web-Dapp in the Cardano Blockchain using Marlowe Technologies.
 
@@ -26,18 +25,14 @@ To get a running instance of the Runtime, it is recommended to check out the ins
 
 ## Wallet Extensions
 
-### Compatible
+|                  | [Nami](https://namiwallet.io/) | [Eternl](https://eternl.io/) | [Lace](https://www.lace.io/) | [Yoroi](https://yoroi-wallet.com/#/) | [Typhon](https://typhonwallet.io/#/) |
+|------------------|:----:|:------:|:----:|:-----:|:-----:|
+| `Compatible`     |✓     |✓       |      |      |       | 
+| `Not Compatible` |      |        |✗     |      |       |
+| `Not Tested`     |      |        |      |?     |?     |
 
-- [Nami](https://namiwallet.io/)
-- [Eternl](https://eternl.io/)
-
-### Non Compatible
 
 - Lace: TODO: add github issue with the current problem
-
-### Non Tested
-
-- TODO
 
 ## Examples
 
@@ -49,6 +44,16 @@ More elaborate examples can be found in the following repositories:
 
 - [marlowe-payouts](https://github.com/input-output-hk/marlowe-payouts)
 
-# Development
+## Community & Support
+
+- Website : <a href="https://marlowe.iohk.io" > marlowe.iohk.io </a>
+- Documentation :<a href="https://docs.marlowe.iohk.io" > docs.marlowe.iohk.io </a>
+- Playground : <a href="https://play.marlowe.iohk.io" > play.marlowe.iohk.io </a>
+- Blog : <a href="https://marlowe.iohk.io/blog" > marlowe.iohk.io/blog </a>
+- Support : <a href="https://iohk.zendesk.com/hc/en-us/requests/new" > iohk.zendesk.com </a>
+
+## Contributing
+
+To report a bug or request a new feature, please look through existing [Github Issues](https://github.com/input-output-hk/marlowe-ts-sdk/issues) before opening a new one.
 
 To help in the development of this SDK, please refer to [this document](./doc/howToDevelop.md).
