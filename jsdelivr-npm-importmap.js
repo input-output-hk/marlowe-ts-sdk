@@ -10,6 +10,8 @@ const importMap = {
       "https:/cdn.jsdelivr.net/npm/@marlowe.io/adapter@0.2.0-alpha-5/dist/bundled/esm/fp-ts.js",
     "@marlowe.io/adapter/http":
       "https:/cdn.jsdelivr.net/npm/@marlowe.io/adapter@0.2.0-alpha-5/dist/bundled/esm/http.js",
+    "@marlowe.io/adapter/io-ts":
+      "https:/cdn.jsdelivr.net/npm/@marlowe.io/adapter@0.2.0-alpha-5/dist/bundled/esm/io-ts.js",
     "@marlowe.io/adapter/time":
       "https:/cdn.jsdelivr.net/npm/@marlowe.io/adapter@0.2.0-alpha-5/dist/bundled/esm/time.js",
     "@marlowe.io/language-core-v1":

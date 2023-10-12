@@ -10,7 +10,7 @@ import { Newtype, iso } from "newtype-ts";
 import { formatValidationErrors } from "jsonbigint-io-ts-reporters";
 import { fromNewtype, optionFromNullable } from "io-ts-types";
 import { stringify } from "qs";
-
+import { assertGuardEqual, proxy } from "@marlowe.io/adapter/io-ts";
 import { Contract } from "@marlowe.io/language-core-v1";
 import * as G from "@marlowe.io/language-core-v1/guards";
 import { MarloweVersion } from "@marlowe.io/language-core-v1/version";
@@ -165,20 +165,20 @@ export const GETByRangeRawResponse = t.type({
  * @category GetContractsResponse
  */
 export interface GetContractsResponse {
-    /**
+  /**
    * A list of minimal contract information that can be used to identify a contract.
    */
   // DISCUSSION: Rename to "contracts" or "results"
-  headers: ContractHeader[],
+  headers: ContractHeader[];
   // TODO: Change Option for nullable
   /**
    * The previous query range. This is used for pagination.
    */
-  previousRange: O.Option<ContractsRange>,
+  previousRange: O.Option<ContractsRange>;
   /**
    * The next query range. This is used for pagination.
    */
-  nextRange:  O.Option<ContractsRange>,
+  nextRange: O.Option<ContractsRange>;
   // TODO: Add current range
 }
 
@@ -188,26 +188,14 @@ export interface GetContractsResponse {
  * @category GetContractsResponse
  * @hidden
  */
-// TODO: Fix the type guard
-// export const GetContractsResponseGuard:t.Type<GetContractsResponse> = t.type({
-export const GetContractsResponseGuard = t.type({
-  /**
-   * An array of {@link ContractHeaderGuard:type}
-   */
-  // DISCUSSION: Rename to "contracts" or "results"
-  headers: t.array(ContractHeaderGuard),
-  // TODO: Change Option for nullable
-  // QUESTION: @Jamie, how are these sorted? previousRange means newer contracts? recent activity?
-  /**
-   * The previous range header. This is used for pagination.
-   */
-  previousRange: optionFromNullable(ContractsRange),
-  /**
-   * The next range header. This is used for pagination.
-   */
-  nextRange: optionFromNullable(ContractsRange),
-  // TODO: Add current range
-});
+export const GetContractsResponseGuard = assertGuardEqual(
+  proxy<GetContractsResponse>(),
+  t.type({
+    headers: t.array(ContractHeaderGuard),
+    previousRange: optionFromNullable(ContractsRange),
+    nextRange: optionFromNullable(ContractsRange),
+  })
+);
 
 /**
  * Request options for the {@link index.RestAPI#createContract | Create contract } endpoint
@@ -297,12 +285,10 @@ export interface ContractTextEnvelope {
 /**
  * @hidden
  */
-// TODO: Fix Type
-// export const ContractTextEnvelopeGuard: t.Type<ContractTextEnvelope> = t.type({
-export const ContractTextEnvelopeGuard = t.type({
+export const ContractTextEnvelopeGuard = assertGuardEqual(proxy<ContractTextEnvelope>(), t.type({
   contractId: ContractIdGuard,
   tx: TextEnvelopeGuard,
-});
+}));
 
 export type PostResponse = t.TypeOf<typeof PostResponse>;
 export const PostResponse = t.type({

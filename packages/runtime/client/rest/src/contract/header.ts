@@ -12,7 +12,7 @@ import {
   Tags,
   TagsGuard,
   ContractId,
-  ContractIdGuard
+  ContractIdGuard,
 } from "@marlowe.io/runtime-core";
 
 import { TxStatus } from "./transaction/status.js";
@@ -25,7 +25,6 @@ import { TxStatus } from "./transaction/status.js";
  * @category GetContractsResponse
  */
 export interface ContractHeader {
-
   /**
    * The contract id
    */
