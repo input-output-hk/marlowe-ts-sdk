@@ -34,7 +34,7 @@ import {
   unPolicyId,
 } from "@marlowe.io/runtime-core";
 
-import { ContractHeaderGuard } from "../header.js";
+import { ContractHeader, ContractHeaderGuard } from "../header.js";
 import { RolesConfig } from "../role.js";
 
 import { ContractId, ContractIdGuard } from "@marlowe.io/runtime-core";
@@ -162,22 +162,35 @@ export const GETByRangeRawResponse = t.type({
 
 /**
  * Represents the response of the {@link index.RestAPI#getContracts | Get contracts } endpoint
- * @see The {@link GetContractsResponse:var | dynamic validator} for this type.
  * @category GetContractsResponse
  */
-export interface GetContractsResponse
-  extends t.TypeOf<typeof GetContractsResponse> {
-  // NOTE: by repeating this the typedoc is generated with the link instead of embedding
-  //       the definition
-  // headers: ContractHeader[];
+export interface GetContractsResponse {
+    /**
+   * A list of minimal contract information that can be used to identify a contract.
+   */
+  // DISCUSSION: Rename to "contracts" or "results"
+  headers: ContractHeader[],
+  // TODO: Change Option for nullable
+  /**
+   * The previous query range. This is used for pagination.
+   */
+  previousRange: O.Option<ContractsRange>,
+  /**
+   * The next query range. This is used for pagination.
+   */
+  nextRange:  O.Option<ContractsRange>,
+  // TODO: Add current range
 }
 
 /**
- * This is a {@link !io-ts-usage | Dynamic type validator} for {@link GetContractsResponse:type}.
+ * This is a {@link !io-ts-usage | Dynamic type validator} for {@link GetContractsResponse}.
  * @category Validator
  * @category GetContractsResponse
+ * @hidden
  */
-export const GetContractsResponse = t.type({
+// TODO: Fix the type guard
+// export const GetContractsResponseGuard:t.Type<GetContractsResponse> = t.type({
+export const GetContractsResponseGuard = t.type({
   /**
    * An array of {@link ContractHeaderGuard:type}
    */
