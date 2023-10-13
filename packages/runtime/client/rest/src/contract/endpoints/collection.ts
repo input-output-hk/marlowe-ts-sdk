@@ -285,10 +285,13 @@ export interface ContractTextEnvelope {
 /**
  * @hidden
  */
-export const ContractTextEnvelopeGuard = assertGuardEqual(proxy<ContractTextEnvelope>(), t.type({
-  contractId: ContractIdGuard,
-  tx: TextEnvelopeGuard,
-}));
+export const ContractTextEnvelopeGuard = assertGuardEqual(
+  proxy<ContractTextEnvelope>(),
+  t.type({
+    contractId: ContractIdGuard,
+    tx: TextEnvelopeGuard,
+  })
+);
 
 export type PostResponse = t.TypeOf<typeof PostResponse>;
 export const PostResponse = t.type({

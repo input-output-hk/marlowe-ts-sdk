@@ -20,3 +20,4 @@ export {
   TransactionsRange,
   GetTransactionsForContractResponse,
 } from "./transaction/endpoints/collection.js";
+export { TransactionDetails } from "./transaction/details.js";

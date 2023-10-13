@@ -36,6 +36,7 @@ import {
 } from "@marlowe.io/runtime-core";
 import { submitContractViaAxios } from "./contract/endpoints/singleton.js";
 import { ContractDetails } from "./contract/details.js";
+import { TransactionDetails } from "./contract/transaction/details.js";
 // import curlirize from 'axios-curlirize';
 
 // TODO: DELETE
@@ -51,8 +52,20 @@ export { RolesConfig } from "./contract/index.js";
 //   https://docs.marlowe.iohk.io/api
 // openapi.json on main (RC 0.0.5): 20 endpoints
 /**
- * This interface is a 1-1 mapping of the {@link https://docs.marlowe.iohk.io/api/ | Marlowe API endpoints}.
+ * The RestAPI offers a simple abstraction for the {@link https://docs.marlowe.iohk.io/api/ | Marlowe Runtime REST API}  endpoints.
+ * You can create an instance of the RestAPI using the {@link mkRestClient} function.
+ * ```
+   import { mkRestClient } from "@marlowe.io/runtime-rest-client";
+   const restClient = mkRestClient("http://localhost:8080");
+   const isHealthy = await restClient.healthcheck();
+  ```
+ *
+ * @remarks
+ * This version of the RestAPI targets version `0.0.5` of the Marlowe Runtime.
+ *
+ * **WARNING**: Not all endpoints are implemented yet.
  */
+// DISCUSSION: @N.H: Should we rename this to RestClient?
 export interface RestAPI {
   /**
    * Gets a paginated list of contracts {@link contract.ContractHeader }
@@ -116,6 +129,19 @@ export interface RestAPI {
     transactionId: TxId,
     hexTransactionWitnessSet: HexTransactionWitnessSet
   ): Promise<void>;
+
+  /**
+   * Gets full transaction details for a specific applyInput transaction of a contract
+   * @param contractId Identifies the contract
+   * @param txId Identifies a transaction for the contract
+   * @throws DecodingError - If the response from the server can't be decoded
+   * @see {@link https://docs.marlowe.iohk.io/api/get-contract-transaction-by-id | The backend documentation}
+   */
+  getContractTransactionById(
+    contractId: ContractId,
+    txId: TxId
+  ): Promise<TransactionDetails>;
+  //   submitTransaction: Transaction.PUT; // - Jamie is it this one? https://docs.marlowe.iohk.io/api/create-transaction-by-id? If so, lets unify
 
   //   getWithdrawals: Withdrawals.GET; // - https://docs.marlowe.iohk.io/api/get-withdrawals
   //   createWithdrawal: Withdrawals.POST; // - https://docs.marlowe.iohk.io/api/create-withdrawals
@@ -212,7 +238,11 @@ export function mkRestClient(baseURL: string): RestAPI {
           contractId,
           transactionId,
           hexTransactionWitnessSet
-        )
+        ));
+    },
+    getContractTransactionById(contractId, txId) {
+      return unsafeTaskEither(
+        Transaction.getViaAxios(axiosInstance)(contractId, txId)
       );
     },
     healthcheck: () =>

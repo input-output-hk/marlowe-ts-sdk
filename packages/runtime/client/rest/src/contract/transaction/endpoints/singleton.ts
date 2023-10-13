@@ -15,16 +15,19 @@ import {
   transactionWitnessSetTextEnvelope,
 } from "@marlowe.io/runtime-core";
 
-import { Details } from "../details.js";
+import { TransactionDetailsGuard, TransactionDetails } from "../details.js";
 import { ContractId, unContractId } from "@marlowe.io/runtime-core";
 
 export type GET = (
   contractId: ContractId,
   transactionId: TxId
-) => TE.TaskEither<Error | DecodingError, Details>;
+) => TE.TaskEither<Error | DecodingError, TransactionDetails>;
 
 type GETPayload = t.TypeOf<typeof GETPayload>;
-const GETPayload = t.type({ links: t.type({}), resource: Details });
+const GETPayload = t.type({
+  links: t.type({}),
+  resource: TransactionDetailsGuard,
+});
 
 export const getViaAxios: (axiosInstance: AxiosInstance) => GET =
   (axiosInstance) => (contractId, transactionId) =>

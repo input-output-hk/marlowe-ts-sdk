@@ -52,6 +52,12 @@
         value="Get Transactions For Contract"
       />
       <br />
+      <input
+        id="get-contract-transaction-by-id"
+        type="button"
+        value="Get contract transaction by id"
+      />
+      <br />
     </div>
 
     <h2>Console</h2>
@@ -61,8 +67,8 @@
     <!-- This import map tells the browser what version of the SDK to use, use the local-importmap for local
          development and the jsdelivr importmap for the latest published version.
       -->
-    <script src="https://cdn.jsdelivr.net/gh/input-output-hk/marlowe-ts-sdk/jsdelivr-npm-importmap.js"></script>
-    <!--script src="/dist/local-importmap.js"></!--script-->
+    <!--script src="https://cdn.jsdelivr.net/gh/input-output-hk/marlowe-ts-sdk/jsdelivr-npm-importmap.js"></!--script-->
+    <script src="/dist/local-importmap.js"></script>
     <script type="module">
       import { mkRestClient } from "@marlowe.io/runtime-rest-client";
       import { MarloweJSON } from "@marlowe.io/adapter/codec";
@@ -146,6 +152,16 @@
         log("<hr/>");
       }
 
+      async function getContractTransactionById() {
+        log(`Getting contract transaction by id on ${H.getRuntimeUrl()}`);
+        const restClient = getRestClient();
+        const result = await restClient.getContractTransactionById(
+          ...getParams()
+        );
+        logJSON("Contract transaction:", result);
+        log("<hr/>");
+      }
+
       H.setupLocalStorageRuntimeUrl();
 
       const healthcheckButton = document.getElementById("healthcheck");
@@ -173,6 +189,14 @@
       getTransactionsForContractButton.addEventListener(
         "click",
         getTransactionsForContract
+      );
+
+      const getContractTransactionByIdButton = document.getElementById(
+        "get-contract-transaction-by-id"
+      );
+      getContractTransactionByIdButton.addEventListener(
+        "click",
+        getContractTransactionById
       );
     </script>
   </body>
