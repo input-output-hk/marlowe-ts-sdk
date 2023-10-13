@@ -228,21 +228,22 @@ export interface CreateContractRequest {
    * An object containing metadata about the contract
    */
   // TODO: Add link to example of metadata
-  // QUESTION: Jamie, why is this required?
-  metadata: Metadata;
+  metadata?: Metadata;
   /**
-   * When we create a contract we need to specify the minimum amount of ADA that we need to deposit. This
-   * is a cardano ledger restriction to avoid spamming the network
+   * To avoid spamming the network, the cardano ledger requires us to deposit a minimum amount of ADA.
+   * The value is in lovelace, so if you want to deposit 3Ada you need to pass 3_000_000 here.
    */
-  // TODO: Find link with better explanation
+  // TODO: @sam
+  //       Create a global documentation page (and link from here) that explains the concept of minUTxO,
+  //       why it is required, who deposits it, and how and when you get it back.
   minUTxODeposit: number;
 
-  // TODO: Comment this
+  // TODO: Comment this and improve the generated type (currently `string | {}`)
   roles?: RolesConfig;
   /**
-   * An object of tags where the key is the tag name and the value is the tag content
+   * An optional object of tags where the **key** is the tag name (`string`) and the **value** is the tag content (`any`)
    */
-  tags: Tags;
+  tags?: Tags;
 
   /**
    * The validator version to use.
@@ -253,7 +254,7 @@ export interface CreateContractRequest {
 export type POST = (
   postContractsRequest: PostContractsRequest,
   addressesAndCollaterals: AddressesAndCollaterals
-) => TE.TaskEither<Error | DecodingError, ContractTextEnvelope>;
+) => TE.TaskEither<Error | DecodingError, CreateContractResponse>;
 
 /**
  * @hidden
@@ -273,22 +274,34 @@ export const PostContractsRequest = t.intersection([
   t.partial({ roles: RolesConfig }),
 ]);
 
-// QUESTION: @N.H and @Jamie: This seems to be only used in the context
-//           of creating a contract that later needs to be signed and submitted.
-//           Should we rename this to something like `UnsignedContractTx` or
-//           `UnsignedCreateContractTx`?
-export interface ContractTextEnvelope {
+export interface CreateContractResponse {
+  /**
+   * This is the ID the contract will have after it is signed and submitted.
+   */
   contractId: ContractId;
+  /**
+   * An array of possible errors that the contract might have.
+   * @see {@link https://github.com/input-output-hk/marlowe-cardano/blob/81d1e81ca2b40e06c794ad7d97ed4d138f60ab24/marlowe/src/Language/Marlowe/Analysis/Safety/Types.hs#L110}
+   */
+  // TODO: type this
+  safetyErrors: unknown[];
+  /**
+   * The unsigned transaction that will be used to create the contract.
+   * @see {@link @marlowe.io/wallet!api.WalletAPI#signTx}
+   * @see {@link index.RestAPI#submitContract}
+   */
+  // QUESTION: Should we rename the property or the type to indicate that is unsigned?
   tx: TextEnvelope;
 }
 
 /**
  * @hidden
  */
-export const ContractTextEnvelopeGuard = assertGuardEqual(
-  proxy<ContractTextEnvelope>(),
+const CreateContractResponseGuard = assertGuardEqual(
+  proxy<CreateContractResponse>(),
   t.type({
     contractId: ContractIdGuard,
+    safetyErrors: t.UnknownArray,
     tx: TextEnvelopeGuard,
   })
 );
@@ -296,7 +309,7 @@ export const ContractTextEnvelopeGuard = assertGuardEqual(
 export type PostResponse = t.TypeOf<typeof PostResponse>;
 export const PostResponse = t.type({
   links: t.type({ contract: t.string }),
-  resource: ContractTextEnvelopeGuard,
+  resource: CreateContractResponseGuard,
 });
 /**
  * @see {@link https://docs.marlowe.iohk.io/api/create-contracts}

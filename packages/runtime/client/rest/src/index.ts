@@ -90,7 +90,7 @@ export interface RestAPI {
   //             contract, rather it is creating the transaction to be signed
   createContract(
     request: Contracts.CreateContractRequest
-  ): Promise<Contracts.ContractTextEnvelope>;
+  ): Promise<Contracts.CreateContractResponse>;
 
   /**
    * Gets a single contract by id
@@ -199,8 +199,8 @@ export function mkRestClient(baseURL: string): RestAPI {
       const postContractsRequest = {
         contract: request.contract,
         version: request.version,
-        metadata: request.metadata,
-        tags: request.tags,
+        metadata: request.metadata ?? {},
+        tags: request.tags ?? {},
         minUTxODeposit: request.minUTxODeposit,
         roles: request.roles,
       };
