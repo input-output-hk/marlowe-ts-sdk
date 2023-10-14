@@ -51,6 +51,7 @@ export interface ContractsAPI {
   /**
    * Submit to the Cardano Ledger, the Transaction(Tx) that will create the Marlowe Contract passed in the request.
    * @param createContractRequest Request parameters for creating a Marlowe Contract on Cardano
+   * @returns ContractId (Marlowe id) and TxId (Cardano id) of the submitted Tx
    * @throws DecodingError
    */
   createContract(

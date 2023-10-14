@@ -205,16 +205,24 @@ export interface CreateContractRequest {
   // FIXME: create ticket to add stake address
   // stakeAddress: void;
   /**
-   * Address to send any remainders of the transaction.
+   * The Marlowe Runtime utilizes this mandatory field and any additional addresses provided in `usedAddresses`
+   * to search for UTxOs that can be used to balance the contract creation transaction.
+   *
+   * Any change from the creation transaction will be sent here.
    * @see WalletAPI function {@link @marlowe.io/wallet!api.WalletAPI#getChangeAddress}
+   * @see WalletAPI function {@link @marlowe.io/wallet!api.WalletAPI#getUsedAddresses}
    * @see {@link https://academy.glassnode.com/concepts/utxo#change-in-utxo-models}
    */
   changeAddress: AddressBech32;
   /**
-   * TODO: Document
+   * The Marlowe Runtime utilizes the mandatory `changeAddress` and any additional addresses provided here
+   * to search for UTxOs that can be used to balance the contract creation transaction.
+   * @remarks
+   * 1. When using single address wallets like Nami, it is not necesary to fill this field.
+   * 2. If an address was provided in the `changeAddress` field, it is redundant to include it here (but it doesn't fail).
+   * @see WalletAPI function {@link @marlowe.io/wallet!api.WalletAPI#getChangeAddress}
+   * @see WalletAPI function {@link @marlowe.io/wallet!api.WalletAPI#getUsedAddresses}
    */
-  // Got this name from AddressesAndCollaterals.
-  // TODO: @Jamie, @N.H, lets unify name. Plain `x-Address` is not very descriptive, seems singular
   usedAddresses?: AddressBech32[];
   /**
    * TODO: Document
