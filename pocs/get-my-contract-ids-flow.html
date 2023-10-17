@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>Get my contract ids</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script type="importmap">
+      {
+        "imports": {
+          "@marlowe.io/adapter": "/packages/adapter/dist/bundled/esm/adapter.js",
+          "@marlowe.io/adapter/codec": "/packages/adapter/dist/bundled/esm/codec.js",
+          "@marlowe.io/adapter/file": "/packages/adapter/dist/bundled/esm/file.js",
+          "@marlowe.io/adapter/fp-ts": "/packages/adapter/dist/bundled/esm/fp-ts.js",
+          "@marlowe.io/adapter/http": "/packages/adapter/dist/bundled/esm/http.js",
+          "@marlowe.io/adapter/time": "/packages/adapter/dist/bundled/esm/time.js",
+          "@marlowe.io/language-core-v1": "/packages/language/core/v1/dist/bundled/esm/language-core-v1.js",
+          "@marlowe.io/language-core-v1/guards": "/packages/language/core/v1/dist/bundled/esm/guards.js",
+          "@marlowe.io/language-core-v1/next": "/packages/language/core/v1/dist/bundled/esm/next.js",
+          "@marlowe.io/language-core-v1/version": "/packages/language/core/v1/dist/bundled/esm/version.js",
+          "@marlowe.io/language-examples": "/packages/language/examples/dist/bundled/esm/language-examples.js",
+          "@marlowe.io/token-metadata-client": "/packages/token-metadata-client/dist/bundled/esm/token-metadata-client.js",
+          "@marlowe.io/wallet": "/packages/wallet/dist/bundled/esm/wallet.js",
+          "@marlowe.io/wallet/api": "/packages/wallet/dist/bundled/esm/api.js",
+          "@marlowe.io/wallet/browser": "/packages/wallet/dist/bundled/esm/browser.js",
+          "@marlowe.io/wallet/nodejs": "/packages/wallet/dist/bundled/esm/nodejs.js",
+          "@marlowe.io/runtime-rest-client": "/packages/runtime/client/rest/dist/bundled/esm/runtime-rest-client.js",
+          "@marlowe.io/runtime-rest-client/transaction": "/packages/runtime/client/rest/dist/bundled/esm/transaction.js",
+          "@marlowe.io/runtime-rest-client/withdrawal": "/packages/runtime/client/rest/dist/bundled/esm/withdrawal.js",
+          "@marlowe.io/runtime-core": "/packages/runtime/core/dist/bundled/esm/runtime-core.js",
+          "@marlowe.io/runtime-lifecycle": "/packages/runtime/lifecycle/dist/bundled/esm/runtime-lifecycle.js",
+          "@marlowe.io/runtime-lifecycle/api": "/packages/runtime/lifecycle/dist/bundled/esm/api.js",
+          "@marlowe.io/runtime-lifecycle/browser": "/packages/runtime/lifecycle/dist/bundled/esm/browser.js",
+          "@marlowe.io/runtime-lifecycle/generic": "/packages/runtime/lifecycle/dist/bundled/esm/generic.js",
+          "lucid-cardano": "https://unpkg.com/lucid-cardano@0.10.7/web/mod.js"
+        }
+      }
+    </script>
+  </head>
+  <body></body>
+  <script type="module">
+    import { Browser } from "@marlowe.io/runtime-lifecycle";
+    import { getAvailableWallets } from "@marlowe.io/wallet";
+
+    const walletName = "nami"; // choose one with getAvailableWallets
+
+    window.runtimeLifeCycle = await Browser.mkRuntimeLifecycle({
+      runtimeURL: "https://marlowe-runtime-preview-web.scdev.aws.iohkdev.io/",
+      walletName,
+    });
+
+    const mkContract = (address, timeout) => ({
+      when: [
+        {
+          then: "close",
+          case: {
+            for_choice: {
+              choice_owner: { address },
+              choice_name: "my-choice",
+            },
+            choose_between: [{ to: 1, from: 0 }],
+          },
+        },
+      ],
+      timeout_continuation: "close",
+      timeout,
+    });
+
+    window.createContract = async () => {
+      const address = await window.runtimeLifeCycle.wallet.getChangeAddress();
+      return runtimeLifeCycle.contracts.createContract({
+        contract: mkContract(address, Date.now() + 1000 * 60 * 10),
+      });
+    };
+  </script>
+</html>

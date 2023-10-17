@@ -30,6 +30,8 @@ import {
   AddressesAndCollaterals,
   AddressBech32,
   TxOutRef,
+  AssetId,
+  unPolicyId,
 } from "@marlowe.io/runtime-core";
 
 import { ContractHeader } from "../header.js";
@@ -66,56 +68,80 @@ export interface GetContractsRequest {
   // QUESTION: @Jamie or @N.H, a tag is marked as string, but when creating a contract you need to pass a key and a value, what is this
   //           string supposed to be? I have some contracts with tag "{SurveyContract: CryptoPall2023}" that I don't know how to search for.
   tags?: Tag[];
-  // FIXME: create ticket to Add RoleCurrency filter
-}
+  /**
+   * Optional partyAddresses to filter the contracts by.
+   */
+  partyAddresses?: AddressBech32[];
+  /**
+   * Optional partyRoles to filter the contracts by.
+   */
+  partyRoles?: AssetId[];
+};
 
 export type GETHeadersByRange = (
   rangeOption: O.Option<ContractsRange>
-) => (
-  tags: Tag[]
-) => TE.TaskEither<Error | DecodingError, GetContractsResponse>;
+) => (kwargs: {
+  tags: Tag[];
+  partyAddresses: AddressBech32[];
+  partyRoles: AssetId[];
+}) => TE.TaskEither<Error | DecodingError, GetContractsResponse>;
+
+const roleToParameter = (roleToken: AssetId) =>
+  `${unPolicyId(roleToken.policyId)}.${roleToken.assetName}`;
 
 /**
  * @see {@link https://docs.marlowe.iohk.io/api/get-contracts}
  */
 export const getHeadersByRangeViaAxios: (
   axiosInstance: AxiosInstance
-) => GETHeadersByRange = (axiosInstance) => (rangeOption) => (tags) =>
-  pipe(
-    {
-      url: "/contracts?" + stringify({ tag: tags }, { indices: false }),
-      configs: pipe(
-        rangeOption,
-        O.match(
-          () => ({}),
-          (range) => ({ headers: { Range: unContractsRange(range) } })
+) => GETHeadersByRange =
+  (axiosInstance) =>
+  (rangeOption) =>
+  ({ tags, partyAddresses, partyRoles }) =>
+    pipe(
+      {
+        url:
+          "/contracts?" +
+          stringify(
+            {
+              tag: tags,
+              partyAddress: partyAddresses,
+              partyRole: partyRoles.map(roleToParameter),
+            },
+            { indices: false }
+          ),
+        configs: pipe(
+          rangeOption,
+          O.match(
+            () => ({}),
+            (range) => ({ headers: { Range: unContractsRange(range) } })
+          )
+        ),
+      },
+      ({ url, configs }) =>
+        HTTP.GetWithDataAndHeaders(axiosInstance)(url, configs),
+      TE.map(([headers, data]) => ({
+        data: data,
+        previousRange: headers["prev-range"],
+        nextRange: headers["next-range"],
+      })),
+      TE.chainW((data) =>
+        TE.fromEither(
+          E.mapLeft(formatValidationErrors)(GETByRangeRawResponse.decode(data))
         )
       ),
-    },
-    ({ url, configs }) =>
-      HTTP.GetWithDataAndHeaders(axiosInstance)(url, configs),
-    TE.map(([headers, data]) => ({
-      data: data,
-      previousRange: headers["prev-range"],
-      nextRange: headers["next-range"],
-    })),
-    TE.chainW((data) =>
-      TE.fromEither(
-        E.mapLeft(formatValidationErrors)(GETByRangeRawResponse.decode(data))
-      )
-    ),
-    TE.map((rawResponse) => ({
-      headers: pipe(
-        rawResponse.data.results,
-        A.map((result) => result.resource),
-        A.filter((header) =>
-          eqSetString(new Set(Object.keys(header.tags)), new Set(tags))
-        )
-      ), // All logic instead of Any, TODO : Add the flexibility to chose between Any and All
-      previousRange: rawResponse.previousRange,
-      nextRange: rawResponse.nextRange,
-    }))
-  );
+      TE.map((rawResponse) => ({
+        headers: pipe(
+          rawResponse.data.results,
+          A.map((result) => result.resource),
+          A.filter((header) =>
+            eqSetString(new Set(Object.keys(header.tags)), new Set(tags))
+          )
+        ), // All logic instead of Any, TODO : Add the flexibility to chose between Any and All
+        previousRange: rawResponse.previousRange,
+        nextRange: rawResponse.nextRange,
+      }))
+    );
 
 const eqSetString = (xs: Set<string>, ys: Set<string>) =>
   xs.size === ys.size && [...xs].every((x) => ys.has(x));

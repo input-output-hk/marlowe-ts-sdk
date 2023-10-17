@@ -30,7 +30,8 @@ import { FPTSRestAPI } from "@marlowe.io/runtime-rest-client";
 import { DecodingError } from "@marlowe.io/adapter/codec";
 import { TransactionTextEnvelope } from "@marlowe.io/runtime-rest-client/contract/transaction/endpoints/collection";
 import { Next, noNext } from "@marlowe.io/language-core-v1/next";
-import { isNone } from "fp-ts/lib/Option.js";
+import { isNone, none, Option } from "fp-ts/lib/Option.js";
+import { ContractsRange } from "@marlowe.io/runtime-rest-client/contract/index";
 
 export function mkContractLifecycle(
   wallet: WalletAPI,
@@ -41,6 +42,7 @@ export function mkContractLifecycle(
     createContract: submitCreateTx(di),
     applyInputs: submitApplyInputsTx(di),
     getApplicableInputs: getApplicableInputs(di),
+    getContractIds: getContractIds(di),
   };
 }
 
@@ -81,6 +83,32 @@ const getApplicableInputs =
         rest.contracts.contract.next(contractId)(environement)(parties)
       );
     }
+  };
+
+const getContractIds =
+  ({ rest, wallet }: ContractsDI) =>
+  async (): Promise<ContractId[]> => {
+    const partyAddresses = [
+      await wallet.getChangeAddress(),
+      ...(await wallet.getUsedAddresses()),
+    ];
+    const kwargs = { tags: [], partyAddresses, partyRoles: [] };
+    const loop = async (
+      range: Option<ContractsRange>,
+      acc: ContractId[]
+    ): Promise<ContractId[]> => {
+      const result = await rest.contracts.getHeadersByRange(range)(kwargs)();
+      if (result._tag === "Left") throw result.left;
+      const response = result.right;
+      const contractIds = [
+        ...acc,
+        ...response.headers.map(({ contractId }) => contractId),
+      ];
+      return response.nextRange._tag === "None"
+        ? contractIds
+        : loop(response.nextRange, contractIds);
+    };
+    return loop(none, []);
   };
 
 const getParties: (

@@ -17,7 +17,11 @@ describe("contracts endpoints", () => {
       "(GET:  /contracts/)",
     async () => {
       await pipe(
-        restClient.contracts.getHeadersByRange(O.none)([]),
+        restClient.contracts.getHeadersByRange(O.none)({
+          tags: [],
+          partyAddresses: [],
+          partyRoles: [],
+        }),
         TE.match(
           (e) => {
             console.dir(e, { depth: null });
