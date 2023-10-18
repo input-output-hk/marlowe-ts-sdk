@@ -28,7 +28,12 @@ import * as Transactions from "./contract/transaction/endpoints/collection.js";
 import { TransactionsRange } from "./contract/transaction/endpoints/collection.js";
 import * as ContractNext from "./contract/next/endpoint.js";
 import { unsafeTaskEither } from "@marlowe.io/adapter/fp-ts";
-import { ContractId, TextEnvelope } from "@marlowe.io/runtime-core";
+import {
+  ContractId,
+  TextEnvelope,
+  TxId,
+  HexTransactionWitnessSet,
+} from "@marlowe.io/runtime-core";
 import { submitContractViaAxios } from "./contract/endpoints/singleton.js";
 import { ContractDetails } from "./contract/details.js";
 // import curlirize from 'axios-curlirize';
@@ -102,7 +107,11 @@ export interface RestAPI {
   ): Promise<Transactions.GetTransactionsForContractResponse>;
   //   createTransactionForContract: Transactions.POST; // - https://docs.marlowe.iohk.io/api/create-transactions // TODO: Jamie, lets unify names
   //   getTransactionById: Transaction.GET; // - https://docs.marlowe.iohk.io/api/get-transaction-by-id
-  //   submitTransaction: Transaction.PUT; // - Jamie is it this one? https://docs.marlowe.iohk.io/api/create-transaction-by-id? If so, lets unify
+  submitTransaction(
+    contractId: ContractId,
+    transactionId: TxId,
+    hexTransactionWitnessSet: HexTransactionWitnessSet
+  ): Promise<void>;
 
   //   getWithdrawals: Withdrawals.GET; // - https://docs.marlowe.iohk.io/api/get-withdrawals
   //   createWithdrawal: Withdrawals.POST; // - https://docs.marlowe.iohk.io/api/create-withdrawals
@@ -188,6 +197,9 @@ export function mkRestClient(baseURL: string): RestAPI {
           O.fromNullable(range)
         )
       );
+    },
+    submitTransaction(contractId, transactionId, hexTransactionWitnessSet) {
+      return Promise.reject();
     },
     healthcheck: () =>
       pipe(
