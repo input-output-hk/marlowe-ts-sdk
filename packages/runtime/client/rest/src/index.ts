@@ -203,7 +203,13 @@ export function mkRestClient(baseURL: string): RestAPI {
       );
     },
     submitTransaction(contractId, transactionId, hexTransactionWitnessSet) {
-      return Promise.reject();
+      return unsafeTaskEither(
+        Transaction.putViaAxios(axiosInstance)(
+          contractId,
+          transactionId,
+          hexTransactionWitnessSet
+        )
+      );
     },
     healthcheck: () =>
       pipe(
