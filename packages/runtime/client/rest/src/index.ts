@@ -35,10 +35,16 @@ import {
   HexTransactionWitnessSet,
   WithdrawalId,
   AddressesAndCollaterals,
+  AddressBech32,
+  TxOutRef,
+  Metadata,
 } from "@marlowe.io/runtime-core";
 import { submitContractViaAxios } from "./contract/endpoints/singleton.js";
 import { ContractDetails } from "./contract/details.js";
 import { TransactionDetails } from "./contract/transaction/details.js";
+import { ISO8601 } from "@marlowe.io/adapter/time";
+import { MarloweVersion } from "@marlowe.io/language-core-v1/version";
+import { Input } from "@marlowe.io/language-core-v1";
 // import curlirize from 'axios-curlirize';
 
 // TODO: DELETE
@@ -124,11 +130,18 @@ export interface RestAPI {
    * Create an unsigned transaction which applies inputs to a contract.
    * @see {@link https://docs.marlowe.iohk.io/api/apply-inputs-to-contract}
    */
-  applyInputsToContract(
-    contractId: ContractId,
-    postTransactionsRequest: Transactions.PostTransactionsRequest,
-    addressesAndCollaterals: AddressesAndCollaterals
-  ): Promise<Transactions.TransactionTextEnvelope>;
+  applyInputsToContract(kwargs: {
+    contractId: ContractId;
+    changeAddress: AddressBech32;
+    usedAddresses?: AddressBech32[];
+    collateralUTxOs?: TxOutRef[];
+    invalidBefore?: string;
+    invalidHereafter?: string;
+    version?: "v1";
+    metadata?: { [label: string | number]: any };
+    tags?: { [tag: string]: any };
+    inputs: Input[];
+  }): Promise<Transactions.TransactionTextEnvelope>;
   //   getTransactionById: Transaction.GET; // - https://docs.marlowe.iohk.io/api/get-transaction-by-id
   /**
    * Submit a signed transaction (generated with {@link @marlowe.io/runtime/client/rest!index.RestAPI.html#applyInputsToContract} and signed with the {@link @marlowe.io/wallet!api.WalletAPI#signTx} procedure) that applies inputs to a contract.
@@ -298,16 +311,30 @@ export function mkRestClient(baseURL: string): RestAPI {
         Withdrawals.getHeadersByRangeViaAxios(axiosInstance)(request)
       );
     },
-    applyInputsToContract(
+    applyInputsToContract({
       contractId,
-      postTransactionsRequest,
-      addressesAndCollaterals
-    ) {
+      changeAddress,
+      invalidBefore,
+      invalidHereafter,
+      inputs,
+      ...kwargs
+    }) {
       return unsafeTaskEither(
         Transactions.postViaAxios(axiosInstance)(
           contractId,
-          postTransactionsRequest,
-          addressesAndCollaterals
+          {
+            invalidBefore,
+            invalidHereafter,
+            version: kwargs.version ?? "v1",
+            metadata: kwargs.metadata ?? {},
+            tags: kwargs.tags ?? {},
+            inputs,
+          },
+          {
+            changeAddress,
+            usedAddresses: kwargs.usedAddresses ?? [],
+            collateralUTxOs: kwargs.collateralUTxOs ?? [],
+          }
         )
       );
     },
