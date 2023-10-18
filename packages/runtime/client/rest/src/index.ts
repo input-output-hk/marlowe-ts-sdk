@@ -108,7 +108,7 @@ export interface RestAPI {
   //   createTransactionForContract: Transactions.POST; // - https://docs.marlowe.iohk.io/api/create-transactions // TODO: Jamie, lets unify names
   //   getTransactionById: Transaction.GET; // - https://docs.marlowe.iohk.io/api/get-transaction-by-id
   /**
-   * Submit a signed transaction that applies inputs to a contract.
+   * Submit a signed transaction (generated with {@link @marlowe.io/runtime/client/rest!index.RestAPI.html#createTransactionForContract} and signed with the {@link @marlowe.io/wallet!api.WalletAPI#signTx} procedure) that applies inputs to a contract.
    * @see {@link https://docs.marlowe.iohk.io/api/submit-contract-input-application}
    */
   submitTransaction(
