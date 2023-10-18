@@ -124,7 +124,7 @@ export interface RestAPI {
    * Create an unsigned transaction which applies inputs to a contract.
    * @see {@link https://docs.marlowe.iohk.io/api/apply-inputs-to-contract}
    */
-  createTransactionForContract(
+  applyInputsToContract(
     contractId: ContractId,
     postTransactionsRequest: Transactions.PostTransactionsRequest,
     addressesAndCollaterals: AddressesAndCollaterals
@@ -298,7 +298,7 @@ export function mkRestClient(baseURL: string): RestAPI {
         Withdrawals.getHeadersByRangeViaAxios(axiosInstance)(request)
       );
     },
-    createTransactionForContract(
+    applyInputsToContract(
       contractId,
       postTransactionsRequest,
       addressesAndCollaterals
