@@ -34,6 +34,7 @@ import {
   TxId,
   HexTransactionWitnessSet,
   WithdrawalId,
+  AddressesAndCollaterals
 } from "@marlowe.io/runtime-core";
 import { submitContractViaAxios } from "./contract/endpoints/singleton.js";
 import { ContractDetails } from "./contract/details.js";
@@ -119,7 +120,11 @@ export interface RestAPI {
     contractId: ContractId,
     range?: TransactionsRange
   ): Promise<Transactions.GetTransactionsForContractResponse>;
-  //   createTransactionForContract: Transactions.POST; // - https://docs.marlowe.iohk.io/api/create-transactions // TODO: Jamie, lets unify names
+  createTransactionForContract(
+    contractId: ContractId,
+    postTransactionsRequest: Transactions.PostTransactionsRequest,
+    addressesAndCollaterals: AddressesAndCollaterals
+  ): Promise<Transactions.TransactionTextEnvelope>;
   //   getTransactionById: Transaction.GET; // - https://docs.marlowe.iohk.io/api/get-transaction-by-id
   /**
    * Submit a signed transaction (generated with {@link @marlowe.io/runtime/client/rest!index.RestAPI.html#applyInputsToContract} and signed with the {@link @marlowe.io/wallet!api.WalletAPI#signTx} procedure) that applies inputs to a contract.
@@ -288,6 +293,9 @@ export function mkRestClient(baseURL: string): RestAPI {
       return unsafeTaskEither(
         Withdrawals.getHeadersByRangeViaAxios(axiosInstance)(request)
       );
+    },
+    createTransactionForContract(contractId, postTransactionsRequest, addressesAndCollaterals) {
+      return Promise.reject()
     },
     healthcheck: () =>
       pipe(
