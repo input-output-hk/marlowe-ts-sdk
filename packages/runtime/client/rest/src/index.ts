@@ -107,6 +107,10 @@ export interface RestAPI {
   ): Promise<Transactions.GetTransactionsForContractResponse>;
   //   createTransactionForContract: Transactions.POST; // - https://docs.marlowe.iohk.io/api/create-transactions // TODO: Jamie, lets unify names
   //   getTransactionById: Transaction.GET; // - https://docs.marlowe.iohk.io/api/get-transaction-by-id
+  /**
+   * Submit a signed transaction that applies inputs to a contract.
+   * @see {@link https://docs.marlowe.iohk.io/api/submit-contract-input-application}
+   */
   submitTransaction(
     contractId: ContractId,
     transactionId: TxId,
