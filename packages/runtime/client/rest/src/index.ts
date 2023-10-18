@@ -303,7 +303,13 @@ export function mkRestClient(baseURL: string): RestAPI {
       postTransactionsRequest,
       addressesAndCollaterals
     ) {
-      return Promise.reject();
+      return unsafeTaskEither(
+        Transactions.postViaAxios(axiosInstance)(
+          contractId,
+          postTransactionsRequest,
+          addressesAndCollaterals
+        )
+      );
     },
     healthcheck: () =>
       pipe(
