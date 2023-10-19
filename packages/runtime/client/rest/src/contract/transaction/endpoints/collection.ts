@@ -20,6 +20,7 @@ import {
   AddressBech32,
   AddressesAndCollaterals,
   Metadata,
+  Tags,
   TagsGuard,
   TextEnvelopeGuard,
   TxId,
@@ -137,11 +138,11 @@ export type ApplyInputsToContractRequest = {
   changeAddress: AddressBech32;
   usedAddresses?: AddressBech32[];
   collateralUTxOs?: TxOutRef[];
-  invalidBefore?: string;
-  invalidHereafter?: string;
-  version?: "v1";
-  metadata?: { [label: string | number]: any };
-  tags?: { [tag: string]: any };
+  invalidBefore?: ISO8601;
+  invalidHereafter?: ISO8601;
+  version?: MarloweVersion;
+  metadata?: Metadata;
+  tags?: Tags;
   inputs: Input[];
 };
 
