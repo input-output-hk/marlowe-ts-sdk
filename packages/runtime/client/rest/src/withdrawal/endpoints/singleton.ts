@@ -11,15 +11,25 @@ import { formatValidationErrors } from "jsonbigint-io-ts-reporters";
 import { WithdrawalDetails } from "../details.js";
 import { DecodingError } from "@marlowe.io/adapter/codec";
 import {
+  BlockHeader,
   HexTransactionWitnessSet,
   WithdrawalId,
   transactionWitnessSetTextEnvelope,
   unWithdrawalId,
 } from "@marlowe.io/runtime-core";
+import { TxStatus } from "../../contract/transaction/status.js";
+import { PayoutHeader } from "../../payout/header.js";
 
 export type GET = (
   withdrawalId: WithdrawalId
 ) => TE.TaskEither<Error | DecodingError, WithdrawalDetails>;
+
+export type GetWithdrawalByIdResponse = {
+  withdrawalId: WithdrawalId;
+  status: TxStatus;
+  block: BlockHeader | null;
+  payouts: PayoutHeader[];
+};
 
 /**
  * @see {@link https://docs.marlowe.iohk.io/api/get-withdrawal-by-id}
