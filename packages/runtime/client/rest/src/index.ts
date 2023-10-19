@@ -238,7 +238,8 @@ export function mkRestClient(baseURL: string): RestAPI {
           contractId,
           transactionId,
           hexTransactionWitnessSet
-        ));
+        )
+      );
     },
     getContractTransactionById(contractId, txId) {
       return unsafeTaskEither(
