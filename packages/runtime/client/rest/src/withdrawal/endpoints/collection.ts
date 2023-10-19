@@ -16,9 +16,11 @@ import * as HTTP from "@marlowe.io/adapter/http";
 import { DecodingError } from "@marlowe.io/adapter/codec";
 
 import {
+  AddressBech32,
   AddressesAndCollaterals,
   PayoutId,
   TextEnvelopeGuard,
+  TxOutRef,
   WithdrawalId,
   unAddressBech32,
   unTxOutRef,
@@ -94,13 +96,20 @@ export const GETByRangeResponse = t.type({
   nextRange: optionFromNullable(WithdrawalsRange),
 });
 
+export type WithdrawPayoutsRequest = {
+  payoutIds: PayoutId[];
+  changeAddress: AddressBech32;
+  usedAddresses?: AddressBech32[];
+  collateralUTxOs?: TxOutRef[];
+};
+
 export type POST = (
   payoutIds: PayoutId[],
   addressesAndCollaterals: AddressesAndCollaterals
-) => TE.TaskEither<Error | DecodingError, WithdrawalTextEnvelope>;
+) => TE.TaskEither<Error | DecodingError, WithdrawPayoutsResponse>;
 
-export type WithdrawalTextEnvelope = t.TypeOf<typeof WithdrawalTextEnvelope>;
-export const WithdrawalTextEnvelope = t.type({
+export type WithdrawPayoutsResponse = t.TypeOf<typeof WithdrawPayoutsResponse>;
+export const WithdrawPayoutsResponse = t.type({
   withdrawalId: WithdrawalId,
   tx: TextEnvelopeGuard,
 });
@@ -108,7 +117,7 @@ export const WithdrawalTextEnvelope = t.type({
 export type PostResponse = t.TypeOf<typeof PostResponse>;
 export const PostResponse = t.type({
   links: t.type({}),
-  resource: WithdrawalTextEnvelope,
+  resource: WithdrawPayoutsResponse,
 });
 
 /**

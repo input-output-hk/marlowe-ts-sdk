@@ -144,7 +144,13 @@ export interface RestAPI {
   //   submitTransaction: Transaction.PUT; // - Jamie is it this one? https://docs.marlowe.iohk.io/api/create-transaction-by-id? If so, lets unify
 
   //   getWithdrawals: Withdrawals.GET; // - https://docs.marlowe.iohk.io/api/get-withdrawals
-  //   createWithdrawal: Withdrawals.POST; // - https://docs.marlowe.iohk.io/api/create-withdrawals
+  /**
+   * Build an unsigned transaction (sign with the {@link @marlowe.io/wallet!api.WalletAPI#signTx} procedure) which withdraws available payouts from a contract (when applied with the {@link @marlowe.io/runtime/client/rest!index.RestAPI.html#submitWithdrawal} procedure).
+   * @see {@link https://docs.marlowe.iohk.io/api/withdraw-payouts}
+   */
+  withdrawPayouts(
+    request: Withdrawals.WithdrawPayoutsRequest
+  ): Promise<Withdrawals.WithdrawPayoutsResponse>;
   //   getWithdrawalById: Withdrawal.GET; // - https://docs.marlowe.iohk.io/api/get-withdrawal-by-id
   //   submitWithdrawal: Withdrawal.PUT; - is it this one? https://docs.marlowe.iohk.io/api/create-withdrawal? or the one for createWithdrawal?
   // TODO: PLT-7719 we should also export the return headers information (Node-Tip Runtime-Chain-Tip Runtime-Tip Runtime-Version Network-Id)
@@ -245,6 +251,9 @@ export function mkRestClient(baseURL: string): RestAPI {
       return unsafeTaskEither(
         Transaction.getViaAxios(axiosInstance)(contractId, txId)
       );
+    },
+    withdrawPayouts({}) {
+      return Promise.reject();
     },
     healthcheck: () =>
       pipe(
