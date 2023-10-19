@@ -252,8 +252,14 @@ export function mkRestClient(baseURL: string): RestAPI {
         Transaction.getViaAxios(axiosInstance)(contractId, txId)
       );
     },
-    withdrawPayouts({}) {
-      return Promise.reject();
+    withdrawPayouts({ payoutIds, changeAddress, ...request }) {
+      return unsafeTaskEither(
+        Withdrawals.postViaAxios(axiosInstance)(payoutIds, {
+          changeAddress,
+          usedAddresses: request.usedAddresses ?? [],
+          collateralUTxOs: request.collateralUTxOs ?? [],
+        })
+      );
     },
     healthcheck: () =>
       pipe(
