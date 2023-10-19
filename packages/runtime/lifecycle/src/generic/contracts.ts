@@ -1,10 +1,6 @@
 import * as TE from "fp-ts/lib/TaskEither.js";
 import { pipe } from "fp-ts/lib/function.js";
-import {
-  Environment,
-  mkEnvironment,
-  Party,
-} from "@marlowe.io/language-core-v1";
+import { Environment, Party } from "@marlowe.io/language-core-v1";
 import { tryCatchDefault, unsafeTaskEither } from "@marlowe.io/adapter/fp-ts";
 import {
   ApplyInputsRequest,

@@ -9,7 +9,7 @@
          development and the jsdelivr importmap for the latest published version.
     -->
     <script src="https://cdn.jsdelivr.net/gh/input-output-hk/marlowe-ts-sdk/jsdelivr-npm-importmap.js"></script>
-    <!--script src="/dist/local-importmap.js"></!--script-->
+    <!-- <script src="/dist/local-importmap.js"></script> -->
   </head>
   <body>
     <div>
@@ -72,7 +72,7 @@
     import { mkRestClient } from "@marlowe.io/runtime-rest-client";
     import { adaToken } from "@marlowe.io/language-core-v1";
     import { Deposit, Choice } from "@marlowe.io/language-core-v1/next";
-    const dappId = "marlowe.ts.sdk.example.vesting.v1.0.4";
+    const dappId = "marlowe.examples.vesting.v0.0.5";
     const runtimeURL = getRuntimeUrl();
 
     const walletName = document.getElementById("wallet").value;
@@ -81,16 +81,21 @@
       runtimeURL: runtimeURL,
       walletName: walletName,
     });
+    const changeAddress = await runtimeLifeCycle.wallet.getChangeAddress();
     await listContracts();
 
     function generateVestingContract() {
       clearConsole();
 
       const vestingRequest = {
-        tokenValue: { token: adaToken, amount: 30_00_000n },
-        provider: { role_token: "Provider" },
-        claimer: { role_token: "Claimer" },
-        scheme: { start: new Date(), frequency: "hourly", numberOfPeriods: 2n },
+        provider: { address: changeAddress },
+        claimer: { address: changeAddress },
+        scheme: {
+          start: new Date(),
+          frequency: "hourly",
+          numberOfPeriods: 2n,
+          expectedInitialDeposit: { token: adaToken, amount: 30_000_000n },
+        },
       };
 
       const vestingContract = Vesting.mkContract(vestingRequest);
@@ -114,13 +119,7 @@
       const [contractId, txIdCreated] =
         await runtimeLifeCycle.contracts.createContract({
           contract: vestingContract,
-          tags: { [dappId]: { request } },
-          roles: {
-            [`${request.provider.role_token}`]:
-              await runtimeLifeCycle.wallet.getChangeAddress(),
-            [`${request.claimer.role_token}`]:
-              await runtimeLifeCycle.wallet.getChangeAddress(),
-          },
+          tags: { [dappId]: { scheme: request.scheme } },
         });
       log(
         `Contract Defined : <pre>${MarloweJSON.stringify(
@@ -149,8 +148,8 @@
       );
       const contractIdsAnVestingState = await Promise.all(
         contractIdsAndDetails.map(([contractId, details]) =>
-          Vesting.getState(
-            details.tags[dappId].request,
+          Vesting.getVestingState(
+            details.tags[dappId].scheme,
             details.state,
             (environment) =>
               runtimeLifeCycle.contracts.getApplicableInputs(
@@ -187,9 +186,6 @@
       log(`<pre>${contractIdSelected} is in state ${vestingState.name}</pre>`);
       switch (vestingState.name) {
         case "WaitingDepositByProvider": {
-          if (vestingState.timingOut) {
-            return;
-          }
           const txId = await runtimeLifeCycle.contracts.applyInputs(
             contractIdSelected,
             { inputs: vestingState.depositInput }
@@ -214,8 +210,7 @@
           break;
         }
         case "WithinVestingPeriod": {
-          if (vestingState.timingOut) {
-          } else if (vestingState.withdrawInput) {
+          if (vestingState.withdrawInput) {
             const txId = await runtimeLifeCycle.contracts.applyInputs(
               contractIdSelected,
               { inputs: vestingState.withdrawInput }
