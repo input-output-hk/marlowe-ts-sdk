@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Marlowe Workshop - Survey Custodian</title>
+  </head>
+  <body>
+    <h1>Marlowe Workshop - Survey Custodian</h1>
+    <div>
+      <h2>Setup Example</h2>
+      <label for="runtimeUrl">URL to a Marlowe Runtime instance:</label>
+      <input
+        id="runtimeUrl"
+        type="text"
+        autocomplete="on"
+        placeholder="http://localhost:32952"
+      />
+      <br />
+      <label for="wallet">Select wallet:</label>
+      <select id="wallet" name="wallet"></select>
+    </div>
+    <hr />
+    <div>
+      <h2>Decryption key</h2>
+      <textarea
+        name="decryption-key"
+        id="decryption-key"
+        cols="30"
+        rows="10"
+      ></textarea>
+      <br />
+      <input id="set-decryption-key" type="button" value="Set decryption key" />
+    </div>
+    <div>
+      <h2>Load contract</h2>
+
+      <label for="contractId">ContractId:</label>
+      <input type="text" id="contract-id" name="contractId" />
+
+      <input id="load-contract" type="button" value="Load contract" />
+      <input
+        id="give-reward"
+        type="button"
+        value="Give reward"
+        disabled="true"
+      />
+      <br />
+      <i>ContractId</i>: <a id="contract-id-indicator">-</a>
+    </div>
+    <hr />
+    <h2>Console</h2>
+    <input id="clear-console" type="button" value="Clear console" />
+    <div id="console"></div>
+
+    <!-- This import map tells the browser what version of the SDK to use, use the local-importmap for local
+         development and the jsdelivr importmap for the latest published version.
+      -->
+    <!--script src="https://cdn.jsdelivr.net/gh/input-output-hk/marlowe-ts-sdk/jsdelivr-npm-importmap.js"></!--script-->
+    <script src="/dist/local-importmap.js"></script>
+    <script src="https:/cdn.jsdelivr.net/npm/jsencrypt/bin/jsencrypt.min.js"></script>
+
+    <script type="module" src="index.js"></script>
+  </body>
+</html>

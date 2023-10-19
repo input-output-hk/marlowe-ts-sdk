@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Marlowe Workshop - Survey Participant</title>
+  </head>
+  <body>
+    <h1>Marlowe Workshop - Survey Participant</h1>
+    <div>
+      <h2>Setup Example</h2>
+      <label for="runtimeUrl">URL to a Marlowe Runtime instance:</label>
+      <input
+        id="runtimeUrl"
+        type="text"
+        autocomplete="on"
+        placeholder="http://localhost:32952"
+      />
+      <br />
+      <label for="wallet">Select wallet:</label>
+      <select id="wallet" name="wallet"></select>
+    </div>
+    <hr />
+
+    <div>
+      <h2>Create Contract</h2>
+
+      <p>
+        TODO: instructions on how to create the contract from playground. If
+        they cannot do it they can run directly from template.
+      </p>
+      <label for="answerTimeout">Answer Timeout:</label>
+      <input type="datetime-local" id="answerTimeout" name="answerTimeout" />
+      Local time
+
+      <br /><br />
+
+      <label for="rewardTimeout">Reward Timeout:</label>
+      <input type="datetime-local" id="rewardTimeout" name="rewardTimeout" />
+      Local time<br /><br />
+      <label for="contractFile">Upload a contract from playground</label>
+      <input type="file" id="contractFile" name="contractFile" accept=".json" />
+      <br />
+      <label for="create-contract">Create from template</label>
+      <input id="create-contract" type="button" value="Create contract" />
+      <br />
+      <i>ContractId</i>: <a id="contract-id-indicator">-</a>
+    </div>
+    <hr />
+    <div>
+      <h2>Submit answers</h2>
+
+      <ol>
+        <li>
+          <div>
+            <label for="answer-1"
+              >I’d like to use/recommend Marlowe for future dApps</label
+            >
+            <select id="answer-1">
+              <option value="5">Highly agree</option>
+              <option value="4">Agree</option>
+              <option value="3" selected>Neutral</option>
+              <option value="2">Disagree</option>
+              <option value="1">Strongly disagree</option>
+            </select>
+          </div>
+        </li>
+        <li>
+          <div>
+            <label for="answer-2">The survey contract was easy to design</label>
+            <select id="answer-2">
+              <option value="5">Highly agree</option>
+              <option value="4">Agree</option>
+              <option value="3" selected>Neutral</option>
+              <option value="2">Disagree</option>
+              <option value="1">Strongly disagree</option>
+            </select>
+          </div>
+        </li>
+        <li>
+          <div>
+            <label for="answer-3"
+              >The Marlowe Runtime was easy to work with</label
+            >
+            <select id="answer-3">
+              <option value="5">Highly agree</option>
+              <option value="4">Agree</option>
+              <option value="3" selected>Neutral</option>
+              <option value="2">Disagree</option>
+              <option value="1">Strongly disagree</option>
+            </select>
+          </div>
+        </li>
+        <li>
+          <div>
+            <label for="answer-4">I am an experienced web3 developer</label>
+            <select id="answer-4">
+              <option value="5">Highly agree</option>
+              <option value="4">Agree</option>
+              <option value="3" selected>Neutral</option>
+              <option value="2">Disagree</option>
+              <option value="1">Strongly disagree</option>
+            </select>
+          </div>
+        </li>
+        <li>
+          <div>
+            <label for="comments"
+              >Please share any comments (240 char max)</label
+            >
+            <textarea id="comments" name="comments" maxlength="240"></textarea>
+          </div>
+        </li>
+      </ol>
+    </div>
+
+    <input id="submit" type="button" value="Submit answers" />
+    <hr />
+    <h2>Console</h2>
+    <input id="clear-console" type="button" value="Clear console" />
+    <div id="console"></div>
+
+    <!-- This import map tells the browser what version of the SDK to use, use the local-importmap for local
+         development and the jsdelivr importmap for the latest published version.
+      -->
+    <!--script src="https://cdn.jsdelivr.net/gh/input-output-hk/marlowe-ts-sdk/jsdelivr-npm-importmap.js"></!--script-->
+    <script src="/dist/local-importmap.js"></script>
+    <script src="https:/cdn.jsdelivr.net/npm/jsencrypt/bin/jsencrypt.min.js"></script>
+
+    <script type="module" src="index.js"></script>
+  </body>
+</html>
