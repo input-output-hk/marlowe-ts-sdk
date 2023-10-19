@@ -32,6 +32,7 @@ import {
   ContractIdGuard,
   unContractId,
 } from "@marlowe.io/runtime-core";
+import { assertGuardEqual, proxy } from "@marlowe.io/adapter/io-ts";
 
 /**
  * A transaction range provides pagination options for the {@link index.RestAPI#getTransactionsForContract | Get transactions for contract } endpoint
@@ -109,13 +110,17 @@ export interface GetTransactionsForContractResponse {
   nextRange: O.Option<TransactionsRange>;
 }
 
-// TODO: Fix guard type
-// export const GetTransactionsForContractResponseGuard: t.Type<GetTransactionsForContractResponse> = t.type({
-export const GetTransactionsForContractResponseGuard = t.type({
-  headers: t.array(TxHeaderGuard),
-  previousRange: optionFromNullable(TransactionsRangeGuard),
-  nextRange: optionFromNullable(TransactionsRangeGuard),
-});
+/**
+ * @hidden
+ */
+export const GetTransactionsForContractResponseGuard = assertGuardEqual(
+  proxy<GetTransactionsForContractResponse>(),
+  t.type({
+    headers: t.array(TxHeaderGuard),
+    previousRange: optionFromNullable(TransactionsRangeGuard),
+    nextRange: optionFromNullable(TransactionsRangeGuard),
+  })
+);
 
 export type TransactionTextEnvelope = t.TypeOf<typeof TransactionTextEnvelope>;
 export const TransactionTextEnvelope = t.type({

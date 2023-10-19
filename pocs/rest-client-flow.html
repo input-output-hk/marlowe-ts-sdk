@@ -36,144 +36,148 @@
         >
       </div>
       <br />
-      <input id="healthcheck" type="button" value="Healthcheck" />
-      <br />
-      <input id="get-contracts" type="button" value="Get Contracts" />
-      <br />
-      <input id="get-contract-by-id" type="button" value="Get Contract by id" />
-      <br />
-      <input id="create-contract" type="button" value="Create Contract" />
-      <br />
-      <input id="submit-contract" type="button" value="Submit Contract" />
+      <input
+        id="healthcheck"
+        type="button"
+        value="Healthcheck"
+        class="endpoint"
+      />
       <br />
       <input
-        id="get-transactions-for-contract"
+        id="getContracts"
+        type="button"
+        value="Get Contracts"
+        class="endpoint"
+      />
+      <br />
+      <input
+        id="getContractById"
+        type="button"
+        value="Get Contract by id"
+        class="endpoint"
+      />
+      <br />
+      <input
+        id="createContract"
+        type="button"
+        value="Create Contract"
+        class="endpoint"
+      />
+      <br />
+      <input
+        id="submitContract"
+        type="button"
+        value="Submit Contract"
+        class="endpoint"
+      />
+      <br />
+      <input
+        id="getTransactionsForContract"
         type="button"
         value="Get Transactions For Contract"
+        class="endpoint"
+      />
+      <br />
+      <input
+        id="getContractTransactionById"
+        type="button"
+        value="Get contract transaction by id"
+        class="endpoint"
       />
       <br />
     </div>
 
     <h2>Console</h2>
-    <div id="console"></div>
     <input id="clear-console" type="button" value="Clear console" />
+    <div id="console"></div>
 
     <!-- This import map tells the browser what version of the SDK to use, use the local-importmap for local
          development and the jsdelivr importmap for the latest published version.
       -->
     <script src="https://cdn.jsdelivr.net/gh/input-output-hk/marlowe-ts-sdk/jsdelivr-npm-importmap.js"></script>
-    <!--script src="/dist/local-importmap.js"></!--script-->
+    <!--script src="/dist/local-importmap.js"></script-->
     <script type="module">
       import { mkRestClient } from "@marlowe.io/runtime-rest-client";
       import { MarloweJSON } from "@marlowe.io/adapter/codec";
       import { clearConsole, log, logJSON } from "./js/poc-helpers.js";
       import * as H from "./js/poc-helpers.js";
-      let restClient = null;
+      window.restClient = null;
       function getRestClient() {
-        if (restClient === null) {
+        if (window.restClient === null) {
           const runtimeURL = H.getRuntimeUrl();
-          restClient = mkRestClient(runtimeURL);
+          window.restClient = mkRestClient(runtimeURL);
         }
-        return restClient;
+        return window.restClient;
       }
       const runtimeUrlInput = document.getElementById("runtimeUrl");
       runtimeUrlInput.addEventListener("change", () => {
-        restClient = null;
+        window.restClient = null;
       });
+
+      async function callEndpoint(restClient, action) {
+        let result;
+        try {
+          const params = getParams();
+          switch (action) {
+            case "getContracts":
+              log(`Getting contracts from ${H.getRuntimeUrl()}`);
+              result = await restClient.getContracts(...params);
+              console.log("Contracts", result);
+              const nextRange = result.nextRange?.value ?? "-";
+              const prevRange = result.prevRange?.value ?? "-";
+              log(
+                `Number of contracts in this range: ${result.headers.length} (full list in the browsers console)`
+              );
+              log(`next range: ${nextRange}`);
+              log(`prev range: ${prevRange}`);
+              break;
+            case "submitContract":
+              log(`Submitting contract on ${H.getRuntimeUrl()}`);
+              await restClient.submitContract(...getParams());
+              log(`Done`);
+              break;
+            default:
+              log(`Calling ${action} on ${H.getRuntimeUrl()}`);
+              result = await restClient[action](...params);
+              logJSON("Result:", result);
+          }
+        } catch (e) {
+          log(
+            `There was an error while calling the endpoint <br><pre>${e}</pre><br>Open the browser's console and network tab for more details`
+          );
+          log("<hr/>");
+          throw e;
+        }
+        log("<hr/>");
+      }
 
       function getParams() {
         const jsonParams = document.getElementById("parameter-json").value;
-        const params = JSON.parse(jsonParams);
+        let params;
+        try {
+          params = JSON.parse(jsonParams);
+        } catch (e) {
+          throw new Error("Parameters must be a valid JSON array: " + e);
+        }
         if (!Array.isArray(params)) {
           throw new Error("Parameters must be an array");
         }
         return params;
       }
-      async function getContracts() {
-        log(`Getting contracts from ${H.getRuntimeUrl()}`);
-        const restClient = getRestClient();
-        const result = await restClient.getContracts(...getParams());
-        // log(`Contracts: ${JSON.stringify(result)}`);
-        console.log("Contracts", result);
-        const nextRange = result.nextRange?.value ?? "-";
-        const prevRange = result.prevRange?.value ?? "-";
-        log(
-          `Number of contracts in this range: ${result.headers.length} (full list in the browsers console)`
-        );
-        log(`next range: ${nextRange}`);
-        log(`prev range: ${prevRange}`);
-        log("<hr/>");
-      }
 
-      async function getContractById() {
-        log(`Getting contract by id from ${H.getRuntimeUrl()}`);
-        const restClient = getRestClient();
-        const result = await restClient.getContractById(...getParams());
-        logJSON("Contract:", result);
-        log("<hr/>");
-      }
-
-      async function createContract() {
-        log(`Creating contract on ${H.getRuntimeUrl()}`);
-        const restClient = getRestClient();
-        const result = await restClient.createContract(...getParams());
-        log(`Contract id: ${result.contractId}`);
-        log(`Unsigned Tx: ${JSON.stringify(result.tx)}`);
-      }
-
-      async function submitContract() {
-        log(`Submitting contract on ${H.getRuntimeUrl()}`);
-        const restClient = getRestClient();
-        const result = await restClient.submitContract(...getParams());
-        log(`Done`);
-      }
-
-      async function healthcheck() {
-        log(`Checking healthcheck on ${H.getRuntimeUrl()}`);
-        const restClient = getRestClient();
-        const result = await restClient.healthcheck();
-        log(`Healthcheck result: ${JSON.stringify(result)}`);
-        log("<hr/>");
-      }
-
-      async function getTransactionsForContract() {
-        log(`Getting transactions for contract on ${H.getRuntimeUrl()}`);
-        const restClient = getRestClient();
-        const result = await restClient.getTransactionsForContract(
-          ...getParams()
-        );
-        logJSON("Transactions:", result);
-        log("<hr/>");
-      }
-
-      H.setupLocalStorageRuntimeUrl();
-
-      const healthcheckButton = document.getElementById("healthcheck");
-      healthcheckButton.addEventListener("click", healthcheck);
-
-      const getContractsButton = document.getElementById("get-contracts");
-      getContractsButton.addEventListener("click", getContracts);
-
-      const createContractButton = document.getElementById("create-contract");
-      createContractButton.addEventListener("click", createContract);
-
-      const submitContractButton = document.getElementById("submit-contract");
-      submitContractButton.addEventListener("click", submitContract);
-
-      const getContractByIdButton =
-        document.getElementById("get-contract-by-id");
-      getContractByIdButton.addEventListener("click", getContractById);
+      const endpointButtons = document.querySelectorAll(".endpoint");
+      endpointButtons.forEach((button) => {
+        button.addEventListener("click", (event) => {
+          const restClient = getRestClient();
+          const action = event.target.id;
+          callEndpoint(restClient, action);
+        });
+      });
 
       const clearConsoleButton = document.getElementById("clear-console");
       clearConsoleButton.addEventListener("click", clearConsole);
 
-      const getTransactionsForContractButton = document.getElementById(
-        "get-transactions-for-contract"
-      );
-      getTransactionsForContractButton.addEventListener(
-        "click",
-        getTransactionsForContract
-      );
+      H.setupLocalStorageRuntimeUrl();
     </script>
   </body>
 </html>

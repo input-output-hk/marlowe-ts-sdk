@@ -51,6 +51,11 @@
       "import": "./dist/esm/fp-ts.js",
       "require": "./dist/bundled/cjs/fp-ts.cjs",
       "types": "./dist/esm/fp-ts.d.ts"
+    },
+    "./io-ts": {
+      "import": "./dist/esm/io-ts.js",
+      "require": "./dist/bundled/cjs/io-ts.cjs",
+      "types": "./dist/esm/io-ts.d.ts"
     }
   },
   "dependencies": {

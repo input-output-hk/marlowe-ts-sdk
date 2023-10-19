@@ -10,7 +10,7 @@ import { Newtype, iso } from "newtype-ts";
 import { formatValidationErrors } from "jsonbigint-io-ts-reporters";
 import { fromNewtype, optionFromNullable } from "io-ts-types";
 import { stringify } from "qs";
-
+import { assertGuardEqual, proxy } from "@marlowe.io/adapter/io-ts";
 import { Contract } from "@marlowe.io/language-core-v1";
 import * as G from "@marlowe.io/language-core-v1/guards";
 import { MarloweVersion } from "@marlowe.io/language-core-v1/version";
@@ -34,7 +34,7 @@ import {
   unPolicyId,
 } from "@marlowe.io/runtime-core";
 
-import { ContractHeader } from "../header.js";
+import { ContractHeader, ContractHeaderGuard } from "../header.js";
 import { RolesConfig } from "../role.js";
 
 import { ContractId, ContractIdGuard } from "@marlowe.io/runtime-core";
@@ -152,7 +152,7 @@ export const GETByRangeRawResponse = t.type({
     results: t.array(
       t.type({
         links: t.type({ contract: t.string, transactions: t.string }),
-        resource: ContractHeader,
+        resource: ContractHeaderGuard,
       })
     ),
   }),
@@ -162,39 +162,40 @@ export const GETByRangeRawResponse = t.type({
 
 /**
  * Represents the response of the {@link index.RestAPI#getContracts | Get contracts } endpoint
- * @see The {@link GetContractsResponse:var | dynamic validator} for this type.
  * @category GetContractsResponse
  */
-export interface GetContractsResponse
-  extends t.TypeOf<typeof GetContractsResponse> {
-  // NOTE: by repeating this the typedoc is generated with the link instead of embedding
-  //       the definition
-  // headers: ContractHeader[];
+export interface GetContractsResponse {
+  /**
+   * A list of minimal contract information that can be used to identify a contract.
+   */
+  // DISCUSSION: Rename to "contracts" or "results"
+  headers: ContractHeader[];
+  // TODO: Change Option for nullable
+  /**
+   * The previous query range. This is used for pagination.
+   */
+  previousRange: O.Option<ContractsRange>;
+  /**
+   * The next query range. This is used for pagination.
+   */
+  nextRange: O.Option<ContractsRange>;
+  // TODO: Add current range
 }
 
 /**
- * This is a {@link !io-ts-usage | Dynamic type validator} for {@link GetContractsResponse:type}.
+ * This is a {@link !io-ts-usage | Dynamic type validator} for {@link GetContractsResponse}.
  * @category Validator
  * @category GetContractsResponse
+ * @hidden
  */
-export const GetContractsResponse = t.type({
-  /**
-   * An array of {@link ContractHeader:type}
-   */
-  // DISCUSSION: Rename to "contracts" or "results"
-  headers: t.array(ContractHeader),
-  // TODO: Change Option for nullable
-  // QUESTION: @Jamie, how are these sorted? previousRange means newer contracts? recent activity?
-  /**
-   * The previous range header. This is used for pagination.
-   */
-  previousRange: optionFromNullable(ContractsRange),
-  /**
-   * The next range header. This is used for pagination.
-   */
-  nextRange: optionFromNullable(ContractsRange),
-  // TODO: Add current range
-});
+export const GetContractsResponseGuard = assertGuardEqual(
+  proxy<GetContractsResponse>(),
+  t.type({
+    headers: t.array(ContractHeaderGuard),
+    previousRange: optionFromNullable(ContractsRange),
+    nextRange: optionFromNullable(ContractsRange),
+  })
+);
 
 /**
  * Request options for the {@link index.RestAPI#createContract | Create contract } endpoint
@@ -204,16 +205,24 @@ export interface CreateContractRequest {
   // FIXME: create ticket to add stake address
   // stakeAddress: void;
   /**
-   * Address to send any remainders of the transaction.
+   * The Marlowe Runtime utilizes this mandatory field and any additional addresses provided in `usedAddresses`
+   * to search for UTxOs that can be used to balance the contract creation transaction.
+   *
+   * Any change from the creation transaction will be sent here.
    * @see WalletAPI function {@link @marlowe.io/wallet!api.WalletAPI#getChangeAddress}
+   * @see WalletAPI function {@link @marlowe.io/wallet!api.WalletAPI#getUsedAddresses}
    * @see {@link https://academy.glassnode.com/concepts/utxo#change-in-utxo-models}
    */
   changeAddress: AddressBech32;
   /**
-   * TODO: Document
+   * The Marlowe Runtime utilizes the mandatory `changeAddress` and any additional addresses provided here
+   * to search for UTxOs that can be used to balance the contract creation transaction.
+   * @remarks
+   * 1. When using single address wallets like Nami, it is not necesary to fill this field.
+   * 2. If an address was provided in the `changeAddress` field, it is redundant to include it here (but it doesn't fail).
+   * @see WalletAPI function {@link @marlowe.io/wallet!api.WalletAPI#getChangeAddress}
+   * @see WalletAPI function {@link @marlowe.io/wallet!api.WalletAPI#getUsedAddresses}
    */
-  // Got this name from AddressesAndCollaterals.
-  // TODO: @Jamie, @N.H, lets unify name. Plain `x-Address` is not very descriptive, seems singular
   usedAddresses?: AddressBech32[];
   /**
    * TODO: Document
@@ -227,21 +236,22 @@ export interface CreateContractRequest {
    * An object containing metadata about the contract
    */
   // TODO: Add link to example of metadata
-  // QUESTION: Jamie, why is this required?
-  metadata: Metadata;
+  metadata?: Metadata;
   /**
-   * When we create a contract we need to specify the minimum amount of ADA that we need to deposit. This
-   * is a cardano ledger restriction to avoid spamming the network
+   * To avoid spamming the network, the cardano ledger requires us to deposit a minimum amount of ADA.
+   * The value is in lovelace, so if you want to deposit 3Ada you need to pass 3_000_000 here.
    */
-  // TODO: Find link with better explanation
+  // TODO: @sam
+  //       Create a global documentation page (and link from here) that explains the concept of minUTxO,
+  //       why it is required, who deposits it, and how and when you get it back.
   minUTxODeposit: number;
 
-  // TODO: Comment this
+  // TODO: Comment this and improve the generated type (currently `string | {}`)
   roles?: RolesConfig;
   /**
-   * An object of tags where the key is the tag name and the value is the tag content
+   * An optional object of tags where the **key** is the tag name (`string`) and the **value** is the tag content (`any`)
    */
-  tags: Tags;
+  tags?: Tags;
 
   /**
    * The validator version to use.
@@ -252,7 +262,7 @@ export interface CreateContractRequest {
 export type POST = (
   postContractsRequest: PostContractsRequest,
   addressesAndCollaterals: AddressesAndCollaterals
-) => TE.TaskEither<Error | DecodingError, ContractTextEnvelope>;
+) => TE.TaskEither<Error | DecodingError, CreateContractResponse>;
 
 /**
  * @hidden
@@ -272,29 +282,42 @@ export const PostContractsRequest = t.intersection([
   t.partial({ roles: RolesConfig }),
 ]);
 
-// QUESTION: @N.H and @Jamie: This seems to be only used in the context
-//           of creating a contract that later needs to be signed and submitted.
-//           Should we rename this to something like `UnsignedContractTx` or
-//           `UnsignedCreateContractTx`?
-export interface ContractTextEnvelope {
+export interface CreateContractResponse {
+  /**
+   * This is the ID the contract will have after it is signed and submitted.
+   */
   contractId: ContractId;
+  /**
+   * An array of possible errors that the contract might have.
+   * @see {@link https://github.com/input-output-hk/marlowe-cardano/blob/81d1e81ca2b40e06c794ad7d97ed4d138f60ab24/marlowe/src/Language/Marlowe/Analysis/Safety/Types.hs#L110}
+   */
+  // TODO: type this
+  safetyErrors: unknown[];
+  /**
+   * The unsigned transaction that will be used to create the contract.
+   * @see {@link @marlowe.io/wallet!api.WalletAPI#signTx}
+   * @see {@link index.RestAPI#submitContract}
+   */
+  // QUESTION: Should we rename the property or the type to indicate that is unsigned?
   tx: TextEnvelope;
 }
 
 /**
  * @hidden
  */
-// TODO: Fix Type
-// export const ContractTextEnvelopeGuard: t.Type<ContractTextEnvelope> = t.type({
-export const ContractTextEnvelopeGuard = t.type({
-  contractId: ContractIdGuard,
-  tx: TextEnvelopeGuard,
-});
+const CreateContractResponseGuard = assertGuardEqual(
+  proxy<CreateContractResponse>(),
+  t.type({
+    contractId: ContractIdGuard,
+    safetyErrors: t.UnknownArray,
+    tx: TextEnvelopeGuard,
+  })
+);
 
 export type PostResponse = t.TypeOf<typeof PostResponse>;
 export const PostResponse = t.type({
   links: t.type({ contract: t.string }),
-  resource: ContractTextEnvelopeGuard,
+  resource: CreateContractResponseGuard,
 });
 /**
  * @see {@link https://docs.marlowe.iohk.io/api/create-contracts}
