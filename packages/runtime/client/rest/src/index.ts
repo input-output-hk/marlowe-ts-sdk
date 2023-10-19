@@ -34,16 +34,12 @@ import {
   TxId,
   HexTransactionWitnessSet,
   WithdrawalId,
-  AddressesAndCollaterals,
   AddressBech32,
   TxOutRef,
-  Metadata,
 } from "@marlowe.io/runtime-core";
 import { submitContractViaAxios } from "./contract/endpoints/singleton.js";
 import { ContractDetails } from "./contract/details.js";
 import { TransactionDetails } from "./contract/transaction/details.js";
-import { ISO8601 } from "@marlowe.io/adapter/time";
-import { MarloweVersion } from "@marlowe.io/language-core-v1/version";
 import { Input } from "@marlowe.io/language-core-v1";
 // import curlirize from 'axios-curlirize';
 
@@ -130,7 +126,7 @@ export interface RestAPI {
    * Create an unsigned transaction which applies inputs to a contract.
    * @see {@link https://docs.marlowe.iohk.io/api/apply-inputs-to-contract}
    */
-  applyInputsToContract(kwargs: {
+  applyInputsToContract(request: {
     contractId: ContractId;
     changeAddress: AddressBech32;
     usedAddresses?: AddressBech32[];
@@ -317,7 +313,7 @@ export function mkRestClient(baseURL: string): RestAPI {
       invalidBefore,
       invalidHereafter,
       inputs,
-      ...kwargs
+      ...request
     }) {
       return unsafeTaskEither(
         Transactions.postViaAxios(axiosInstance)(
@@ -325,15 +321,15 @@ export function mkRestClient(baseURL: string): RestAPI {
           {
             invalidBefore,
             invalidHereafter,
-            version: kwargs.version ?? "v1",
-            metadata: kwargs.metadata ?? {},
-            tags: kwargs.tags ?? {},
+            version: request.version ?? "v1",
+            metadata: request.metadata ?? {},
+            tags: request.tags ?? {},
             inputs,
           },
           {
             changeAddress,
-            usedAddresses: kwargs.usedAddresses ?? [],
-            collateralUTxOs: kwargs.collateralUTxOs ?? [],
+            usedAddresses: request.usedAddresses ?? [],
+            collateralUTxOs: request.collateralUTxOs ?? [],
           }
         )
       );
