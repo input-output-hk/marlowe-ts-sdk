@@ -1,0 +1,27 @@
+name: Test suite
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+
+jobs:
+  check-changelog:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v3.3.0
+
+      - name: 🧰 Setup nix
+        uses: cachix/install-nix-action@v22
+        with:
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🔨 Build project
+        run: |
+          nix develop --show-trace --command bash -c "npm i && npm run build"
+
+      - name: 🧪 Run tests
+        run: |
+          nix develop --show-trace --command bash -c "npm test"
