@@ -17,11 +17,13 @@ import { DecodingError } from "@marlowe.io/adapter/codec";
 import { ISO8601 } from "@marlowe.io/adapter/time";
 
 import {
+  AddressBech32,
   AddressesAndCollaterals,
   Metadata,
   TagsGuard,
   TextEnvelopeGuard,
   TxId,
+  TxOutRef,
   unAddressBech32,
   unTxOutRef,
 } from "@marlowe.io/runtime-core";
@@ -33,6 +35,7 @@ import {
   unContractId,
 } from "@marlowe.io/runtime-core";
 import { assertGuardEqual, proxy } from "@marlowe.io/adapter/io-ts";
+import { Input } from "@marlowe.io/language-core-v1";
 
 /**
  * A transaction range provides pagination options for the {@link index.RestAPI#getTransactionsForContract | Get transactions for contract } endpoint
@@ -128,6 +131,19 @@ export const TransactionTextEnvelope = t.type({
   transactionId: TxId,
   tx: TextEnvelopeGuard,
 });
+
+export type ApplyInputsToContractRequest = {
+  contractId: ContractId;
+  changeAddress: AddressBech32;
+  usedAddresses?: AddressBech32[];
+  collateralUTxOs?: TxOutRef[];
+  invalidBefore?: string;
+  invalidHereafter?: string;
+  version?: "v1";
+  metadata?: { [label: string | number]: any };
+  tags?: { [tag: string]: any };
+  inputs: Input[];
+};
 
 export type POST = (
   contractId: ContractId,

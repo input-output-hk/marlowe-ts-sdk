@@ -34,13 +34,10 @@ import {
   TxId,
   HexTransactionWitnessSet,
   WithdrawalId,
-  AddressBech32,
-  TxOutRef,
 } from "@marlowe.io/runtime-core";
 import { submitContractViaAxios } from "./contract/endpoints/singleton.js";
 import { ContractDetails } from "./contract/details.js";
 import { TransactionDetails } from "./contract/transaction/details.js";
-import { Input } from "@marlowe.io/language-core-v1";
 // import curlirize from 'axios-curlirize';
 
 // TODO: DELETE
@@ -126,18 +123,9 @@ export interface RestAPI {
    * Create an unsigned transaction which applies inputs to a contract.
    * @see {@link https://docs.marlowe.iohk.io/api/apply-inputs-to-contract}
    */
-  applyInputsToContract(request: {
-    contractId: ContractId;
-    changeAddress: AddressBech32;
-    usedAddresses?: AddressBech32[];
-    collateralUTxOs?: TxOutRef[];
-    invalidBefore?: string;
-    invalidHereafter?: string;
-    version?: "v1";
-    metadata?: { [label: string | number]: any };
-    tags?: { [tag: string]: any };
-    inputs: Input[];
-  }): Promise<Transactions.TransactionTextEnvelope>;
+  applyInputsToContract(
+    request: Transactions.ApplyInputsToContractRequest
+  ): Promise<Transactions.TransactionTextEnvelope>;
   //   getTransactionById: Transaction.GET; // - https://docs.marlowe.iohk.io/api/get-transaction-by-id
   /**
    * Submit a signed transaction (generated with {@link @marlowe.io/runtime/client/rest!index.RestAPI.html#applyInputsToContract} and signed with the {@link @marlowe.io/wallet!api.WalletAPI#signTx} procedure) that applies inputs to a contract.
