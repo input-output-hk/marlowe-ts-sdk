@@ -36,7 +36,7 @@ export const contractsRange = iso<WithdrawalsRange>().wrap;
 
 export type GETHeadersByRange = (
   rangeOption: O.Option<WithdrawalsRange>
-) => TE.TaskEither<Error | DecodingError, GETByRangeResponse>;
+) => TE.TaskEither<Error | DecodingError, GetWithdrawalsResponse>;
 
 /**
  * @see {@link https://docs.marlowe.iohk.io/api/get-withdrawals}
@@ -89,8 +89,8 @@ const GETByRangeRawResponse = t.type({
   nextRange: optionFromNullable(WithdrawalsRange),
 });
 
-export type GETByRangeResponse = t.TypeOf<typeof GETByRangeResponse>;
-export const GETByRangeResponse = t.type({
+export type GetWithdrawalsResponse = t.TypeOf<typeof GetWithdrawalsResponse>;
+export const GetWithdrawalsResponse = t.type({
   headers: t.array(WithdrawalHeader),
   previousRange: optionFromNullable(WithdrawalsRange),
   nextRange: optionFromNullable(WithdrawalsRange),
