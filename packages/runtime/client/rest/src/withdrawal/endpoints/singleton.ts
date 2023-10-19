@@ -50,6 +50,11 @@ export const getViaAxios: (axiosInstance: AxiosInstance) => GET =
       )
     );
 
+export type SubmitWithdrawalRequest = {
+  withdrawalId: WithdrawalId;
+  hexTransactionWitnessSet: HexTransactionWitnessSet;
+};
+
 export type PUT = (
   withdrawalId: WithdrawalId,
   hexTransactionWitnessSet: HexTransactionWitnessSet
