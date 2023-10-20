@@ -26,11 +26,10 @@ To get a running instance of the Runtime, it is recommended to check out the ins
 ## Wallet Extensions
 
 |                  | [Nami](https://namiwallet.io/) | [Eternl](https://eternl.io/) | [Lace](https://www.lace.io/) | [Yoroi](https://yoroi-wallet.com/#/) | [Typhon](https://typhonwallet.io/#/) |
-|------------------|:----:|:------:|:----:|:-----:|:-----:|
-| `Compatible`     |✓     |✓       |      |      |       | 
-| `Not Compatible` |      |        |✗     |      |       |
-| `Not Tested`     |      |        |      |?     |?     |
-
+| ---------------- | :----------------------------: | :--------------------------: | :--------------------------: | :----------------------------------: | :----------------------------------: |
+| `Compatible`     |               ✓                |              ✓               |                              |                                      |                                      |
+| `Not Compatible` |                                |                              |              ✗               |                                      |                                      |
+| `Not Tested`     |                                |                              |                              |                  ?                   |                  ?                   |
 
 - Lace: TODO: add github issue with the current problem
 

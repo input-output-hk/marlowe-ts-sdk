@@ -44,7 +44,6 @@ const expectedQuestions = [
   },
 ];
 
-
 export const mkWorkshopSurvey = (options) =>
   survey({
     surveyParticipant: options.surveyParticipant,
@@ -54,7 +53,6 @@ export const mkWorkshopSurvey = (options) =>
     rewardTimeout: datetoTimeout(options.rewardTimeout),
     rewardToken,
   });
-
 
 export function verifySurveyContract(actual, optionalSurveyParticipant = null) {
   const result = verifySurvey(expectedQuestions, actual);

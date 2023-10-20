@@ -1,9 +1,9 @@
 import { log, logJSON } from "../../js/poc-helpers.js";
 import * as H from "../../js/poc-helpers.js";
 import { mkWorkshopSurvey, verifySurveyContract } from "./contract.js";
-import * as G from "@marlowe.io/language-core-v1/guards";
 import { MarloweJSON } from "@marlowe.io/adapter/codec";
 import { encryptMessage } from "../custodian/custodian-encript.js";
+import {timeoutToDate}  from "@marlowe.io/language-core-v1";
 
 // Common helpers for simple examples
 H.setupClearConsole();
@@ -21,9 +21,9 @@ createContractButton.addEventListener(
 const submitButton = document.getElementById("submit");
 submitButton.addEventListener("click", H.tryCatchEvent(submitAllAnswers));
 
-const contractFile = document.getElementById("contractFile");
-contractFile.addEventListener(
-  "change",
+const uploadExcerciseButton = document.getElementById("upload-excercise");
+uploadExcerciseButton.addEventListener(
+  "click",
   H.tryCatchEvent(createContractFromFileUpload)
 );
 
@@ -37,21 +37,34 @@ async function getSurveyParticipant() {
   return { address: surveyParticipant };
 }
 
-async function createContractFromFileUpload(event) {
+async function createContractFromFileUpload() {
+  if (window.contractId != null) {
+    log("Contract already created");
+    return;
+  }
   const surveyParticipant = await getSurveyParticipant();
+  const contractFile = document.getElementById("contractFile");
+  if (!contractFile.files[0]) {
+    log("Please select a file first");
+    return;
+  }
 
-  const file = event.target.files[0];
+  const file = contractFile.files[0];
   log(`Reading file ${file.name}`);
   const reader = new FileReader();
   function handleFile(event) {
     const contract = MarloweJSON.parse(event.target.result);
     const verification = verifySurveyContract(contract, surveyParticipant);
     if (!verification.match) {
-      log("Contract verification failed");
-      return;
+      log("⛔️ Contract verification failed");
+      const yieldSection = document.getElementById("yield-section");
+      yieldSection.style.display = "block";
+    } else {
+      logJSON("✅ Contract verification succeeded", verification);
+      const answerTimeout = timeoutToDate(verification.answerTimeout);
+      const rewardTimeout = timeoutToDate(verification.rewardTimeout);
+      createContract(answerTimeout, rewardTimeout);
     }
-    logJSON("Contract verification succeeded", verification);
-    // logJSON("File read", JSON.parse(event.target.result));
   }
   reader.addEventListener("load", H.tryCatchEvent(handleFile));
   reader.readAsText(file);
@@ -62,15 +75,18 @@ async function createContractFromTemplate() {
     log("Contract already created");
     return;
   }
-
-  const surveyParticipant = await getSurveyParticipant();
   const { answerTimeout, rewardTimeout } = getTimeouts();
+  createContract(answerTimeout, rewardTimeout);
+
+}
+
+async function createContract(answerTimeout, rewardTimeout) {
+  const surveyParticipant = await getSurveyParticipant();
   const contract = mkWorkshopSurvey({
     surveyParticipant,
     answerTimeout,
     rewardTimeout,
   });
-  console.log(contract);
   log("Creating contract");
   const lifecycle = await H.getLifecycle();
   const [contractId] = await lifecycle.contracts.createContract({
@@ -78,8 +94,11 @@ async function createContractFromTemplate() {
     tags: { MarloweSurvey: "test 1" },
   });
   log(`Contract created. ContractId: ${contractId}`);
+
   window.contractId = contractId;
   H.setContractIdIndicator(window.contractId, "contract-id-indicator");
+  const submitAnswerSection = document.getElementById("submit-answers-section");
+  submitAnswerSection.style.display = "block";
 }
 
 async function submitAllAnswers() {

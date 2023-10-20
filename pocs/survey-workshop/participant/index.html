@@ -26,30 +26,143 @@
       <h2>Create Contract</h2>
 
       <p>
-        TODO: instructions on how to create the contract from playground. If
-        they cannot do it they can run directly from template.
+        The onchain survey will consist of 5 questions, the first 4 are
+        statements that you need to agree or disagree and the 5th question is a
+        free text.
       </p>
-      <label for="answerTimeout">Answer Timeout:</label>
-      <input type="datetime-local" id="answerTimeout" name="answerTimeout" />
-      Local time
+      <ol>
+        <li>
+          I’d like to use/recommend Marlowe for future dApps
+          <ul>
+            <li>1 - Highly disagree</li>
+            <li>2 - Disagree</li>
+            <li>3 - Neutral</li>
+            <li>4 - Agree</li>
+            <li>5 - Highly agree</li>
+          </ul>
+        </li>
+        <li>
+          The survey contract was easy to design
+          <ul>
+            <li>1 - Highly disagree</li>
+            <li>2 - Disagree</li>
+            <li>3 - Neutral</li>
+            <li>4 - Agree</li>
+            <li>5 - Highly agree</li>
+          </ul>
+        </li>
+        <li>
+          The Marlowe Runtime was easy to work with
+          <ul>
+            <li>1 - Highly disagree</li>
+            <li>2 - Disagree</li>
+            <li>3 - Neutral</li>
+            <li>4 - Agree</li>
+            <li>5 - Highly agree</li>
+          </ul>
+        </li>
+        <li>
+          I am an experienced web3 developer
+          <ul>
+            <li>1 - Highly disagree</li>
+            <li>2 - Disagree</li>
+            <li>3 - Neutral</li>
+            <li>4 - Agree</li>
+            <li>5 - Highly agree</li>
+          </ul>
+        </li>
+        <li>Please share any comments (240 char max)</li>
+      </ol>
 
-      <br /><br />
+      <p>
+        To design the contract we'll use the Blockly editor in the
+        <a href="https://play.marlowe.iohk.io/">Marlowe Playground</a>. The
+        questions will be modeled using <code>Choice Action</code>. Each
+        question will be answered by the
+        <code> Address $SURVEY_PARTICIPANT_ADDR</code> participant before a
+        parameterized <code> answer timeout</code>. If the contract timeouts we
+        close it.
+      </p>
+      <p>Create the 5 questions blocks with the following parameters:</p>
+      <table>
+        <thead>
+          <tr>
+            <th style="border-bottom: 1px solid black; font-weight: bold">
+              Choice Name
+            </th>
+            <th style="border-bottom: 1px solid black; font-weight: bold">
+              Bounds
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>answer1</td>
+            <td>[1 - 5]</td>
+          </tr>
+          <tr>
+            <td>answer2</td>
+            <td>[1 - 5]</td>
+          </tr>
+          <tr>
+            <td>answer3</td>
+            <td>[1 - 5]</td>
+          </tr>
+          <tr>
+            <td>answer4</td>
+            <td>[1 - 5]</td>
+          </tr>
+          <tr>
+            <td>answer5</td>
+            <td>[1 - 1099511627775]</td>
+          </tr>
+        </tbody>
+      </table>
 
-      <label for="rewardTimeout">Reward Timeout:</label>
-      <input type="datetime-local" id="rewardTimeout" name="rewardTimeout" />
-      Local time<br /><br />
-      <label for="contractFile">Upload a contract from playground</label>
-      <input type="file" id="contractFile" name="contractFile" accept=".json" />
+      <img
+        src="https://raw.githubusercontent.com/input-output-hk/marlowe-starter-kit/a0a07a16314ce190ec63809612ed5af43148b31c/images/survey_question_block.png"
+        alt="Survey question block"
+      />
+      <p>
+      After the questions, the <code> $CUSTODIAN_ADDR</code>participant will deposit 1 <code> Token "6fcbab5bb175b420cd060edb63af74c5b3d4687163f282ddc5377dd3" "SurveyReward"</code> directly into the survey participant account before a parameterized <code>reward timeout</code> and then close the contract. After the contract is closed, the payment of the reward token will be made automatically.
+      </p>
+<img src="https://raw.githubusercontent.com/input-output-hk/marlowe-starter-kit/a0a07a16314ce190ec63809612ed5af43148b31c/images/survey_reward_block.png" alt="Survey reward block" />
+
+      <p>After you have created the contract, send it to simulation and check that there is only one path to receive the SurveyReward, which is to answer the 5 questions and for the custodian to make the deposit.</p>
+      <p>
+      Set the reward timeout bigger than the answer timeout way far in the future, download the contract as survey.json
+      </p>
+<img src="https://raw.githubusercontent.com/input-output-hk/marlowe-starter-kit/a0a07a16314ce190ec63809612ed5af43148b31c/images/survey_contract_parameters.png" alt="Survey contract parameters" />
       <br />
-      <label for="create-contract">Create from template</label>
-      <input id="create-contract" type="button" value="Create contract" />
+      <label for="contractFile">Upload the contract here</label>
+      <input type="file" id="contractFile" name="contractFile" accept=".json" />
+      <input id="upload-excercise" type="button" value="Upload excercise" />
+
+      <br />
+      <br />
+
+      <div id="yield-section" style="display: none">
+        <p>The contract is not the expected one, if you like you can try again or you can create it from this template</p>
+        <label for="answerTimeout">Answer Timeout:</label>
+        <input type="datetime-local" id="answerTimeout" name="answerTimeout" />
+        Local time
+
+        <br /><br />
+
+        <label for="rewardTimeout">Reward Timeout:</label>
+        <input type="datetime-local" id="rewardTimeout" name="rewardTimeout" />
+        Local time<br /><br />
+        <br />
+        <label for="create-contract">Create the contract for me</label>
+        <input id="create-contract" type="button" value="Create contract" />
+      </div>
+      <br />
       <br />
       <i>ContractId</i>: <a id="contract-id-indicator">-</a>
     </div>
-    <hr />
-    <div>
+    <div id="submit-answers-section" style="display: none">
+      <hr />
       <h2>Submit answers</h2>
-
       <ol>
         <li>
           <div>
@@ -112,13 +225,13 @@
           </div>
         </li>
       </ol>
+      <input id="submit" type="button" value="Submit answers" />
     </div>
 
-    <input id="submit" type="button" value="Submit answers" />
     <hr />
     <h2>Console</h2>
-    <input id="clear-console" type="button" value="Clear console" />
     <div id="console"></div>
+    <input id="clear-console" type="button" value="Clear console" />
 
     <!-- This import map tells the browser what version of the SDK to use, use the local-importmap for local
          development and the jsdelivr importmap for the latest published version.
