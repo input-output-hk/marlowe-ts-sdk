@@ -76,7 +76,7 @@ export interface GetContractsRequest {
    * Optional partyRoles to filter the contracts by.
    */
   partyRoles?: AssetId[];
-};
+}
 
 export type GETHeadersByRange = (
   rangeOption: O.Option<ContractsRange>
