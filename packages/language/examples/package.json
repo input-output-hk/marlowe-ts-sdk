@@ -1,10 +1,10 @@
 {
   "name": "@marlowe.io/language-examples",
-  "version": "0.2.0-alpha-5",
+  "version": "0.2.0-alpha-13",
   "description": "Example contracts using language-core-v1",
   "repository": "https://github.com/input-output-hk/marlowe-ts-sdk",
   "publishConfig": {
-    "access": "restricted"
+    "access": "public"
   },
   "contributors": [
     "Nicolas Henin <nicolas.henin@iohk.io> (https://iohk.io)",
@@ -32,7 +32,7 @@
     }
   },
   "dependencies": {
-    "@marlowe.io/language-core-v1": "0.2.0-alpha-5",
+    "@marlowe.io/language-core-v1": "0.2.0-alpha-13",
     "date-fns": "2.29.3",
     "fp-ts": "^2.16.1"
   }

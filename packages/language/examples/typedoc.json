@@ -1,3 +1,6 @@
 {
-  "entryPoints": []
+  "entryPointStrategy": "expand",
+  "entryPoints": ["./src/vesting.ts", "./src/swaps/swap-token-token.ts"],
+  "tsconfig": "./src/tsconfig.json",
+  "categorizeByGroup": false
 }

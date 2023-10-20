@@ -1,3 +1,27 @@
+/**
+ * This module offers capabalities for running a Vesting contract, this contract is defined
+ * as follows :
+ *   1. There are `N` vesting periods.
+ *   2. Each vesting period involves `P` tokens.
+ *   3. The Provider initially deposits `N * P` tokens into the contract.
+ *   4. At the end of each vesting period, `P` tokens are transferred from the
+ *      Provider account to the Claimer account.
+ *   5. During each vesting period, the Provider may cancel the contract, receiving
+ *      back the *unvested* funds from their account and distributing the *vested* funds
+ *      to the claimer.
+ *
+ *   6. Also during each vesting period, the Claimer may withdraw once any of the funds in
+ *      their account. The Provider can still cancel the contract during the vesting period
+ *      after the claimer has withdrawn funds during that vesting period.
+ *
+ *   7. When the contract's ultimate timeout is reached, vested and unvested funds are
+ *      distributed to the Claimer and Provider, respectively.
+ *
+ *   8. The Provider may cancel the contract during the first vesting period.
+ *   9. The Provider may not cancel the contract after all funds have been vested.
+ * @packageDocumentation
+ */
+
 import {
   Contract,
   Case,
@@ -17,22 +41,14 @@ import {
   Deposit,
   Next,
   emptyApplicables,
-  noNext,
 } from "@marlowe.io/language-core-v1/next";
-import addMinutes from "date-fns/addMinutes";
-import subMinutes from "date-fns/subMinutes";
 import * as O from "fp-ts/lib/Option.js";
 import { pipe } from "fp-ts/lib/function.js";
 
 /**
- * Vesting Contract Example
- * @description : a Token `Provider` block funds on a Marlowe Contract and allow a Token `Claimer` to retrieve them
- * based on a Vesting Scheme.
- * Cancel Policy :
- * 1) At any Vesting Period, The Token Provider can cancel the vesting schedule, then all the remaining vested period will be canceled too.
- * 2) The Provider can't cancel previously vested tokens
- *
+ * Create The Vesting Marlowe Contract
  * @param request Request For Creating a Vesting Marlowe Contract
+ * @category Vesting Contract DSL Generation
  */
 export const mkContract = function (request: VestingRequest): Contract {
   const {
@@ -41,17 +57,14 @@ export const mkContract = function (request: VestingRequest): Contract {
   if (numberOfPeriods < 1)
     throw "The number of periods needs to be greater or equal to 1";
 
-  return initialEmployerDeposit(request, employeeDepositDistribution(request));
+  return initialProviderDeposit(request, claimerDepositDistribution(request));
 };
 
 /**
  * Request For Creating a Vesting Marlowe Contract
+ * @category Vesting Request
  */
 export type VestingRequest = {
-  /**
-   * The token and its amount to be vested by the provider
-   */
-  tokenValue: TokenValue;
   /**
    * The party definition of the Token Provider (Role token or a Cardano Address)
    */
@@ -68,6 +81,7 @@ export type VestingRequest = {
 
 /**
  * Frequency at which chunks of tokens will be released
+ * @category Vesting Request
  */
 export type Frequency =
   | "annually"
@@ -76,10 +90,12 @@ export type Frequency =
   | "monthly"
   | "weekly"
   | "daily"
-  | "hourly";
+  | "hourly"
+  | "by-10-minutes";
 
 /**
  * Vesting Scheme Definition
+ * @category Vesting Request
  */
 export type VestingScheme = {
   /**
@@ -94,50 +110,117 @@ export type VestingScheme = {
    * Number of Periods the Provider wants, to release the totality of the tokens to the claimer.
    */
   numberOfPeriods: bigint;
+  /**
+   * The token and its amount to be vested by the provider
+   */
+  expectedInitialDeposit: TokenValue;
 };
 
-export type State = // Initial Deposit
+/**
+ * Vesting Contract State
+ * @category Vesting State
+ */
+export type VestingState =
+  | WaitingDepositByProvider
+  | NoDepositBeforeDeadline
+  | WithinVestingPeriod
+  | VestingEnded
+  | Closed
+  | UnknownState;
 
-    | {
-        name: "WaitingDepositByProvider";
-        initialDepositDeadline: Date;
-        depositInput?: Input[];
-      }
+/**
+ * `WaitingDepositByProvider` State :
+ * The contract has been created. But no inputs has been applied yet.
+ * Inputs are predefined, as a user of this contract, you don't need to create these inputs yourself.
+ * You can provide this input directly to `applyInputs` on the `ContractLifeCycleAPI` :
+ * 1. `depositInput` is availaible if the connected wallet is the Provider.
+ * @category Vesting State
+ */
+export type WaitingDepositByProvider = {
+  name: "WaitingDepositByProvider";
+  scheme: VestingScheme;
+  initialDepositDeadline: Date;
+  depositInput?: Input[];
+};
 
-    // Initial Deposit Failed
-    | {
-        name: "NoDepositBeforeDeadline";
-        initialDepositDeadline: Date;
-        payMinUtxoBackInput: Input[];
-      }
+/**
+ * {@link VestingState:type | Vesting State} where the Initial Deposit deadline has passed.
+ * It supposed to be given by the Provider and is a prerequesite to
+ * continue the contract logic.
+ * @category Vesting State
+ */
+export type NoDepositBeforeDeadline = {
+  name: "NoDepositBeforeDeadline";
+  scheme: VestingScheme;
+  initialDepositDeadline: Date;
+  payMinUtxoBackInput: Input[];
+};
 
-    // Distribution of Initial Deposit
-    | {
-        name: "WithinVestingPeriod";
-        currentPeriod: bigint;
-        periodInterval: [Date, Date];
-        amountToWithdraw: bigint;
-        cancelInput?: Input[];
-        withdrawInput?: Input[];
-      }
-    // Vesting Last Period has elapsed
-    | { name: "VestingEnded"; withdrawInput: Input[] }
+/**
+ * {@link VestingState:type | Vesting State} where the contract in within a vesting period `currentPeriod`
+ * Inputs are predefined, as a user of this contract, you don't need to create these inputs yourself.
+ * You can provide this input directly to `applyInputs` on the `ContractLifeCycleAPI` :
+ * 1. `cancelInput` is availaible if the connected wallet is the Provider.
+ * 2. `withdrawInput` is availaible if the connected wallet is the Claimer.
+ * @category Vesting State
+ */
+export type WithinVestingPeriod = {
+  name: "WithinVestingPeriod";
+  scheme: VestingScheme;
+  currentPeriod: bigint;
+  periodInterval: [Date, Date];
+  quantities: Quantities;
+  cancelInput?: Input[];
+  withdrawInput?: Input[];
+};
 
-    // Closed Contract
-    | { name: "Closed" }
-    | {
-        unknownState: {
-          request: VestingRequest;
-          state: MarloweState;
-          next: Next;
-        };
-      };
+/**
+ * {@link VestingState:type | Vesting State} where the contract has passed all its vesting periods
+ * Inputs are predefined, as a user of this contract, you don't need to create these inputs yourself.
+ * You can provide this input directly to `applyInputs` on the `ContractLifeCycleAPI` :
+ *  - `withdrawInput` is availaible if the connected wallet is the Claimer.
+ * @category Vesting State
+ */
+export type VestingEnded = {
+  name: "VestingEnded";
+  scheme: VestingScheme;
+  quantities: Quantities;
+  withdrawInput?: Input[];
+};
 
-export const getState = async (
-  request: VestingRequest,
+/**
+ * {@link VestingState:type | Vesting State} where the contract is closed
+ * @category Vesting State
+ */
+export type Closed = { name: "Closed"; scheme: VestingScheme };
+
+/**
+ * The contract is in an unexpected state
+ * @category Vesting State
+ */
+export type UnknownState = {
+  name: "UnknownState";
+  scheme: VestingScheme;
+  state: MarloweState;
+  next: Next;
+};
+
+export type Quantities = {
+  total: bigint;
+  vested: bigint;
+  claimed: bigint;
+  withdrawable: bigint;
+};
+
+/**
+ * Provide the State in which a vesting contract is.
+ * @category Vesting State
+ */
+export const getVestingState = async (
+  scheme: VestingScheme,
   stateOpt: O.Option<MarloweState>,
   getNext: (environement: Environment) => Promise<Next>
-): Promise<State> => {
+): Promise<VestingState> => {
   const state = pipe(
     stateOpt,
     O.match(
@@ -145,44 +228,87 @@ export const getState = async (
       (a) => a
     )
   );
-  if (state == null) return { name: "Closed" };
+  if (state == null) return { name: "Closed", scheme: scheme };
 
-  const startTimeout: Timeout = datetoTimeout(new Date(request.scheme.start));
+  const startTimeout: Timeout = datetoTimeout(new Date(scheme.start));
   const periodInMilliseconds: bigint = getPeriodInMilliseconds(
-    request.scheme.frequency
+    scheme.frequency
   );
-  // Employer needs to deposit before the first vesting period
+  // Provider needs to deposit before the first vesting period
   const initialDepositDeadline: Timeout = startTimeout + periodInMilliseconds;
   const now = datetoTimeout(new Date());
-  const currentPeriod: bigint =
-    (now - startTimeout) / periodInMilliseconds + 1n;
+  const currentPeriod: bigint = (now - startTimeout) / periodInMilliseconds;
   const periodInterval: [Date, Date] = [
+    timeoutToDate(startTimeout + periodInMilliseconds * currentPeriod + 1n),
     timeoutToDate(
-      startTimeout + periodInMilliseconds * (currentPeriod - 1n) + 1n
+      startTimeout + periodInMilliseconds * (currentPeriod + 1n) - 1n
     ),
-    timeoutToDate(startTimeout + periodInMilliseconds * currentPeriod - 1n),
   ];
+  const vestingAmountPerPeriod =
+    scheme.expectedInitialDeposit.amount / BigInt(scheme.numberOfPeriods);
+  const vested = currentPeriod * vestingAmountPerPeriod;
 
-  if (now > initialDepositDeadline && state?.accounts.length === 1)
+  const claimed = state.choices
+    .filter((a) => a[0].choice_name === "withdraw")
+    .map((a) => a[1])
+    .reduce((sum, current) => sum + current, 0n);
+  const quantities: Quantities = {
+    total: scheme.expectedInitialDeposit.amount,
+    vested: vested,
+    claimed: claimed,
+    withdrawable: vested - claimed,
+  };
+
+  const environment = mkEnvironment(periodInterval[0])(periodInterval[1]);
+  const next = await getNext(environment);
+
+  if (
+    // Passed the deadline, can reduce , deposit == min utxo
+    now > initialDepositDeadline &&
+    next.can_reduce &&
+    emptyApplicables(next) &&
+    state?.accounts.length === 1 &&
+    state?.accounts[0][1] <= 3_000_000 // min utxo
+  )
     return {
       name: "NoDepositBeforeDeadline",
+      scheme: scheme,
       initialDepositDeadline: timeoutToDate(initialDepositDeadline),
       payMinUtxoBackInput: [],
     };
 
-  const environment = mkEnvironment(periodInterval[0])(periodInterval[1]);
-  const next = await getNext(environment);
-  if (next.can_reduce && emptyApplicables(next) && state?.accounts.length > 1)
-    return { name: "VestingEnded", withdrawInput: [] };
+  if (
+    // can reduce, periods have passed.
+    next.can_reduce &&
+    emptyApplicables(next) &&
+    currentPeriod >= scheme.numberOfPeriods
+  )
+    return {
+      name: "VestingEnded",
+      quantities: {
+        total: scheme.expectedInitialDeposit.amount,
+        vested: scheme.expectedInitialDeposit.amount,
+        claimed: claimed,
+        withdrawable: scheme.expectedInitialDeposit.amount - claimed,
+      },
+      scheme: scheme,
+      withdrawInput: [],
+    };
 
   // Initial Deposit Phase
-  if (state?.accounts.length == 1) {
+  if (
+    // before deposit deadline or 1 period and deposit < initial deposit
+    state?.accounts.length == 1 &&
+    now < initialDepositDeadline &&
+    state?.accounts[0][1] <= scheme.expectedInitialDeposit.amount
+  ) {
     const depositInput =
       next.applicable_inputs.deposits.length == 1
         ? [Deposit.toInput(next.applicable_inputs.deposits[0])]
         : undefined;
     return {
       name: "WaitingDepositByProvider",
+      scheme: scheme,
       initialDepositDeadline: timeoutToDate(initialDepositDeadline),
       depositInput: depositInput,
     };
@@ -193,9 +319,10 @@ export const getState = async (
   )
     return {
       name: "WithinVestingPeriod",
+      scheme: scheme,
       currentPeriod: currentPeriod,
       periodInterval: periodInterval,
-      amountToWithdraw: 0n,
+      quantities: quantities,
       cancelInput: [Choice.toInput(next.applicable_inputs.choices[0])(1n)],
     };
   if (
@@ -204,31 +331,31 @@ export const getState = async (
   )
     return {
       name: "WithinVestingPeriod",
+      scheme: scheme,
       currentPeriod: currentPeriod,
       periodInterval: periodInterval,
-      amountToWithdraw:
-        next.applicable_inputs.choices[0].can_choose_between[0].to,
+      quantities,
       withdrawInput: [
         Choice.toInput(next.applicable_inputs.choices[0])(
-          next.applicable_inputs.choices[0].can_choose_between[0].to
+          quantities.withdrawable
         ),
       ],
     };
   if (next.applicable_inputs.choices.length == 2)
     return {
       name: "WithinVestingPeriod",
+      scheme: scheme,
       currentPeriod: currentPeriod,
       periodInterval: periodInterval,
-      amountToWithdraw:
-        next.applicable_inputs.choices[0].can_choose_between[0].to,
+      quantities: quantities,
       cancelInput: [Choice.toInput(next.applicable_inputs.choices[1])(1n)],
       withdrawInput: [
         Choice.toInput(next.applicable_inputs.choices[0])(
-          next.applicable_inputs.choices[0].can_choose_between[0].to
+          quantities.withdrawable
         ),
       ],
     };
-  return { unknownState: { request: request, state: state, next: next } };
+  return { name: "UnknownState", scheme: scheme, state: state, next: next };
 };
 
 const getPeriodInMilliseconds = function (frequency: Frequency): bigint {
@@ -247,32 +374,33 @@ const getPeriodInMilliseconds = function (frequency: Frequency): bigint {
       return 24n * getPeriodInMilliseconds("hourly");
     case "hourly":
       return 1n * 60n * 60n * 1000n;
+    case "by-10-minutes":
+      return 10n * 60n * 1000n;
   }
 };
 
-const initialEmployerDeposit = function (
+const initialProviderDeposit = function (
   request: VestingRequest,
   continuation: Contract
 ): Contract {
   const {
-    tokenValue,
     provider,
-    scheme: { start, frequency, numberOfPeriods },
+    scheme: { start, frequency, numberOfPeriods, expectedInitialDeposit },
   } = request;
   if (numberOfPeriods < 1)
     throw "The number of periods needs to be greater or equal to 1";
 
   const startTimeout: Timeout = datetoTimeout(start);
   const periodInMilliseconds: bigint = getPeriodInMilliseconds(frequency);
-  // Employer needs to deposit before the first vesting period
+  // Provider needs to deposit before the first vesting period
   const initialDepositDeadline: Timeout = startTimeout + periodInMilliseconds;
   return {
     when: [
       {
         case: {
           party: provider,
-          deposits: tokenValue.amount,
-          of_token: tokenValue.token,
+          deposits: expectedInitialDeposit.amount,
+          of_token: expectedInitialDeposit.token,
           into_account: provider,
         },
         then: continuation,
@@ -283,40 +411,41 @@ const initialEmployerDeposit = function (
   };
 };
 
-const employeeDepositDistribution = function (
+const claimerDepositDistribution = function (
   request: VestingRequest
 ): Contract {
-  return recursiveEmployeeDepositDistribution(request, 1n);
+  return recursiveClaimerDepositDistribution(request, 1n);
 };
 
 /**  NOTE: Currently this logic presents the withdrawal and cancel for the last period, even though it doesn't make sense
- *        because there is nothing to cancel, and even if the employee does a partial withdrawal, they receive the balance in their account.
+ *        because there is nothing to cancel, and even if the claimer does a partial withdrawal, they receive the balance in their account.
  */
-const recursiveEmployeeDepositDistribution = function (
+const recursiveClaimerDepositDistribution = function (
   request: VestingRequest,
   periodIndex: bigint
 ): Contract {
   const {
-    tokenValue,
     claimer,
     provider,
-    scheme: { start, frequency, numberOfPeriods },
+    scheme: { start, frequency, numberOfPeriods, expectedInitialDeposit },
   } = request;
 
-  const vestingAmountPerPeriod = tokenValue.amount / BigInt(numberOfPeriods);
+  const vestingAmountPerPeriod =
+    expectedInitialDeposit.amount / BigInt(numberOfPeriods);
   const startTimeout: Timeout = datetoTimeout(start);
-  // Employer needs to deposit before the first vesting period
+  // Provider needs to deposit before the first vesting period
   const periodInMilliseconds = getPeriodInMilliseconds(frequency);
 
   const continuation: Contract =
-    periodIndex == numberOfPeriods
+    periodIndex === numberOfPeriods
       ? close
-      : recursiveEmployeeDepositDistribution(request, periodIndex + 1n);
+      : recursiveClaimerDepositDistribution(request, periodIndex + 1n);
+
   const vestingDate = startTimeout + periodIndex * periodInMilliseconds;
   const nextVestingDate = vestingDate + periodInMilliseconds;
 
-  // On every period, we allow an employee to do a withdrawal.
-  const employeeWithdrawCase: Case = {
+  // On every period, we allow a claimer to do a withdrawal.
+  const claimerWithdrawCase: Case = {
     case: {
       choose_between: [
         {
@@ -336,7 +465,7 @@ const recursiveEmployeeDepositDistribution = function (
           choice_owner: claimer,
         },
       },
-      token: tokenValue.token,
+      token: expectedInitialDeposit.token,
       from_account: claimer,
       to: {
         party: claimer,
@@ -345,7 +474,7 @@ const recursiveEmployeeDepositDistribution = function (
     },
   };
 
-  const employerCancelCase: Case = {
+  const providerCancelCase: Case = {
     case: {
       choose_between: [
         {
@@ -365,20 +494,20 @@ const recursiveEmployeeDepositDistribution = function (
   // 2) Release vested funds
   // 3) Allow the provider to withdraw or to cancel future vesting periods
   return {
-    when: [employerCancelCase],
+    when: [providerCancelCase],
     timeout: vestingDate,
     timeout_continuation: {
       pay: vestingAmountPerPeriod,
-      token: tokenValue.token,
+      token: expectedInitialDeposit.token,
       from_account: provider,
       to: {
         account: claimer,
       },
       then: {
         when:
-          periodIndex == numberOfPeriods
-            ? [employeeWithdrawCase]
-            : [employeeWithdrawCase, employerCancelCase],
+          periodIndex === numberOfPeriods
+            ? [claimerWithdrawCase]
+            : [claimerWithdrawCase, providerCancelCase],
         timeout: nextVestingDate,
         timeout_continuation: continuation,
       },
