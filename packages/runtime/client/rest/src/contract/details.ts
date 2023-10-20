@@ -50,7 +50,7 @@ export interface ContractDetails extends t.TypeOf<typeof ContractDetails> {}
  * This is a {@link !io-ts-usage | Dynamic type validator} for the {@link ContractDetails:type}.
  * @category Validator
  */
-// DISCUSSION : Tags are missing
+// DISCUSSION : Tags are missing in the ts-sdk and available in the REST API
 export const ContractDetails = t.type({
   contractId: ContractIdGuard,
   roleTokenMintingPolicyId: PolicyId,

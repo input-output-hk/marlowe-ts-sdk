@@ -1,20 +1,18 @@
 /**
  * This module offers capabalities for running a Vesting contract, this contract is defined
  * as follows :
- *
- * The vesting contract is defined as follows:
  *   1. There are `N` vesting periods.
  *   2. Each vesting period involves `P` tokens.
  *   3. The Provider initially deposits `N * P` tokens into the contract.
  *   4. At the end of each vesting period, `P` tokens are transferred from the
- *      emProviderloyer account to the Claimer account.
+ *      Provider account to the Claimer account.
  *   5. During each vesting period, the Provider may cancel the contract, receiving
  *      back the *unvested* funds from their account and distributing the *vested* funds
- *      to the employee.
+ *      to the claimer.
  *
  *   6. Also during each vesting period, the Claimer may withdraw once any of the funds in
  *      their account. The Provider can still cancel the contract during the vesting period
- *      after the employee has withdrawn funds during that vesting period.
+ *      after the claimer has withdrawn funds during that vesting period.
  *
  *   7. When the contract's ultimate timeout is reached, vested and unvested funds are
  *      distributed to the Claimer and Provider, respectively.
@@ -59,7 +57,7 @@ export const mkContract = function (request: VestingRequest): Contract {
   if (numberOfPeriods < 1)
     throw "The number of periods needs to be greater or equal to 1";
 
-  return initialEmployerDeposit(request, employeeDepositDistribution(request));
+  return initialProviderDeposit(request, claimerDepositDistribution(request));
 };
 
 /**
@@ -236,7 +234,7 @@ export const getVestingState = async (
   const periodInMilliseconds: bigint = getPeriodInMilliseconds(
     scheme.frequency
   );
-  // Employer needs to deposit before the first vesting period
+  // Provider needs to deposit before the first vesting period
   const initialDepositDeadline: Timeout = startTimeout + periodInMilliseconds;
   const now = datetoTimeout(new Date());
   const currentPeriod: bigint = (now - startTimeout) / periodInMilliseconds;
@@ -381,7 +379,7 @@ const getPeriodInMilliseconds = function (frequency: Frequency): bigint {
   }
 };
 
-const initialEmployerDeposit = function (
+const initialProviderDeposit = function (
   request: VestingRequest,
   continuation: Contract
 ): Contract {
@@ -413,14 +411,14 @@ const initialEmployerDeposit = function (
   };
 };
 
-const employeeDepositDistribution = function (
+const claimerDepositDistribution = function (
   request: VestingRequest
 ): Contract {
   return recursiveClaimerDepositDistribution(request, 1n);
 };
 
 /**  NOTE: Currently this logic presents the withdrawal and cancel for the last period, even though it doesn't make sense
- *        because there is nothing to cancel, and even if the employee does a partial withdrawal, they receive the balance in their account.
+ *        because there is nothing to cancel, and even if the claimer does a partial withdrawal, they receive the balance in their account.
  */
 const recursiveClaimerDepositDistribution = function (
   request: VestingRequest,
@@ -435,7 +433,7 @@ const recursiveClaimerDepositDistribution = function (
   const vestingAmountPerPeriod =
     expectedInitialDeposit.amount / BigInt(numberOfPeriods);
   const startTimeout: Timeout = datetoTimeout(start);
-  // Employer needs to deposit before the first vesting period
+  // Provider needs to deposit before the first vesting period
   const periodInMilliseconds = getPeriodInMilliseconds(frequency);
 
   const continuation: Contract =
