@@ -3,7 +3,7 @@ import * as H from "../../js/poc-helpers.js";
 import { mkWorkshopSurvey, verifySurveyContract } from "./contract.js";
 import { MarloweJSON } from "@marlowe.io/adapter/codec";
 import { encryptMessage } from "../custodian/custodian-encript.js";
-import {timeoutToDate}  from "@marlowe.io/language-core-v1";
+import { timeoutToDate } from "@marlowe.io/language-core-v1";
 
 // Common helpers for simple examples
 H.setupClearConsole();
@@ -77,7 +77,6 @@ async function createContractFromTemplate() {
   }
   const { answerTimeout, rewardTimeout } = getTimeouts();
   createContract(answerTimeout, rewardTimeout);
-
 }
 
 async function createContract(answerTimeout, rewardTimeout) {
