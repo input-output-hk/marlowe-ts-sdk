@@ -35,9 +35,7 @@ To get a running instance of the Runtime, it is recommended to check out the ins
 
 ## Examples
 
-Inside the [pocs folder](./pocs/Readme.md) you can find a set of minimal examples on how to use different packages of the SDK.
-
-- [wallet flow](./pocs/wallet-flow.html): Simple example on how to use the `@marlowe.io/wallet` package to connect to a wallet extension and get basic info.
+Inside the [examples folder](./examples/Readme.md) you can find a set of minimal examples on how to use different packages of the SDK.
 
 More elaborate examples can be found in the following repositories:
 
