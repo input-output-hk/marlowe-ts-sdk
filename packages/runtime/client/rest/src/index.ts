@@ -119,7 +119,13 @@ export interface RestAPI {
     contractId: ContractId,
     range?: TransactionsRange
   ): Promise<Transactions.GetTransactionsForContractResponse>;
-  //   createTransactionForContract: Transactions.POST; // - https://docs.marlowe.iohk.io/api/create-transactions // TODO: Jamie, lets unify names
+  /**
+   * Create an unsigned transaction which applies inputs to a contract.
+   * @see {@link https://docs.marlowe.iohk.io/api/apply-inputs-to-contract}
+   */
+  applyInputsToContract(
+    request: Transactions.ApplyInputsToContractRequest
+  ): Promise<Transactions.TransactionTextEnvelope>;
   //   getTransactionById: Transaction.GET; // - https://docs.marlowe.iohk.io/api/get-transaction-by-id
   /**
    * Submit a signed transaction (generated with {@link @marlowe.io/runtime/client/rest!index.RestAPI.html#applyInputsToContract} and signed with the {@link @marlowe.io/wallet!api.WalletAPI#signTx} procedure) that applies inputs to a contract.
@@ -287,6 +293,33 @@ export function mkRestClient(baseURL: string): RestAPI {
     getWithdrawals(request) {
       return unsafeTaskEither(
         Withdrawals.getHeadersByRangeViaAxios(axiosInstance)(request)
+      );
+    },
+    applyInputsToContract({
+      contractId,
+      changeAddress,
+      invalidBefore,
+      invalidHereafter,
+      inputs,
+      ...request
+    }) {
+      return unsafeTaskEither(
+        Transactions.postViaAxios(axiosInstance)(
+          contractId,
+          {
+            invalidBefore,
+            invalidHereafter,
+            version: request.version ?? "v1",
+            metadata: request.metadata ?? {},
+            tags: request.tags ?? {},
+            inputs,
+          },
+          {
+            changeAddress,
+            usedAddresses: request.usedAddresses ?? [],
+            collateralUTxOs: request.collateralUTxOs ?? [],
+          }
+        )
       );
     },
     healthcheck: () =>
