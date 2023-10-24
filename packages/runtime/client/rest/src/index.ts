@@ -33,6 +33,7 @@ import {
   TextEnvelope,
   TxId,
   HexTransactionWitnessSet,
+  WithdrawalId,
 } from "@marlowe.io/runtime-core";
 import { submitContractViaAxios } from "./contract/endpoints/singleton.js";
 import { ContractDetails } from "./contract/details.js";
@@ -152,6 +153,13 @@ export interface RestAPI {
     request: Withdrawals.WithdrawPayoutsRequest
   ): Promise<Withdrawals.WithdrawPayoutsResponse>;
   //   getWithdrawalById: Withdrawal.GET; // - https://docs.marlowe.iohk.io/api/get-withdrawal-by-id
+  /**
+   * Get published withdrawal transaction by ID.
+   * @see {@link https://docs.marlowe.iohk.io/api/get-withdrawal-by-id}
+   */
+  getWithdrawalById(
+    withdrawalId: WithdrawalId
+  ): Promise<Withdrawal.GetWithdrawalByIdResponse>;
   //   submitWithdrawal: Withdrawal.PUT; - is it this one? https://docs.marlowe.iohk.io/api/create-withdrawal? or the one for createWithdrawal?
   // TODO: PLT-7719 we should also export the return headers information (Node-Tip Runtime-Chain-Tip Runtime-Tip Runtime-Version Network-Id)
   /**
@@ -260,6 +268,12 @@ export function mkRestClient(baseURL: string): RestAPI {
           collateralUTxOs: request.collateralUTxOs ?? [],
         })
       );
+    },
+    async getWithdrawalById(withdrawalId) {
+      const { block, ...response } = await unsafeTaskEither(
+        Withdrawal.getViaAxios(axiosInstance)(withdrawalId)
+      );
+      return { ...response, block: O.toUndefined(block) };
     },
     healthcheck: () =>
       pipe(
