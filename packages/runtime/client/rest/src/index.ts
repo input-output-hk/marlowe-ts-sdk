@@ -144,7 +144,6 @@ export interface RestAPI {
   ): Promise<TransactionDetails>;
   //   submitTransaction: Transaction.PUT; // - Jamie is it this one? https://docs.marlowe.iohk.io/api/create-transaction-by-id? If so, lets unify
 
-  //   getWithdrawals: Withdrawals.GET; // - https://docs.marlowe.iohk.io/api/get-withdrawals
   /**
    * Build an unsigned transaction (sign with the {@link @marlowe.io/wallet!api.WalletAPI#signTx} procedure) which withdraws available payouts from a contract (when applied with the {@link @marlowe.io/runtime/client/rest!index.RestAPI.html#submitWithdrawal} procedure).
    * @see {@link https://docs.marlowe.iohk.io/api/withdraw-payouts}
@@ -152,6 +151,16 @@ export interface RestAPI {
   withdrawPayouts(
     request: Withdrawals.WithdrawPayoutsRequest
   ): Promise<Withdrawals.WithdrawPayoutsResponse>;
+
+  /**
+   * Get published withdrawal transactions.
+   * @see {@link https://docs.marlowe.iohk.io/api/get-withdrawals}
+   */
+  getWithdrawals(
+    request?: Withdrawals.GetWithdrawalsRequest
+  ): Promise<Withdrawals.GetWithdrawalsResponse>;
+
+  //   createWithdrawal: Withdrawals.POST; // - https://docs.marlowe.iohk.io/api/create-withdrawals
   //   getWithdrawalById: Withdrawal.GET; // - https://docs.marlowe.iohk.io/api/get-withdrawal-by-id
   /**
    * Get published withdrawal transaction by ID.
@@ -274,6 +283,11 @@ export function mkRestClient(baseURL: string): RestAPI {
         Withdrawal.getViaAxios(axiosInstance)(withdrawalId)
       );
       return { ...response, block: O.toUndefined(block) };
+    },
+    getWithdrawals(request) {
+      return unsafeTaskEither(
+        Withdrawals.getHeadersByRangeViaAxios(axiosInstance)(request)
+      );
     },
     healthcheck: () =>
       pipe(
