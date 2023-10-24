@@ -157,7 +157,7 @@ export interface RestAPI {
    * @see {@link https://docs.marlowe.iohk.io/api/get-withdrawals}
    */
   getWithdrawals(
-    range?: Withdrawals.WithdrawalsRange
+    request?: Withdrawals.GetWithdrawalsRequest
   ): Promise<Withdrawals.GetWithdrawalsResponse>;
 
   //   createWithdrawal: Withdrawals.POST; // - https://docs.marlowe.iohk.io/api/create-withdrawals
@@ -284,11 +284,9 @@ export function mkRestClient(baseURL: string): RestAPI {
       );
       return { ...response, block: O.toUndefined(block) };
     },
-    getWithdrawals(range) {
+    getWithdrawals(request) {
       return unsafeTaskEither(
-        Withdrawals.getHeadersByRangeViaAxios(axiosInstance)(
-          O.fromNullable(range)
-        )
+        Withdrawals.getHeadersByRangeViaAxios(axiosInstance)(request)
       );
     },
     healthcheck: () =>

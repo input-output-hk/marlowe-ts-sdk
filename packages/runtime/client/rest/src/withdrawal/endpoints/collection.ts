@@ -18,15 +18,18 @@ import { DecodingError } from "@marlowe.io/adapter/codec";
 import {
   AddressBech32,
   AddressesAndCollaterals,
+  AssetId,
   PayoutId,
   TextEnvelopeGuard,
   TxOutRef,
   WithdrawalId,
   unAddressBech32,
+  unPolicyId,
   unTxOutRef,
 } from "@marlowe.io/runtime-core";
 
 import { WithdrawalHeader } from "../header.js";
+import { stringify } from "qs";
 
 export interface WithdrawalsRange
   extends Newtype<{ readonly WithdrawalsRange: unique symbol }, string> {}
@@ -34,26 +37,37 @@ export const WithdrawalsRange = fromNewtype<WithdrawalsRange>(t.string);
 export const unWithdrawalsRange = iso<WithdrawalsRange>().unwrap;
 export const contractsRange = iso<WithdrawalsRange>().wrap;
 
+export type GetWithdrawalsRequest = {
+  range?: WithdrawalsRange;
+  partyRoles?: AssetId[];
+};
+
 export type GETHeadersByRange = (
-  rangeOption: O.Option<WithdrawalsRange>
+  request?: GetWithdrawalsRequest
 ) => TE.TaskEither<Error | DecodingError, GetWithdrawalsResponse>;
+
+const roleToParameter = (roleToken: AssetId) =>
+  `${unPolicyId(roleToken.policyId)}.${roleToken.assetName}`;
 
 /**
  * @see {@link https://docs.marlowe.iohk.io/api/get-withdrawals}
  */
 export const getHeadersByRangeViaAxios: (
   axiosInstance: AxiosInstance
-) => GETHeadersByRange = (axiosInstance) => (rangeOption) =>
+) => GETHeadersByRange = (axiosInstance) => (request) =>
   pipe(
     HTTP.GetWithDataAndHeaders(axiosInstance)(
-      "/withdrawals",
-      pipe(
-        rangeOption,
-        O.match(
-          () => ({}),
-          (range) => ({ headers: { Range: unWithdrawalsRange(range) } })
-        )
-      )
+      `/withdrawals${
+        request && request.partyRoles
+          ? stringify(
+              { partyRole: request.partyRoles.map(roleToParameter) },
+              { indices: false }
+            )
+          : ""
+      }`,
+      request && request.range
+        ? { headers: { Range: unWithdrawalsRange(request.range) } }
+        : {}
     ),
     TE.map(([headers, data]) => ({
       data: data,
