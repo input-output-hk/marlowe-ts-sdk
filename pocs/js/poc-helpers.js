@@ -30,7 +30,7 @@ export function getRuntimeUrl() {
   const runtimeUrlInput = document.getElementById("runtimeUrl");
   return (
     runtimeUrlInput.value ||
-    "https://marlowe-runtime-preprod-web.scdev.aws.iohkdev.io/"
+    "https://marlowe-runtime-preprod-web.demo.scdev.aws.iohkdev.io/"
   );
 }
 

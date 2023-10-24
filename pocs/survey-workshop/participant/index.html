@@ -124,15 +124,35 @@
         alt="Survey question block"
       />
       <p>
-      After the questions, the <code> $CUSTODIAN_ADDR</code>participant will deposit 1 <code> Token "6fcbab5bb175b420cd060edb63af74c5b3d4687163f282ddc5377dd3" "SurveyReward"</code> directly into the survey participant account before a parameterized <code>reward timeout</code> and then close the contract. After the contract is closed, the payment of the reward token will be made automatically.
+        After the questions, the <code> $CUSTODIAN_ADDR</code>participant will
+        deposit 1
+        <code>
+          Token "6fcbab5bb175b420cd060edb63af74c5b3d4687163f282ddc5377dd3"
+          "SurveyReward"</code
+        >
+        directly into the survey participant account before a parameterized
+        <code>reward timeout</code> and then close the contract. After the
+        contract is closed, the payment of the reward token will be made
+        automatically.
       </p>
-<img src="https://raw.githubusercontent.com/input-output-hk/marlowe-starter-kit/a0a07a16314ce190ec63809612ed5af43148b31c/images/survey_reward_block.png" alt="Survey reward block" />
+      <img
+        src="https://raw.githubusercontent.com/input-output-hk/marlowe-starter-kit/a0a07a16314ce190ec63809612ed5af43148b31c/images/survey_reward_block.png"
+        alt="Survey reward block"
+      />
 
-      <p>After you have created the contract, send it to simulation and check that there is only one path to receive the SurveyReward, which is to answer the 5 questions and for the custodian to make the deposit.</p>
       <p>
-      Set the reward timeout bigger than the answer timeout way far in the future, download the contract as survey.json
+        After you have created the contract, send it to simulation and check
+        that there is only one path to receive the SurveyReward, which is to
+        answer the 5 questions and for the custodian to make the deposit.
       </p>
-<img src="https://raw.githubusercontent.com/input-output-hk/marlowe-starter-kit/a0a07a16314ce190ec63809612ed5af43148b31c/images/survey_contract_parameters.png" alt="Survey contract parameters" />
+      <p>
+        Set the reward timeout bigger than the answer timeout way far in the
+        future, download the contract as survey.json
+      </p>
+      <img
+        src="https://raw.githubusercontent.com/input-output-hk/marlowe-starter-kit/a0a07a16314ce190ec63809612ed5af43148b31c/images/survey_contract_parameters.png"
+        alt="Survey contract parameters"
+      />
       <br />
       <label for="contractFile">Upload the contract here</label>
       <input type="file" id="contractFile" name="contractFile" accept=".json" />
@@ -142,7 +162,10 @@
       <br />
 
       <div id="yield-section" style="display: none">
-        <p>The contract is not the expected one, if you like you can try again or you can create it from this template</p>
+        <p>
+          The contract is not the expected one, if you like you can try again or
+          you can create it from this template
+        </p>
         <label for="answerTimeout">Answer Timeout:</label>
         <input type="datetime-local" id="answerTimeout" name="answerTimeout" />
         Local time
