@@ -4,7 +4,7 @@
  *
  ```
  import {
-    Contract, Address, Role, Account, Party, ada, AvailableMoney, Constant,
+    Contract, Address, Role, Account, Party, ada, lovelace, AvailableMoney, Constant,
     NegValue, AddValue, SubValue, MulValue, DivValue, ChoiceValue, TimeIntervalStart,
     TimeIntervalEnd, UseValue, Cond, AndObs, OrObs, NotObs, ChoseSomething,
     ValueGE, ValueGT, ValueLT, ValueLE, ValueEQ, TrueObs, FalseObs, Deposit,
@@ -88,7 +88,11 @@ const Token = function (currencySymbol: string, tokenName: string): Token {
   }
 };
 
+/**
+ * @deprecated Use lovelace instead
+ */
 export const ada: Token = { currency_symbol: "", token_name: "" };
+export const lovelace: Token = { currency_symbol: "", token_name: "" };
 
 type ValueId = string;
 
