@@ -27,7 +27,7 @@ export type GET = (
 export type GetWithdrawalByIdResponse = {
   withdrawalId: WithdrawalId;
   status: TxStatus;
-  block: BlockHeader | null;
+  block?: BlockHeader;
   payouts: PayoutHeader[];
 };
 

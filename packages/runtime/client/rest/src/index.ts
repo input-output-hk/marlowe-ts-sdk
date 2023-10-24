@@ -273,7 +273,7 @@ export function mkRestClient(baseURL: string): RestAPI {
       const { block, ...response } = await unsafeTaskEither(
         Withdrawal.getViaAxios(axiosInstance)(withdrawalId)
       );
-      return { ...response, block: O.toNullable(block) };
+      return { ...response, block: O.toUndefined(block) };
     },
     healthcheck: () =>
       pipe(
