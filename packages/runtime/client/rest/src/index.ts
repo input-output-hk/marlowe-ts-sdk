@@ -176,6 +176,14 @@ export interface RestAPI {
     withdrawalId: WithdrawalId
   ): Promise<Withdrawal.GetWithdrawalByIdResponse>;
   //   submitWithdrawal: Withdrawal.PUT; - is it this one? https://docs.marlowe.iohk.io/api/create-withdrawal? or the one for createWithdrawal?
+  /**
+   * Submit a signed transaction (generated with {@link @marlowe.io/runtime/client/rest!index.RestAPI.html#withdrawPayouts} and signed with the {@link @marlowe.io/wallet!api.WalletAPI#signTx} procedure) that withdraws available payouts from a contract.
+   * @see {@link https://docs.marlowe.iohk.io/api/submit-payout-withdrawal}
+   */
+  submitWithdrawal(
+    withdrawalId: WithdrawalId,
+    hexTransactionWitnessSet: HexTransactionWitnessSet
+  ): Promise<void>;
   // TODO: PLT-7719 we should also export the return headers information (Node-Tip Runtime-Chain-Tip Runtime-Tip Runtime-Version Network-Id)
   /**
    * Checks if the Marlowe API is up and running.
@@ -319,6 +327,14 @@ export function mkRestClient(baseURL: string): RestAPI {
             usedAddresses: request.usedAddresses ?? [],
             collateralUTxOs: request.collateralUTxOs ?? [],
           }
+        )
+      );
+    },
+    submitWithdrawal(withdrawalId, hexTransactionWitnessSet) {
+      return unsafeTaskEither(
+        Withdrawal.putViaAxios(axiosInstance)(
+          withdrawalId,
+          hexTransactionWitnessSet
         )
       );
     },
