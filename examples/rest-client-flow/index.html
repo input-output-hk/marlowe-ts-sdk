@@ -99,8 +99,8 @@
     <script type="module">
       import { mkRestClient } from "@marlowe.io/runtime-rest-client";
       import { MarloweJSON } from "@marlowe.io/adapter/codec";
-      import { clearConsole, log, logJSON } from "./js/poc-helpers.js";
-      import * as H from "./js/poc-helpers.js";
+      import { clearConsole, log, logJSON } from "../js/poc-helpers.js";
+      import * as H from "../js/poc-helpers.js";
       window.restClient = null;
       function getRestClient() {
         if (window.restClient === null) {
