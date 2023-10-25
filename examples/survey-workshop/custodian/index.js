@@ -49,7 +49,7 @@ async function loadContract() {
 const questionMap = {
   answer1: "1. I’d like to use/recommend Marlowe for future dApps",
   answer2: "2. The survey contract was easy to design",
-  answer3: "3. The Marlowe Runtime was easy to work with",
+  answer3: "3. This tutorial is helpful",
   answer4: "4. I am an experienced web3 developer",
   answer5: "5. Please share any comments (240 char max)",
 };

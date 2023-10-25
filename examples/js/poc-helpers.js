@@ -8,21 +8,28 @@ export function clearConsole() {
   consoleDiv.innerHTML = "";
 }
 
+export function setConsoleElement(elm) {
+  window.consoleDiv = elm;
+}
+
+function getConsoleElement() {
+  return window.consoleDiv || document.getElementById("console");
+}
 export function log(message) {
-  const consoleDiv = document.getElementById("console");
+  const consoleDiv = getConsoleElement();
   var currentContent = consoleDiv.innerHTML;
   consoleDiv.innerHTML = currentContent + "<BR>" + message;
   console.log(message);
 }
 
 export function logJSON(message, json) {
-  const consoleDiv = document.getElementById("console");
+  const consoleDiv = getConsoleElement();
   var currentContent = consoleDiv.innerHTML;
-  consoleDiv.innerHTML = `${currentContent}<BR>${message}<pre>${MarloweJSON.stringify(
+  consoleDiv.innerHTML = `${currentContent}<BR>${message}<pre><code class="language-json">${MarloweJSON.stringify(
     json,
     null,
     4
-  )}</pre>`;
+  )}</code></pre>`;
   console.log(message, json);
 }
 
@@ -132,4 +139,31 @@ export function tryCatchEvent(handler) {
       throw e;
     }
   };
+}
+
+/**
+ * This function setups <pre><code></code></pre> syntax highlighting using
+ * https://highlightjs.org/. It is expected that hljs is available in the global
+ * object.
+ */
+export function setupCodeHighlighting() {
+  // Highlight any existing element
+  hljs.highlightAll();
+  // Use a mutation observer to identify new blocks to highlight
+  const observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      if (mutation.type === "childList") {
+        mutation.addedNodes.forEach((node) => {
+          if (node.tagName === "PRE" && node.children[0]?.tagName === "CODE") {
+            hljs.highlightElement(node.children[0]);
+          }
+        });
+      }
+    });
+  });
+
+  observer.observe(document.body, {
+    childList: true,
+    subtree: true,
+  });
 }

@@ -1,4 +1,4 @@
-import { log, logJSON } from "../../js/poc-helpers.js";
+import { setConsoleElement, log, logJSON } from "../../js/poc-helpers.js";
 import * as H from "../../js/poc-helpers.js";
 import { mkWorkshopSurvey, verifySurveyContract } from "./contract.js";
 import { MarloweJSON } from "@marlowe.io/adapter/codec";
@@ -6,9 +6,9 @@ import { encryptMessage } from "../custodian/custodian-encript.js";
 import { timeoutToDate } from "@marlowe.io/language-core-v1";
 
 // Common helpers for simple examples
-H.setupClearConsole();
 H.setupLocalStorageRuntimeUrl();
 H.setupWallet();
+H.setupCodeHighlighting();
 window.contractId = null;
 
 // Event handlers
@@ -26,6 +26,8 @@ uploadExcerciseButton.addEventListener(
   "click",
   H.tryCatchEvent(createContractFromFileUpload)
 );
+
+setConsoleElement(document.getElementById("create-console"));
 
 /**
  * Helper function to get the survey participant address from the CIP30 wallet.
@@ -45,7 +47,7 @@ async function createContractFromFileUpload() {
   const surveyParticipant = await getSurveyParticipant();
   const contractFile = document.getElementById("contractFile");
   if (!contractFile.files[0]) {
-    log("Please select a file first");
+    log(bsAlert("danger", `⛔️ Please select a file first`));
     return;
   }
 
@@ -56,11 +58,14 @@ async function createContractFromFileUpload() {
     const contract = MarloweJSON.parse(event.target.result);
     const verification = verifySurveyContract(contract, surveyParticipant);
     if (!verification.match) {
-      log("⛔️ Contract verification failed");
+      log(bsAlert("danger", `⛔️ Contract verification failed`));
       const yieldSection = document.getElementById("yield-section");
       yieldSection.style.display = "block";
     } else {
-      logJSON("✅ Contract verification succeeded", verification);
+      logJSON(
+        bsAlert("success", "✅ Contract verification succeeded"),
+        verification
+      );
       const answerTimeout = timeoutToDate(verification.answerTimeout);
       const rewardTimeout = timeoutToDate(verification.rewardTimeout);
       createContract(answerTimeout, rewardTimeout);
@@ -76,28 +81,44 @@ async function createContractFromTemplate() {
     return;
   }
   const { answerTimeout, rewardTimeout } = getTimeouts();
-  createContract(answerTimeout, rewardTimeout);
+  createContract(answerTimeout, rewardTimeout, true);
 }
 
-async function createContract(answerTimeout, rewardTimeout) {
+async function createContract(
+  answerTimeout,
+  rewardTimeout,
+  showContract = false
+) {
   const surveyParticipant = await getSurveyParticipant();
   const contract = mkWorkshopSurvey({
     surveyParticipant,
     answerTimeout,
     rewardTimeout,
   });
-  log("Creating contract");
+  if (showContract) {
+    logJSON("This is the expected json contract:", contract);
+  }
+
+  log(
+    bsAlert(
+      "info",
+      "⏳ <strong>Creating contract...</strong> Please wait for the wallet dialog to appear."
+    )
+  );
+
   const lifecycle = await H.getLifecycle();
   const [contractId] = await lifecycle.contracts.createContract({
     contract,
     tags: { MarloweSurvey: "test 1" },
   });
-  log(`Contract created. ContractId: ${contractId}`);
+
+  log(bsAlert("info", `Contract created. ContractId: ${contractId}`));
 
   window.contractId = contractId;
   H.setContractIdIndicator(window.contractId, "contract-id-indicator");
   const submitAnswerSection = document.getElementById("submit-answers-section");
   submitAnswerSection.style.display = "block";
+  setConsoleElement(document.getElementById("submit-console"));
 }
 
 async function submitAllAnswers() {
@@ -105,17 +126,14 @@ async function submitAllAnswers() {
     log("Please create a contract first");
     return;
   }
-  log("Submitting survey answers");
+  log("Creating the inputs for the survey answers");
   const answers = getAnswers();
-  logJSON("Answers", getAnswers());
   const surveyParticipant = await getSurveyParticipant();
 
   const inputs = answersToChoices(answers, surveyParticipant);
 
   const commentsInput = document.getElementById("comments");
   const encryptResult = await encryptMessage(commentsInput.value);
-
-  logJSON("Encrypt Result", encryptResult);
 
   inputs.push({
     for_choice_id: {
@@ -125,12 +143,26 @@ async function submitAllAnswers() {
     input_that_chooses_num: encryptResult.lastDigitsDecimal,
   });
   logJSON("inputs", inputs);
+  log(
+    bsAlert(
+      "info",
+      "⏳ <strong>Submitting answers...</strong> Please wait for the wallet dialog to appear."
+    )
+  );
+
   const lifecycle = await H.getLifecycle();
   const txId = await lifecycle.contracts.applyInputs(window.contractId, {
     inputs,
     tags: encryptResult.chunks,
   });
-  logJSON("Inputs applied", txId);
+  logJSON(
+    bsAlert("info", "Inputs applied with the following transaction id:"),
+    txId
+  );
+  log(bsAlert("success", "Workshop complete 🎉"));
+  log(
+    "You can inspect the contract in the Scanner to see how the answers are encoded"
+  );
 }
 
 function answersToChoices(answers, surveyParticipant) {
@@ -164,4 +196,11 @@ function getTimeouts() {
     answerTimeout: new Date(answerTimeoutInput.value),
     rewardTimeout: new Date(rewardTimeoutInput.value),
   };
+}
+
+/**
+ * Helper function to create a Bootstrap alert.
+ */
+function bsAlert(severity, message) {
+  return `<div class="alert alert-${severity}" role="alert">${message}</div>`;
 }
