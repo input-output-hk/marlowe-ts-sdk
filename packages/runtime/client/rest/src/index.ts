@@ -121,7 +121,7 @@ export interface RestAPI {
   ): Promise<Transactions.GetTransactionsForContractResponse>;
   /**
    * Create an unsigned transaction which applies inputs to a contract.
-   * @see {@link https://docs.marlowe.iohk.io/api/apply-inputs-to-contract}
+   * @see {@link https://docs.marlowe.iohk.io/api/apply-inputs-to-contract | The backend documentation}
    */
   applyInputsToContract(
     request: Transactions.ApplyInputsToContractRequest
@@ -129,7 +129,7 @@ export interface RestAPI {
   //   getTransactionById: Transaction.GET; // - https://docs.marlowe.iohk.io/api/get-transaction-by-id
   /**
    * Submit a signed transaction (generated with {@link @marlowe.io/runtime-rest-client!index.RestAPI#applyInputsToContract} and signed with the {@link @marlowe.io/wallet!api.WalletAPI#signTx} procedure) that applies inputs to a contract.
-   * @see {@link https://docs.marlowe.iohk.io/api/submit-contract-input-application}
+   * @see {@link https://docs.marlowe.iohk.io/api/submit-contract-input-application | The backend documentation}
    */
   submitContractTransaction(
     contractId: ContractId,
@@ -152,7 +152,7 @@ export interface RestAPI {
 
   /**
    * Build an unsigned transaction (sign with the {@link @marlowe.io/wallet!api.WalletAPI#signTx} procedure) which withdraws available payouts from a contract (when applied with the {@link @marlowe.io/runtime-rest-client!index.RestAPI#submitWithdrawal} procedure).
-   * @see {@link https://docs.marlowe.iohk.io/api/withdraw-payouts}
+   * @see {@link https://docs.marlowe.iohk.io/api/withdraw-payouts | The backend documentation}
    */
   withdrawPayouts(
     request: Withdrawals.WithdrawPayoutsRequest
@@ -160,7 +160,7 @@ export interface RestAPI {
 
   /**
    * Get published withdrawal transactions.
-   * @see {@link https://docs.marlowe.iohk.io/api/get-withdrawals}
+   * @see {@link https://docs.marlowe.iohk.io/api/get-withdrawals | The backend documentation}
    */
   getWithdrawals(
     request?: Withdrawals.GetWithdrawalsRequest
@@ -170,7 +170,7 @@ export interface RestAPI {
   //   getWithdrawalById: Withdrawal.GET; // - https://docs.marlowe.iohk.io/api/get-withdrawal-by-id
   /**
    * Get published withdrawal transaction by ID.
-   * @see {@link https://docs.marlowe.iohk.io/api/get-withdrawal-by-id}
+   * @see {@link https://docs.marlowe.iohk.io/api/get-withdrawal-by-id | The backend documentation}
    */
   getWithdrawalById(
     withdrawalId: WithdrawalId
@@ -178,7 +178,7 @@ export interface RestAPI {
   //   submitWithdrawal: Withdrawal.PUT; - is it this one? https://docs.marlowe.iohk.io/api/create-withdrawal? or the one for createWithdrawal?
   /**
    * Submit a signed transaction (generated with {@link @marlowe.io/runtime-rest-client!index.RestAPI#withdrawPayouts} and signed with the {@link @marlowe.io/wallet!api.WalletAPI#signTx} procedure) that withdraws available payouts from a contract.
-   * @see {@link https://docs.marlowe.iohk.io/api/submit-payout-withdrawal}
+   * @see {@link https://docs.marlowe.iohk.io/api/submit-payout-withdrawal | The backend documentation}
    */
   submitWithdrawal(
     withdrawalId: WithdrawalId,
@@ -188,7 +188,7 @@ export interface RestAPI {
   /**
    * Checks if the Marlowe API is up and running.
    *
-   * @see {@link https://docs.marlowe.iohk.io/api/health-check-endpoint}
+   * @see {@link https://docs.marlowe.iohk.io/api/health-check-endpoint | The backend documentation}
    */
   healthcheck(): Promise<Boolean>;
 
