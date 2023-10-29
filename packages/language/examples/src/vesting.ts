@@ -35,7 +35,10 @@ import {
   Environment,
   mkEnvironment,
   Input,
+  NormalInput,
+  IChoice,
 } from "@marlowe.io/language-core-v1";
+
 import {
   Choice,
   Deposit,
@@ -44,6 +47,7 @@ import {
 } from "@marlowe.io/language-core-v1/next";
 import * as O from "fp-ts/lib/Option.js";
 import { pipe } from "fp-ts/lib/function.js";
+import * as G from "@marlowe.io/language-core-v1/guards";
 
 /**
  * Create The Vesting Marlowe Contract
@@ -189,10 +193,55 @@ export type VestingEnded = {
 };
 
 /**
- * {@link VestingState:type | Vesting State} where the contract is closed
+ * {@link VestingState:type | Vesting State } where the contract is closed
  * @category Vesting State
  */
-export type Closed = { name: "Closed"; scheme: VestingScheme };
+export type Closed = {
+  name: "Closed";
+  scheme: VestingScheme;
+  closeCondition: CloseCondition;
+};
+
+export type CloseCondition =
+  | DepositDeadlineCloseCondition
+  | CancelledCloseCondition
+  | FullyClaimedCloseCondition
+  | UnknownCloseCondition;
+
+/**
+ * {@link VestingState:type | Vesting Closed State} the contract is closed because the provider didn't provide the deposit
+ * before the deadline.
+ * @category Vesting State
+ */
+export type DepositDeadlineCloseCondition = {
+  name: "DepositDeadlineCloseCondition";
+};
+
+/**
+ * {@link VestingState:type | Vesting Closed State} the contract is closed because the provider has cancelled the token plan
+ * before the end.
+ * @category Vesting State
+ */
+export type CancelledCloseCondition = {
+  name: "CancelledCloseCondition";
+  percentageClaimed: bigint;
+};
+
+/**
+ * {@link VestingState:type | Vesting Closed State} the contract is closed because the claimer has fully withdrawn the tokens from the
+ * plan (happy path).
+ * @category Vesting State
+ */
+export type FullyClaimedCloseCondition = { name: "FullyClaimedCloseCondition" };
+
+/**
+ * {@link VestingState:type | Vesting Closed State} the contract is closed but in an unexpected manner
+ * @category Vesting State
+ */
+export type UnknownCloseCondition = {
+  name: "UnknownCloseCondition";
+  inputHistory: Input[];
+};
 
 /**
  * The contract is in an unexpected state
@@ -219,6 +268,7 @@ export type Quantities = {
 export const getVestingState = async (
   scheme: VestingScheme,
   stateOpt: O.Option<MarloweState>,
+  inputHistory: Input[],
   getNext: (environement: Environment) => Promise<Next>
 ): Promise<VestingState> => {
   const state = pipe(
@@ -228,7 +278,66 @@ export const getVestingState = async (
       (a) => a
     )
   );
-  if (state == null) return { name: "Closed", scheme: scheme };
+  if (state === null) {
+    if (inputHistory.length === 0) {
+      // Deadline has passed and there is one reduced applied to close the contract
+      return {
+        name: "Closed",
+        scheme: scheme,
+        closeCondition: { name: "DepositDeadlineCloseCondition" },
+      };
+    }
+    if (inputHistory.length === 1) {
+      return {
+        name: "Closed",
+        scheme: scheme,
+        closeCondition: { name: "FullyClaimedCloseCondition" },
+      };
+    }
+    const isCancelled =
+      1 ===
+      inputHistory
+        .filter((input) => G.IChoice.is(input))
+        .map((input) => input as IChoice)
+        .filter((choice) => choice.for_choice_id.choice_name === "cancel")
+        .length;
+
+    const amountClaimed = inputHistory
+      .filter((input) => G.IChoice.is(input))
+      .map((input) => input as IChoice)
+      .filter((choice) => choice.for_choice_id.choice_name === "withdraw")
+      .map((choice) => choice.input_that_chooses_num)
+      .reduce((a, b) => a + b, 0n);
+
+    if (isCancelled) {
+      return {
+        name: "Closed",
+        scheme: scheme,
+        closeCondition: {
+          name: "CancelledCloseCondition",
+          percentageClaimed:
+            (amountClaimed * 100n) / scheme.expectedInitialDeposit.amount,
+        },
+      };
+    }
+
+    if (amountClaimed === scheme.expectedInitialDeposit.amount) {
+      return {
+        name: "Closed",
+        scheme: scheme,
+        closeCondition: { name: "FullyClaimedCloseCondition" },
+      };
+    }
+    // Closed condition Fallback
+    return {
+      name: "Closed",
+      scheme: scheme,
+      closeCondition: {
+        name: "UnknownCloseCondition",
+        inputHistory: inputHistory,
+      },
+    };
+  }
 
   const startTimeout: Timeout = datetoTimeout(new Date(scheme.start));
   const periodInMilliseconds: bigint = getPeriodInMilliseconds(
