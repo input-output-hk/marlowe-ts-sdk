@@ -1,7 +1,10 @@
 import { MarloweJSON } from "@marlowe.io/adapter/codec";
 import { mkRuntimeLifecycle } from "@marlowe.io/runtime-lifecycle/browser";
 import { mkRestClient } from "@marlowe.io/runtime-rest-client";
-import { mkBrowserWallet, getAvailableWallets } from "@marlowe.io/wallet";
+import {
+  mkBrowserWallet,
+  getInstalledWalletExtensions,
+} from "@marlowe.io/wallet";
 
 export function clearConsole() {
   const consoleDiv = document.getElementById("console");
@@ -61,18 +64,20 @@ export function setupClearConsole() {
 
 export function setupWallet() {
   const walletInput = document.getElementById("wallet");
-  const availableWallets = getAvailableWallets();
-  if (availableWallets.length === 0) {
+  const installedWalletExtensions = getInstalledWalletExtensions();
+  if (installedWalletExtensions.length === 0) {
     const option = document.createElement("option");
     option.value = "invalid";
     option.text = "No wallet available";
     walletInput.add(option);
     walletInput.disabled = true;
   } else {
-    availableWallets.forEach((walletName) => {
+    installedWalletExtensions.forEach((installedWalletExtension) => {
       const option = document.createElement("option");
-      option.value = walletName;
-      option.text = walletName.charAt(0).toUpperCase() + walletName.slice(1);
+      option.value = installedWalletExtension.name;
+      option.text =
+        installedWalletExtension.name.charAt(0).toUpperCase() +
+        installedWalletExtension.name.slice(1);
       walletInput.add(option);
     });
   }

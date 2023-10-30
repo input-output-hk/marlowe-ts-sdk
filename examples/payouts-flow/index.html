@@ -18,23 +18,27 @@
     <script src="https://cdn.jsdelivr.net/gh/input-output-hk/marlowe-ts-sdk/jsdelivr-npm-importmap.js"></script>
     <!--script src="/dist/local-importmap.js"></!--script-->
     <script type="module">
-      import { mkBrowserWallet, getAvailableWallets } from "@marlowe.io/wallet";
+      import {
+        mkBrowserWallet,
+        getInstalledWalletExtensions,
+      } from "@marlowe.io/wallet";
       import { mkRuntimeLifecycle } from "@marlowe.io/runtime-lifecycle/browser";
       const consoleDiv = document.getElementById("console");
       const walletInput = document.getElementById("wallet");
-      const availableWallets = getAvailableWallets();
-      if (availableWallets.length === 0) {
+      const installedWalletExtensions = getInstalledWalletExtensions();
+      if (installedWalletExtensions.length === 0) {
         const option = document.createElement("option");
         option.value = "invalid";
         option.text = "No wallet available";
         walletInput.add(option);
         walletInput.disabled = true;
       } else {
-        availableWallets.forEach((walletName) => {
+        installedWalletExtensions.forEach((installedWalletExtension) => {
           const option = document.createElement("option");
-          option.value = walletName;
+          option.value = installedWalletExtension.name;
           option.text =
-            walletName.charAt(0).toUpperCase() + walletName.slice(1);
+            installedWalletExtension.name.charAt(0).toUpperCase() +
+            installedWalletExtension.name.slice(1);
           walletInput.add(option);
         });
       }

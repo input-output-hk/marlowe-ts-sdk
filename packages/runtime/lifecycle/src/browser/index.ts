@@ -1,4 +1,7 @@
-import { SupportedWallet, mkBrowserWallet } from "@marlowe.io/wallet/browser";
+import {
+  SupportedWalletName,
+  mkBrowserWallet,
+} from "@marlowe.io/wallet/browser";
 import * as Generic from "../generic/runtime.js";
 
 import { mkFPTSRestClient } from "@marlowe.io/runtime-rest-client";
@@ -16,7 +19,7 @@ export interface BrowserRuntimeLifecycleOptions {
   /**
    * The name of the wallet to connect to.
    */
-  walletName: SupportedWallet;
+  walletName: SupportedWalletName;
 }
 
 /**

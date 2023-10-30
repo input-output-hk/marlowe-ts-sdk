@@ -40,9 +40,9 @@
   <body></body>
   <script type="module">
     import { Browser } from "@marlowe.io/runtime-lifecycle";
-    import { getAvailableWallets } from "@marlowe.io/wallet";
+    import { getInstalledWalletExtensions } from "@marlowe.io/wallet";
 
-    const walletName = "nami"; // choose one with getAvailableWallets
+    const walletName = "nami"; // choose one with getInstalledWalletExtensions
 
     window.runtimeLifeCycle = await Browser.mkRuntimeLifecycle({
       runtimeURL: "https://marlowe-runtime-preview-web.scdev.aws.iohkdev.io/",
