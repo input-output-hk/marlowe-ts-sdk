@@ -8,8 +8,8 @@
     <!-- This import map tells the browser what version of the SDK to use, use the local-importmap for local
          development and the jsdelivr importmap for the latest published version.
     -->
-    <script src="https://cdn.jsdelivr.net/gh/input-output-hk/marlowe-ts-sdk/jsdelivr-npm-importmap.js"></script>
-    <!-- <script src="/dist/local-importmap.js"></script> -->
+    <!-- <script src="https://cdn.jsdelivr.net/gh/input-output-hk/marlowe-ts-sdk/jsdelivr-npm-importmap.js"></script> -->
+    <script src="/dist/local-importmap.js"></script>
   </head>
   <body>
     <div>
@@ -146,17 +146,39 @@
             .then((details) => [contractId, details])
         )
       );
-      const contractIdsAnVestingState = await Promise.all(
+      const contractIdsAndDetailsAndInputHistory = await Promise.all(
         contractIdsAndDetails.map(([contractId, details]) =>
-          Vesting.getVestingState(
-            details.tags[dappId].scheme,
-            details.state,
-            (environment) =>
-              runtimeLifeCycle.contracts.getApplicableInputs(
-                contractId,
-                environment
+          restClient
+            .getTransactionsForContract(contractId)
+            .then((result) =>
+              Promise.all(
+                result.headers.map((txHeader) =>
+                  restClient.getContractTransactionById(
+                    contractId,
+                    txHeader.transactionId
+                  )
+                )
               )
-          ).then((state) => [contractId, state])
+            )
+            .then((txsDetails) =>
+              txsDetails.map((txDetails) => txDetails.inputs).flat()
+            )
+            .then((inputHistory) => [contractId, details, inputHistory])
+        )
+      );
+      const contractIdsAnVestingState = await Promise.all(
+        contractIdsAndDetailsAndInputHistory.map(
+          ([contractId, details, inputHistory]) =>
+            Vesting.getVestingState(
+              details.tags[dappId].scheme,
+              details.state,
+              inputHistory,
+              (environment) =>
+                runtimeLifeCycle.contracts.getApplicableInputs(
+                  contractId,
+                  environment
+                )
+            ).then((state) => [contractId, state])
         )
       );
 
