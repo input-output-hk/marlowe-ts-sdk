@@ -5,6 +5,13 @@ import { MarloweJSON } from "@marlowe.io/adapter/codec";
 import { encryptMessage } from "../custodian/custodian-encript.js";
 import { timeoutToDate } from "@marlowe.io/language-core-v1";
 
+
+function createPlaygroundLink (contract) {
+  const compressed = LZString.compressToEncodedURIComponent(MarloweJSON.stringify(contract));
+  const link = `https://play.marlowe.iohk.io/#/importContract?contract=${compressed}`
+  return link;
+}
+
 // Common helpers for simple examples
 H.setupLocalStorageRuntimeUrl();
 H.setupWallet();
@@ -97,7 +104,8 @@ async function createContract(
     rewardTimeout,
   });
   if (showContract) {
-    logJSON("This is the expected json contract:", contract);
+    log(bsAlert(
+      "info",`<a target="blank" href="${createPlaygroundLink(contract)}">See solution in playground</a>`))
   }
 
   log(
