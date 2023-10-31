@@ -16,7 +16,54 @@ import {
   unTxOutRef,
 } from "@marlowe.io/runtime-core";
 
-export type SupportedWallet = "nami" | "eternl" | "lace";
+/**
+ * The SupportedWalletName is the list of Known and tested Browser Cardano Wallet Extensions supporting building/signing Marlowe Transactions.
+ */
+export type SupportedWalletName = "nami" | "eternl" | "lace";
+
+/**
+ * The BroswerWalletExtension is an interface for interacting with a querying the list of Browser Cardano Wallet Extensions.
+ */
+export type BroswerWalletExtension = {
+  /**
+   * The name of the wallet behind the browser extension
+   */
+  name: string;
+  /**
+   * icon of the extension
+   */
+  icon: string;
+  /**
+   * Version of the extension
+   */
+  apiVersion: string;
+  /**
+   * Indicates if the extension supports building/signing Marlowe Transactions or not.
+   */
+  supported: boolean;
+};
+
+/**
+ * Get a list of the Wallet Extensions installed in the browser
+ */
+export function getInstalledWalletExtensions(): BroswerWalletExtension[] {
+  if ("cardano" in window) {
+    // NOTE: it would be nice to have a Type assertion that the supportedWallets array is
+    // the same as the SupportedWallets type union. I've tried the other way (infering the type
+    // from the array) but the exported documentation doesn't look good
+    const supportedWallets = ["nami", "eternl", "lace"];
+    return Object.values(window.cardano)
+      .filter((entry) => "apiVersion" in entry)
+      .map((walletAPI) => ({
+        name: walletAPI.name,
+        icon: walletAPI.icon,
+        apiVersion: walletAPI.apiVersion,
+        supported: supportedWallets.includes(walletAPI.name.toLowerCase()),
+      }));
+  } else {
+    return [];
+  }
+}
 
 export type ExtensionDI = { extension: WalletApi };
 
@@ -26,9 +73,13 @@ export type ExtensionDI = { extension: WalletApi };
  * @returns An instance of the BrowserWalletAPI class.
  */
 export async function mkBrowserWallet(
-  walletName: SupportedWallet
+  walletName: SupportedWalletName
 ): Promise<WalletAPI> {
-  if (getAvailableWallets().includes(walletName)) {
+  if (
+    getInstalledWalletExtensions()
+      .map((extension) => extension.name)
+      .includes(walletName)
+  ) {
     const extension = await window.cardano[walletName.toLowerCase()].enable();
     const di = { extension };
     return {
@@ -121,21 +172,6 @@ const getLovelaces =
     return valueToLovelaces(deserializeValue(balances));
   };
 
-/**
- * Get a list of the available wallets installed in the browser
- */
-export function getAvailableWallets(): SupportedWallet[] {
-  if ("cardano" in window) {
-    // NOTE: it would be nice to have a Type assertion that the supportedWallets array is
-    // the same as the SupportedWallets type union. I've tried the other way (infering the type
-    // from the array) but the exported documentation doesn't look good
-    const supportedWallets = ["nami", "eternl", "lace"] as SupportedWallet[];
-    return supportedWallets.filter((wallet) => wallet in window.cardano);
-  } else {
-    return [];
-  }
-}
-
 function deserializeAddress(addressHex: string): AddressBech32 {
   return addressBech32(
     C.Address.from_bytes(hex.decode(addressHex)).to_bech32(undefined)
@@ -147,29 +183,6 @@ function deserializeTxOutRef(utxoStr: string): TxOutRef {
   const input = JSON.parse(utxo.input().to_json());
   return txOutRef(input.transaction_id + "#" + input.index);
 }
-
-type DataSignature = {
-  signature: string;
-  key: string;
-};
-
-type BroswerExtensionCIP30Api = {
-  experimental: ExperimentalFeatures;
-  getBalance(): Promise<string>;
-  getChangeAddress(): Promise<string>;
-  getNetworkId(): Promise<number>;
-  getRewardAddresses(): Promise<string[]>;
-  getUnusedAddresses(): Promise<string[]>;
-  getUsedAddresses(): Promise<string[]>;
-  getUtxos(): Promise<string[] | undefined>;
-  signData(address: string, payload: string): Promise<DataSignature>;
-  signTx(tx: string, partialSign: boolean): Promise<string>;
-  submitTx(tx: string): Promise<string>;
-};
-
-type ExperimentalFeatures = {
-  getCollateral(): Promise<string[] | undefined>;
-};
 
 const deserializeValue = (value: string) =>
   C.Value.from_bytes(hex.decode(value));
