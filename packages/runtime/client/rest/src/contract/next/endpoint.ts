@@ -39,6 +39,4 @@ export const getViaAxios: (axiosInstance: AxiosInstance) => GET =
     );
 
 const contractNextEndpoint = (contractId: ContractId): string =>
-  `/contracts/${encodeURIComponent(
-    unContractId(contractId)
-  )}/next`;
+  `/contracts/${encodeURIComponent(unContractId(contractId))}/next`;
