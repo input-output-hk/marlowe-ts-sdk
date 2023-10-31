@@ -17,7 +17,7 @@ The **Marlowe TS-SDK** is a suite of _TypeScript/JavaScript_ libraries for devel
 
 It is composed of several npm packages documented in the [API reference](https://input-output-hk.github.io/marlowe-ts-sdk/) page.
 
-## Prerequesites
+## Prerequisites
 
 In order to start working with the Marlowe SDK you need to have a URL to a running instance of the Marlowe Runtime and one of the supported wallet extensions installed in your browser.
 

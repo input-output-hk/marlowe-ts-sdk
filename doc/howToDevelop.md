@@ -33,12 +33,12 @@ $ npm run test
 
 ## E2E tests
 
-In order to run the E2E tests you need to create a `./env/.env.test` file that points to a working version of the marlowe runtime and a working Blockfrost instance and a faucet PK.
+In order to run the E2E tests you need to create a `./env/.env.test` file that points to a working version of the Marlowe runtime and a working Blockfrost instance and a faucet PK.
 
 If you haven't done it before, go to https://blockfrost.io/ and create a free-tier account. Then, create a project and copy the project ID. Blockfrost is a Lucid dependency, eventually when
 we migrate to a different library this wont be necessary.
 
-To create an instance of a local marlowe runtime, follow the instructions in the [marlowe starter kit](https://github.com/input-output-hk/marlowe-starter-kit/blob/main/docs/preliminaries.md)
+To create an instance of a local Marlowe runtime, follow the instructions in the [Marlowe starter kit](https://github.com/input-output-hk/marlowe-starter-kit/blob/main/docs/preliminaries.md)
 
 TODO: explain how to get the Faucet PK
 
@@ -101,7 +101,7 @@ To collect all changelog entries into a single file, execute `std` from the nix 
 
 For the moment the SDK is manually published to npm. Task PLT-6939 captures the work to automate this process through the CI.
 
-Before publishing it is convinient to check that the artifacts works as expected :
+Before publishing it's convenient to verify that the artifacts works as expected :
 
 - Clean & Build
 
