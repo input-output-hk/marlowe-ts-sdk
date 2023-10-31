@@ -64,15 +64,16 @@ async function createContractFromFileUpload() {
   function handleFile(event) {
     const contract = MarloweJSON.parse(event.target.result);
     const verification = verifySurveyContract(contract, surveyParticipant);
+    const yieldSection = document.getElementById("yield-section");
     if (!verification.match) {
       log(bsAlert("danger", `⛔️ Contract verification failed`));
-      const yieldSection = document.getElementById("yield-section");
       yieldSection.style.display = "block";
     } else {
       logJSON(
         bsAlert("success", "✅ Contract verification succeeded"),
         verification
       );
+      yieldSection.style.display = "none";
       const answerTimeout = timeoutToDate(verification.answerTimeout);
       const rewardTimeout = timeoutToDate(verification.rewardTimeout);
       createContract(answerTimeout, rewardTimeout);
