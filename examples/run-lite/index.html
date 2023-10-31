@@ -28,6 +28,14 @@
       <select id="wallet" name="wallet">
         <option value="nami">Nami</option>
         <option value="eternl">Eternl</option>
+        <option value="lace">Lace</option>
+      </select>
+      <br />
+      <label for="network">Select network:</label>
+      <select id="network" name="network">
+        <option value="preprod">Preprod</option>
+        <option value="preview">Preview</option>
+        <option value="mainnet">Mainnet</option>
       </select>
       <div>
         <h3>1.1 Create contract</h3>
@@ -88,8 +96,8 @@
           "contract-id-indicator"
         );
         contractIdIndicator.innerHTML = contractId;
-        // TODO: Add a network selector
-        const url = `https://preprod.marlowescan.com/contractView?tab=state&contractId=${contractId.replace(
+        const networkInput = document.getElementById("network");
+        const url = `https://${networkInput.value}.marlowescan.com/contractView?tab=state&contractId=${contractId.replace(
           "#",
           "%23"
         )}`;
@@ -99,7 +107,7 @@
 
       async function createContract() {
         const runtimeUrlInput = document.getElementById("runtimeUrl");
-        const runtimeURL = runtimeUrlInput.value || "http://localhost:32952";
+        const runtimeURL = runtimeUrlInput.value || H.getRuntimeUrl();
         const walletInput = document.getElementById("wallet");
         const walletName = walletInput.value;
         const contractInput = document.getElementById("contract");
