@@ -8,7 +8,7 @@ import { timeoutToDate } from "@marlowe.io/language-core-v1";
 
 function createPlaygroundLink (contract) {
   const compressed = LZString.compressToEncodedURIComponent(MarloweJSON.stringify(contract));
-  const link = `https://play.marlowe.iohk.io/#/importContract?contract=${compressed}`
+  const link = `https://play.marlowe.iohk.io/#/importContract?marlowe-view=blockly&contract=${compressed}`
   return link;
 }
 
