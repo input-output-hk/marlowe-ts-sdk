@@ -111,7 +111,7 @@ export async function getAddressesAndCollaterals(
 ): Promise<AddressesAndCollaterals> {
   const changeAddress = await walletAPI.getChangeAddress();
   const usedAddresses = await walletAPI.getUsedAddresses();
-  const collateralUTxOs = await walletAPI.getCollaterals();
+  const collateralUTxOs: TxOutRef[] = []; // await walletAPI.getCollaterals(); -- Temporarily disabled
   return {
     changeAddress,
     usedAddresses,
