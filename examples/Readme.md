@@ -18,7 +18,7 @@ At the root of the project :
 npx http-server --port 1337 -c-1  -o ./
 ```
 
-Then select one of the availble examples:
+Then select one of the available examples:
 
 - [wallet flow](./wallet-flow/): Simple example on how to use the `@marlowe.io/wallet` package to connect to a wallet extension and get basic info and to manually sign transactions.
 - [Rest client flow](./rest-client-flow/): Shows how to use the `@marlowe.io/runtime-rest-client` package.
