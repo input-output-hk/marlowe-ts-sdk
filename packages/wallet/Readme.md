@@ -35,6 +35,6 @@ The `@marlowe.io/wallet` package is [released as an ESM module](https://github.c
 </html>
 ```
 
-## POC
+## Examples
 
-There is a simple HTML file in the [pocs folder](http://todo-full-link) that shows how to use the wallet package to connect to a wallet extension and get basic info.
+There is a simple HTML file in the [examples folder](https://github.com/input-output-hk/marlowe-ts-sdk/blob/main/examples/wallet-flow/index.html) that shows how to use the wallet package to connect to a wallet extension and get basic info.

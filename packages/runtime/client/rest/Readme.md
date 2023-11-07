@@ -10,13 +10,25 @@ The `@marlowe.io/runtime-rest-client` package is [released as an ESM module](htt
 
 ### Browser
 
+Instantiating a client requires a runtime URL to the desired network which can either be self hosted with instructions in [Marlowe starter kit](https://github.com/input-output-hk/marlowe-starter-kit/blob/main/docs/preliminaries.md) or through a service such as [Demeter](https://docs.demeter.run/extensions/marlowe-runtime).
+
+The caller should run a `healthcheck` to ensure the runtime service is healthy throughout the lifecycle of the client.
+
 ```html
 <html>
   <body>
     <script src="https://cdn.jsdelivr.net/gh/input-output-hk/marlowe-ts-sdk/jsdelivr-npm-importmap.js"></script>
     <script type="module">
       import { mkRestClient } from "@marlowe.io/runtime-rest-client";
-      // TODO
+      
+      let runtimeURL = process.env.MARLOWE_RUNTIME_URL;
+
+      const client = mkRestClient(runtimeURL);
+      const hasValidRuntime = await client.healthcheck();
+
+      if (!hasValidRuntime)
+        throw new Error('Invalid Marlowe Runtime instance')
+
     </script>
   </body>
 </html>
