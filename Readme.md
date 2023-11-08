@@ -37,12 +37,12 @@ To get a running instance of the Runtime, it is recommended to check out the ins
 
 Inside the [examples folder](./examples/Readme.md) you can find a set of minimal examples on how to use different packages of the SDK.
 
-Prototypes have been also built on top of this sdk :
+Prototypes have been also built on top of this sdk:
 
-- `Payouts`
+- Payouts
   - [Github Repository](https://github.com/input-output-hk/marlowe-payouts)
   - [Deployed DApp](https://payouts-preprod.prod.scdev.aws.iohkdev.io/)
-- Token Plans :
+- Token Plans
   - [Github Repository](https://github.com/input-output-hk/marlowe-vesting)
   - Vesting Contract
     - [Implementation](https://github.com/input-output-hk/marlowe-ts-sdk/blob/main/packages/language/examples/src/vesting.ts)
