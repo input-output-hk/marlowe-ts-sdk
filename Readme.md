@@ -33,13 +33,21 @@ To get a running instance of the Runtime, it is recommended to check out the ins
 | Yoroi   |            |                |     ?      |
 | Typhon  |            |                |     ?      |
 
-## Examples
+## Examples & Contract Use Cases
 
 Inside the [examples folder](./examples/Readme.md) you can find a set of minimal examples on how to use different packages of the SDK.
 
-More elaborate examples can be found in the following repositories:
+Prototypes have been also built on top of this sdk :
 
-- [marlowe-payouts](https://github.com/input-output-hk/marlowe-payouts)
+- `Payouts`
+  - [Github Repository](https://github.com/input-output-hk/marlowe-payouts)
+  - [Deployed DApp](https://payouts-preprod.prod.scdev.aws.iohkdev.io/)
+- Token Plans :
+  - [Github Repository](https://github.com/input-output-hk/marlowe-vesting)
+  - Vesting Contract
+    - [Implementation](https://github.com/input-output-hk/marlowe-ts-sdk/blob/main/packages/language/examples/src/vesting.ts)
+    - [Documentation](https://input-output-hk.github.io/marlowe-ts-sdk/modules/_marlowe_io_language_examples.vesting.html)
+  - [Deployed DApp](https://vesting-preprod.prod.scdev.aws.iohkdev.io/)
 
 ## Community & Support
 
