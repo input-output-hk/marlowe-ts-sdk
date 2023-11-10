@@ -47,7 +47,7 @@ Prototypes have been also built on top of this sdk:
   - Vesting Contract
     - [Implementation](https://github.com/input-output-hk/marlowe-ts-sdk/blob/main/packages/language/examples/src/vesting.ts)
     - [Documentation](https://input-output-hk.github.io/marlowe-ts-sdk/modules/_marlowe_io_language_examples.vesting.html)
-  - [Deployed DApp](https://vesting-preprod.prod.scdev.aws.iohkdev.io/)
+  - [Deployed DApp](https://token-plans-preprod.prod.scdev.aws.iohkdev.io/)
 
 ## Community & Support
 
