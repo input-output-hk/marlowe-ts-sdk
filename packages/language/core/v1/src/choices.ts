@@ -1,5 +1,6 @@
+import { Sort, strCmp } from "@marlowe.io/adapter/assoc-map";
 import * as t from "io-ts/lib/index.js";
-import { Party, PartyGuard } from "./participants.js";
+import { Party, partyCmp, PartyGuard } from "./participants.js";
 
 /**
  * TODO: Comment
@@ -32,6 +33,18 @@ export const ChoiceIdGuard: t.Type<ChoiceId> = t.type({
 });
 
 /**
+ * Sorting function for ChoiceId as defined in the Marlowe Specification (SemanticsGuarantees.thy)
+ * @hidden
+ */
+export function choiceIdCmp(a: ChoiceId, b: ChoiceId): Sort {
+  const nameCmp = strCmp(a.choice_name, b.choice_name);
+  if (nameCmp !== "EqualTo") {
+    return nameCmp;
+  }
+  return partyCmp(a.choice_owner, b.choice_owner);
+}
+
+/**
  * TODO: Comment
  * @category Choice
  */
@@ -60,3 +73,19 @@ export type ChosenNum = bigint;
  * @category Choice
  */
 export const ChosenNumGuard: t.Type<ChosenNum> = t.bigint;
+
+/**
+ * Checks if a chosen number is between a given bound
+ * @category Choice
+ */
+export function inBound(num: bigint, bound: Bound): boolean {
+  return num >= bound.from && num <= bound.to;
+}
+
+/**
+ * Checks if a chosen number is within any of the given bounds
+ * @category Choice
+ */
+export function inBounds(num: bigint, bounds: Bound[]): boolean {
+  return bounds.some((bound) => inBound(num, bound));
+}

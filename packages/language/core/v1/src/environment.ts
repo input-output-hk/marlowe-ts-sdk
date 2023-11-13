@@ -8,7 +8,7 @@ import { ISO8601, datetoIso8601, POSIXTime } from "@marlowe.io/adapter/time";
 export const mkEnvironment =
   (start: Date) =>
   (end: Date): Environment => ({
-    timeInterval: { from: start.getTime(), to: end.getTime() },
+    timeInterval: { from: BigInt(start.getTime()), to: BigInt(end.getTime()) },
   });
 
 /**

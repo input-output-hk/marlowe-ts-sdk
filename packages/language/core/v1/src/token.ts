@@ -1,3 +1,4 @@
+import { Sort, strCmp } from "@marlowe.io/adapter/assoc-map";
 import * as t from "io-ts/lib/index.js";
 import { PolicyId } from "./policyId.js";
 /**
@@ -51,13 +52,24 @@ export const tokenToString: (token: Token) => string = (token) =>
   `${token.currency_symbol}|${token.token_name}`;
 
 /**
- * @hidden
+ * The native {@link Token} of the Cardano blockchain. 1 Million lovelaces is one ADA.
+ * @category Token
  */
-export const lovelaceToken: Token = token("", "");
+export const lovelace: Token = token("", "");
 /**
- * DISCUSSION: In different places (like the playground)
- * we use the name `ada` for the lovelace token, I think we
- * should only use lovelace as it can be missleading.
+ * @deprecated Use `lovelace` instead
  * @hidden
  */
-export const adaToken: Token = lovelaceToken;
+export const adaToken: Token = lovelace;
+
+/**
+ * Sorting function for Parties as defined in the Marlowe Specification (SemanticsGuarantees.thy)
+ * @hidden
+ */
+export function tokenCmp(a: Token, b: Token): Sort {
+  const currencyCmp = strCmp(a.currency_symbol, b.currency_symbol);
+  if (currencyCmp !== "EqualTo") {
+    return currencyCmp;
+  }
+  return strCmp(a.token_name, b.token_name);
+}

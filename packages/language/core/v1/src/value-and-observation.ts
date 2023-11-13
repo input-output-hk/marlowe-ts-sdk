@@ -247,7 +247,66 @@ export const ValueGuard: t.Type<Value> = t.recursion("Value", () =>
 );
 
 /**
- * TODO: Comment
+ * Pattern match object on the Value type
+ * @category Value
+ * @hidden
+ */
+export type ValueMatcher<T> = {
+  availableMoney: (value: AvailableMoney) => T;
+  constant: (value: Constant) => T;
+  negValue: (value: NegValue) => T;
+  addValue: (value: AddValue) => T;
+  subValue: (value: SubValue) => T;
+  mulValue: (value: MulValue) => T;
+  divValue: (value: DivValue) => T;
+  choiceValue: (value: ChoiceValue) => T;
+  timeIntervalStart: (value: TimeIntervalStart) => T;
+  timeIntervalEnd: (value: TimeIntervalEnd) => T;
+  useValue: (value: UseValue) => T;
+  cond: (value: Cond) => T;
+};
+
+/**
+ * Pattern matching on the Value type
+ * @hidden
+ * @category Value
+ */
+export function matchValue<T>(matcher: ValueMatcher<T>): (value: Value) => T;
+export function matchValue<T>(
+  matcher: Partial<ValueMatcher<T>>
+): (value: Value) => T | undefined;
+export function matchValue<T>(matcher: Partial<ValueMatcher<T>>) {
+  return (value: Value) => {
+    if (AvailableMoneyGuard.is(value) && matcher.availableMoney) {
+      return matcher.availableMoney(value);
+    } else if (ConstantGuard.is(value) && matcher.constant) {
+      return matcher.constant(value);
+    } else if (NegValueGuard.is(value) && matcher.negValue) {
+      return matcher.negValue(value);
+    } else if (AddValueGuard.is(value) && matcher.addValue) {
+      return matcher.addValue(value);
+    } else if (SubValueGuard.is(value) && matcher.subValue) {
+      return matcher.subValue(value);
+    } else if (MulValueGuard.is(value) && matcher.mulValue) {
+      return matcher.mulValue(value);
+    } else if (DivValueGuard.is(value) && matcher.divValue) {
+      return matcher.divValue(value);
+    } else if (ChoiceValueGuard.is(value) && matcher.choiceValue) {
+      return matcher.choiceValue(value);
+    } else if (TimeIntervalStartGuard.is(value) && matcher.timeIntervalStart) {
+      return matcher.timeIntervalStart(value);
+    } else if (TimeIntervalEndGuard.is(value) && matcher.timeIntervalEnd) {
+      return matcher.timeIntervalEnd(value);
+    } else if (UseValueGuard.is(value) && matcher.useValue) {
+      return matcher.useValue(value);
+    } else if (CondGuard.is(value) && matcher.cond) {
+      return matcher.cond(value);
+    }
+  };
+}
+
+/**
+ * Observes `both && and`
  * @category Observation
  */
 export interface AndObs {
@@ -256,7 +315,7 @@ export interface AndObs {
 }
 
 /**
- * TODO: Comment
+ * {@link !io-ts-usage | Dynamic type guard} for the {@link AndObs} type.
  * @category Observation
  */
 export const AndObsGuard: t.Type<AndObs> = t.recursion("AndObs", () =>
@@ -264,7 +323,7 @@ export const AndObsGuard: t.Type<AndObs> = t.recursion("AndObs", () =>
 );
 
 /**
- * TODO: Comment
+ * Observes `either || or`
  * @category Observation
  */
 export interface OrObs {
@@ -273,7 +332,7 @@ export interface OrObs {
 }
 
 /**
- * TODO: Comment
+ * {@link !io-ts-usage | Dynamic type guard} for the {@link OrObs} type.
  * @category Observation
  */
 export const OrObsGuard: t.Type<OrObs> = t.recursion("OrObs", () =>
@@ -281,14 +340,14 @@ export const OrObsGuard: t.Type<OrObs> = t.recursion("OrObs", () =>
 );
 
 /**
- * TODO: Comment
+ * Negates the `not` observation
  * @category Observation
  */
 export interface NotObs {
   not: Observation;
 }
 /**
- * TODO: Comment
+ * {@link !io-ts-usage | Dynamic type guard} for the {@link NotObs} type.
  * @category Observation
  */
 export const NotObsGuard: t.Type<NotObs> = t.recursion("NotObs", () =>
@@ -296,14 +355,14 @@ export const NotObsGuard: t.Type<NotObs> = t.recursion("NotObs", () =>
 );
 
 /**
- * TODO: Comment
+ * Observes if the `chose_something_for` choice was made
  * @category Observation
  */
 export interface ChoseSomething {
   chose_something_for: ChoiceId;
 }
 /**
- * TODO: Comment
+ * {@link !io-ts-usage | Dynamic type guard} for the {@link ChoseSomething} type.
  * @category Observation
  */
 // TODO: try to remove recursion
@@ -313,7 +372,7 @@ export const ChoseSomethingGuard: t.Type<ChoseSomething> = t.recursion(
 );
 
 /**
- * TODO: Comment
+ * Observes if `value == equal_to`
  * @category Observation
  */
 export interface ValueEQ {
@@ -321,7 +380,7 @@ export interface ValueEQ {
   equal_to: Value;
 }
 /**
- * TODO: Comment
+ * {@link !io-ts-usage | Dynamic type guard} for the {@link ValueEQ} type.
  * @category Observation
  */
 export const ValueEQGuard: t.Type<ValueEQ> = t.recursion("ValueEQ", () =>
@@ -329,7 +388,7 @@ export const ValueEQGuard: t.Type<ValueEQ> = t.recursion("ValueEQ", () =>
 );
 
 /**
- * TODO: Comment
+ * Observes if `value > gt`
  * @category Observation
  */
 export interface ValueGT {
@@ -338,7 +397,7 @@ export interface ValueGT {
 }
 
 /**
- * TODO: Comment
+ * {@link !io-ts-usage | Dynamic type guard} for the {@link ValueGT} type.
  * @category Observation
  */
 export const ValueGTGuard: t.Type<ValueGT> = t.recursion("ValueGT", () =>
@@ -346,7 +405,7 @@ export const ValueGTGuard: t.Type<ValueGT> = t.recursion("ValueGT", () =>
 );
 
 /**
- * TODO: Comment
+ * Observes if `value >= ge_than`
  * @category Observation
  */
 export interface ValueGE {
@@ -355,7 +414,7 @@ export interface ValueGE {
 }
 
 /**
- * TODO: Comment
+ * {@link !io-ts-usage | Dynamic type guard} for the {@link ValueGE} type.
  * @category Observation
  */
 export const ValueGEGuard: t.Type<ValueGE> = t.recursion("ValueGE", () =>
@@ -363,7 +422,7 @@ export const ValueGEGuard: t.Type<ValueGE> = t.recursion("ValueGE", () =>
 );
 
 /**
- * TODO: Comment
+ * Observes if `value < lt`
  * @category Observation
  */
 export interface ValueLT {
@@ -372,7 +431,7 @@ export interface ValueLT {
 }
 
 /**
- * TODO: Comment
+ * {@link !io-ts-usage | Dynamic type guard} for the {@link ValueLT} type.
  * @category Observation
  */
 export const ValueLTGuard: t.Type<ValueLT> = t.recursion("ValueLT", () =>
@@ -380,7 +439,7 @@ export const ValueLTGuard: t.Type<ValueLT> = t.recursion("ValueLT", () =>
 );
 
 /**
- * TODO: Comment
+ * Observes if `value <= le_than`
  * @category Observation
  */
 export interface ValueLE {
@@ -389,7 +448,7 @@ export interface ValueLE {
 }
 
 /**
- * TODO: Comment
+ * {@link !io-ts-usage | Dynamic type guard} for the {@link ValueLE} type.
  * @category Observation
  */
 export const ValueLEGuard: t.Type<ValueLE> = t.recursion("ValueLE", () =>
@@ -432,3 +491,61 @@ export const ObservationGuard: t.Type<Observation> = t.recursion(
       t.boolean,
     ])
 );
+
+/**
+ * Pattern match object on the Observation type
+ * @category Observation
+ * @hidden
+ */
+export type ObservationMatcher<T> = {
+  andObs: (observation: AndObs) => T;
+  orObs: (observation: OrObs) => T;
+  notObs: (observation: NotObs) => T;
+  choseSomething: (observation: ChoseSomething) => T;
+  valueEQ: (observation: ValueEQ) => T;
+  valueGT: (observation: ValueGT) => T;
+  valueGE: (observation: ValueGE) => T;
+  valueLT: (observation: ValueLT) => T;
+  valueLE: (observation: ValueLE) => T;
+  trueObs: (observation: true) => T;
+  falseObs: (observation: false) => T;
+};
+
+/**
+ * Pattern matching on the Observation type
+ * @hidden
+ * @category Observation
+ */
+export function matchObservation<T>(
+  matcher: ObservationMatcher<T>
+): (observation: Observation) => T;
+export function matchObservation<T>(
+  matcher: Partial<ObservationMatcher<T>>
+): (observation: Observation) => T | undefined;
+export function matchObservation<T>(matcher: Partial<ObservationMatcher<T>>) {
+  return (observation: Observation) => {
+    if (AndObsGuard.is(observation) && matcher.andObs) {
+      return matcher.andObs(observation);
+    } else if (OrObsGuard.is(observation) && matcher.orObs) {
+      return matcher.orObs(observation);
+    } else if (NotObsGuard.is(observation) && matcher.notObs) {
+      return matcher.notObs(observation);
+    } else if (ChoseSomethingGuard.is(observation) && matcher.choseSomething) {
+      return matcher.choseSomething(observation);
+    } else if (ValueEQGuard.is(observation) && matcher.valueEQ) {
+      return matcher.valueEQ(observation);
+    } else if (ValueGTGuard.is(observation) && matcher.valueGT) {
+      return matcher.valueGT(observation);
+    } else if (ValueGEGuard.is(observation) && matcher.valueGE) {
+      return matcher.valueGE(observation);
+    } else if (ValueLTGuard.is(observation) && matcher.valueLT) {
+      return matcher.valueLT(observation);
+    } else if (ValueLEGuard.is(observation) && matcher.valueLE) {
+      return matcher.valueLE(observation);
+    } else if (observation == true && matcher.trueObs) {
+      return matcher.trueObs(observation);
+    } else if (observation == false && matcher.falseObs) {
+      return matcher.falseObs(observation);
+    }
+  };
+}

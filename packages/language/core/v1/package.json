@@ -49,6 +49,11 @@
       "import": "./dist/esm/version.js",
       "require": "./dist/bundled/cjs/version.cjs",
       "types": "./dist/esm/version.d.ts"
+    },
+    "./semantics": {
+      "import": "./dist/esm/semantics.js",
+      "require": "./dist/bundled/cjs/semantics.cjs",
+      "types": "./dist/esm/semantics.d.ts"
     }
   },
   "dependencies": {

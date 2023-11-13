@@ -8,6 +8,7 @@ import { pipe } from "fp-ts/lib/function.js";
 import * as A from "fp-ts/lib/Array.js";
 
 import { AddressBech32 } from "./address.js";
+import { Sort, strCmp } from "@marlowe.io/adapter/assoc-map";
 
 /**
  *
@@ -78,3 +79,23 @@ export const partiesToStrings: (parties: Party[]) => string[] = (parties) =>
  */
 export const partyToString: (party: Party) => string = (party) =>
   RoleGuard.is(party) ? party.role_token : party.address;
+
+/**
+ * Sorting function for Parties as defined in the Marlowe Specification (SemanticsGuarantees.thy)
+ * @hidden
+ */
+export function partyCmp(a: Party, b: Party): Sort {
+  if (AddressGuard.is(a) && RoleGuard.is(b)) {
+    return "LowerThan";
+  }
+  if (RoleGuard.is(a) && AddressGuard.is(b)) {
+    return "GreaterThan";
+  }
+  if (AddressGuard.is(a) && AddressGuard.is(b)) {
+    return strCmp(a.address, b.address);
+  }
+  if (RoleGuard.is(a) && RoleGuard.is(b)) {
+    return strCmp(a.role_token, b.role_token);
+  }
+  throw new Error("Unreachable");
+}

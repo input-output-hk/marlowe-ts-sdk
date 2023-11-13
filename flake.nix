@@ -7,6 +7,9 @@
     nixpkgs.follows = "std/nixpkgs";
     std.inputs.devshell.url = "github:numtide/devshell";
     std.inputs.nixago.url = "github:nix-community/nixago";
+    marloweSpec = {
+      url = "github:input-output-hk/marlowe";
+    };
   };
 
   outputs = {

@@ -56,6 +56,16 @@
       "import": "./dist/esm/io-ts.js",
       "require": "./dist/bundled/cjs/io-ts.cjs",
       "types": "./dist/esm/io-ts.d.ts"
+    },
+    "./assoc-map": {
+      "import": "./dist/esm/assoc-map.js",
+      "require": "./dist/bundled/cjs/assoc-map.cjs",
+      "types": "./dist/esm/assoc-map.d.ts"
+    },
+    "./deep-equal": {
+      "import": "./dist/esm/deep-equal.js",
+      "require": "./dist/bundled/cjs/deep-equal.cjs",
+      "types": "./dist/esm/deep-equal.d.ts"
     }
   },
   "dependencies": {

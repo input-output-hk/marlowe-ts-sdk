@@ -4,6 +4,7 @@
     { "path": "./packages/adapter/src" },
     { "path": "./packages/language/core/v1/src" },
     { "path": "./packages/language/examples/src" },
+    { "path": "./packages/language/spec-cli/src" },
     { "path": "./packages/wallet/src" },
     { "path": "./packages/runtime/client/rest/src" },
     { "path": "./packages/runtime/core/src" },

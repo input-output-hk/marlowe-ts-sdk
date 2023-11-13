@@ -56,9 +56,16 @@ export { role, Party, Address, Role } from "./participants.js";
 
 export { Payee, PayeeAccount, PayeeParty, AccountId } from "./payee.js";
 
-export { Token, TokenName, tokenToString, token, adaToken } from "./token.js";
+export {
+  Token,
+  TokenName,
+  tokenToString,
+  token,
+  adaToken,
+  lovelace,
+} from "./token.js";
 
-export { MarloweState } from "./state.js";
+export { Accounts, MarloweState } from "./state.js";
 
 export {
   Value,
@@ -88,3 +95,4 @@ export {
 
 export { TokenValue, tokenValue, adaValue } from "./tokenValue.js";
 export { PolicyId } from "./policyId.js";
+export { Payment } from "./transaction.js";

@@ -35,6 +35,8 @@ export {
   ContractGuard as Contract,
   WhenGuard as When,
   CaseGuard as Case,
+  NormalCaseGuard as NormalCase,
+  MerkleizedCaseGuard as MerkleizedCase,
   TimeoutGuard as Timeout,
 } from "./contract.js";
 
@@ -99,3 +101,23 @@ export {
   ValueLTGuard as ValueLT,
   ValueLEGuard as ValueLE,
 } from "./value-and-observation.js";
+export {
+  TransactionGuard as Transaction,
+  PaymentGuard as Payment,
+  NonPositivePayGuard as NonPositivePay,
+  NonPositiveDepositGuard as NonPositiveDeposit,
+  PartialPayGuard as PartialPay,
+  ShadowingGuard as Shadowing,
+  AssertionFailedGuard as AssertionFailed,
+  TransactionWarningGuard as TransactionWarning,
+  InvalidIntervalGuard as InvalidInterval,
+  IntervalInPastGuard as IntervalInPast,
+  IntervalErrorGuard as IntervalError,
+  AmbiguousTimeIntervalErrorGuard as AmbiguousTimeIntervalError,
+  ApplyNoMatchErrorGuard as ApplyNoMatchError,
+  UselessTransactionGuard as UselessTransaction,
+  TEIntervalErrorGuard as TEIntervalError,
+  TransactionErrorGuard as TransactionError,
+  TransactionSuccessGuard as TransactionSuccess,
+  TransactionOutputGuard as TransactionOutput,
+} from "./transaction.js";

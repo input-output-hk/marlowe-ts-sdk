@@ -126,7 +126,7 @@ export type MerkleizedInput = t.TypeOf<typeof MerkleizedInputGuard>;
  */
 export const MerkleizedInputGuard = t.intersection([
   InputContentGuard,
-  t.partial({
+  t.type({
     continuation_hash: BuiltinByteStringGuard,
     merkleized_continuation: ContractGuard,
   }),
@@ -142,6 +142,6 @@ export type Input = NormalInput | MerkleizedInput;
  * @category Input
  */
 export const InputGuard: t.Type<Input> = t.union([
-  NormalInputGuard,
   MerkleizedInputGuard,
+  NormalInputGuard,
 ]);

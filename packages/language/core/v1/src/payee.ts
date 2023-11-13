@@ -74,3 +74,32 @@ export type Payee = PayeeAccount | PayeeParty;
  */
 // see [[ payee-name-conflict ]]
 export const PayeeGuard = t.union([PayeeAccountGuard, PayeePartyGuard]);
+
+/**
+ * Pattern match object on the Payee type
+ * @category Payee
+ * @hidden
+ */
+export type PayeeMatcher<T> = {
+  party: (party: Party) => T;
+  account: (account: AccountId) => T;
+};
+
+/**
+ * Pattern matching on the Payee type
+ * @hidden
+ * @category Payee
+ */
+export function matchPayee<T>(matcher: PayeeMatcher<T>): (payee: Payee) => T;
+export function matchPayee<T>(
+  matcher: Partial<PayeeMatcher<T>>
+): (payee: Payee) => T | undefined;
+export function matchPayee<T>(matcher: Partial<PayeeMatcher<T>>) {
+  return (payee: Payee) => {
+    if (PayeePartyGuard.is(payee) && matcher.party) {
+      return matcher.party(payee.party);
+    } else if (PayeeAccountGuard.is(payee) && matcher.account) {
+      return matcher.account(payee.account);
+    }
+  };
+}

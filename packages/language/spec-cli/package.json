@@ -1,0 +1,38 @@
+{
+  "name": "@marlowe.io/language-spec-cli",
+  "version": "0.2.0-alpha-20",
+  "description": "Client for the Marlowe Specification compliance test",
+  "repository": "https://github.com/input-output-hk/marlowe-ts-sdk",
+  "publishConfig": {
+    "access": "restricted"
+  },
+  "contributors": [
+    "Nicolas Henin <nicolas.henin@iohk.io> (https://iohk.io)",
+    "Hernan Rajchert <hernan.rajchert@iohk.io> (https://iohk.io)",
+    "Bjorn Kihlberg <bjorn.kihlberg@iohk.io> (https://iohk.io)"
+  ],
+  "license": "Apache-2.0",
+  "scripts": {
+    "build": "tsc --build src",
+    "clean": "shx rm -rf dist",
+    "test": "echo 'no test defined for marlowe-examples'"
+  },
+  "type": "module",
+  "module": "./dist/esm/main.js",
+  "main": "./dist/esm/main.js",
+  "types": "./dist/esm/main.d.ts",
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "import": "./dist/esm/main.js",
+      "require": "./dist/bundled/cjs/language-spec-cli.cjs",
+      "types": "./dist/esm/main.d.ts"
+    }
+  },
+  "dependencies": {
+    "@marlowe.io/language-core-v1": "0.2.0-alpha-20",
+    "fp-ts": "^2.16.1"
+  }
+}

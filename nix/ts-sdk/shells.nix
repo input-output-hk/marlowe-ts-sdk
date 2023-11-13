@@ -14,6 +14,7 @@
       nodejs
       scriv
       nodePackages.prettier
+      inputs.marloweSpec.packages."marlowe-spec-test:exe:marlowe-spec"
     ];
     nixago = [
       ((lib.dev.mkNixago lib.cfg.treefmt) cell.configs.treefmt)
@@ -33,6 +34,14 @@
       {
         package = std.cli.default;
         category = "general commands";
+      }
+      {
+        command = ''
+          marlowe-spec -c ${cell.scripts.test-spec}/bin/operable-nodejs
+        '';
+        name = "test-spec";
+        category = "Tests";
+        help = "Runs the Marlowe Spec test suite";
       }
     ];
   };

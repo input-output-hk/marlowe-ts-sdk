@@ -2,8 +2,12 @@ const importMap = {
   imports: {
     "@marlowe.io/adapter":
       "https:/cdn.jsdelivr.net/npm/@marlowe.io/adapter@0.2.0-alpha-20/dist/bundled/esm/adapter.js",
+    "@marlowe.io/adapter/assoc-map":
+      "https:/cdn.jsdelivr.net/npm/@marlowe.io/adapter@0.2.0-alpha-20/dist/bundled/esm/assoc-map.js",
     "@marlowe.io/adapter/codec":
       "https:/cdn.jsdelivr.net/npm/@marlowe.io/adapter@0.2.0-alpha-20/dist/bundled/esm/codec.js",
+    "@marlowe.io/adapter/deep-equal":
+      "https:/cdn.jsdelivr.net/npm/@marlowe.io/adapter@0.2.0-alpha-20/dist/bundled/esm/deep-equal.js",
     "@marlowe.io/adapter/file":
       "https:/cdn.jsdelivr.net/npm/@marlowe.io/adapter@0.2.0-alpha-20/dist/bundled/esm/file.js",
     "@marlowe.io/adapter/fp-ts":
@@ -26,6 +30,8 @@ const importMap = {
       "https:/cdn.jsdelivr.net/npm/@marlowe.io/language-core-v1@0.2.0-alpha-20/dist/bundled/esm/version.js",
     "@marlowe.io/language-examples":
       "https:/cdn.jsdelivr.net/npm/@marlowe.io/language-examples@0.2.0-alpha-20/dist/bundled/esm/language-examples.js",
+    "@marlowe.io/language-spec-cli":
+      "https:/cdn.jsdelivr.net/npm/@marlowe.io/language-spec-cli@0.2.0-alpha-20/dist/bundled/esm/language-spec-cli.js",
     "@marlowe.io/token-metadata-client":
       "https:/cdn.jsdelivr.net/npm/@marlowe.io/token-metadata-client@0.2.0-alpha-20/dist/bundled/esm/token-metadata-client.js",
     "@marlowe.io/wallet":
