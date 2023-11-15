@@ -26,6 +26,8 @@ const importMap = {
       "https:/cdn.jsdelivr.net/npm/@marlowe.io/language-core-v1@0.2.0-alpha-20/dist/bundled/esm/next.js",
     "@marlowe.io/language-core-v1/playground-v1":
       "https:/cdn.jsdelivr.net/npm/@marlowe.io/language-core-v1@0.2.0-alpha-20/dist/bundled/esm/playground-v1.js",
+    "@marlowe.io/language-core-v1/semantics":
+      "https:/cdn.jsdelivr.net/npm/@marlowe.io/language-core-v1@0.2.0-alpha-20/dist/bundled/esm/semantics.js",
     "@marlowe.io/language-core-v1/version":
       "https:/cdn.jsdelivr.net/npm/@marlowe.io/language-core-v1@0.2.0-alpha-20/dist/bundled/esm/version.js",
     "@marlowe.io/language-examples":

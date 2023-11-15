@@ -1,5 +1,6 @@
 /**
  *  This module exports static types (only useful in TypeScript) for the JSON schema as specified in the Appendix E of the {@link https://github.com/input-output-hk/marlowe/releases/download/v3/Marlowe.pdf | Marlowe specification}
+
    ```
   import {Value, Contract} from "@marlowe/language-core-v1"
   const four: Value = { add: 2n, and: 2n};
@@ -33,6 +34,8 @@ export {
   Contract,
   When,
   Case,
+  NormalCase,
+  MerkleizedCase,
   close,
   datetoTimeout,
   timeoutToDate,
@@ -95,4 +98,3 @@ export {
 
 export { TokenValue, tokenValue, adaValue } from "./tokenValue.js";
 export { PolicyId } from "./policyId.js";
-export { Payment } from "./transaction.js";

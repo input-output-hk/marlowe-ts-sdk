@@ -210,7 +210,7 @@ export const NormalCaseGuard: t.Type<NormalCase> = t.recursion("Case", () =>
 /**
  * A pattern match between an Action and a Merkleized Contract.
  * To be used inside of a {@link When} statement.
- * {@see https://docs.marlowe.iohk.io/docs/platform-and-architecture/large-contracts}
+ * @see {@link https://docs.marlowe.iohk.io/docs/platform-and-architecture/large-contracts}
  * @category Contract
  */
 export interface MerkleizedCase {
@@ -256,8 +256,9 @@ export type Timeout = bigint;
 export const TimeoutGuard: t.Type<Timeout> = t.bigint;
 
 /**
- * @hidden
+ * @experimental
  */
+// DISCUSSION: I think this should be renamed dateToPOSIX and moved to the time module in the adapter package
 export const datetoTimeout = (date: Date): Timeout =>
   pipe(
     date,
@@ -268,8 +269,9 @@ export const datetoTimeout = (date: Date): Timeout =>
   );
 
 /**
- * @hidden
+ * @experimental
  */
+// DISCUSSION: I think this should be renamed POSIXtoDate and moved to the time module in the adapter package
 export const timeoutToDate = (timeout: Timeout): Date =>
   new Date(Number(timeout));
 

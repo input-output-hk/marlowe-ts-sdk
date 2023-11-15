@@ -9,7 +9,7 @@ import { Token, TokenGuard } from "./token.js";
 
 /**
  * The Payment type represents the intention to transfer funds from the internal {@link AccountId}
- * to a {@link Payee}. This type is created as a result of executing a {@link Pay} statement and is
+ * to a {@link Payee}. This type is created as a result of executing a {@link index.Pay} statement and is
  * included as part of the output of {@link TransactionOutput |computing a transaction}.
  *
  * The {@link Payee} indicates whether the recipient of the payment is an internal account or external
@@ -144,7 +144,16 @@ export const ShadowingGuard: t.Type<Shadowing> = t.type({
   is_now_assigned: t.bigint,
 });
 
+/**
+ * TODO: Comment
+ * @category Transaction Warning
+ */
 export type AssertionFailed = "assertion_failed";
+
+/**
+ * TODO: Comment
+ * @category Transaction Warning
+ */
 export const AssertionFailedGuard: t.Type<AssertionFailed> =
   t.literal("assertion_failed");
 
