@@ -6,5 +6,6 @@ This package contains a client that is used by the [Marlowe spec test](https://g
 
 ```bash
 $ nix develop
-$ marlowe-spec ...
+[nix-shell] $ npm run build
+[nix-shell] $ test-spec
 ```
