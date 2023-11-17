@@ -26,7 +26,7 @@ export const Account = t.tuple([
 export type Accounts = AssocMap<[AccountId, Token], bigint>;
 
 /**
- * {@link !io-ts-usage | Dynamic type guard} for the {@link Accounts} type.
+ * {@link !io-ts-usage | Dynamic type guard} for the {@link Accounts | accounts type}.
  * @category State
  */
 export const AccountsGuard: t.Type<Accounts> = AssocMapGuard(
@@ -77,7 +77,7 @@ export interface MarloweState {
   minTime: bigint;
 }
 /**
- * {@link !io-ts-usage | Dynamic type guard} for the {@link MarloweState} type.
+ * {@link !io-ts-usage | Dynamic type guard} for the {@link MarloweState | state type}.
  * @see Section 2.1.8 and appendix E.14 of the {@link https://github.com/input-output-hk/marlowe/releases/download/v3/Marlowe.pdf | Marlowe spec}
  * @category State
  */

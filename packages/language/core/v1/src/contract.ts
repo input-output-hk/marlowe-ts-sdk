@@ -123,7 +123,7 @@ export interface Let {
 }
 
 /**
- * {@link !io-ts-usage | Dynamic type guard} for the {@link Let} type.
+ * {@link !io-ts-usage | Dynamic type guard} for the {@link Let | let type}.
  * @category Contract
  */
 export const LetGuard: t.Type<Let> = t.recursion("Let", () =>
@@ -200,7 +200,7 @@ export interface NormalCase {
 }
 
 /**
- * {@link !io-ts-usage | Dynamic type guard} for the {@link NormalCase} type.
+ * {@link !io-ts-usage | Dynamic type guard} for the {@link NormalCase | normal case type}.
  * @category Contract
  */
 export const NormalCaseGuard: t.Type<NormalCase> = t.recursion("Case", () =>
@@ -223,7 +223,7 @@ export interface MerkleizedCase {
 }
 
 /**
- * {@link !io-ts-usage | Dynamic type guard} for the {@link MerkleizedCase} type.
+ * {@link !io-ts-usage | Dynamic type guard} for the {@link MerkleizedCase | merkleized case type}.
  * @category Contract
  */
 export const MerkleizedCaseGuard: t.Type<MerkleizedCase> = t.type({
@@ -237,7 +237,7 @@ export const MerkleizedCaseGuard: t.Type<MerkleizedCase> = t.type({
 export type Case = NormalCase | MerkleizedCase;
 
 /**
- * {@link !io-ts-usage | Dynamic type guard} for the {@link Case} type.
+ * {@link !io-ts-usage | Dynamic type guard} for the {@link Case | case type}.
  * @category Contract
  */
 export const CaseGuard: t.Type<Case> = t.recursion("Case", () =>

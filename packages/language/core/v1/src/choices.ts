@@ -3,19 +3,19 @@ import * as t from "io-ts/lib/index.js";
 import { Party, partyCmp, PartyGuard } from "./participants.js";
 
 /**
- * TODO: Comment
+ * Represents a choice topic.
  * @category Choice
  */
 export type ChoiceName = string;
 
 /**
- * TODO: Comment
+ * {@link !io-ts-usage | Dynamic type guard} for the {@link @marlowe.io/language-core-v1!index.ChoiceName | choice name type}.
  * @category Choice
  */
 export const ChoiceNameGuard: t.Type<ChoiceName> = t.string;
 
 /**
- * TODO: Comment
+ * Identifier for a  {@link @marlowe.io/language-core-v1!index.Choice | choice}.
  * @category Choice
  */
 export interface ChoiceId {
@@ -24,7 +24,7 @@ export interface ChoiceId {
 }
 
 /**
- * TODO: Comment
+ * {@link !io-ts-usage | Dynamic type guard} for the {@link @marlowe.io/language-core-v1!index.ChoiceId | choice id type}.
  * @category Choice
  */
 export const ChoiceIdGuard: t.Type<ChoiceId> = t.type({
@@ -45,7 +45,8 @@ export function choiceIdCmp(a: ChoiceId, b: ChoiceId): Sort {
 }
 
 /**
- * TODO: Comment
+ * Marlowe {@link @marlowe.io/language-core-v1!index.Choice | choices} are numeric values that
+ * are bounded with the inclusive interval `[from , to]`.
  * @category Choice
  */
 export interface Bound {
@@ -55,7 +56,7 @@ export interface Bound {
 
 // TODO: Try to remove recursion
 /**
- * TODO: Comment
+ * {@link !io-ts-usage | Dynamic type guard} for the {@link @marlowe.io/language-core-v1!index.Bound | bound type}.
  * @category Choice
  */
 export const BoundGuard: t.Type<Bound> = t.recursion("Bound", () =>
@@ -63,13 +64,13 @@ export const BoundGuard: t.Type<Bound> = t.recursion("Bound", () =>
 );
 
 /**
- * TODO: Comment
+ * Represents a value that was chosen by a party in a {@link @marlowe.io/language-core-v1!index.IChoice | choice input}
  * @category Choice
  */
 export type ChosenNum = bigint;
 
 /**
- * TODO: Comment
+ * {@link !io-ts-usage | Dynamic type guard} for the {@link @marlowe.io/language-core-v1!index.ChosenNum | chosen num type}.
  * @category Choice
  */
 export const ChosenNumGuard: t.Type<ChosenNum> = t.bigint;

@@ -21,7 +21,7 @@ import { BuiltinByteString } from "@marlowe.io/language-core-v1";
 // TODO: Link to getTransactions endpoint
 /**
  * A Marlowe TxHeader contains minimal information that can be used to identify a Marlowe transaction.
- * Use {@link index.RestAPI#getContractTransactionById} to get full transaction details
+ * Use {@link index.RestClient#getContractTransactionById} to get full transaction details
  *
  * @see The {@link https://github.com/input-output-hk/marlowe-cardano/blob/b39fe3c3ed67d41cdea6d45700093e7ffa4fad62/marlowe-runtime-web/src/Language/Marlowe/Runtime/Web/Types.hs#L502 | The backend definition } of this type
  * @category GetTransactionsForContractResponse

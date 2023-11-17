@@ -9,7 +9,7 @@ import { AccountId, AccountIdGuard } from "./payee.js";
 import { Token, TokenGuard } from "./token.js";
 
 /**
- * TODO: Comment
+ * Represents the amount of money available in a participants internal account
  * @category Value
  */
 export interface AvailableMoney {
@@ -18,7 +18,7 @@ export interface AvailableMoney {
 }
 
 /**
- * TODO: Comment
+ * {@link !io-ts-usage | Dynamic type guard} for the {@link @marlowe.io/language-core-v1!index.AvailableMoney | available money type}.
  * @category Value
  */
 export const AvailableMoneyGuard: t.Type<AvailableMoney> = t.type({
@@ -33,23 +33,24 @@ export const AvailableMoneyGuard: t.Type<AvailableMoney> = t.type({
 export const constant = (constant: bigint) => constant;
 
 /**
- * TODO: Comment
+ * A constant value
  * @category Value
  */
 export type Constant = bigint;
 /**
- * TODO: Comment
+ * {@link !io-ts-usage | Dynamic type guard} for the {@link @marlowe.io/language-core-v1!index.Constant | constant value type}.
  * @category Value
  */
 export const ConstantGuard: t.Type<Constant> = t.bigint;
 
 /**
- * TODO: Comment
+ * Represents the start time as a POSIXTime of the {@link @marlowe.io/language-core-v1!semantics.Transaction} this value is
+ * evaluated in.
  * @category Value
  */
 export type TimeIntervalStart = "time_interval_start";
 /**
- * TODO: Comment
+ * {@link !io-ts-usage | Dynamic type guard} for the {@link @marlowe.io/language-core-v1!index.TimeIntervalStart | time interval start type}.
  * @category Value
  */
 export const TimeIntervalStartGuard: t.Type<TimeIntervalStart> = t.literal(
@@ -57,24 +58,26 @@ export const TimeIntervalStartGuard: t.Type<TimeIntervalStart> = t.literal(
 );
 
 /**
- * TODO: Comment
+ * Represents the end time as a POSIXTime of the {@link @marlowe.io/language-core-v1!semantics.Transaction} this value is
+ * evaluated in.
  * @category Value
  */
 export type TimeIntervalEnd = "time_interval_end";
 /**
- * TODO: Comment
+ * {@link !io-ts-usage | Dynamic type guard} for the {@link @marlowe.io/language-core-v1!index.TimeIntervalEnd | time interval end type}.
  * @category Value
  */
 export const TimeIntervalEndGuard = t.literal("time_interval_end");
+
 /**
- * TODO: Comment
+ * Represents `- negate`
  * @category Value
  */
 export interface NegValue {
   negate: Value;
 }
 /**
- * TODO: Comment
+ * {@link !io-ts-usage | Dynamic type guard} for the {@link @marlowe.io/language-core-v1!index.NegValue | neg value type}.
  * @category Value
  */
 export const NegValueGuard: t.Type<NegValue> = t.recursion("NegValue", () =>
@@ -82,7 +85,7 @@ export const NegValueGuard: t.Type<NegValue> = t.recursion("NegValue", () =>
 );
 
 /**
- * TODO: Comment
+ * Represents `add + and`
  * @category Value
  */
 export interface AddValue {
@@ -91,7 +94,7 @@ export interface AddValue {
 }
 
 /**
- * TODO: Comment
+ * {@link !io-ts-usage | Dynamic type guard} for the {@link @marlowe.io/language-core-v1!index.AddValue | add value type}.
  * @category Value
  */
 export const AddValueGuard: t.Type<AddValue> = t.recursion("AddValue", () =>
@@ -99,7 +102,7 @@ export const AddValueGuard: t.Type<AddValue> = t.recursion("AddValue", () =>
 );
 
 /**
- * TODO: Comment
+ * Represents `value - minus`
  * @category Value
  */
 export interface SubValue {
@@ -108,7 +111,7 @@ export interface SubValue {
 }
 
 /**
- * TODO: Comment
+ * {@link !io-ts-usage | Dynamic type guard} for the {@link @marlowe.io/language-core-v1!index.SubValue | sub value type}.
  * @category Value
  */
 export const SubValueGuard: t.Type<SubValue> = t.recursion("SubValue", () =>
@@ -125,7 +128,7 @@ export const mulValue = (multiply: Value, times: Value) => ({
 });
 
 /**
- * TODO: Comment
+ * Represents `multiply * times`
  * @category Value
  */
 export interface MulValue {
@@ -134,7 +137,7 @@ export interface MulValue {
 }
 
 /**
- * TODO: Comment
+ * {@link !io-ts-usage | Dynamic type guard} for the {@link @marlowe.io/language-core-v1!index.MulValue | mul value type}.
  * @category Value
  */
 export const MulValueGuard: t.Type<MulValue> = t.recursion("MulValue", () =>
@@ -142,7 +145,7 @@ export const MulValueGuard: t.Type<MulValue> = t.recursion("MulValue", () =>
 );
 
 /**
- * TODO: Comment
+ * Represents `divide / by`
  * @category Value
  */
 export interface DivValue {
@@ -151,7 +154,7 @@ export interface DivValue {
 }
 
 /**
- * TODO: Comment
+ * {@link !io-ts-usage | Dynamic type guard} for the {@link @marlowe.io/language-core-v1!index.DivValue | div value type}.
  * @category Value
  */
 export const DivValueGuard: t.Type<DivValue> = t.recursion("DivValue", () =>
@@ -159,12 +162,12 @@ export const DivValueGuard: t.Type<DivValue> = t.recursion("DivValue", () =>
 );
 
 /**
- * TODO: Comment
+ * Represents the {@link  @marlowe.io/language-core-v1!index.ChosenNum} for a {@link @marlowe.io/language-core-v1!index.ChoiceId}.
  * @category Value
  */
 export type ChoiceValue = { value_of_choice: ChoiceId };
 /**
- * TODO: Comment
+ * {@link !io-ts-usage | Dynamic type guard} for the {@link ChoiceValue | choice value type}.
  * @category Value
  */
 export const ChoiceValueGuard: t.Type<ChoiceValue> = t.recursion(
@@ -172,17 +175,26 @@ export const ChoiceValueGuard: t.Type<ChoiceValue> = t.recursion(
   () => t.type({ value_of_choice: ChoiceIdGuard })
 );
 
+/**
+ * Is an identifier for a  {@link  @marlowe.io/language-core-v1!index.Let} binding
+ * @category Value
+ */
 export type ValueId = string;
+
+/**
+ * {@link !io-ts-usage | Dynamic type guard} for the {@link ValueId | value id type}.
+ * @category Value
+ */
 export const ValueIdGuard: t.Type<ValueId> = t.string;
 /**
- * TODO: Comment
+ * Represents the bound value of a {@link  @marlowe.io/language-core-v1!index.Let} expression.
  * @category Value
  */
 export interface UseValue {
   use_value: ValueId;
 }
 /**
- * TODO: Comment
+ * {@link !io-ts-usage | Dynamic type guard} for the {@link UseValue | use value type}.
  * @category Value
  */
 export const UseValueGuard: t.Type<UseValue> = t.recursion("UseValue", () =>
@@ -190,7 +202,7 @@ export const UseValueGuard: t.Type<UseValue> = t.recursion("UseValue", () =>
 );
 
 /**
- * TODO: Comment
+ * Ternary conditional expression
  * @category Value
  */
 export interface Cond {
@@ -200,7 +212,7 @@ export interface Cond {
 }
 
 /**
- * TODO: Comment
+ * {@link !io-ts-usage | Dynamic type guard} for the {@link Cond | cond type}.
  * @category Value
  */
 export const CondGuard: t.Type<Cond> = t.recursion("Cond", () =>
@@ -208,7 +220,7 @@ export const CondGuard: t.Type<Cond> = t.recursion("Cond", () =>
 );
 
 /**
- * TODO: Comment
+ * Marlowe allows the representation of numeric `Values` using the following constructs
  * @category Value
  */
 export type Value =
@@ -226,7 +238,7 @@ export type Value =
   | Cond;
 
 /**
- * TODO: Comment
+ * {@link !io-ts-usage | Dynamic type guard} for the {@link Value | value type}.
  * @category Value
  */
 export const ValueGuard: t.Type<Value> = t.recursion("Value", () =>
@@ -315,7 +327,7 @@ export interface AndObs {
 }
 
 /**
- * {@link !io-ts-usage | Dynamic type guard} for the {@link AndObs} type.
+ * {@link !io-ts-usage | Dynamic type guard} for the {@link AndObs | and type}.
  * @category Observation
  */
 export const AndObsGuard: t.Type<AndObs> = t.recursion("AndObs", () =>
@@ -332,7 +344,7 @@ export interface OrObs {
 }
 
 /**
- * {@link !io-ts-usage | Dynamic type guard} for the {@link OrObs} type.
+ * {@link !io-ts-usage | Dynamic type guard} for the {@link OrObs | or type}.
  * @category Observation
  */
 export const OrObsGuard: t.Type<OrObs> = t.recursion("OrObs", () =>
@@ -347,7 +359,7 @@ export interface NotObs {
   not: Observation;
 }
 /**
- * {@link !io-ts-usage | Dynamic type guard} for the {@link NotObs} type.
+ * {@link !io-ts-usage | Dynamic type guard} for the {@link NotObs | not type}.
  * @category Observation
  */
 export const NotObsGuard: t.Type<NotObs> = t.recursion("NotObs", () =>
@@ -362,7 +374,7 @@ export interface ChoseSomething {
   chose_something_for: ChoiceId;
 }
 /**
- * {@link !io-ts-usage | Dynamic type guard} for the {@link ChoseSomething} type.
+ * {@link !io-ts-usage | Dynamic type guard} for the {@link ChoseSomething | choose something type}.
  * @category Observation
  */
 // TODO: try to remove recursion
@@ -380,7 +392,7 @@ export interface ValueEQ {
   equal_to: Value;
 }
 /**
- * {@link !io-ts-usage | Dynamic type guard} for the {@link ValueEQ} type.
+ * {@link !io-ts-usage | Dynamic type guard} for the {@link ValueEQ | value eq type}.
  * @category Observation
  */
 export const ValueEQGuard: t.Type<ValueEQ> = t.recursion("ValueEQ", () =>
@@ -397,7 +409,7 @@ export interface ValueGT {
 }
 
 /**
- * {@link !io-ts-usage | Dynamic type guard} for the {@link ValueGT} type.
+ * {@link !io-ts-usage | Dynamic type guard} for the {@link ValueGT | value greater than type}.
  * @category Observation
  */
 export const ValueGTGuard: t.Type<ValueGT> = t.recursion("ValueGT", () =>
@@ -414,7 +426,7 @@ export interface ValueGE {
 }
 
 /**
- * {@link !io-ts-usage | Dynamic type guard} for the {@link ValueGE} type.
+ * {@link !io-ts-usage | Dynamic type guard} for the {@link ValueGE | value greater or equal type}.
  * @category Observation
  */
 export const ValueGEGuard: t.Type<ValueGE> = t.recursion("ValueGE", () =>
@@ -431,7 +443,7 @@ export interface ValueLT {
 }
 
 /**
- * {@link !io-ts-usage | Dynamic type guard} for the {@link ValueLT} type.
+ * {@link !io-ts-usage | Dynamic type guard} for the {@link ValueLT | value lower than type}.
  * @category Observation
  */
 export const ValueLTGuard: t.Type<ValueLT> = t.recursion("ValueLT", () =>
@@ -448,7 +460,7 @@ export interface ValueLE {
 }
 
 /**
- * {@link !io-ts-usage | Dynamic type guard} for the {@link ValueLE} type.
+ * {@link !io-ts-usage | Dynamic type guard} for the {@link ValueLE | value lower or equal type}.
  * @category Observation
  */
 export const ValueLEGuard: t.Type<ValueLE> = t.recursion("ValueLE", () =>
@@ -456,7 +468,7 @@ export const ValueLEGuard: t.Type<ValueLE> = t.recursion("ValueLE", () =>
 );
 
 /**
- * TODO: Comment
+ * Marlowe allows the representation of boolean `Observation`s using the following constructs
  * @category Observation
  */
 export type Observation =
@@ -472,7 +484,7 @@ export type Observation =
   | boolean;
 
 /**
- * TODO: Comment
+ * {@link !io-ts-usage | Dynamic type guard} for the {@link @marlowe.io/language-core-v1!index.Observation | observation type}.
  * @category Observation
  */
 export const ObservationGuard: t.Type<Observation> = t.recursion(

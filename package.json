@@ -30,7 +30,8 @@
     "packages/wallet",
     "packages/runtime/client/rest",
     "packages/runtime/core",
-    "packages/runtime/lifecycle"
+    "packages/runtime/lifecycle",
+    "packages/marlowe-object"
   ],
   "devDependencies": {
     "@blockfrost/blockfrost-js": "5.2.0",

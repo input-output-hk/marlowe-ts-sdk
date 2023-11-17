@@ -12,9 +12,10 @@ import { Sort, strCmp } from "@marlowe.io/adapter/assoc-map";
 
 /**
  *
-
+ * An address party is defined by a blockchain specific Address and it cannot be traded
+ * (it is fixed for the lifetime of a contract).
  ```
- const addressExample: Address = {"address" : "example address"}
+ const addressExample: Address = {"address" : "addr_test1qpcucug827nlrmsv7n66hwdfpemwqtv8nxnjc4azacuu807w6l6hgelwsph7clqmauq7h3y9qhhgs0rwu3mu8uf7m4kqckxkry"}
  ```
  * @see Section 2.1.1 and appendix E.1 of the {@link https://github.com/input-output-hk/marlowe/releases/download/v3/Marlowe.pdf | Marlowe specification}
  * @category Party
@@ -23,7 +24,7 @@ export interface Address {
   address: AddressBech32;
 }
 /**
- * TODO: Comment
+ * {@link !io-ts-usage | Dynamic type guard} for the {@link Address | address type}.
  * @category Party
  */
 export const AddressGuard: t.Type<Address> = t.type({ address: AddressBech32 });
@@ -38,7 +39,13 @@ const RoleNameGuard: t.Type<RoleName> = t.string;
 export const role = (roleToken: RoleName) => ({ role_token: roleToken });
 
 /**
- * TODO: Comment
+ * A Role, allows the participation of the contract to be dynamic. Any user that can prove to have permission to act as `RoleName` is able to carry out the
+ * {@link  @marlowe.io/language-core-v1!index.Action | actions} assigned, and redeem the {@link  @marlowe.io/language-core-v1!semantics.Payment | payments} issued to that role.
+ * The roles are implemented as tokens that can be traded, this allows for more complex use cases.
+ *
+ ```
+ const roleExample: Role = {"role_token" : "Buyer"}
+ ```
  * @category Party
  */
 export interface Role {
@@ -46,7 +53,7 @@ export interface Role {
 }
 
 /**
- * TODO: Comment
+ * {@link !io-ts-usage | Dynamic type guard} for the {@link Role | role type}.
  * @category Party
  */
 export const RoleGuard: t.Type<Role> = t.type({ role_token: RoleNameGuard });
@@ -58,12 +65,13 @@ export const RoleGuard: t.Type<Role> = t.type({ role_token: RoleNameGuard });
 export const party = (party: Role | Address) => party;
 
 /**
- * TODO: Comment
+ * A participant (or `Party`) in the contract can be represented by either a fixed {@link Address}
+ * or a {@link Role}
  * @category Party
  */
 export type Party = Address | Role;
 /**
- * TODO: Comment
+ * {@link !io-ts-usage | Dynamic type guard} for the {@link Party | party type}.
  * @category Party
  */
 export const PartyGuard = t.union([AddressGuard, RoleGuard]);

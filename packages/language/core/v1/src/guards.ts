@@ -78,6 +78,7 @@ export { TokenGuard as Token, TokenNameGuard as TokenName } from "./token.js";
 
 export {
   ValueGuard as Value,
+  ValueIdGuard as ValueId,
   AvailableMoneyGuard as AvailableMoney,
   ConstantGuard as Constant,
   NegValueGuard as NegValue,

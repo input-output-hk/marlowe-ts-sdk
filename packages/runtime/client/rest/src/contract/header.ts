@@ -19,7 +19,7 @@ import { TxStatus } from "./transaction/status.js";
 
 /**
  * A contract header contains minimal contract information that can be used to identify a contract.
- * Use {@link index.RestAPI#getContractById} to get full contract details
+ * Use {@link index.RestClient#getContractById} to get full contract details
  *
  * @see The {@link https://github.com/input-output-hk/marlowe-cardano/blob/b39fe3c3ed67d41cdea6d45700093e7ffa4fad62/marlowe-runtime-web/src/Language/Marlowe/Runtime/Web/Types.hs#L502 | The backend definition } of this type
  * @category GetContractsResponse

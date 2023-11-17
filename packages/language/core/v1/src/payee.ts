@@ -2,13 +2,15 @@ import * as t from "io-ts/lib/index.js";
 import { PartyGuard, Party } from "./participants.js";
 
 /**
- * TODO: Comment
+ * The Marlowe model allows for a contract to store assets. All participants of the contract
+ * implicitly own an account identified with an AccountId. Which is just a type alias for
+ * a Party.
  * @category Payee
  */
 export type AccountId = Party;
 
 /**
- * TODO: Comment
+ * {@link !io-ts-usage | Dynamic type guard} for the {@link AccountId | accountId type}.
  * @category Payee
  */
 export const AccountIdGuard = PartyGuard;
@@ -26,7 +28,8 @@ export const AccountIdGuard = PartyGuard;
 //   all acrross the codebase.
 
 /**
- * TODO: Comment
+ * One of the {@link @marlowe.io/language-core-v1!index.Payee} options. A payment made to
+ * an Account payee is an internal transfer of the funds (it doesn't leave the contract).
  * @category Payee
  */
 // see [[ payee-name-conflict ]]
@@ -35,7 +38,7 @@ export interface PayeeAccount {
 }
 
 /**
- * TODO: Comment
+ * {@link !io-ts-usage | Dynamic type guard} for the {@link @marlowe.io/language-core-v1!index.PayeeAccount | account payee type}.
  * @category Payee
  */
 // see [[ payee-name-conflict ]]
@@ -44,7 +47,8 @@ export const PayeeAccountGuard = t.type({
 });
 
 /**
- * TODO: Comment
+ * One of the {@link @marlowe.io/language-core-v1!index.Payee} options. A payment made to
+ * a Party payee takes the money out of the contract and gives it to the party.
  * @category Payee
  */
 // see [[ payee-name-conflict ]]
@@ -53,7 +57,7 @@ export interface PayeeParty {
 }
 
 /**
- * TODO: Comment
+ * {@link !io-ts-usage | Dynamic type guard} for the {@link @marlowe.io/language-core-v1!index.PayeeParty | party payee type}.
  * @category Payee
  */
 // see [[ payee-name-conflict ]]
@@ -62,14 +66,16 @@ export const PayeePartyGuard = t.type({
 });
 
 /**
- * TODO: Comment
+ * When you use the {@link @marlowe.io/language-core-v1!index.Pay | Pay} construct to make a
+ * {@link @marlowe.io/language-core-v1!semantics.Payment | payment} you need to specify the destination
+ * of the payment using a `Payee`.
  * @category Payee
  */
 // see [[ payee-name-conflict ]]
 export type Payee = PayeeAccount | PayeeParty;
 
 /**
- * TODO: Comment
+ * {@link !io-ts-usage | Dynamic type guard} for the {@link @marlowe.io/language-core-v1!index.Payee | payee type}.
  * @category Payee
  */
 // see [[ payee-name-conflict ]]

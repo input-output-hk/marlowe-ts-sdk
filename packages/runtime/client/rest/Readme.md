@@ -2,7 +2,7 @@
 
 The `runtime-rest-client` package provides a JS API to interact with the [runtime REST API](https://docs.marlowe.iohk.io/api/introduction). It is intended to work with version `0.0.5` of the API.
 
-The main {@link index | module} exposes the {@link index.mkRestClient} function, which returns an instance of a {@link index.RestAPI}.
+The main {@link index | module} exposes the {@link index.mkRestClient} function, which returns an instance of a {@link index.RestClient}.
 
 ## Getting started
 
