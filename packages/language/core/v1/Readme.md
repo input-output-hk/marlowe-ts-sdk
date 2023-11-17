@@ -1,6 +1,6 @@
 # Description
 
-This package contains code to work with the version 1 of Marlowe Core. It exports five modules:
+This package contains code to work with the version 1 of Marlowe Core. It exports 5 modules:
 
 - @{@link index | marlowe.io/language-core-v1} - Exports static types (TypeScript only) for the JSON schema as specified in the Appendix E of the {@link https://github.com/input-output-hk/marlowe/releases/download/v3/Marlowe.pdf | Marlowe specification}
 - @{@link guards | marlowe.io/language-core-v1/guards} - Exports {@link !io-ts-usage | Dynamic type guards} (both JavaScript and TypeScript) for the same schema. These are used to validate the JSON objects at runtime.

@@ -19,7 +19,7 @@ in {
   test-spec = inputs.std.lib.ops.mkOperable {
     package = inputs.nixpkgs.nodejs;
     runtimeScript = ''
-      node packages/language/spec-cli/dist/esm/main.js
+      node packages/language/specification-client/dist/esm/main.js
     '';
     runtimeInputs = [];
     meta = {

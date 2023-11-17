@@ -1,5 +1,5 @@
 {
-  "name": "@marlowe.io/language-spec-cli",
+  "name": "@marlowe.io/language-specification-client",
   "version": "0.2.0-alpha-20",
   "description": "Client for the Marlowe Specification compliance test",
   "repository": "https://github.com/input-output-hk/marlowe-ts-sdk",
