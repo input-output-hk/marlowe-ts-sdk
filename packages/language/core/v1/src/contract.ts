@@ -12,6 +12,7 @@ import { ValueGuard, ValueIdGuard } from "./value-and-observation.js";
 import { Action, ActionGuard } from "./actions.js";
 import { pipe } from "fp-ts/lib/function.js";
 import getUnixTime from "date-fns/getUnixTime/index.js";
+import { BuiltinByteString } from "./inputs.js";
 
 /**
  * Search [[lower-name-builders]]
@@ -105,26 +106,24 @@ export const IfGuard: t.Type<If> = t.recursion("If", () =>
 );
 
 /**
- * TODO: Comment
+ * The `Let` constructor allows a contract to record a value using an identifier `let`. The
+ * expression `be` is evaluated, and the result is stored in the `boundValues` of the {@link MarloweState}
+ * with the `let` identifier. The contract then continues with `then`.
+ *
+ * As well as allowing us to use abbreviations, this mechanism also means that we can capture and save
+ * volatile values that might be changing with time, e.g. the current price of oil, or the current time,
+ * at a particular point in the execution of the contract, to be used later on in contract execution.
+ * @see Section 2.1.7 and appendix E.10 of the {@link https://github.com/input-output-hk/marlowe/releases/download/v3/Marlowe.pdf | Marlowe spec}
  * @category Contract
  */
 export interface Let {
-  /**
-   * TODO: Comment
-   */
   let: ValueId;
-  /**
-   * TODO: Comment
-   */
   be: Value;
-  /**
-   * TODO: Comment
-   */
   then: Contract;
 }
 
 /**
- * TODO: Comment
+ * {@link !io-ts-usage | Dynamic type guard} for the {@link Let} type.
  * @category Contract
  */
 export const LetGuard: t.Type<Let> = t.recursion("Let", () =>
@@ -185,10 +184,11 @@ export const WhenGuard: t.Type<When> = t.recursion("When", () =>
 );
 
 /**
- * TODO: Comment
+ * A pattern match between an Action and a Contract.
+ * To be used inside of a {@link When} statement.
  * @category Contract
  */
-export interface Case {
+export interface NormalCase {
   /**
    * TODO: Comment
    */
@@ -200,11 +200,48 @@ export interface Case {
 }
 
 /**
- * TODO: Comment
+ * {@link !io-ts-usage | Dynamic type guard} for the {@link NormalCase} type.
+ * @category Contract
+ */
+export const NormalCaseGuard: t.Type<NormalCase> = t.recursion("Case", () =>
+  t.type({ case: ActionGuard, then: ContractGuard })
+);
+
+/**
+ * A pattern match between an Action and a Merkleized Contract.
+ * To be used inside of a {@link When} statement.
+ * @see {@link https://docs.marlowe.iohk.io/docs/platform-and-architecture/large-contracts}
+ * @category Contract
+ */
+export interface MerkleizedCase {
+  case: Action;
+  /**
+   * A hash of the contract that will be executed if the case is matched.
+   * Never construct this value yourself, the runtime should calculate hashing.
+   */
+  merkleized_then: BuiltinByteString;
+}
+
+/**
+ * {@link !io-ts-usage | Dynamic type guard} for the {@link MerkleizedCase} type.
+ * @category Contract
+ */
+export const MerkleizedCaseGuard: t.Type<MerkleizedCase> = t.type({
+  case: ActionGuard,
+  merkleized_then: t.string,
+});
+
+/**
+ * @category Contract
+ */
+export type Case = NormalCase | MerkleizedCase;
+
+/**
+ * {@link !io-ts-usage | Dynamic type guard} for the {@link Case} type.
  * @category Contract
  */
 export const CaseGuard: t.Type<Case> = t.recursion("Case", () =>
-  t.type({ case: ActionGuard, then: ContractGuard })
+  t.union([NormalCaseGuard, MerkleizedCaseGuard])
 );
 
 /**
@@ -219,8 +256,9 @@ export type Timeout = bigint;
 export const TimeoutGuard: t.Type<Timeout> = t.bigint;
 
 /**
- * @hidden
+ * @experimental
  */
+// DISCUSSION: I think this should be renamed dateToPOSIX and moved to the time module in the adapter package
 export const datetoTimeout = (date: Date): Timeout =>
   pipe(
     date,
@@ -231,8 +269,9 @@ export const datetoTimeout = (date: Date): Timeout =>
   );
 
 /**
- * @hidden
+ * @experimental
  */
+// DISCUSSION: I think this should be renamed POSIXtoDate and moved to the time module in the adapter package
 export const timeoutToDate = (timeout: Timeout): Date =>
   new Date(Number(timeout));
 
@@ -249,3 +288,46 @@ export type Contract = Close | Pay | If | When | Let | Assert;
 export const ContractGuard: t.Type<Contract> = t.recursion("Contract", () =>
   t.union([CloseGuard, PayGuard, IfGuard, WhenGuard, LetGuard, AssertGuard])
 );
+
+/**
+ * Pattern match object on the Contract type
+ * @category Contract
+ * @hidden
+ */
+export type ContractMatcher<T> = {
+  close: () => T;
+  pay: (pay: Pay) => T;
+  if: (contract: If) => T;
+  when: (contract: When) => T;
+  let: (contract: Let) => T;
+  assert: (contract: Assert) => T;
+};
+
+/**
+ * Pattern matching on the Contract type
+ * @hidden
+ * @category Contract
+ */
+export function matchContract<T>(
+  matcher: ContractMatcher<T>
+): (contract: Contract) => T;
+export function matchContract<T>(
+  matcher: Partial<ContractMatcher<T>>
+): (contract: Contract) => T | undefined;
+export function matchContract<T>(matcher: Partial<ContractMatcher<T>>) {
+  return (contract: Contract) => {
+    if (CloseGuard.is(contract) && matcher.close) {
+      return matcher.close();
+    } else if (PayGuard.is(contract) && matcher.pay) {
+      return matcher.pay(contract);
+    } else if (IfGuard.is(contract) && matcher.if) {
+      return matcher.if(contract);
+    } else if (WhenGuard.is(contract) && matcher.when) {
+      return matcher.when(contract);
+    } else if (LetGuard.is(contract) && matcher.let) {
+      return matcher.let(contract);
+    } else if (AssertGuard.is(contract) && matcher.assert) {
+      return matcher.assert(contract);
+    }
+  };
+}

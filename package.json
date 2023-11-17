@@ -25,6 +25,7 @@
     "packages/adapter",
     "packages/language/core/v1",
     "packages/language/examples",
+    "packages/language/specification-client",
     "packages/token-metadata-client",
     "packages/wallet",
     "packages/runtime/client/rest",

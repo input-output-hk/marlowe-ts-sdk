@@ -61,37 +61,19 @@ export async function buildImportMapScript (packagesInfo, importFrom, distFolder
 
   if (importFrom.type === "local") {
     const importUrlBuilder = (pkg, flatImportName) =>
-          path.join(
-            "/",
-            pkg.location,
-            "dist",
-            "bundled",
-            "esm",
-            `${flatImportName}.js`
-          );
+            `/${pkg.location}/dist/bundled/esm/${flatImportName}.js`;
     outputFile = path.join(distFolder, "local-importmap.js");
     importMapObject = buildImportMapObject(packagesInfo, importUrlBuilder);
   } else if (importFrom.type === "jsdelivr-gh") {
     const importUrlBuilder = (pkg, flatImportName) =>
-      path.join(
-            `https://cdn.jsdelivr.net/gh/${importFrom.owner}/marlowe-ts-sdk@${importFrom.version}/`,
-            pkg.location,
-            "dist",
-            "bundled",
-            "esm",
-            `${flatImportName}.js`
-          );
+            `https://cdn.jsdelivr.net/gh/${importFrom.owner}/marlowe-ts-sdk@${importFrom.version}/${pkg.location}/dist/bundled/esm/${flatImportName}.js`
+          ;
     outputFile = path.join(distFolder, "jsdelivr-gh-importmap.js");
     importMapObject = buildImportMapObject(packagesInfo, importUrlBuilder);
   } else if (importFrom.type === "jsdelivr-npm") {
     const importUrlBuilder = (pkg, flatImportName) =>
-      path.join(
-            `https://cdn.jsdelivr.net/npm/@marlowe.io/${pkg.name}@${importFrom.version}/`,
-            "dist",
-            "bundled",
-            "esm",
-            `${flatImportName}.js`
-          );
+            `https://cdn.jsdelivr.net/npm/@marlowe.io/${pkg.name}@${importFrom.version}/dist/bundled/esm/${flatImportName}.js`
+          ;
     outputFile = path.join(distFolder, "jsdelivr-npm-importmap.js");
     importMapObject = buildImportMapObject(packagesInfo, importUrlBuilder);
   }

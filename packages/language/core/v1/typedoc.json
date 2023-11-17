@@ -4,7 +4,8 @@
     "./src/index.ts",
     "./src/next/index.ts",
     "./src/guards.ts",
-    "./src/playground-v1.ts"
+    "./src/playground-v1.ts",
+    "./src/semantics.ts"
   ],
   "tsconfig": "./src/tsconfig.json",
   "categorizeByGroup": false,

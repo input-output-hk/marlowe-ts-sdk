@@ -16,4 +16,14 @@ in {
       description = "Makes a changelog release from the changelog.d fragments";
     };
   };
+  test-spec = inputs.std.lib.ops.mkOperable {
+    package = inputs.nixpkgs.nodejs;
+    runtimeScript = ''
+      node packages/language/specification-client/dist/esm/main.js
+    '';
+    runtimeInputs = [];
+    meta = {
+      description = "Runs the Marlowe Spec test suite";
+    };
+  };
 }

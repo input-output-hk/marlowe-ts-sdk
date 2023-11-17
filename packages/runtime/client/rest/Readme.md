@@ -20,15 +20,13 @@ The caller should run a `healthcheck` to ensure the runtime service is healthy t
     <script src="https://cdn.jsdelivr.net/gh/input-output-hk/marlowe-ts-sdk/jsdelivr-npm-importmap.js"></script>
     <script type="module">
       import { mkRestClient } from "@marlowe.io/runtime-rest-client";
-      
+
       let runtimeURL = process.env.MARLOWE_RUNTIME_URL;
 
       const client = mkRestClient(runtimeURL);
       const hasValidRuntime = await client.healthcheck();
 
-      if (!hasValidRuntime)
-        throw new Error('Invalid Marlowe Runtime instance')
-
+      if (!hasValidRuntime) throw new Error("Invalid Marlowe Runtime instance");
     </script>
   </body>
 </html>

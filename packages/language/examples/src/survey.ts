@@ -122,6 +122,10 @@ export function verifySurvey(
         return false;
       }
       const questionCase = contract.when[0];
+      if (!G.NormalCase.is(questionCase)) {
+        log("Expected the question case to not be merkleized", questionCase);
+        return false;
+      }
       if (!G.Choice.is(questionCase.case)) {
         log(
           "Expected the question case to be a Choice construct, but this was found",
@@ -205,6 +209,10 @@ export function verifySurvey(
       return false;
     }
     const rewardCase = contract.when[0];
+    if (!G.NormalCase.is(rewardCase)) {
+      log("Expected the reward case to not be merkleized", rewardCase);
+      return false;
+    }
     if (!G.Deposit.is(rewardCase.case)) {
       log(
         "Expected the reward case to be a Deposit construct, but this was found",
