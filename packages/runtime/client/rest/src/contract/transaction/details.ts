@@ -28,7 +28,7 @@ import { TxStatus } from "./status.js";
 import { assertGuardEqual, proxy } from "@marlowe.io/adapter/io-ts";
 
 /**
- * Represents the response of the {@link index.RestAPI#getContractTransactionById | Get contract transaction by ID } endpoint
+ * Represents the response of the {@link index.RestClient#getContractTransactionById | Get contract transaction by ID } endpoint
  *
  * @experimental
  * This type is experimental and subject to change. See current DISCUSSIONS in the source code.

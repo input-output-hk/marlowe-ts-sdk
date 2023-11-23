@@ -2,33 +2,27 @@ import { Sort, strCmp } from "@marlowe.io/adapter/assoc-map";
 import * as t from "io-ts/lib/index.js";
 import { PolicyId } from "./policyId.js";
 /**
- * TODO: Comment
+ * @see {@link @marlowe.io/language-core-v1!index.Token}.
  * @category Token
  */
 export type TokenName = string;
 /**
- * TODO: Comment
+ * {@link !io-ts-usage | Dynamic type guard} for the {@link @marlowe.io/language-core-v1!index.TokenName | token name type}.
  * @category Token
  */
 export const TokenNameGuard: t.Type<string> = t.string;
 
 /**
- * TODO: Comment
+ * A Token consists of a `CurrencySymbol` that represents the monetary policy of the
+ * `Token` and a `TokenName` which allows to have multiple tokens with the same monetary policy.
  * @category Token
  */
 export interface Token {
-  /**
-   * TODO: Comment
-   */
   currency_symbol: PolicyId;
-  /**
-   * TODO: Comment
-   */
-
   token_name: TokenName;
 }
 /**
- * TODO: Comment
+ * {@link !io-ts-usage | Dynamic type guard} for the {@link @marlowe.io/language-core-v1!index.Token | token type}.
  * @category Token
  */
 export const TokenGuard: t.Type<Token> = t.type({

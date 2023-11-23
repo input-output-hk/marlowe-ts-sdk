@@ -15,6 +15,7 @@ import { pipe } from "fp-ts/lib/function.js";
 
 import { MarloweJSONCodec } from "@marlowe.io/adapter/codec";
 import * as HTTP from "@marlowe.io/adapter/http";
+import { Bundle, Label } from "@marlowe.io/marlowe-object";
 
 import * as Payouts from "./payout/endpoints/collection.js";
 import * as Payout from "./payout/endpoints/singleton.js";
@@ -25,6 +26,7 @@ import * as Contract from "./contract/endpoints/singleton.js";
 import * as Contracts from "./contract/endpoints/collection.js";
 import * as Transaction from "./contract/transaction/endpoints/singleton.js";
 import * as Transactions from "./contract/transaction/endpoints/collection.js";
+import * as Sources from "./contract/endpoints/sources.js";
 import { TransactionsRange } from "./contract/transaction/endpoints/collection.js";
 import * as ContractNext from "./contract/next/endpoint.js";
 import { unsafeTaskEither } from "@marlowe.io/adapter/fp-ts";
@@ -38,6 +40,7 @@ import {
 import { submitContractViaAxios } from "./contract/endpoints/singleton.js";
 import { ContractDetails } from "./contract/details.js";
 import { TransactionDetails } from "./contract/transaction/details.js";
+import { CreateContractSourcesResponse } from "./contract/endpoints/sources.js";
 // import curlirize from 'axios-curlirize';
 
 // TODO: DELETE
@@ -53,8 +56,8 @@ export { RolesConfig } from "./contract/index.js";
 //   https://docs.marlowe.iohk.io/api
 // openapi.json on main (RC 0.0.5): 20 endpoints
 /**
- * The RestAPI offers a simple abstraction for the {@link https://docs.marlowe.iohk.io/api/ | Marlowe Runtime REST API}  endpoints.
- * You can create an instance of the RestAPI using the {@link mkRestClient} function.
+ * The RestClient offers a simple abstraction for the {@link https://docs.marlowe.iohk.io/api/ | Marlowe Runtime REST API}  endpoints.
+ * You can create an instance of the RestClient using the {@link mkRestClient} function.
  * ```
    import { mkRestClient } from "@marlowe.io/runtime-rest-client";
    const restClient = mkRestClient("http://localhost:8080");
@@ -62,12 +65,12 @@ export { RolesConfig } from "./contract/index.js";
   ```
  *
  * @remarks
- * This version of the RestAPI targets version `0.0.5` of the Marlowe Runtime.
+ * This version of the RestClient targets version `0.0.5` of the Marlowe Runtime.
  *
  * **WARNING**: Not all endpoints are implemented yet.
  */
 // DISCUSSION: @N.H: Should we rename this to RestClient?
-export interface RestAPI {
+export interface RestClient {
   /**
    * Gets a paginated list of contracts {@link contract.ContractHeader }
    * @param request Optional filtering and pagination options.
@@ -93,6 +96,15 @@ export interface RestAPI {
     request: Contracts.CreateContractRequest
   ): Promise<Contracts.CreateContractResponse>;
 
+  /**
+   * Uploads a marlowe-object bundle to the runtime, giving back the hash of the main contract and the hashes of the intermediate objects.
+   * @param mainId A label that corresponds to the main entrypoint of the contract
+   * @param bundle A list of object types that are referenced by the main contract
+   */
+  createContractSources(
+    mainId: Label,
+    bundle: Bundle
+  ): Promise<CreateContractSourcesResponse>;
   /**
    * Gets a single contract by id
    * @param contractId The id of the contract to get
@@ -128,7 +140,7 @@ export interface RestAPI {
   ): Promise<Transactions.TransactionTextEnvelope>;
   //   getTransactionById: Transaction.GET; // - https://docs.marlowe.iohk.io/api/get-transaction-by-id
   /**
-   * Submit a signed transaction (generated with {@link @marlowe.io/runtime-rest-client!index.RestAPI#applyInputsToContract} and signed with the {@link @marlowe.io/wallet!api.WalletAPI#signTx} procedure) that applies inputs to a contract.
+   * Submit a signed transaction (generated with {@link @marlowe.io/runtime-rest-client!index.RestClient#applyInputsToContract} and signed with the {@link @marlowe.io/wallet!api.WalletAPI#signTx} procedure) that applies inputs to a contract.
    * @see {@link https://docs.marlowe.iohk.io/api/submit-contract-input-application | The backend documentation}
    */
   submitContractTransaction(
@@ -151,7 +163,7 @@ export interface RestAPI {
   //   submitTransaction: Transaction.PUT; // - Jamie is it this one? https://docs.marlowe.iohk.io/api/create-transaction-by-id? If so, lets unify
 
   /**
-   * Build an unsigned transaction (sign with the {@link @marlowe.io/wallet!api.WalletAPI#signTx} procedure) which withdraws available payouts from a contract (when applied with the {@link @marlowe.io/runtime-rest-client!index.RestAPI#submitWithdrawal} procedure).
+   * Build an unsigned transaction (sign with the {@link @marlowe.io/wallet!api.WalletAPI#signTx} procedure) which withdraws available payouts from a contract (when applied with the {@link @marlowe.io/runtime-rest-client!index.RestClient#submitWithdrawal} procedure).
    * @see {@link https://docs.marlowe.iohk.io/api/withdraw-payouts | The backend documentation}
    */
   withdrawPayouts(
@@ -177,7 +189,7 @@ export interface RestAPI {
   ): Promise<Withdrawal.GetWithdrawalByIdResponse>;
   //   submitWithdrawal: Withdrawal.PUT; - is it this one? https://docs.marlowe.iohk.io/api/create-withdrawal? or the one for createWithdrawal?
   /**
-   * Submit a signed transaction (generated with {@link @marlowe.io/runtime-rest-client!index.RestAPI#withdrawPayouts} and signed with the {@link @marlowe.io/wallet!api.WalletAPI#signTx} procedure) that withdraws available payouts from a contract.
+   * Submit a signed transaction (generated with {@link @marlowe.io/runtime-rest-client!index.RestClient#withdrawPayouts} and signed with the {@link @marlowe.io/wallet!api.WalletAPI#signTx} procedure) that withdraws available payouts from a contract.
    * @see {@link https://docs.marlowe.iohk.io/api/submit-payout-withdrawal | The backend documentation}
    */
   submitWithdrawal(
@@ -208,7 +220,7 @@ export interface RestAPI {
  * @param baseURL An http url pointing to the Marlowe API.
  * @see {@link https://github.com/input-output-hk/marlowe-starter-kit#quick-overview} To get a Marlowe runtime instance up and running.
  */
-export function mkRestClient(baseURL: string): RestAPI {
+export function mkRestClient(baseURL: string): RestClient {
   const axiosInstance = axios.create({
     baseURL: baseURL,
     transformRequest: MarloweJSONCodec.encode,
@@ -253,7 +265,9 @@ export function mkRestClient(baseURL: string): RestAPI {
         )
       );
     },
-
+    createContractSources(mainId, bundle) {
+      return Sources.createContractSources(axiosInstance)(mainId, bundle);
+    },
     submitContract(contractId, txEnvelope) {
       return submitContractViaAxios(axiosInstance)(contractId, txEnvelope);
     },

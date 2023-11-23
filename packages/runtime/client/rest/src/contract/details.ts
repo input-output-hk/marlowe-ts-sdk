@@ -40,7 +40,7 @@ export const Payout = t.type({
 });
 
 /**
- * Represents the response of the {@link index.RestAPI#getContractById | Get contract by id } endpoint
+ * Represents the response of the {@link index.RestClient#getContractById | Get contract by id } endpoint
  * @see The {@link ContractDetails:var | dynamic validator} for this type.
  * @interface
  */

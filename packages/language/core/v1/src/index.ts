@@ -24,7 +24,7 @@
  */
 
 export { Action, Deposit, Notify, Choice } from "./actions.js";
-export { ChoiceName, ChoiceId, Bound } from "./choices.js";
+export { ChoiceName, ChoiceId, Bound, ChosenNum } from "./choices.js";
 export {
   Close,
   Pay,
@@ -72,6 +72,7 @@ export { Accounts, MarloweState } from "./state.js";
 
 export {
   Value,
+  ValueId,
   AvailableMoney,
   Constant,
   NegValue,

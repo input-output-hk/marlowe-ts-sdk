@@ -2,7 +2,10 @@
   "$schema": "https://typedoc.org/schema.json",
   "name": "Marlowe ts-sdk",
   "entryPointStrategy": "packages",
-  "exclude": ["packages/token-metadata-client", "packages/language/spec-cli"],
+  "exclude": [
+    "packages/token-metadata-client",
+    "packages/language/specification-client"
+  ],
   "out": "./docs",
   "readme": "./packages/api.md",
   "includeVersion": true,

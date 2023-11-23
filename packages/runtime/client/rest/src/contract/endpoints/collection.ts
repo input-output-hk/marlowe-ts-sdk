@@ -53,12 +53,12 @@ export const unContractsRange = iso<ContractsRange>().unwrap;
 export const contractsRange = iso<ContractsRange>().wrap;
 
 /**
- * Request options for the {@link index.RestAPI#getContracts | Get contracts } endpoint
+ * Request options for the {@link index.RestClient#getContracts | Get contracts } endpoint
  * @category Endpoints
  */
 export interface GetContractsRequest {
   /**
-   * Optional pagination request. Note that when you call {@link index.RestAPI#getContracts | Get contracts }
+   * Optional pagination request. Note that when you call {@link index.RestClient#getContracts | Get contracts }
    * the response includes the next and previous range headers.
    */
   range?: ContractsRange;
@@ -161,7 +161,7 @@ export const GETByRangeRawResponse = t.type({
 });
 
 /**
- * Represents the response of the {@link index.RestAPI#getContracts | Get contracts } endpoint
+ * Represents the response of the {@link index.RestClient#getContracts | Get contracts } endpoint
  * @category GetContractsResponse
  */
 export interface GetContractsResponse {
@@ -198,7 +198,7 @@ export const GetContractsResponseGuard = assertGuardEqual(
 );
 
 /**
- * Request options for the {@link index.RestAPI#createContract | Create contract } endpoint
+ * Request options for the {@link index.RestClient#createContract | Create contract } endpoint
  * @category Endpoints
  */
 export interface CreateContractRequest {
@@ -296,7 +296,7 @@ export interface CreateContractResponse {
   /**
    * The unsigned transaction that will be used to create the contract.
    * @see {@link @marlowe.io/wallet!api.WalletAPI#signTx}
-   * @see {@link index.RestAPI#submitContract}
+   * @see {@link index.RestClient#submitContract}
    */
   // QUESTION: Should we rename the property or the type to indicate that is unsigned?
   tx: TextEnvelope;

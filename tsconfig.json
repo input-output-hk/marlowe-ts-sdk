@@ -9,6 +9,7 @@
     { "path": "./packages/runtime/client/rest/src" },
     { "path": "./packages/runtime/core/src" },
     { "path": "./packages/runtime/lifecycle/src" },
-    { "path": "./packages/token-metadata-client/src" }
+    { "path": "./packages/token-metadata-client/src" },
+    { "path": "./packages/marlowe-object/src" }
   ]
 }

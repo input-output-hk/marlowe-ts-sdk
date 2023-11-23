@@ -39,7 +39,7 @@ import { assertGuardEqual, proxy } from "@marlowe.io/adapter/io-ts";
 import { Input } from "@marlowe.io/language-core-v1";
 
 /**
- * A transaction range provides pagination options for the {@link index.RestAPI#getTransactionsForContract | Get transactions for contract } endpoint
+ * A transaction range provides pagination options for the {@link index.RestClient#getTransactionsForContract | Get transactions for contract } endpoint
  */
 export interface TransactionsRange
   extends Newtype<{ readonly TransactionsRange: unique symbol }, string> {}
@@ -96,7 +96,7 @@ const GetContractsRawResponse = t.type({
 });
 
 /**
- * Represents the response of the {@link index.RestAPI#getTransactionsForContract | Get transactions for contract } endpoint
+ * Represents the response of the {@link index.RestClient#getTransactionsForContract | Get transactions for contract } endpoint
  * @category GetTransactionsForContractResponse
  */
 export interface GetTransactionsForContractResponse {
