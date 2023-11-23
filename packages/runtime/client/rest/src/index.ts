@@ -89,12 +89,9 @@ export interface RestClient {
    * @throws DecodingError - If the response from the server can't be decoded
    * @see {@link https://docs.marlowe.iohk.io/api/create-a-new-contract | The backend documentation}
    */
-  // TODO: Jamie, remove the `s from the end of the endpoint name in the docs site
-  // DISCUSSION: @Jamie, @N.H: Should this be called `buildCreateContractTx` instead? As it is not creating the
-  //             contract, rather it is creating the transaction to be signed
-  createContract(
-    request: Contracts.CreateContractRequest
-  ): Promise<Contracts.CreateContractResponse>;
+  buildCreateContractTx(
+    request: Contracts.BuildCreateContractTxRequest
+  ): Promise<Contracts.BuildCreateContractTxResponse>;
 
   /**
    * Uploads a marlowe-object bundle to the runtime, giving back the hash of the main contract and the hashes of the intermediate objects.
@@ -135,6 +132,9 @@ export interface RestClient {
    * Create an unsigned transaction which applies inputs to a contract.
    * @see {@link https://docs.marlowe.iohk.io/api/apply-inputs-to-contract | The backend documentation}
    */
+  // TODO: Jamie, remove the `s from the end of the endpoint name in the docs site
+  // DISCUSSION: @Jamie, @N.H: Should this be called `buildApplyInputsToContractTx` instead? As it is not applying inputs to the
+  //             contract, rather it is creating the transaction to be signed
   applyInputsToContract(
     request: Transactions.ApplyInputsToContractRequest
   ): Promise<Transactions.TransactionTextEnvelope>;
@@ -166,6 +166,9 @@ export interface RestClient {
    * Build an unsigned transaction (sign with the {@link @marlowe.io/wallet!api.WalletAPI#signTx} procedure) which withdraws available payouts from a contract (when applied with the {@link @marlowe.io/runtime-rest-client!index.RestClient#submitWithdrawal} procedure).
    * @see {@link https://docs.marlowe.iohk.io/api/withdraw-payouts | The backend documentation}
    */
+  // TODO: Jamie, remove the `s from the end of the endpoint name in the docs site
+  // DISCUSSION: @Jamie, @N.H: Should this be called `buildWithdrawPayoutsTx` instead? As it is not withdrawing the
+  //             payout, rather it is creating the transaction to be signed
   withdrawPayouts(
     request: Withdrawals.WithdrawPayoutsRequest
   ): Promise<Withdrawals.WithdrawPayoutsResponse>;
@@ -257,7 +260,7 @@ export function mkRestClient(baseURL: string): RestClient {
     getContractById(contractId) {
       return unsafeTaskEither(Contract.getViaAxios(axiosInstance)(contractId));
     },
-    createContract(request) {
+    buildCreateContractTx(request) {
       const postContractsRequest = {
         contract: request.contract,
         version: request.version,

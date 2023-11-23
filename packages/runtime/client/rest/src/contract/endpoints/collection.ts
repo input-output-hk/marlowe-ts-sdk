@@ -192,10 +192,10 @@ export const GetContractsResponseGuard = assertGuardEqual(
 );
 
 /**
- * Request options for the {@link index.RestClient#createContract | Create contract } endpoint
+ * Request options for the {@link index.RestClient#buildCreateContractTx | Create contract } endpoint
  * @category Endpoints
  */
-export interface CreateContractRequest {
+export interface BuildCreateContractTxRequest {
   // FIXME: create ticket to add stake address
   // stakeAddress: void;
   /**
@@ -256,7 +256,7 @@ export interface CreateContractRequest {
 export type POST = (
   postContractsRequest: PostContractsRequest,
   addressesAndCollaterals: AddressesAndCollaterals
-) => TE.TaskEither<Error | DecodingError, CreateContractResponse>;
+) => TE.TaskEither<Error | DecodingError, BuildCreateContractTxResponse>;
 
 /**
  * @hidden
@@ -276,7 +276,7 @@ export const PostContractsRequest = t.intersection([
   t.partial({ roles: RolesConfig }),
 ]);
 
-export interface CreateContractResponse {
+export interface BuildCreateContractTxResponse {
   /**
    * This is the ID the contract will have after it is signed and submitted.
    */
@@ -300,7 +300,7 @@ export interface CreateContractResponse {
  * @hidden
  */
 const CreateContractResponseGuard = assertGuardEqual(
-  proxy<CreateContractResponse>(),
+  proxy<BuildCreateContractTxResponse>(),
   t.type({
     contractId: ContractIdGuard,
     safetyErrors: t.UnknownArray,
