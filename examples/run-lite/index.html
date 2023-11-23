@@ -6,11 +6,9 @@
     <title>Marlowe Run Very Lite POC</title>
   </head>
   <body>
-    <!-- This import map tells the browser what version of the SDK to use, use the local-importmap for local
-         development and the jsdelivr importmap for the latest published version.
-      -->
-    <script src="https://cdn.jsdelivr.net/gh/input-output-hk/marlowe-ts-sdk/jsdelivr-npm-importmap.js"></script>
-    <!--script src="/dist/local-importmap.js"></!--script-->
+    <!-- This import map tells the browser what version of the SDK to use, the route is rewritten by the
+        local web server to point to the correct version -->
+    <script src="/importmap"></script>
 
     <h1>Marlowe Run Lite Lite</h1>
     <div>
