@@ -32,6 +32,8 @@ import {
   TxOutRef,
   AssetId,
   unPolicyId,
+  StakeAddressBech32,
+  unStakeAddressBech32,
 } from "@marlowe.io/runtime-core";
 
 import { ContractHeader, ContractHeaderGuard } from "../header.js";
@@ -196,8 +198,11 @@ export const GetContractsResponseGuard = assertGuardEqual(
  * @category Endpoints
  */
 export interface BuildCreateContractTxRequest {
-  // FIXME: create ticket to add stake address
-  // stakeAddress: void;
+  /**
+   * The Marlowe Runtime utilizes this Optional field to set a stake address
+   * where to send staking rewards for the Marlowe script outputs of this contract.
+   */
+  stakeAddress?: StakeAddressBech32;
   /**
    * The Marlowe Runtime utilizes this mandatory field and any additional addresses provided in `usedAddresses`
    * to search for UTxOs that can be used to balance the contract creation transaction.
@@ -255,7 +260,8 @@ export interface BuildCreateContractTxRequest {
 
 export type POST = (
   postContractsRequest: PostContractsRequest,
-  addressesAndCollaterals: AddressesAndCollaterals
+  addressesAndCollaterals: AddressesAndCollaterals,
+  stakeAddress?: StakeAddressBech32
 ) => TE.TaskEither<Error | DecodingError, BuildCreateContractTxResponse>;
 
 /**
@@ -317,12 +323,16 @@ export const PostResponse = t.type({
  * @see {@link https://docs.marlowe.iohk.io/api/create-contracts}
  */
 export const postViaAxios: (axiosInstance: AxiosInstance) => POST =
-  (axiosInstance) => (postContractsRequest, addressesAndCollaterals) =>
+  (axiosInstance) =>
+  (postContractsRequest, addressesAndCollaterals, stakeAddress) =>
     pipe(
       HTTP.Post(axiosInstance)("/contracts", postContractsRequest, {
         headers: {
           Accept: "application/vendor.iog.marlowe-runtime.contract-tx-json",
           "Content-Type": "application/json",
+          ...(stakeAddress && {
+            "X-Stake-Address": unStakeAddressBech32(stakeAddress),
+          }),
           "X-Change-Address": unAddressBech32(
             addressesAndCollaterals.changeAddress
           ),

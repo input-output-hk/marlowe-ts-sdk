@@ -277,7 +277,8 @@ export function mkRestClient(baseURL: string): RestClient {
       return unsafeTaskEither(
         Contracts.postViaAxios(axiosInstance)(
           postContractsRequest,
-          addressesAndCollaterals
+          addressesAndCollaterals,
+          request.stakeAddress
         )
       );
     },
