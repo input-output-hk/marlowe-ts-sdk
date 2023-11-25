@@ -237,13 +237,16 @@ export interface BuildCreateContractTxRequest {
   // TODO: Add link to example of metadata
   metadata?: Metadata;
   /**
-   * To avoid spamming the network, the cardano ledger requires us to deposit a minimum amount of ADA.
+   * Creating a Marlowe Contracts over Cardano is about creating UTxO entries on the Ledger.
+   * To protect the ledger from growing beyond a certain size that will cost too much to maintain,
+   * a constraint called "Minimum ada value requirement (mininmumLovelaceUTxODeposit)" that adjust
+   * the value (in ADA) of each UTxO has been added. The more the UTxOs entries are big in size, the more the value of minimum
+   * of ADAs needs to be contained.
+   * (see : https://docs.cardano.org/native-tokens/minimum-ada-value-requirement/)
+   * This value is computed automatically within the Runtime, so this parameter is only necessary if you need some custom adjustment.
    * The value is in lovelace, so if you want to deposit 3Ada you need to pass 3_000_000 here.
    */
-  // TODO: @sam
-  //       Create a global documentation page (and link from here) that explains the concept of minUTxO,
-  //       why it is required, who deposits it, and how and when you get it back.
-  minUTxODeposit: number;
+  mininmumLovelaceUTxODeposit?: number;
 
   // TODO: Comment this and improve the generated type (currently `string | {}`)
   roles?: RolesConfig;
@@ -277,9 +280,9 @@ export const PostContractsRequest = t.intersection([
     version: MarloweVersion,
     tags: TagsGuard,
     metadata: Metadata,
-    minUTxODeposit: t.number,
   }),
   t.partial({ roles: RolesConfig }),
+  t.partial({ minUTxODeposit: t.number }),
 ]);
 
 export interface BuildCreateContractTxResponse {

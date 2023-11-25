@@ -6,8 +6,7 @@ import {
   ApplyInputsRequest,
   ContractsAPI,
   ContractsDI,
-  CreateContractRequest,
-  minUTxODepositDefault,
+  CreateContractRequest
 } from "../api.js";
 
 import { getAddressesAndCollaterals, WalletAPI } from "@marlowe.io/wallet/api";
@@ -144,12 +143,8 @@ export const submitCreateTxFpTs: (
             version: "v1",
             roles: createContractRequest.roles,
             tags: createContractRequest.tags ? createContractRequest.tags : {},
-            metadata: createContractRequest.metadata
-              ? createContractRequest.metadata
-              : {},
-            minUTxODeposit: createContractRequest.minUTxODeposit
-              ? createContractRequest.minUTxODeposit
-              : minUTxODepositDefault,
+            metadata: createContractRequest.metadata ? createContractRequest.metadata: {},
+            ...createContractRequest.mininmumLovelaceUTxODeposit && {mininmumLovelaceUTxODeposit : createContractRequest.mininmumLovelaceUTxODeposit},
           },
           addressesAndCollaterals
         )

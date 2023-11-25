@@ -32,10 +32,8 @@ export type CreateContractRequest = {
   roles?: RolesConfig;
   tags?: Tags;
   metadata?: Metadata;
-  minUTxODeposit?: number;
+  mininmumLovelaceUTxODeposit?: number;
 };
-
-export const minUTxODepositDefault: number = 3_000_000;
 
 export type ApplyInputsRequest = {
   inputs: Input[];

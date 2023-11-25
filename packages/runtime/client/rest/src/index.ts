@@ -266,8 +266,8 @@ export function mkRestClient(baseURL: string): RestClient {
         version: request.version,
         metadata: request.metadata ?? {},
         tags: request.tags ?? {},
-        minUTxODeposit: request.minUTxODeposit,
-        roles: request.roles,
+        ...request.mininmumLovelaceUTxODeposit && {minUTxODeposit: request.mininmumLovelaceUTxODeposit},
+        ...request.roles && {roles: request.roles},
       };
       const addressesAndCollaterals = {
         changeAddress: request.changeAddress,
