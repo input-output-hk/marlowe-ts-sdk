@@ -42,13 +42,13 @@ import { RolesConfig } from "../role.js";
 import { ContractId, ContractIdGuard } from "@marlowe.io/runtime-core";
 
 /**
- * @category GetContractsResponse
+ * @category Endpoint : Get Contracts
  */
 export interface ContractsRange
   extends Newtype<{ readonly ContractsRange: unique symbol }, string> {}
 
 /**
- * @category GetContractsResponse
+ * @category Endpoint : Get Contracts
  */
 export const ContractsRange = fromNewtype<ContractsRange>(t.string);
 export const unContractsRange = iso<ContractsRange>().unwrap;
@@ -56,7 +56,7 @@ export const contractsRange = iso<ContractsRange>().wrap;
 
 /**
  * Request options for the {@link index.RestClient#getContracts | Get contracts } endpoint
- * @category Endpoints
+ * @category Endpoint : Get Contracts
  */
 export interface GetContractsRequest {
   /**
@@ -158,7 +158,7 @@ export const GETByRangeRawResponse = t.type({
 
 /**
  * Represents the response of the {@link index.RestClient#getContracts | Get contracts } endpoint
- * @category GetContractsResponse
+ * @category Endpoint : Get Contracts
  */
 export interface GetContractsResponse {
   /**
@@ -194,8 +194,8 @@ export const GetContractsResponseGuard = assertGuardEqual(
 );
 
 /**
- * Request options for the {@link index.RestClient#buildCreateContractTx | Create contract } endpoint
- * @category Endpoints
+ * Request options for the {@link index.RestClient#buildCreateContractTx | Build Create Contract Tx } endpoint
+ * @category Endpoint : Build Create Contract Tx
  */
 export interface BuildCreateContractTxRequest {
   /**
@@ -224,7 +224,18 @@ export interface BuildCreateContractTxRequest {
    */
   usedAddresses?: AddressBech32[];
   /**
-   * TODO: Document
+   * UTxOs provided as collateral in case the Tx built will unexpectedly fail at the submit phase.
+   * @justification
+   * The collateral mechanism is an important feature that has been designed to ensure
+   * successful smart contract execution.
+   * Collateral is used to guarantee that nodes are compensated for their work in case phase-2 validation fails.
+   * Thus, collateral is the monetary guarantee a user gives to assure that the contract has been carefully designed
+   * and thoroughly tested. Collateral amount is specified at the time of constructing the transaction.
+   * Not directly, but by adding collateral inputs to the transaction. The total balance in the UTXOs
+   * corresponding to these specially marked inputs is the transaction’s collateral amount.
+   * If the user fulfills the conditions of the guarantee, and a contract gets executed, the collateral is safe.
+   * @see
+   * https://docs.cardano.org/smart-contracts/plutus/collateral-mechanism
    */
   collateralUTxOs?: TxOutRef[];
   /**
@@ -232,31 +243,63 @@ export interface BuildCreateContractTxRequest {
    */
   contract: Contract;
   /**
-   * An object containing metadata about the contract
+   * Marlowe Tags are stored as Metadata within the Transaction Metadata under the top-level Marlowe Reserved Key (`1564`).
+   * Tags allows to Query created Marlowe Contracts via {@link index.RestClient#getContracts | Get contracts }
+   * @remarks
+   * 1. They aren't limited size-wise like regular metadata fields are over Cardano.
+   * 2. Metadata can be associated under each tag
+   * @example
+   * ```ts
+   * const myTags : Tags = { "My Tag 1 That can be as long as I want": // Not limited to 64 bytes
+   *                            { a: 0
+   *                            , b : "Tag 1 content" // Limited to 64 bytes (Cardano Metadata constraint)
+   *                            },
+   *                         "MyTag2": { c: 0, d : "Tag 2 content"}};
+   * ```
    */
-  // TODO: Add link to example of metadata
+  tags?: Tags;
+  /**
+   * Cardano Metadata about the contract creation.
+   * @remarks
+   * Metadata can be expressed as a JSON object with some restrictions:
+   *   - All top-level keys must be integers between 0 and 2^64 - 1.
+   *   - Each metadata value is tagged with its type.
+   *   - Strings must be at most 64 bytes when UTF-8 is encoded.
+   *   - Bytestrings are hex-encoded, with a maximum length of 64 bytes.
+   *
+   * Metadata aren't stored as JSON on the Cardano blockchain but are instead stored using a compact binary encoding (CBOR).
+   * The binary encoding of metadata values supports three simple types:
+   *    - Integers in the range `-(2^64 - 1)` to `2^64 - 1`
+   *    - Strings (UTF-8 encoded)
+   *    - Bytestrings
+   *    - And two compound types:
+   *        - Lists of metadata values
+   *        - Mappings from metadata values to metadata values
+   *
+   * It is possible to transform any JSON object into this schema (See https://developers.cardano.org/docs/transaction-metadata )
+   * @see
+   * https://developers.cardano.org/docs/transaction-metadata
+   */
   metadata?: Metadata;
   /**
+   * Minimum Lovelace value to add on the UTxO created (Representing the Marlowe Contract Created on the ledger).This value
+   * is computed automatically within the Runtime, so this parameter is only necessary if you need some custom adjustment.
+   * @justification
    * Creating a Marlowe Contracts over Cardano is about creating UTxO entries on the Ledger.
    * To protect the ledger from growing beyond a certain size that will cost too much to maintain,
    * a constraint called "Minimum ada value requirement (mininmumLovelaceUTxODeposit)" that adjust
    * the value (in ADA) of each UTxO has been added. The more the UTxOs entries are big in size, the more the value of minimum
    * of ADAs needs to be contained.
-   * (see : https://docs.cardano.org/native-tokens/minimum-ada-value-requirement/)
-   * This value is computed automatically within the Runtime, so this parameter is only necessary if you need some custom adjustment.
-   * The value is in lovelace, so if you want to deposit 3Ada you need to pass 3_000_000 here.
+   * @see
+   * https://docs.cardano.org/native-tokens/minimum-ada-value-requirement
    */
   mininmumLovelaceUTxODeposit?: number;
 
   // TODO: Comment this and improve the generated type (currently `string | {}`)
   roles?: RolesConfig;
-  /**
-   * An optional object of tags where the **key** is the tag name (`string`) and the **value** is the tag content (`any`)
-   */
-  tags?: Tags;
 
   /**
-   * The validator version to use.
+   * The Marlowe validator version to use.
    */
   version: MarloweVersion;
 }
@@ -285,6 +328,10 @@ export const PostContractsRequest = t.intersection([
   t.partial({ minUTxODeposit: t.number }),
 ]);
 
+/**
+ * Response for the {@link index.RestClient#buildCreateContractTx | Build Create Contract Tx } endpoint
+ * @category Endpoint : Build Create Contract Tx
+ */
 export interface BuildCreateContractTxResponse {
   /**
    * This is the ID the contract will have after it is signed and submitted.

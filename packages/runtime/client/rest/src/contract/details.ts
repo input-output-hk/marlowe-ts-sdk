@@ -40,15 +40,17 @@ export const Payout = t.type({
 });
 
 /**
- * Represents the response of the {@link index.RestClient#getContractById | Get contract by id } endpoint
+ * Represents the response of the {@link index.RestClient#getContractById | Get Contract By Id } endpoint
  * @see The {@link ContractDetails:var | dynamic validator} for this type.
  * @interface
+ * @category Endpoint : Get Contract By Id
  */
 export interface ContractDetails extends t.TypeOf<typeof ContractDetails> {}
 
 /**
  * This is a {@link !io-ts-usage | Dynamic type validator} for the {@link ContractDetails:type}.
  * @category Validator
+ * @category Endpoint : Get Contract By Id
  */
 // DISCUSSION : Tags are missing in the ts-sdk and available in the REST API
 export const ContractDetails = t.type({

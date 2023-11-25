@@ -40,5 +40,9 @@ export const RoleTokenConfig = t.union([RoleTokenSimple, RoleTokenAdvanced]);
 export type Mint = t.TypeOf<typeof Mint>;
 export const Mint = t.record(RoleName, RoleTokenConfig);
 
+/**
+ *  @category Endpoint : Build Create Contract Tx
+ */
 export type RolesConfig = t.TypeOf<typeof RolesConfig>;
+
 export const RolesConfig = t.union([UsePolicy, Mint]);
