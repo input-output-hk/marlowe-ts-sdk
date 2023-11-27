@@ -2,6 +2,12 @@
  * ```ts
  * import * as C from "@marlowe.io/runtime-rest-client/contract";
  *```
+ * This package contains all the implementation and details related to 
+ * endpoints under the URI `/contracts/...` : 
+ *  - {@link index.RestClient#buildCreateContractTx | Build Create Contract Tx } 
+ *  - {@link index.RestClient#getContracts | Get contracts }
+ *  - {@link index.RestClient#getContractById | Get Contract By Id }
+
  * @packageDocumentation
  */
 
@@ -12,6 +18,7 @@ export {
   GetContractsResponse,
   GetContractsRequest,
   ContractsRange,
+  ContractOrSourceId,
   BuildCreateContractTxRequest,
   BuildCreateContractTxResponse,
 } from "./endpoints/collection.js";

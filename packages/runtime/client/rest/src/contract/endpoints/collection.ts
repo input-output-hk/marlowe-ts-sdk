@@ -34,6 +34,8 @@ import {
   unPolicyId,
   StakeAddressBech32,
   unStakeAddressBech32,
+  SourceId,
+  SourceIdGuard,
 } from "@marlowe.io/runtime-core";
 
 import { ContractHeader, ContractHeaderGuard } from "../header.js";
@@ -194,6 +196,21 @@ export const GetContractsResponseGuard = assertGuardEqual(
 );
 
 /**
+ * Either a Non Merkleized Marlowe Contract or a Merkleized One
+ * @category Endpoint : Build Create Contract Tx
+ */
+export type ContractOrSourceId = Contract | SourceId;
+
+/**
+ * Guard for ContractOrSourceId type
+ * @category Endpoint : Build Create Contract Tx
+ */
+export const ContractOrSourceIdGuard: t.Type<ContractOrSourceId> = t.union([
+  G.Contract,
+  SourceIdGuard,
+]);
+
+/**
  * Request options for the {@link index.RestClient#buildCreateContractTx | Build Create Contract Tx } endpoint
  * @category Endpoint : Build Create Contract Tx
  */
@@ -238,10 +255,12 @@ export interface BuildCreateContractTxRequest {
    * https://docs.cardano.org/smart-contracts/plutus/collateral-mechanism
    */
   collateralUTxOs?: TxOutRef[];
+
   /**
-   * The contract to create
+   * A Marlowe Contract or a Merkleized One (referred by its source Id) to create over Cardano
+   * @see Large/Deep Contracts Support (Contract Merkleization) and `@marlowe.io/language-core`
    */
-  contract: Contract;
+  contractOrSourceId: ContractOrSourceId;
   /**
    * Marlowe Tags are stored as Metadata within the Transaction Metadata under the top-level Marlowe Reserved Key (`1564`).
    * Tags allows to Query created Marlowe Contracts via {@link index.RestClient#getContracts | Get contracts }
@@ -319,7 +338,7 @@ export type PostContractsRequest = t.TypeOf<typeof PostContractsRequest>;
  */
 export const PostContractsRequest = t.intersection([
   t.type({
-    contract: G.Contract,
+    contract: ContractOrSourceIdGuard,
     version: MarloweVersion,
     tags: TagsGuard,
     metadata: Metadata,

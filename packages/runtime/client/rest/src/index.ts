@@ -262,7 +262,7 @@ export function mkRestClient(baseURL: string): RestClient {
     },
     buildCreateContractTx(request) {
       const postContractsRequest = {
-        contract: request.contract,
+        contract: request.contractOrSourceId,
         version: request.version,
         metadata: request.metadata ?? {},
         tags: request.tags ?? {},
