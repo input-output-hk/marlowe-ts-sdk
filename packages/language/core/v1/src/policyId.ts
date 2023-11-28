@@ -8,4 +8,4 @@ export type PolicyId = string;
 /**
  * @category Token
  */
-export const PolicyId = t.string;
+export const PolicyIdGuard = t.string;

@@ -4,10 +4,8 @@ import { Contract, MarloweState } from "@marlowe.io/language-core-v1";
 import * as G from "@marlowe.io/language-core-v1/guards";
 import { MarloweVersion } from "@marlowe.io/language-core-v1/version";
 import { ContractIdGuard } from "@marlowe.io/runtime-core";
-
 import { TxStatus } from "./transaction/status.js";
 
-import { RoleName } from "./role.js";
 import {
   TxOutRef,
   BlockHeaderGuard,
@@ -36,7 +34,7 @@ export const Payout = t.type({
   /**
    * The {@link RoleName} of the participant that has the unclaimed Payout.
    */
-  role: RoleName,
+  role: G.RoleName,
 });
 
 /**

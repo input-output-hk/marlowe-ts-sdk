@@ -9,7 +9,8 @@ import {
   Tags,
   TxId,
 } from "@marlowe.io/runtime-core";
-import { RestDI, RolesConfig } from "@marlowe.io/runtime-rest-client";
+import { RestDI } from "@marlowe.io/runtime-rest-client";
+import { RolesConfiguration } from "@marlowe.io/runtime-rest-client/contract";
 import { ISO8601 } from "@marlowe.io/adapter/time";
 import { Contract, Environment, Input } from "@marlowe.io/language-core-v1";
 import { Next } from "@marlowe.io/language-core-v1/next";
@@ -29,7 +30,7 @@ export type ContractsDI = WalletDI & RestDI;
 
 export type CreateContractRequest = {
   contract: Contract;
-  roles?: RolesConfig;
+  roles?: RolesConfiguration;
   tags?: Tags;
   metadata?: Metadata;
   mininmumLovelaceUTxODeposit?: number;

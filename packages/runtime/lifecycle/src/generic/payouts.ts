@@ -19,7 +19,7 @@ import {
 
 import { FPTSRestAPI } from "@marlowe.io/runtime-rest-client";
 
-import * as Rest from "@marlowe.io/runtime-rest-client";
+import * as RestPayout from "@marlowe.io/runtime-rest-client/payout";
 
 import { DecodingError } from "@marlowe.io/adapter/codec";
 import { stringify } from "json-bigint";
@@ -163,12 +163,12 @@ const fetchWithdrawnPayoutsFpTs: (
       )
     );
 
-const convertAsset: (assets: Rest.Assets) => Assets = (restAssets) => ({
+const convertAsset: (assets: RestPayout.Assets) => Assets = (restAssets) => ({
   lovelaces: restAssets.lovelace,
   tokens: convertTokens(restAssets.tokens),
 });
 
-const convertTokens: (tokens: Rest.Tokens) => Tokens = (restTokens) =>
+const convertTokens: (tokens: RestPayout.Tokens) => Tokens = (restTokens) =>
   Object.entries(restTokens)
     .map(([policyId, x]) =>
       Object.entries(x).map(([assetName, quantity]) =>

@@ -1,6 +1,6 @@
 import { Sort, strCmp } from "@marlowe.io/adapter/assoc-map";
 import * as t from "io-ts/lib/index.js";
-import { PolicyId } from "./policyId.js";
+import { PolicyId, PolicyIdGuard } from "./policyId.js";
 /**
  * @see {@link @marlowe.io/language-core-v1!index.Token}.
  * @category Token
@@ -26,7 +26,7 @@ export interface Token {
  * @category Token
  */
 export const TokenGuard: t.Type<Token> = t.type({
-  currency_symbol: PolicyId,
+  currency_symbol: PolicyIdGuard,
   token_name: TokenNameGuard,
 });
 

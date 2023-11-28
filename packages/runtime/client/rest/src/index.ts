@@ -43,18 +43,6 @@ import { TransactionDetails } from "./contract/transaction/details.js";
 import { CreateContractSourcesResponse } from "./contract/endpoints/sources.js";
 // import curlirize from 'axios-curlirize';
 
-// TODO: DELETE
-// export * from "./contract/index.js";
-// export * from "./withdrawal/index.js";
-// export * from "./payout/index.js";
-// TODO: Revisit
-export { Assets, Tokens } from "./payout/index.js";
-export { RolesConfig } from "./contract/index.js";
-// Jamie Straw suggestion: 20 endpoints
-// Runtime Rest API docs: 18 endpoints (missing, getPayouts and getPayoutById, I assume version 0.0.5)
-// Current TS-SDK: 16 endpoints
-//   https://docs.marlowe.iohk.io/api
-// openapi.json on main (RC 0.0.5): 20 endpoints
 /**
  * The RestClient offers a simple abstraction for the {@link https://docs.marlowe.iohk.io/api/ | Marlowe Runtime REST API}  endpoints.
  * You can create an instance of the RestClient using the {@link mkRestClient} function.
@@ -269,7 +257,9 @@ export function mkRestClient(baseURL: string): RestClient {
         ...(request.mininmumLovelaceUTxODeposit && {
           minUTxODeposit: request.mininmumLovelaceUTxODeposit,
         }),
-        ...(request.roles && { roles: request.roles }),
+        ...(request.rolesConfiguration && {
+          roles: request.rolesConfiguration,
+        }),
       };
       const addressesAndCollaterals = {
         changeAddress: request.changeAddress,
@@ -463,7 +453,7 @@ export interface ContractsAPI {
   /**
    * @see {@link https://docs.marlowe.iohk.io/api/create-contracts}
    */
-  post: Contracts.POST;
+  post: Contracts.BuildCreateContractTxEndpoint;
   contract: {
     /**
      * Get a single contract by id

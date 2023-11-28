@@ -11,7 +11,7 @@ import { formatValidationErrors } from "jsonbigint-io-ts-reporters";
 import { fromNewtype, optionFromNullable } from "io-ts-types";
 import { stringify } from "qs";
 import { assertGuardEqual, proxy } from "@marlowe.io/adapter/io-ts";
-import { Contract } from "@marlowe.io/language-core-v1";
+import { Contract, RoleName } from "@marlowe.io/language-core-v1";
 import * as G from "@marlowe.io/language-core-v1/guards";
 import { MarloweVersion } from "@marlowe.io/language-core-v1/version";
 
@@ -39,7 +39,10 @@ import {
 } from "@marlowe.io/runtime-core";
 
 import { ContractHeader, ContractHeaderGuard } from "../header.js";
-import { RolesConfig } from "../role.js";
+import {
+  RolesConfiguration,
+  RolesConfigurationGuard,
+} from "../rolesConfigurations.js";
 
 import { ContractId, ContractIdGuard } from "@marlowe.io/runtime-core";
 
@@ -233,24 +236,36 @@ export interface BuildCreateContractTxRequest {
   /**
    * The Marlowe Runtime utilizes the mandatory `changeAddress` and any additional addresses provided here
    * to search for UTxOs that can be used to balance the contract creation transaction.
+   *
    * @remarks
+   *
    * 1. When using single address wallets like Nami, it is not necesary to fill this field.
    * 2. If an address was provided in the `changeAddress` field, it is redundant to include it here (but it doesn't fail).
+   *
    * @see WalletAPI function {@link @marlowe.io/wallet!api.WalletAPI#getChangeAddress}
    * @see WalletAPI function {@link @marlowe.io/wallet!api.WalletAPI#getUsedAddresses}
    */
   usedAddresses?: AddressBech32[];
   /**
    * UTxOs provided as collateral in case the Tx built will unexpectedly fail at the submit phase.
-   * @justification
+   *
+   * <h4>Justification</h4>
+   * <p>
    * The collateral mechanism is an important feature that has been designed to ensure
    * successful smart contract execution.
+   *
    * Collateral is used to guarantee that nodes are compensated for their work in case phase-2 validation fails.
    * Thus, collateral is the monetary guarantee a user gives to assure that the contract has been carefully designed
-   * and thoroughly tested. Collateral amount is specified at the time of constructing the transaction.
-   * Not directly, but by adding collateral inputs to the transaction. The total balance in the UTXOs
+   * and thoroughly tested.
+   *
+   * Collateral amount is specified at the time of constructing the transaction.
+   * Not directly, but by adding collateral inputs to the transaction.
+   *
+   * The total balance in the UTXOs
    * corresponding to these specially marked inputs is the transaction’s collateral amount.
+   *
    * If the user fulfills the conditions of the guarantee, and a contract gets executed, the collateral is safe.
+   * </p>
    * @see
    * https://docs.cardano.org/smart-contracts/plutus/collateral-mechanism
    */
@@ -264,9 +279,12 @@ export interface BuildCreateContractTxRequest {
   /**
    * Marlowe Tags are stored as Metadata within the Transaction Metadata under the top-level Marlowe Reserved Key (`1564`).
    * Tags allows to Query created Marlowe Contracts via {@link index.RestClient#getContracts | Get contracts }
-   * @remarks
+   *
+   * <h4>Properties</h4>
+   *
    * 1. They aren't limited size-wise like regular metadata fields are over Cardano.
    * 2. Metadata can be associated under each tag
+   *
    * @example
    * ```ts
    * const myTags : Tags = { "My Tag 1 That can be as long as I want": // Not limited to 64 bytes
@@ -279,7 +297,8 @@ export interface BuildCreateContractTxRequest {
   tags?: Tags;
   /**
    * Cardano Metadata about the contract creation.
-   * @remarks
+   * <h4>Properties</h4>
+   * <p>
    * Metadata can be expressed as a JSON object with some restrictions:
    *   - All top-level keys must be integers between 0 and 2^64 - 1.
    *   - Each metadata value is tagged with its type.
@@ -294,7 +313,7 @@ export interface BuildCreateContractTxRequest {
    *    - And two compound types:
    *        - Lists of metadata values
    *        - Mappings from metadata values to metadata values
-   *
+   * </p>
    * It is possible to transform any JSON object into this schema (See https://developers.cardano.org/docs/transaction-metadata )
    * @see
    * https://developers.cardano.org/docs/transaction-metadata
@@ -303,19 +322,120 @@ export interface BuildCreateContractTxRequest {
   /**
    * Minimum Lovelace value to add on the UTxO created (Representing the Marlowe Contract Created on the ledger).This value
    * is computed automatically within the Runtime, so this parameter is only necessary if you need some custom adjustment.
-   * @justification
-   * Creating a Marlowe Contracts over Cardano is about creating UTxO entries on the Ledger.
+   *
+   * <h4>Justification</h4>
+   * <p>Creating a Marlowe Contracts over Cardano is about creating UTxO entries on the Ledger.
+   *
    * To protect the ledger from growing beyond a certain size that will cost too much to maintain,
    * a constraint called "Minimum ada value requirement (mininmumLovelaceUTxODeposit)" that adjust
-   * the value (in ADA) of each UTxO has been added. The more the UTxOs entries are big in size, the more the value of minimum
-   * of ADAs needs to be contained.
+   * the value (in ADA) of each UTxO has been added.
+   *
+   * The more the UTxOs entries are big in size, the more the value of minimum
+   * of ADAs needs to be contained.</p>
    * @see
    * https://docs.cardano.org/native-tokens/minimum-ada-value-requirement
    */
   mininmumLovelaceUTxODeposit?: number;
 
-  // TODO: Comment this and improve the generated type (currently `string | {}`)
-  roles?: RolesConfig;
+  /**
+   * @experimental
+   * Thread Roles are a details of implementation within the runtime. It allows provide a custom name
+   * if the thread role name is conflicting with other role names used.
+   * @default
+   *  - the Thread Role Name is "" by default.
+   */
+  threadRoleName?: RoleName;
+
+  /**
+   * Role Token Configuration for the contract passed in the `contractOrSourceId` field.
+   *
+   * <h4>Prerequisite</h4>
+   * <p>
+   * Participants ({@link @marlowe.io/language-core-v1!index.Party | Party}) in a Marlowe Contract can be expressed in 2 ways:
+   *
+   *  1. **By Adressses** : Addresses are directly defined within the Marlowe Contract and no configuration are necessary in that context.
+   *  2. **By Roles** : Defined by {@link @marlowe.io/language-core-v1!index.RoleName | RoleNames} within the Marlowe Contract, they have to match a Token Name when created in Cardano. This field `rolesConfiguration` is about configuring this use case
+   * </p>
+   *
+   * <h4>Configuration Options</h4>
+   * <p>
+   *  
+   * - **When to create (mint)**
+   *   - **Within the Runtime** : At the contrat creation, these defined Roles Tokens will be minted "on the fly" by the runtime.
+   *   - **Without the Runtime** : before the creation, these Role Tokens are already defined (via an NFT platform, `cardano-cli`, another Marlowe Contract Created, etc.. )
+   * - **How to distribute**
+   *   - **Closedly** (Closed Roles) : At the creation of contract or before, the Role Tokens are released to the participants. All the participants are knowned at the creation and therfore we consider the participation as being closed.
+   *   - **Openly** (Open Roles) : Whoever applies an input (IDeposit or IChoice) on the contract `contractOrSourceId` first will be identified as a participant by receiving the Role Token in their wallet. In that case, participants are unknown at the creation and the participation is open to any meeting the criteria.
+   * - **With or without Metadata**
+   * - **Quantities to create(Mint)** : When asking to mint the tokens within the Runtime, quantities can defined as well.
+   * 
+   * Smart Constructors are available to ease these configuration: 
+   *    - {@link @marlowe.io/runtime-rest-client!contract.mkUseMintedRoleTokens}
+   *    - {@link @marlowe.io/runtime-rest-client!contract.mkMintOpenRoleToken}
+   *    - {@link @marlowe.io/runtime-rest-client!contract.mkMintClosedRoleToken}
+   * 
+   * @remarks
+   *  - The Distribution can be a mix of Closed and Open Role Tokens configuration. See examples below.
+   * </p>
+   *
+   * @example
+   *
+   * ```ts
+   *  ////////////// 
+   *  // #1 - Mint within the Runtime
+   *  ////////////// 
+   * const anAddressBech32 = "addr_test1qqe342swyfn75mp2anj45f8ythjyxg6m7pu0pznptl6f2d84kwuzrh8c83gzhrq5zcw7ytmqc863z5rhhwst3w4x87eq0td9ja"
+   * const aMintingConfiguration =
+   *   { "closed_Role_A_NFT" : mkMintClosedRoleToken(anAddressBech32)
+   *   , "closed_Role_B_FT" :
+   *        mkMintClosedRoleToken(
+   *          anAddressBech32,
+   *          5, // Quantities
+   *          { "name": "closed_Role_B_FT Marlowe Role Token",
+                "description": "These are metadata for closedRoleB",
+   *            image": "ipfs://QmaQMH7ybS9KmdYQpa4FMtAhwJH5cNaacpg4fTwhfPvcwj",
+   *            "mediaType": "image/png",
+   *            "files": [
+   *                {
+   *                  "name": "icon-1000",
+   *                  "mediaType": "image/webp",
+   *                  "src": "ipfs://QmUbvavFxGSSEo3ipQf7rjrELDvXHDshWkHZSpV8CVdSE5"
+   *                }
+   *              ]
+   *          })
+   *   , "open_Role_C" : mkMintOpenRoleToken()
+   *   , "open_Role_D" : mkMintOpenRoleToken(
+   *          2, // Quantities
+   *          { "name": "open_Role_D Marlowe Role Token",
+                "description": "These are metadata for closedRoleB",
+   *            image": "ipfs://QmaQMH7ybS9KmdYQpa4FMtAhwJH5cNaacpg4fTwhfPvcwj",
+   *            "mediaType": "image/png",
+   *            "files": [
+   *                {
+   *                  "name": "icon-1000",
+   *                  "mediaType": "image/webp",
+   *                  "src": "ipfs://QmUbvavFxGSSEo3ipQf7rjrELDvXHDshWkHZSpV8CVdSE5"
+   *                }
+   *              ]
+   *          })
+   * }
+   *
+   *  ////////////// 
+   *  // #2 Use Minted Roles Tokens 
+   *  const aUseMintedRoleTokensConfiguration =
+   *      mkUseMintedRoleTokens(
+   *        "e68f1cea19752d1292b4be71b7f5d2b3219a15859c028f7454f66cdf",
+   *        ["role_A","role_C"]
+   *      )
+   * ```
+   *
+   * @see
+   * - {@link @marlowe.io/runtime-rest-client!contract.mkUseMintedRoleTokens}
+   * - {@link @marlowe.io/runtime-rest-client!contract.mkMintOpenRoleToken}
+   * - {@link @marlowe.io/runtime-rest-client!contract.mkMintClosedRoleToken}
+   * - Open Roles Runtime Implementation : https://github.com/input-output-hk/marlowe-cardano/blob/main/marlowe-runtime/doc/open-roles.md
+   */
+  rolesConfiguration?: RolesConfiguration;
 
   /**
    * The Marlowe validator version to use.
@@ -323,7 +443,7 @@ export interface BuildCreateContractTxRequest {
   version: MarloweVersion;
 }
 
-export type POST = (
+export type BuildCreateContractTxEndpoint = (
   postContractsRequest: PostContractsRequest,
   addressesAndCollaterals: AddressesAndCollaterals,
   stakeAddress?: StakeAddressBech32
@@ -343,7 +463,7 @@ export const PostContractsRequest = t.intersection([
     tags: TagsGuard,
     metadata: Metadata,
   }),
-  t.partial({ roles: RolesConfig }),
+  t.partial({ roles: RolesConfigurationGuard }),
   t.partial({ minUTxODeposit: t.number }),
 ]);
 
@@ -391,7 +511,9 @@ export const PostResponse = t.type({
 /**
  * @see {@link https://docs.marlowe.iohk.io/api/create-contracts}
  */
-export const postViaAxios: (axiosInstance: AxiosInstance) => POST =
+export const postViaAxios: (
+  axiosInstance: AxiosInstance
+) => BuildCreateContractTxEndpoint =
   (axiosInstance) =>
   (postContractsRequest, addressesAndCollaterals, stakeAddress) =>
     pipe(

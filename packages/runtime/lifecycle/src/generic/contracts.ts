@@ -23,10 +23,13 @@ import {
 
 import { FPTSRestAPI } from "@marlowe.io/runtime-rest-client";
 import { DecodingError } from "@marlowe.io/adapter/codec";
-import { TransactionTextEnvelope } from "@marlowe.io/runtime-rest-client/contract/transaction/endpoints/collection";
+
 import { Next, noNext } from "@marlowe.io/language-core-v1/next";
 import { isNone, none, Option } from "fp-ts/lib/Option.js";
-import { ContractsRange } from "@marlowe.io/runtime-rest-client/contract/index";
+import {
+  ContractsRange,
+  TransactionTextEnvelope,
+} from "@marlowe.io/runtime-rest-client/contract";
 
 export function mkContractLifecycle(
   wallet: WalletAPI,

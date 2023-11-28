@@ -13,7 +13,26 @@
 
 export { ContractHeader } from "./header.js";
 export { ContractDetails } from "./details.js";
-export { RolesConfig } from "./role.js";
+export {
+  mkUseMintedRoleTokens,
+  mkMintClosedRoleToken,
+  mkMintOpenRoleToken,
+  AddressBech32Brand,
+  AddressBech32,
+  mkOpenRole,
+  ClosedRole,
+  OpenRole,
+  Openess,
+  UsePolicyWithClosedRoleTokens,
+  UsePolicyWithOpenRoleTokens,
+  MintRolesTokens,
+  TokenMetadataFile,
+  TokenMetadata,
+  Recipient,
+  TokenQuantity,
+  RoleTokenConfiguration,
+  RolesConfiguration,
+} from "./rolesConfigurations.js";
 export {
   GetContractsResponse,
   GetContractsRequest,
@@ -27,4 +46,7 @@ export {
   TransactionsRange,
   GetTransactionsForContractResponse,
 } from "./transaction/endpoints/collection.js";
+
 export { TransactionDetails } from "./transaction/details.js";
+
+export { TransactionTextEnvelope } from "./transaction/endpoints/collection.js";
