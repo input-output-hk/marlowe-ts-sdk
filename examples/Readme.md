@@ -1,21 +1,33 @@
 ## Overview
 
-The examples on this folder demonstrate how to run the different libraries within a simple HTML page.
+The examples on this folder demonstrate how to run the different packages within a simple HTML page.
 
 ## How to run
 
-### Using Chrome
-
-#### Prerequisites
+### Prerequisites
 
 - A CIP30 wallet  (Nami, Eternl or Lace) installed on the browser.
+- [Node.js](https://nodejs.org/en/) installed on your machine.
 
-#### Flow
+### Flow
 
-At the root of the project :
+Make sure that you have development dependencies installed:
 
 ```bash
-npx http-server --port 1337 -c-1  -o ./
+npm install
+```
+
+Then run the following command to start a local server:
+
+```bash
+npm run serve
+```
+
+The previous command will start a local server on port 1337 and with the latest published libraries. If you want to use the local version instead, run the following command:
+
+```bash
+npm run build
+npm run serve-dev
 ```
 
 Then select one of the available examples:

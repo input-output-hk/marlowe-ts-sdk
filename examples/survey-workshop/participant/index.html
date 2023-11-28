@@ -20,6 +20,9 @@
 
     <!-- lz-string compression -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.5.0/lz-string.min.js"></script>
+    <!-- This import map tells the browser what version of the SDK to use, the route is rewritten by the
+        local web server to point to the correct version -->
+    <script src="/importmap"></script>
   <title>Marlowe Workshop - Survey Participant</title>
 </head>
 
@@ -312,11 +315,6 @@
       </div>
     </div>
   </div>
-  <!-- This import map tells the browser what version of the SDK to use, use the local-importmap for local
-         development and the jsdelivr importmap for the latest published version.
-      -->
-  <!--script src="https://cdn.jsdelivr.net/gh/input-output-hk/marlowe-ts-sdk/jsdelivr-npm-importmap.js"></!--script-->
-  <script src="/dist/local-importmap.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jsencrypt/bin/jsencrypt.min.js"></script>
 
   <script type="module" src="index.js"></script>
