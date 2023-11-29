@@ -33,6 +33,6 @@ npm run serve-dev
 Then select one of the available examples:
 
 - [wallet flow](./wallet-flow/): Simple example on how to use the `@marlowe.io/wallet` package to connect to a wallet extension and get basic info and to manually sign transactions.
-- [Rest client flow](./rest-client-flow/): Shows how to use the `@marlowe.io/runtime-rest-client` package.
+- [Survey workshop](./survey-workshop/participant): A small excercise to create a Survey Marlowe contract.
 
 [//]: # (TODO: Explain other examples)
