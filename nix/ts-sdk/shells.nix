@@ -12,6 +12,7 @@
     packages = with nixpkgs; [
       pkg-config
       nodejs
+      deno
       scriv
       nodePackages.prettier
       inputs.marloweSpec.packages."marlowe-spec-test:exe:marlowe-spec"

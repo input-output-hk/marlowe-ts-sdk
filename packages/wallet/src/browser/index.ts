@@ -1,5 +1,6 @@
 import { WalletAPI } from "../api.js";
-import { C, Core, WalletApi } from "lucid-cardano";
+import { C } from "lucid-cardano";
+import * as Lucid from "lucid-cardano";
 import { hex, utf8 } from "@47ng/codec";
 // DISCUSSION: these should be imported from a cardano helpers library.
 //       They are independent of the runtime. Maybe the adaptor library?
@@ -65,7 +66,7 @@ export function getInstalledWalletExtensions(): BroswerWalletExtension[] {
   }
 }
 
-export type ExtensionDI = { extension: WalletApi };
+type ExtensionDI = { extension: Lucid.WalletApi };
 
 /**
  * Returns an instance of the browser wallet API for the specified wallet.
@@ -187,7 +188,7 @@ function deserializeTxOutRef(utxoStr: string): TxOutRef {
 const deserializeValue = (value: string) =>
   C.Value.from_bytes(hex.decode(value));
 
-const valueToTokens = (value: Core.Value) => {
+const valueToTokens = (value: Lucid.Core.Value) => {
   const tokenValues: Token[] = [lovelaces(valueToLovelaces(value))];
 
   const multiAsset = value.multiasset();
@@ -217,5 +218,5 @@ const valueToTokens = (value: Core.Value) => {
   return tokenValues;
 };
 
-const valueToLovelaces = (value: Core.Value) =>
+const valueToLovelaces = (value: Lucid.Core.Value) =>
   BigInt(value.coin().to_str()).valueOf();

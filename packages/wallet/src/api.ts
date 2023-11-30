@@ -78,6 +78,10 @@ export interface WalletAPI {
    *       the extension in configured.
    * {@link https://github.com/cardano-foundation/CIPs/pull/323 | See github issue}
    *
+   * @experimental
+   * Instead of having a plain boolean if you are using Lucid you can get protocol parameter (not supported by CIP-30)
+   * If we reduce the scope of the wallet package, this might not be needed.
+   * @see {@link https://github.com/input-output-hk/marlowe-ts-sdk/discussions/106 | Github discussion}
    */
   isMainnet(): Promise<boolean>;
   // DISCUSSION: should we rename this function to getAssets?
