@@ -19,6 +19,9 @@ export const assetId = (
   assetName: assetName,
 });
 
+export const isLovelace = (assetId: AssetId): boolean =>
+  assetId.assetName === "" && assetId.policyId === mkPolicyId("");
+
 // NOTE: this is exported as interface to prevent typedoc from expanding its attributes when
 //       generating documentation.
 //       https://github.com/TypeStrong/typedoc/issues/2209#issuecomment-1493189988

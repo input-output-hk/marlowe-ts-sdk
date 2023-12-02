@@ -1,4 +1,4 @@
-import { Lucid, Unit, fromUnit, Assets as LucidAssets } from "lucid-cardano";
+import { C, Lucid, Unit, fromUnit, fromHex, toHex, Assets as LucidAssets } from "lucid-cardano";
 
 import { WalletAPI } from "../api.js";
 import * as runtimeCore from "@marlowe.io/runtime-core";
@@ -7,6 +7,7 @@ import { pipe } from "fp-ts/lib/function.js";
 import * as A from "fp-ts/lib/Array.js";
 import * as R from "fp-ts/lib/Record.js";
 import { Monoid } from "fp-ts/lib/Monoid.js";
+import { addressBech32, MarloweTxCBORHex, txOutRef } from "@marlowe.io/runtime-core";
 type LucidDI = { lucid: Lucid };
 
 const getAssetName: (unit: Unit) => string = (unit) => {
@@ -27,6 +28,11 @@ const mergeAssets: Monoid<LucidAssets> = {
   // the "assetId" is the same, the quantities are added.
   concat: (x, y) => R.union(addAssets)(x)(y),
 };
+
+const getAddress =
+  ({ lucid }: LucidDI) =>
+  () =>
+    lucid.wallet.address().then(addressBech32);
 
 // NOTE: This function may report a different amount of lovelaces than
 //       a CIP-30 wallet, as this can't take into account the collateral
@@ -55,12 +61,43 @@ const getTokens =
     );
   };
 
+const signTx = ({ lucid }: LucidDI) => async (cborHex: MarloweTxCBORHex) => {
+ const tx = C.Transaction.from_bytes(fromHex(cborHex));
+    try {
+      const txSigned = await lucid.wallet.signTx(tx);
+      return toHex(txSigned.to_bytes());
+    } catch (reason) {
+      throw new Error(`Error while signing : ${reason}`);
+    }
+  }
+const getLovelaces =
+ ({ lucid }: LucidDI) =>
+  async (): Promise<bigint> => {
+    const tokens = await getTokens({ lucid })();
+    return pipe(
+      tokens,
+      A.filter((token) => runtimeCore.isLovelace(token.assetId)),
+      A.reduce(0n, (acc, token) => acc + token.quantity)
+    );
+  };
+
+const getUTXOs = ({ lucid }: LucidDI) => async () => {
+    const utxos = await lucid.wallet.getUtxos();
+    return utxos.map((utxo) => txOutRef(utxo.txHash));
+  }
 const isMainnet =
   ({ lucid }: LucidDI) =>
   async () => {
     return lucid.network == "Mainnet";
   };
 
+const waitConfirmation =  ({ lucid }: LucidDI) => async (txHash: string) => {
+    try {
+      return await lucid.awaitTx(txHash);
+    } catch (reason) {
+      throw new Error(`Error while awiting : ${reason}`);
+    }
+  }
 /**
  * Create a {@link WalletAPI} from a Lucid wallet instance that can work both in the
  * backend (Node.js/Deno) and in the browser
@@ -68,14 +105,15 @@ const isMainnet =
 export function mkLucidWallet(lucidWalletAPI: Lucid): WalletAPI {
   const di = { lucid: lucidWalletAPI };
   return {
-    waitConfirmation: null as any,
-    signTx: null as any,
-    getChangeAddress: null as any,
-    getUsedAddresses: null as any,
-    getCollaterals: null as any,
-    getUTxOs: null as any,
+    waitConfirmation: waitConfirmation(di),
+    signTx: signTx(di),
+    getChangeAddress: getAddress(di),
+    getUsedAddresses: () => getAddress(di)().then((address) => [address]),
+    // NOTE: As far as I've seen Lucid doens't support collateral UTxOs
+    getCollaterals: () => Promise.resolve([]),
+    getUTxOs: getUTXOs(di),
     isMainnet: isMainnet(di),
     getTokens: getTokens(di),
-    getLovelaces: null as any,
+    getLovelaces: getLovelaces(di),
   };
 }
