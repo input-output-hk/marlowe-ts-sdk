@@ -1,323 +1,404 @@
 <!DOCTYPE html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Bootstrap -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/css/bootstrap.min.css"
+      crossorigin="anonymous"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/css/bootstrap-theme.min.css"
+      crossorigin="anonymous"
+    />
+    <!--script src="https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/js/bootstrap.min.js" integrity="sha384-aJ21OjlMXNL5UyIl/XNwTMqvzeRMZH2w8c5cRVpzpU8Y5bApTppSuUkhZXN0VxHd" crossorigin="anonymous"></!--script-->
 
-<head>
-  <meta charset="UTF-8" />
-  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <!-- Bootstrap -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/css/bootstrap.min.css"
-    crossorigin="anonymous" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/css/bootstrap-theme.min.css"
-    crossorigin="anonymous" />
-  <!--script src="https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/js/bootstrap.min.js" integrity="sha384-aJ21OjlMXNL5UyIl/XNwTMqvzeRMZH2w8c5cRVpzpU8Y5bApTppSuUkhZXN0VxHd" crossorigin="anonymous"></!--script-->
-
-  <!-- Highlight.js -->
-  <link rel="stylesheet"
-    href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/default.min.css" />
-  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/json.min.js"></script>
+    <!-- Highlight.js -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/default.min.css"
+    />
+    <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/json.min.js"></script>
 
     <!-- lz-string compression -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.5.0/lz-string.min.js"></script>
     <!-- This import map tells the browser what version of the SDK to use, the route is rewritten by the
         local web server to point to the correct version -->
     <script src="/importmap"></script>
-  <title>Marlowe Workshop - Survey Participant</title>
-</head>
+    <title>Marlowe Workshop - Survey Participant</title>
+  </head>
 
-<body style="padding-bottom: 1em">
-  <style>
-    ::file-selector-button {
-      display: none;
-    }
-  </style>
-  <nav class="navbar navbar-default" style="height:80px">
-    <div class="container-fluid">
-      <a class="navbar-brand" href="#" style="margin-left:10px;">
-        <img alt="Marlowe Logo" src="/doc/image/logo.svg" height="50px" />
-      </a>
-      <div class="navbar-brand navbar-right input-lg" style="margin-top:12px; margin-right:20px;">
-        <label for="wallet">Select wallet:</label>
-        <select id="wallet" name="wallet" style="padding:3px;"></select>
+  <body style="padding-bottom: 1em">
+    <style>
+      ::file-selector-button {
+        display: none;
+      }
+    </style>
+    <nav class="navbar navbar-default" style="height: 80px">
+      <div class="container-fluid">
+        <a class="navbar-brand" href="#" style="margin-left: 10px">
+          <img alt="Marlowe Logo" src="/doc/image/logo.svg" height="50px" />
+        </a>
+        <div
+          class="navbar-brand navbar-right input-lg"
+          style="margin-top: 12px; margin-right: 20px"
+        >
+          <label for="wallet">Select wallet:</label>
+          <select id="wallet" name="wallet" style="padding: 3px"></select>
+        </div>
       </div>
-    </div>
-  </nav>
-  <div class="container" style="max-width:900px; font-size: 20px">
-    <h1 class="text-center" style="color:#511cf7">Survey Participant Contract</h1>
-    <div class="row justify-content-center">
-      <p style="margin-top:20px;"><b>
-          Welcome to this short tutorial where we'll explore how to design and
-          deploy a smart contract using Marlowe. In this guide, we'll create a
-          simple survey contract that records a participant response on the
-          blockchain and rewards them with an NFT.
-        </b>
-      </p>
-    </div>
-    <div>
-      <div style="display: none">
-        <label for="runtimeUrl">URL to a Marlowe Runtime instance:</label>
-        <input id="runtimeUrl" type="text" autocomplete="on" placeholder="http://localhost:32952" />
-      </div>
-    </div>
-    <hr style="margin:30px 0;" />
-
-    <h2>Survey</h2>
-    <p>
-      The survey will consist of 5 questions. The first 4 are statements
-      that you need to agree or disagree and the 5th question is a text-based answer.
-    </p>
-    <p style="margin-top:20px;"><b> The questions are: </b> </p>
-    <ol style="margin:20px 0;">
-      <li>
-        I’d like to use/recommend Marlowe for future dApps
-        <ul>
-          <li>1 - Strongly disagree</li>
-          <li>2 - Disagree</li>
-          <li>3 - Neutral</li>
-          <li>4 - Agree</li>
-          <li>5 - Highly agree</li>
-        </ul>
-      </li>
-      <li>
-        The survey contract was easy to design
-        <ul>
-          <li>1 - Strongly disagree</li>
-          <li>2 - Disagree</li>
-          <li>3 - Neutral</li>
-          <li>4 - Agree</li>
-          <li>5 - Highly agree</li>
-        </ul>
-      </li>
-      <li>
-        This tutorial is helpful
-        <ul>
-          <li>1 - Strongly disagree</li>
-          <li>2 - Disagree</li>
-          <li>3 - Neutral</li>
-          <li>4 - Agree</li>
-          <li>5 - Highly agree</li>
-        </ul>
-      </li>
-      <li>
-        I am an experienced web3 developer
-        <ul>
-          <li>1 - Strongly disagree</li>
-          <li>2 - Disagree</li>
-          <li>3 - Neutral</li>
-          <li>4 - Agree</li>
-          <li>5 - Highly agree</li>
-        </ul>
-      </li>
-      <li>Please share any comments (240 char max)</li>
-    </ol>
-    <div class="row">
-      <h2 style="margin-bottom:20px">Step 1: Design the contract</h2>
-      <p>
-        To design the contract we'll use the Blockly editor in the
-        <a href="https://play.marlowe.iohk.io/">Marlowe Playground</a>. The
-        questions will be modeled using <code>Choice Action</code>. Each
-        question will be answered by the
-        <code> Address $SURVEY_PARTICIPANT_ADDR</code> participant before a
-        parameterized <code> answer timeout</code>. If the contract timeouts
-        we close it.
-      </p>
-    </div>
-
-    <p>Create the 5 questions blocks with the following parameters:</p>
-    <div class="row">
-      <div class="">
-        <table class="table table-striped">
-          <thead>
-            <tr>
-              <th style="border-bottom: 1px solid black; font-weight: bold">
-                Choice Name
-              </th>
-              <th style="border-bottom: 1px solid black; font-weight: bold">
-                Bounds
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>answer1</td>
-              <td>[1 - 5]</td>
-            </tr>
-            <tr>
-              <td>answer2</td>
-              <td>[1 - 5]</td>
-            </tr>
-            <tr>
-              <td>answer3</td>
-              <td>[1 - 5]</td>
-            </tr>
-            <tr>
-              <td>answer4</td>
-              <td>[1 - 5]</td>
-            </tr>
-            <tr>
-              <td>answer5</td>
-              <td>[1 - 1099511627775]</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-    <p>Each question block should resemble the following example:</p>
-    <img style="width: 500px"
-      src="https://raw.githubusercontent.com/input-output-hk/marlowe-starter-kit/a0a07a16314ce190ec63809612ed5af43148b31c/images/survey_question_block.png"
-      alt="Survey question block" />
-    <div class="row">
-      <p class="">
-        After the questions, the <code> $CUSTODIAN_ADDR</code>participant
-        will deposit 1
-        <code>
-          Token "6fcbab5bb175b420cd060edb63af74c5b3d4687163f282ddc5377dd3"
-          "SurveyReward"</code>
-        directly into the survey participant account before a parameterized
-        <code>reward timeout</code> and then close the contract. After the
-        contract is closed, the payment of the reward token will be made
-        automatically.
-      </p>
-    </div>
-    <img style="width: 800px"
-      src="https://raw.githubusercontent.com/input-output-hk/marlowe-starter-kit/a0a07a16314ce190ec63809612ed5af43148b31c/images/survey_reward_block.png"
-      alt="Survey reward block" />
-
-    <div class="row">
-      <h2 style="margin-bottom:20px">Step 2: Simulate and download the contract</h2>
-      <p class="">
-        After you have created the contract, send it to simulation and check
-        that there is only one path to receive the
-        <code>SurveyReward</code>, which is to answer the 5 questions and
-        for the custodian to make the deposit.
-      </p>
-      <p>
-        Set the reward timeout bigger than the answer timeout way far in the
-        future, download the contract as <code>survey.json</code>
-      </p>
-    </div>
-
-    <img style="width: 500px"
-      src="https://raw.githubusercontent.com/input-output-hk/marlowe-starter-kit/a0a07a16314ce190ec63809612ed5af43148b31c/images/survey_contract_parameters.png"
-      alt="Survey contract parameters" />
-    <br />
-    <br />
-    <div class="row">
-      <h2 style="margin-bottom:20px">Step 3: Upload the contract</h2>
-      <p class="">
-        After you download the contract, you can upload it here:
-      </p>
-    </div>
-    <div class="row" style="display:flex; flex-direction: row; justify-content: center; align-items: center;">
-      <label for="contractFile" class="btn btn-default"> Choose a file </label>
-      <input type="file" id="contractFile" name="contractFile" accept=".json"
-        style="width:100%; background-color:#eee; padding:3px 20px;" />
-      <input id="upload-excercise" class="btn btn-default" type="button" value="Upload selected file" />
-    </div>
-    <br />
-    <br />
-    <div class="row panel panel-default">
-      <div class="panel-heading">
-        <h3 class="panel-title">Create contract log</h3>
-      </div>
-      <div id="create-console" class="panel-body"></div>
-    </div>
-    <br />
-    <br />
-    <div id="yield-section" class="row panel panel-info" style="display: none;">
-      <div class="panel-heading">Try again or see the answer 👀</div>
-      <div class="panel-body">
-        <p>
-          The provided contract is not what we expected, you can try again
-          as many times as you like, or if you just want the answer, you can
-          create the contract by filling these inputs
+    </nav>
+    <div class="container" style="max-width: 900px; font-size: 20px">
+      <h1 class="text-center" style="color: #511cf7">
+        Survey Participant Contract
+      </h1>
+      <div class="row justify-content-center">
+        <p style="margin-top: 20px">
+          <b>
+            Welcome to this short tutorial where we'll explore how to design and
+            deploy a smart contract using Marlowe. In this guide, we'll create a
+            simple survey contract that records a participant response on the
+            blockchain and rewards them with an NFT.
+          </b>
         </p>
-        <label for="answerTimeout">Answer Timeout:</label>
-        <input type="datetime-local" id="answerTimeout" name="answerTimeout" />
-        Local time
-
-        <br /><br />
-
-        <label for="rewardTimeout">Reward Timeout:</label>
-        <input type="datetime-local" id="rewardTimeout" name="rewardTimeout" />
-        Local time<br /><br />
-        <br />
-        <input id="create-contract" class="btn btn-default" type="button" value="Give me the answer" />
       </div>
-    </div>
-    <hr style="margin:30px 0;" />
-    <div class="row" id="submit-answers-section" style="display:none;">
-      <h2>Step 4: Answer the survey</h2>
-      <p>
-        You can click the following link to see the new contract in the
-        Marlowe Scanner:
-      </p>
-      <p><i>ContractId</i>: <a id="contract-id-indicator">-</a></p>
-      <p>
-        Please answer the survey:
-      </p>
-
-      <div class="">
-        <div class="form-group">
-          <label class="" for="answer-1">I’d like to use/recommend Marlowe for future dApps</label>
-          <select class="form-control" id="answer-1">
-            <option value="5">Highly agree</option>
-            <option value="4">Agree</option>
-            <option value="3" selected>Neutral</option>
-            <option value="2">Disagree</option>
-            <option value="1">Strongly disagree</option>
-          </select>
+      <div>
+        <div style="display: none">
+          <label for="runtimeUrl">URL to a Marlowe Runtime instance:</label>
+          <input
+            id="runtimeUrl"
+            type="text"
+            autocomplete="on"
+            placeholder="http://localhost:32952"
+          />
         </div>
-        <div class="form-group">
-          <label class="control-label" for="answer-2">The survey contract was easy to design</label>
-          <select class="form-control" id="answer-2">
-            <option value="5">Highly agree</option>
-            <option value="4">Agree</option>
-            <option value="3" selected>Neutral</option>
-            <option value="2">Disagree</option>
-            <option value="1">Strongly disagree</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label class="control-label" for="answer-3">The Marlowe Runtime was easy to work with</label>
-          <select class="form-control" id="answer-3">
-            <option value="5">Highly agree</option>
-            <option value="4">Agree</option>
-            <option value="3" selected>Neutral</option>
-            <option value="2">Disagree</option>
-            <option value="1">Strongly disagree</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label class="control-label" for="answer-4">I am an experienced web3 developer</label>
-          <select class="form-control" id="answer-4">
-            <option value="5">Highly agree</option>
-            <option value="4">Agree</option>
-            <option value="3" selected>Neutral</option>
-            <option value="2">Disagree</option>
-            <option value="1">Strongly disagree</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label class="control-label" for="comments">Please share any comments</label>
-          <textarea id="comments" class="form-control" name="comments" maxlength="240" style="resize: none"></textarea>
-          <span class="help-block">Maximum 240 characters.</span>
-        </div>
-
-        <input id="submit" class="btn btn-default" type="button" value="Submit answers" />
       </div>
+      <hr style="margin: 30px 0" />
+
+      <h2>Survey</h2>
+      <p>
+        The survey will consist of 5 questions. The first 4 are statements that
+        you need to agree or disagree and the 5th question is a text-based
+        answer.
+      </p>
+      <p style="margin-top: 20px"><b> The questions are: </b></p>
+      <ol style="margin: 20px 0">
+        <li>
+          I’d like to use/recommend Marlowe for future dApps
+          <ul>
+            <li>1 - Strongly disagree</li>
+            <li>2 - Disagree</li>
+            <li>3 - Neutral</li>
+            <li>4 - Agree</li>
+            <li>5 - Highly agree</li>
+          </ul>
+        </li>
+        <li>
+          The survey contract was easy to design
+          <ul>
+            <li>1 - Strongly disagree</li>
+            <li>2 - Disagree</li>
+            <li>3 - Neutral</li>
+            <li>4 - Agree</li>
+            <li>5 - Highly agree</li>
+          </ul>
+        </li>
+        <li>
+          This tutorial is helpful
+          <ul>
+            <li>1 - Strongly disagree</li>
+            <li>2 - Disagree</li>
+            <li>3 - Neutral</li>
+            <li>4 - Agree</li>
+            <li>5 - Highly agree</li>
+          </ul>
+        </li>
+        <li>
+          I am an experienced web3 developer
+          <ul>
+            <li>1 - Strongly disagree</li>
+            <li>2 - Disagree</li>
+            <li>3 - Neutral</li>
+            <li>4 - Agree</li>
+            <li>5 - Highly agree</li>
+          </ul>
+        </li>
+        <li>Please share any comments (240 char max)</li>
+      </ol>
+      <div class="row">
+        <h2 style="margin-bottom: 20px">Step 1: Design the contract</h2>
+        <p>
+          To design the contract we'll use the Blockly editor in the
+          <a href="https://play.marlowe.iohk.io/">Marlowe Playground</a>. The
+          questions will be modeled using <code>Choice Action</code>. Each
+          question will be answered by the
+          <code> Address $SURVEY_PARTICIPANT_ADDR</code> participant before a
+          parameterized <code> answer timeout</code>. If the contract timeouts
+          we close it.
+        </p>
+      </div>
+
+      <p>Create the 5 questions blocks with the following parameters:</p>
+      <div class="row">
+        <div class="">
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th style="border-bottom: 1px solid black; font-weight: bold">
+                  Choice Name
+                </th>
+                <th style="border-bottom: 1px solid black; font-weight: bold">
+                  Bounds
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>answer1</td>
+                <td>[1 - 5]</td>
+              </tr>
+              <tr>
+                <td>answer2</td>
+                <td>[1 - 5]</td>
+              </tr>
+              <tr>
+                <td>answer3</td>
+                <td>[1 - 5]</td>
+              </tr>
+              <tr>
+                <td>answer4</td>
+                <td>[1 - 5]</td>
+              </tr>
+              <tr>
+                <td>answer5</td>
+                <td>[1 - 1099511627775]</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <p>Each question block should resemble the following example:</p>
+      <img
+        style="width: 500px"
+        src="https://raw.githubusercontent.com/input-output-hk/marlowe-starter-kit/a0a07a16314ce190ec63809612ed5af43148b31c/images/survey_question_block.png"
+        alt="Survey question block"
+      />
+      <div class="row">
+        <p class="">
+          After the questions, the <code> $CUSTODIAN_ADDR</code>participant will
+          deposit 1
+          <code>
+            Token "6fcbab5bb175b420cd060edb63af74c5b3d4687163f282ddc5377dd3"
+            "SurveyReward"</code
+          >
+          directly into the survey participant account before a parameterized
+          <code>reward timeout</code> and then close the contract. After the
+          contract is closed, the payment of the reward token will be made
+          automatically.
+        </p>
+      </div>
+      <img
+        style="width: 800px"
+        src="https://raw.githubusercontent.com/input-output-hk/marlowe-starter-kit/a0a07a16314ce190ec63809612ed5af43148b31c/images/survey_reward_block.png"
+        alt="Survey reward block"
+      />
+
+      <div class="row">
+        <h2 style="margin-bottom: 20px">
+          Step 2: Simulate and download the contract
+        </h2>
+        <p class="">
+          After you have created the contract, send it to simulation and check
+          that there is only one path to receive the
+          <code>SurveyReward</code>, which is to answer the 5 questions and for
+          the custodian to make the deposit.
+        </p>
+        <p>
+          Set the reward timeout bigger than the answer timeout way far in the
+          future, download the contract as <code>survey.json</code>
+        </p>
+      </div>
+
+      <img
+        style="width: 500px"
+        src="https://raw.githubusercontent.com/input-output-hk/marlowe-starter-kit/a0a07a16314ce190ec63809612ed5af43148b31c/images/survey_contract_parameters.png"
+        alt="Survey contract parameters"
+      />
+      <br />
+      <br />
+      <div class="row">
+        <h2 style="margin-bottom: 20px">Step 3: Upload the contract</h2>
+        <p class="">After you download the contract, you can upload it here:</p>
+      </div>
+      <div
+        class="row"
+        style="
+          display: flex;
+          flex-direction: row;
+          justify-content: center;
+          align-items: center;
+        "
+      >
+        <label for="contractFile" class="btn btn-default">
+          Choose a file
+        </label>
+        <input
+          type="file"
+          id="contractFile"
+          name="contractFile"
+          accept=".json"
+          style="width: 100%; background-color: #eee; padding: 3px 20px"
+        />
+        <input
+          id="upload-excercise"
+          class="btn btn-default"
+          type="button"
+          value="Upload selected file"
+        />
+      </div>
+      <br />
+      <br />
       <div class="row panel panel-default">
         <div class="panel-heading">
-          <h3 class="panel-title">Survey answers log</h3>
+          <h3 class="panel-title">Create contract log</h3>
         </div>
-        <div id="submit-console" class="panel-body"></div>
+        <div id="create-console" class="panel-body"></div>
+      </div>
+      <br />
+      <br />
+      <div
+        id="yield-section"
+        class="row panel panel-info"
+        style="display: none"
+      >
+        <div class="panel-heading">Try again or see the answer 👀</div>
+        <div class="panel-body">
+          <p>
+            The provided contract is not what we expected, you can try again as
+            many times as you like, or if you just want the answer, you can
+            create the contract by filling these inputs
+          </p>
+          <label for="answerTimeout">Answer Timeout:</label>
+          <input
+            type="datetime-local"
+            id="answerTimeout"
+            name="answerTimeout"
+          />
+          Local time
+
+          <br /><br />
+
+          <label for="rewardTimeout">Reward Timeout:</label>
+          <input
+            type="datetime-local"
+            id="rewardTimeout"
+            name="rewardTimeout"
+          />
+          Local time<br /><br />
+          <br />
+          <input
+            id="create-contract"
+            class="btn btn-default"
+            type="button"
+            value="Give me the answer"
+          />
+        </div>
+      </div>
+      <hr style="margin: 30px 0" />
+      <div class="row" id="submit-answers-section" style="display: none">
+        <h2>Step 4: Answer the survey</h2>
+        <p>
+          You can click the following link to see the new contract in the
+          Marlowe Scanner:
+        </p>
+        <p><i>ContractId</i>: <a id="contract-id-indicator">-</a></p>
+        <p>Please answer the survey:</p>
+
+        <div class="">
+          <div class="form-group">
+            <label class="" for="answer-1"
+              >I’d like to use/recommend Marlowe for future dApps</label
+            >
+            <select class="form-control" id="answer-1">
+              <option value="5">Highly agree</option>
+              <option value="4">Agree</option>
+              <option value="3" selected>Neutral</option>
+              <option value="2">Disagree</option>
+              <option value="1">Strongly disagree</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="control-label" for="answer-2"
+              >The survey contract was easy to design</label
+            >
+            <select class="form-control" id="answer-2">
+              <option value="5">Highly agree</option>
+              <option value="4">Agree</option>
+              <option value="3" selected>Neutral</option>
+              <option value="2">Disagree</option>
+              <option value="1">Strongly disagree</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="control-label" for="answer-3"
+              >The Marlowe Runtime was easy to work with</label
+            >
+            <select class="form-control" id="answer-3">
+              <option value="5">Highly agree</option>
+              <option value="4">Agree</option>
+              <option value="3" selected>Neutral</option>
+              <option value="2">Disagree</option>
+              <option value="1">Strongly disagree</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="control-label" for="answer-4"
+              >I am an experienced web3 developer</label
+            >
+            <select class="form-control" id="answer-4">
+              <option value="5">Highly agree</option>
+              <option value="4">Agree</option>
+              <option value="3" selected>Neutral</option>
+              <option value="2">Disagree</option>
+              <option value="1">Strongly disagree</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="control-label" for="comments"
+              >Please share any comments</label
+            >
+            <textarea
+              id="comments"
+              class="form-control"
+              name="comments"
+              maxlength="240"
+              style="resize: none"
+            ></textarea>
+            <span class="help-block">Maximum 240 characters.</span>
+          </div>
+
+          <input
+            id="submit"
+            class="btn btn-default"
+            type="button"
+            value="Submit answers"
+          />
+        </div>
+        <div class="row panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title">Survey answers log</h3>
+          </div>
+          <div id="submit-console" class="panel-body"></div>
+        </div>
       </div>
     </div>
-  </div>
-  <script src="https://cdn.jsdelivr.net/npm/jsencrypt/bin/jsencrypt.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsencrypt/bin/jsencrypt.min.js"></script>
 
-  <script type="module" src="index.js"></script>
-</body>
-
+    <script type="module" src="index.js"></script>
+  </body>
 </html>

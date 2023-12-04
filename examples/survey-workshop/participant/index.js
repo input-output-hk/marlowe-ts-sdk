@@ -5,10 +5,11 @@ import { MarloweJSON } from "@marlowe.io/adapter/codec";
 import { encryptMessage } from "../custodian/custodian-encript.js";
 import { timeoutToDate } from "@marlowe.io/language-core-v1";
 
-
-function createPlaygroundLink (contract) {
-  const compressed = LZString.compressToEncodedURIComponent(MarloweJSON.stringify(contract));
-  const link = `https://play.marlowe.iohk.io/#/importContract?marlowe-view=blockly&contract=${compressed}`
+function createPlaygroundLink(contract) {
+  const compressed = LZString.compressToEncodedURIComponent(
+    MarloweJSON.stringify(contract)
+  );
+  const link = `https://play.marlowe.iohk.io/#/importContract?marlowe-view=blockly&contract=${compressed}`;
   return link;
 }
 
@@ -104,8 +105,14 @@ async function createContract(
     rewardTimeout,
   });
   if (showContract) {
-    log(bsAlert(
-      "info",`<a target="blank" href="${createPlaygroundLink(contract)}">See solution in playground</a>`))
+    log(
+      bsAlert(
+        "info",
+        `<a target="blank" href="${createPlaygroundLink(
+          contract
+        )}">See solution in playground</a>`
+      )
+    );
   }
 
   log(

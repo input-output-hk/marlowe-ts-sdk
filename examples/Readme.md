@@ -6,7 +6,7 @@ The examples on this folder demonstrate how to run the different packages within
 
 ### Prerequisites
 
-- A CIP30 wallet  (Nami, Eternl or Lace) installed on the browser.
+- A CIP30 wallet (Nami, Eternl or Lace) installed on the browser.
 - [Node.js](https://nodejs.org/en/) installed on your machine.
 
 ### Flow
@@ -35,4 +35,4 @@ Then select one of the available examples:
 - [wallet flow](./wallet-flow/): Simple example on how to use the `@marlowe.io/wallet` package to connect to a wallet extension and get basic info and to manually sign transactions.
 - [Survey workshop](./survey-workshop/participant): A small excercise to create a Survey Marlowe contract.
 
-[//]: # (TODO: Explain other examples)
+[//]: # "TODO: Explain other examples"

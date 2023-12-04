@@ -17,12 +17,15 @@ Before version 1, the TS-SDK adheres to beta rules:
 ### Pre-release Checklist:
 
 1. **Candidate Commit:**
+
    - Identify a candidate commit on the `main` branch.
 
 2. **CI Checks:**
+
    - Ensure that all Continuous Integration (CI) checks pass on the candidate commit.
 
 3. **Version Number Update:**
+
    - Update version numbers in project metadata.
 
 4. **QA Approval:**
@@ -31,12 +34,15 @@ Before version 1, the TS-SDK adheres to beta rules:
 ### Release Checklist:
 
 1. **Release Notes:**
+
    - Generate release notes from the `changelog.d` folder(s).
 
 2. **Release Tag:**
+
    - Create and push a release tag.
 
 3. **Packages Build and Publish:**
+
    - Build and publish packages from the release tag.
 
 4. **GitHub Release:**

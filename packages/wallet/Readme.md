@@ -4,7 +4,6 @@ This package provides functionality to work with a CIP30 wallet.
 
 It has the following modules:
 
-
 - @{@link api | marlowe.io/wallet/api}: provides an abstract interface to work with a wallet.
 - @{@link browser | marlowe.io/wallet/browser}: provides a browser implementation of the api using the [CIP30 specification](https://cips.cardano.org/cips/cip30/).
 - @{@link index | marlowe.io/wallet}: Re-exports of the `browser` and `api` modules.
