@@ -2,7 +2,6 @@ import { mkLucidWallet } from "@marlowe.io/wallet";
 import { Lucid, Blockfrost } from "lucid-cardano";
 import { readConfig } from "./config.js";
 
-
 const log = console.log.bind(console);
 
 async function main() {
@@ -35,9 +34,7 @@ async function main() {
 
   const usedAddresses = await wallet.getUsedAddresses();
   log(`* Used Addresses: (${usedAddresses.length} addresses)`);
-  usedAddresses.map((usedAddress) =>
-    log("    - " + usedAddress)
-  );
+  usedAddresses.map((usedAddress) => log("    - " + usedAddress));
   log("");
 
   const collaterals = await wallet.getCollaterals();
@@ -50,10 +47,6 @@ async function main() {
   utxos.map((utxo) => log("    - " + utxo));
   log("");
   log("Wallet flow done 🎉");
-  // const wallet = await mkLucidWallet(lucid, config.seedPhrase);
-  // console.log(wallet);
-  // console.log(G.Contract);
-  // console.log(mkLucidWallet);
 }
 
 await main();

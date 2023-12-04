@@ -12,12 +12,12 @@ export const AssetQuantity = t.bigint;
 export type AssetId = t.TypeOf<typeof AssetId>;
 export const AssetId = t.type({ policyId: PolicyId, assetName: AssetName });
 
-export const assetId = (
-  policyId: PolicyId
-) => (assetName: AssetName): AssetId => ({
-  policyId: policyId,
-  assetName: assetName,
-});
+export const assetId =
+  (policyId: PolicyId) =>
+  (assetName: AssetName): AssetId => ({
+    policyId: policyId,
+    assetName: assetName,
+  });
 
 export const isLovelace = (assetId: AssetId): boolean =>
   assetId.assetName === "" && assetId.policyId === mkPolicyId("");
@@ -28,8 +28,9 @@ export const isLovelace = (assetId: AssetId): boolean =>
 export interface Token extends t.TypeOf<typeof Token> {}
 export const Token = t.type({ quantity: AssetQuantity, assetId: AssetId });
 
-export const token = (quantity: AssetQuantity) => (assetId: AssetId): Token =>
-  ({ quantity: quantity, assetId: assetId });
+export const token =
+  (quantity: AssetQuantity) =>
+  (assetId: AssetId): Token => ({ quantity: quantity, assetId: assetId });
 
 export const lovelaces = (quantity: AssetQuantity): Token =>
   token(quantity)(assetId(mkPolicyId(""))(""));

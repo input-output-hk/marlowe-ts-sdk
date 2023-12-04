@@ -2,7 +2,6 @@ import * as t from "io-ts/lib/index.js";
 import * as G from "@marlowe.io/language-core-v1/guards";
 import * as fs from "fs/promises";
 
-
 const lucidNetworkGuard = t.union([
   t.literal("Mainnet"),
   t.literal("Preview"),

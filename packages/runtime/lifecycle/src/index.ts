@@ -1,11 +1,25 @@
-import {
-  WalletAPI
-} from "@marlowe.io/wallet";
+/**
+ * ```
+   import { mkBrowserWallet, getInstalledWalletExtensions } from "@marlowe.io/wallet";
+   import { mkRuntimeLifecycle } from "@marlowe.io/runtime-lifecycle";
+
+   const runtimeURL = "<url of the Marlowe runtime>";
+   const installedWalletExtensions = getInstalledWalletExtensions();
+
+   const wallet = await mkBrowserWallet(installedWalletExtensions[0].name);
+   const runtime = mkRuntimeLifecycle({
+      runtimeURL,
+      wallet,
+   });
+ ```
+ * @packageDocumentation
+ */
+
+import { WalletAPI } from "@marlowe.io/wallet";
 import * as Generic from "./generic/runtime.js";
 import { mkFPTSRestClient } from "@marlowe.io/runtime-rest-client";
 
 export * as Browser from "./browser/index.js";
-export * as NodeJS from "./browser/index.js";
 
 /**
  * Options for creating a RuntimeLifecycle instance.

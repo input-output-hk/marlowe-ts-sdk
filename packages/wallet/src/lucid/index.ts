@@ -1,4 +1,29 @@
-import { C, Lucid, Unit, fromUnit, fromHex, toHex, Assets as LucidAssets } from "lucid-cardano";
+/**
+ * Create a {@link api.WalletAPI} from a Lucid wallet instance that can work both in the
+ * backend (Node.js/Deno) and in the browser
+  ```
+    import { mkLucidWallet } from "@marlowe.io/wallet/lucid";
+    import { Lucid, Blockfrost } from "lucid-cardano";
+
+    const lucid = await Lucid.new(
+      new Blockfrost(config.blockfrostUrl, config.blockfrostProjectId),
+      config.network
+    );
+    lucid.selectWalletFromSeed(config.seedPhrase);
+
+    const wallet = mkLucidWallet(lucid);
+  ```
+ * @packageDocumentation
+ */
+import {
+  C,
+  Lucid,
+  Unit,
+  fromUnit,
+  fromHex,
+  toHex,
+  Assets as LucidAssets,
+} from "lucid-cardano";
 
 import { WalletAPI } from "../api.js";
 import * as runtimeCore from "@marlowe.io/runtime-core";
@@ -7,7 +32,11 @@ import { pipe } from "fp-ts/lib/function.js";
 import * as A from "fp-ts/lib/Array.js";
 import * as R from "fp-ts/lib/Record.js";
 import { Monoid } from "fp-ts/lib/Monoid.js";
-import { addressBech32, MarloweTxCBORHex, txOutRef } from "@marlowe.io/runtime-core";
+import {
+  addressBech32,
+  MarloweTxCBORHex,
+  txOutRef,
+} from "@marlowe.io/runtime-core";
 type LucidDI = { lucid: Lucid };
 
 const getAssetName: (unit: Unit) => string = (unit) => {
@@ -61,17 +90,19 @@ const getTokens =
     );
   };
 
-const signTx = ({ lucid }: LucidDI) => async (cborHex: MarloweTxCBORHex) => {
- const tx = C.Transaction.from_bytes(fromHex(cborHex));
+const signTx =
+  ({ lucid }: LucidDI) =>
+  async (cborHex: MarloweTxCBORHex) => {
+    const tx = C.Transaction.from_bytes(fromHex(cborHex));
     try {
       const txSigned = await lucid.wallet.signTx(tx);
       return toHex(txSigned.to_bytes());
     } catch (reason) {
       throw new Error(`Error while signing : ${reason}`);
     }
-  }
+  };
 const getLovelaces =
- ({ lucid }: LucidDI) =>
+  ({ lucid }: LucidDI) =>
   async (): Promise<bigint> => {
     const tokens = await getTokens({ lucid })();
     return pipe(
@@ -81,29 +112,32 @@ const getLovelaces =
     );
   };
 
-const getUTXOs = ({ lucid }: LucidDI) => async () => {
+const getUTXOs =
+  ({ lucid }: LucidDI) =>
+  async () => {
     const utxos = await lucid.wallet.getUtxos();
     return utxos.map((utxo) => txOutRef(utxo.txHash));
-  }
+  };
 const isMainnet =
   ({ lucid }: LucidDI) =>
   async () => {
     return lucid.network == "Mainnet";
   };
 
-const waitConfirmation =  ({ lucid }: LucidDI) => async (txHash: string) => {
+const waitConfirmation =
+  ({ lucid }: LucidDI) =>
+  async (txHash: string) => {
     try {
       return await lucid.awaitTx(txHash);
     } catch (reason) {
       throw new Error(`Error while awiting : ${reason}`);
     }
-  }
+  };
 /**
- * Create a {@link WalletAPI} from a Lucid wallet instance that can work both in the
- * backend (Node.js/Deno) and in the browser
+ * @inheritdoc lucid
  */
-export function mkLucidWallet(lucidWalletAPI: Lucid): WalletAPI {
-  const di = { lucid: lucidWalletAPI };
+export function mkLucidWallet(lucidWallet: Lucid): WalletAPI {
+  const di = { lucid: lucidWallet };
   return {
     waitConfirmation: waitConfirmation(di),
     signTx: signTx(di),
