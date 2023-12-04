@@ -63,6 +63,7 @@
     "io-ts-types": "0.5.19",
     "newtype-ts": "0.3.5",
     "json-bigint": "^1.0.0",
-    "jsonbigint-io-ts-reporters": "2.0.1"
+    "jsonbigint-io-ts-reporters": "2.0.1",
+    "@marlowe.io/adapter": "0.2.0-alpha-22"
   }
 }

@@ -1,7 +1,7 @@
 import { AxiosInstance, AxiosResponse } from "axios";
 import * as TE from "fp-ts/lib/TaskEither.js";
 import { flow, identity } from "fp-ts/lib/function.js";
-import { MarloweJSON } from "@marlowe.io/adapter/codec";
+import { MarloweJSON } from "./codec.js";
 
 const getOnlyData = TE.bimap(
   (e: unknown) =>
