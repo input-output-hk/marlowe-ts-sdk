@@ -370,9 +370,8 @@ export interface BuildCreateContractTxRequest {
    * - **Quantities to create(Mint)** : When asking to mint the tokens within the Runtime, quantities can defined as well.
    * 
    * Smart Constructors are available to ease these configuration: 
-   *    - {@link @marlowe.io/runtime-rest-client!contract.mkUseMintedRoleTokens}
-   *    - {@link @marlowe.io/runtime-rest-client!contract.mkMintOpenRoleToken}
-   *    - {@link @marlowe.io/runtime-rest-client!contract.mkMintClosedRoleToken}
+   *    - {@link @marlowe.io/runtime-rest-client!contract.useMintedRoles}
+   *    - {@link @marlowe.io/runtime-rest-client!contract.mintRole}
    * 
    * @remarks
    *  - The Distribution can be a mix of Closed and Open Role Tokens configuration. See examples below.
@@ -382,13 +381,13 @@ export interface BuildCreateContractTxRequest {
    *
    * ```ts
    *  ////////////// 
-   *  // #1 - Mint within the Runtime
+   *  // #1 - Mint Role Tokens
    *  ////////////// 
    * const anAddressBech32 = "addr_test1qqe342swyfn75mp2anj45f8ythjyxg6m7pu0pznptl6f2d84kwuzrh8c83gzhrq5zcw7ytmqc863z5rhhwst3w4x87eq0td9ja"
    * const aMintingConfiguration =
-   *   { "closed_Role_A_NFT" : mkMintClosedRoleToken(anAddressBech32)
+   *   { "closed_Role_A_NFT" : mintRole(anAddressBech32)
    *   , "closed_Role_B_FT" :
-   *        mkMintClosedRoleToken(
+   *        mintRole(
    *          anAddressBech32,
    *          5, // Quantities
    *          { "name": "closed_Role_B_FT Marlowe Role Token",
@@ -403,11 +402,12 @@ export interface BuildCreateContractTxRequest {
    *                }
    *              ]
    *          })
-   *   , "open_Role_C" : mkMintOpenRoleToken()
-   *   , "open_Role_D" : mkMintOpenRoleToken(
+   *   , "open_Role_C" : mintRole(openRole)
+   *   , "open_Role_D" : mintRole(
+   *          openRole,
    *          2, // Quantities
    *          { "name": "open_Role_D Marlowe Role Token",
-                "description": "These are metadata for closedRoleB",
+   *            "description": "These are metadata for closedRoleB",
    *            image": "ipfs://QmaQMH7ybS9KmdYQpa4FMtAhwJH5cNaacpg4fTwhfPvcwj",
    *            "mediaType": "image/png",
    *            "files": [
@@ -423,16 +423,15 @@ export interface BuildCreateContractTxRequest {
    *  ////////////// 
    *  // #2 Use Minted Roles Tokens 
    *  const aUseMintedRoleTokensConfiguration =
-   *      mkUseMintedRoleTokens(
+   *      useMintedRoles(
    *        "e68f1cea19752d1292b4be71b7f5d2b3219a15859c028f7454f66cdf",
    *        ["role_A","role_C"]
    *      )
    * ```
    *
    * @see
-   * - {@link @marlowe.io/runtime-rest-client!contract.mkUseMintedRoleTokens}
-   * - {@link @marlowe.io/runtime-rest-client!contract.mkMintOpenRoleToken}
-   * - {@link @marlowe.io/runtime-rest-client!contract.mkMintClosedRoleToken}
+   * - {@link @marlowe.io/runtime-rest-client!contract.useMintedRoles}
+   * - {@link @marlowe.io/runtime-rest-client!contract.mintRole}
    * - Open Roles Runtime Implementation : https://github.com/input-output-hk/marlowe-cardano/blob/main/marlowe-runtime/doc/open-roles.md
    */
   rolesConfiguration?: RolesConfiguration;

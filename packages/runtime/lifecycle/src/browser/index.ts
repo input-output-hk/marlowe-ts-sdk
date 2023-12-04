@@ -4,7 +4,10 @@ import {
 } from "@marlowe.io/wallet/browser";
 import * as Generic from "../generic/runtime.js";
 
-import { mkFPTSRestClient } from "@marlowe.io/runtime-rest-client";
+import {
+  mkFPTSRestClient,
+  mkRestClient,
+} from "@marlowe.io/runtime-rest-client";
 
 /**
  * Options for creating a RuntimeLifecycle instance using the browser wallet.
@@ -31,6 +34,7 @@ export async function mkRuntimeLifecycle({
   walletName,
 }: BrowserRuntimeLifecycleOptions) {
   const wallet = await mkBrowserWallet(walletName);
-  const restClient = mkFPTSRestClient(runtimeURL);
-  return Generic.mkRuntimeLifecycle(restClient, wallet);
+  const deprecatedRestAPI = mkFPTSRestClient(runtimeURL);
+  const restClient = mkRestClient(runtimeURL);
+  return Generic.mkRuntimeLifecycle(deprecatedRestAPI, restClient, wallet);
 }

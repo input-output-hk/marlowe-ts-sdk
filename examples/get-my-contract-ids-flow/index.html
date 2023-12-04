@@ -41,7 +41,7 @@
     window.createContract = async () => {
       const address = await window.runtimeLifeCycle.wallet.getChangeAddress();
       return runtimeLifeCycle.contracts.createContract({
-        contract: mkContract(address, Date.now() + 1000 * 60 * 10),
+        contractOrSourceId: mkContract(address, Date.now() + 1000 * 60 * 10),
       });
     };
   </script>

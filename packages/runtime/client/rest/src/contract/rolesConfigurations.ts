@@ -43,14 +43,14 @@ export const OpenRoleGuard = t.literal("OpenRole");
  *  Construction of an Open Role Token
  *  @category Roles Configuration
  */
-export const mkOpenRole = "OpenRole";
+export const openRole = "OpenRole";
 
 /**
  *  Definition of the Openness of a Role Token
  *  @category Roles Configuration
  */
-export type Openess = ClosedRole | OpenRole;
-export const OpenessGuard: t.Type<Openess, string> = t.union([
+export type Openness = ClosedRole | OpenRole;
+export const OpenessGuard: t.Type<Openness, string> = t.union([
   ClosedRoleGuard,
   OpenRoleGuard,
 ]);
@@ -129,7 +129,7 @@ export interface ClosedNFTWithMetadata {
 /**
  *  @category Roles Configuration
  */
-export type Recipient = Openess;
+export type Recipient = Openness;
 
 export const RecipientGuard: t.Type<Recipient, string> = t.union([
   OpenRoleGuard,
@@ -178,9 +178,8 @@ export const MintRolesTokensGuard: t.Type<MintRolesTokens> = t.record(
  *  Defines how to configure Roles over Cardano at the creation of a Marlowe Contract.
  *  @see
  *   Smart Constructors are available to ease the configuration:
- *    - {@link @marlowe.io/runtime-rest-client!contract.mkUseMintedRoleTokens}
- *    - {@link @marlowe.io/runtime-rest-client!contract.mkMintOpenRoleToken}
- *    - {@link @marlowe.io/runtime-rest-client!contract.mkMintClosedRoleToken}
+ *    - {@link @marlowe.io/runtime-rest-client!contract.useMintedRoles}
+ *    - {@link @marlowe.io/runtime-rest-client!contract.mintRole}
  *  @category Endpoint : Build Create Contract Tx
  *  @category Roles Configuration
  */
@@ -209,42 +208,33 @@ export const RolesConfigurationGuard = t.union([
  *  @category Endpoint : Build Create Contract Tx
  *  @category Roles Configuration
  */
-export const mkUseMintedRoleTokens = (
+export const useMintedRoles = (
   policyId: PolicyId,
   openRoleNames?: RoleName[]
 ): RolesConfiguration =>
   openRoleNames
-    ? { script: mkOpenRole, policyId: policyId, openRoleNames: openRoleNames }
+    ? { script: openRole, policyId: policyId, openRoleNames: openRoleNames }
     : (policyId as UsePolicyWithClosedRoleTokens);
 
 /**
  *  Configure the minting of a Closed Role Token.
- *  @param address where to distribute the token that will be mint
+ *  @param openness where to distribute the token (Either openly or closedly)
  *  @param quantity Quantity of the Closed Role Token (by Default an NFT (==1))
  *  @param metadata Token Metadata of the Token
  *  @category Endpoint : Build Create Contract Tx
  *  @category Roles Configuration
  */
-export const mkMintClosedRoleToken: (
-  address: AddressBech32,
+export const mintRole = (
+  openness: Openness,
   quantity?: TokenQuantity,
   metadata?: TokenMetadata
-) => RoleTokenConfiguration = (address, quantity, metadata) => ({
-  recipients: { [address]: quantity ? quantity : 1n },
-  metadata: metadata,
-});
-
-/**
- *  Configure the minting of an Open Role Token.
- *  @param quantity Quantity of the Closed Role Token (by Default an NFT (==1))
- *  @param metadata Token Metadata of the Token
- *  @category Endpoint : Build Create Contract Tx
- *  @category Roles Configuration
- */
-export const mkMintOpenRoleToken: (
-  quantity?: TokenQuantity,
-  metadata?: TokenMetadata
-) => RoleTokenConfiguration = (quantity, metadata) => ({
-  recipients: { [mkOpenRole]: quantity ? quantity : 1n },
-  metadata: metadata,
-});
+): RoleTokenConfiguration =>
+  OpenRoleGuard.is(openness)
+    ? {
+        recipients: { [openRole]: quantity ? quantity : 1n },
+        metadata: metadata,
+      }
+    : {
+        recipients: { [openness]: quantity ? quantity : 1n },
+        metadata: metadata,
+      };

@@ -14,15 +14,14 @@
 export { ContractHeader } from "./header.js";
 export { ContractDetails } from "./details.js";
 export {
-  mkUseMintedRoleTokens,
-  mkMintClosedRoleToken,
-  mkMintOpenRoleToken,
+  useMintedRoles,
+  mintRole,
   AddressBech32Brand,
   AddressBech32,
-  mkOpenRole,
+  openRole,
   ClosedRole,
   OpenRole,
-  Openess,
+  Openness,
   UsePolicyWithClosedRoleTokens,
   UsePolicyWithOpenRoleTokens,
   MintRolesTokens,

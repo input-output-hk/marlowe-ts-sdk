@@ -32,7 +32,7 @@ export const Payout = t.type({
    */
   payoutId: TxOutRef,
   /**
-   * The {@link RoleName} of the participant that has the unclaimed Payout.
+   * The {@link @marlowe.io/language-core-v1!index.RoleName | Role Name} of the participant that has the unclaimed Payout.
    */
   role: G.RoleName,
 });

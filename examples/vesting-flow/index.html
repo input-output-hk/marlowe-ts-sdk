@@ -116,7 +116,7 @@
 
       const [contractId, txIdCreated] =
         await runtimeLifeCycle.contracts.createContract({
-          contract: vestingContract,
+          contractOrSourceId: vestingContract,
           tags: { [dappId]: { scheme: request.scheme } },
         });
       log(
