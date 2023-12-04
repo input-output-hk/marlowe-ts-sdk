@@ -11,7 +11,9 @@
   "includeVersion": true,
   "sidebarLinks": {
     "How to develop": "https://github.com/input-output-hk/marlowe-ts-sdk/blob/main/doc/howToDevelop.md",
-    "Module system": "https://github.com/input-output-hk/marlowe-ts-sdk/blob/main/doc/modules-system.md"
+    "Module system": "https://github.com/input-output-hk/marlowe-ts-sdk/blob/main/doc/modules-system.md",
+    "Versioning and releases": "https://github.com/input-output-hk/marlowe-ts-sdk/blob/main/doc/versioning-and-releases.md",
+    "Changelog": "https://github.com/input-output-hk/marlowe-ts-sdk/blob/main/CHANGELOG.md",
   },
   "navigationLinks": {
     "Github Repo": "https://github.com/input-output-hk/marlowe-ts-sdk"
