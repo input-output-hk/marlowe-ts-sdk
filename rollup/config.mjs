@@ -45,7 +45,7 @@ const projectRoot = path.join(
 );
 
 await buildImportMapScript(packagesInfo, {type: "local"}, path.join(projectRoot, "dist"));
-await buildImportMapScript(packagesInfo, {type: "jsdelivr-npm", version: "0.2.0-alpha-22"}, projectRoot);
+await buildImportMapScript(packagesInfo, {type: "jsdelivr-npm", version: "0.2.0-beta"}, projectRoot);
 // This is for testing purposes only, search [[Publish pre-check]]
 await buildImportMapScript(packagesInfo, {type: "jsdelivr-gh", owner: "hrajchert", version: "126dfc25b8ae524f5bad1707fd20b4568be3f6ef"}, path.join(projectRoot, "dist"));
 

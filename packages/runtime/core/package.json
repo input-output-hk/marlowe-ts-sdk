@@ -1,6 +1,6 @@
 {
   "name": "@marlowe.io/runtime-core",
-  "version": "0.2.0-alpha-22",
+  "version": "0.2.0-beta",
   "description": "Core concepts used throughout the Marlowe Runtime libraries",
   "repository": "https://github.com/input-output-hk/marlowe-ts-sdk",
   "publishConfig": {
@@ -32,7 +32,7 @@
     }
   },
   "dependencies": {
-    "@marlowe.io/language-core-v1": "0.2.0-alpha-22",
+    "@marlowe.io/language-core-v1": "0.2.0-beta",
     "fp-ts": "^2.16.0",
     "io-ts": "2.2.20",
     "newtype-ts": "0.3.5"
