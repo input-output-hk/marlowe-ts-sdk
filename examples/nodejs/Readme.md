@@ -18,7 +18,8 @@ Then you need to create a `.config.json` file with the following content
   "blockfrostNetwork": "Preprod",
   // You can create this seed phrase from any wallet. Do not reuse a real wallet phrase
   // for a test example.
-  "seedPhrase": "alpha beta delta..."
+  "seedPhrase": "alpha beta delta...",
+  "runtimeURL": "<url to a runtime instance>",
 }
 ```
 

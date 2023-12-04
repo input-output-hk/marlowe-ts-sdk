@@ -1,34 +1,7 @@
-import * as t from "io-ts/lib/index.js";
-import * as G from "@marlowe.io/language-core-v1/guards";
-import * as fs from "fs/promises";
 import { mkLucidWallet } from "@marlowe.io/wallet";
 import { Lucid, Blockfrost } from "lucid-cardano";
+import { readConfig } from "./config.js";
 
-const lucidNetworkGuard = t.union([
-  t.literal("Mainnet"),
-  t.literal("Preview"),
-  t.literal("Preprod"),
-  t.literal("Custom"),
-]);
-
-const configGuard = t.type({
-  blockfrostProjectId: t.string,
-  blockfrostUrl: t.string,
-  network: lucidNetworkGuard,
-  seedPhrase: t.string,
-});
-
-type Config = t.TypeOf<typeof configGuard>;
-
-async function readConfig(): Promise<Config> {
-  const configStr = await fs.readFile("./.config.json", { encoding: "utf-8" });
-  console.log(JSON.parse(configStr));
-  const result = configGuard.decode(JSON.parse(configStr));
-  if (result._tag === "Left") {
-    throw new Error("Invalid config.json");
-  }
-  return result.right;
-}
 
 const log = console.log.bind(console);
 
