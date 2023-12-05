@@ -16,7 +16,7 @@
   ],
   "license": "Apache-2.0",
   "scripts": {
-    "build": "tsc --build && shx mkdir -p dist && rollup --config rollup/config.mjs",
+    "build": "tsc --version && tsc --build && shx mkdir -p dist && rollup --config rollup/config.mjs",
     "clean": "npm run clean --workspaces && shx rm -rf dist",
     "test": "NODE_OPTIONS='--experimental-vm-modules --no-warnings' jest",
     "docs": "typedoc .",
