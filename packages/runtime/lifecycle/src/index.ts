@@ -30,7 +30,7 @@ export interface RuntimeLifecycleOptions {
    */
   runtimeURL: string;
   /**
-   * The name of the wallet to connect to.
+   * The wallet instance to connect to.
    */
   wallet: WalletAPI;
 }
