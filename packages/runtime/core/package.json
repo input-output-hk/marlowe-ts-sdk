@@ -33,8 +33,8 @@
   },
   "dependencies": {
     "@marlowe.io/language-core-v1": "0.2.0-beta",
-    "fp-ts": "^2.16.0",
-    "io-ts": "2.2.20",
+    "fp-ts": "^2.16.1",
+    "io-ts": "2.2.21",
     "newtype-ts": "0.3.5"
   }
 }
