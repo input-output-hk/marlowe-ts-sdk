@@ -20,7 +20,6 @@ test-dist
 
 .cache
 .local
-package-lock.json
 yarn.lock
 # nixago: ignore-linked-files
 /lefthook.yml
