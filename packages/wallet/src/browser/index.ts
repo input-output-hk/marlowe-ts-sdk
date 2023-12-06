@@ -78,8 +78,8 @@ export async function mkBrowserWallet(
 ): Promise<WalletAPI> {
   if (
     getInstalledWalletExtensions()
-      .map((extension) => extension.name)
-      .includes(walletName)
+      .map((extension) => extension.name.toLowerCase())
+      .includes(walletName.toLowerCase())
   ) {
     const extension = await window.cardano[walletName.toLowerCase()].enable();
     const di = { extension };
