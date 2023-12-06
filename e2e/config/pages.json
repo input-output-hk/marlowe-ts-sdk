@@ -1,0 +1,14 @@
+{ 
+  "home": {
+    "route": "/",
+    "regex": "^/$"
+  },
+  "rest-client-flow": {
+    "route": "/examples/rest-client-flow",
+    "regex": "/examples/rest-client-flow"
+  },
+  "wallet-flow": {
+    "route": "/examples/wallet-flow",
+    "regex": "/examples/wallet-flow"
+  }
+}

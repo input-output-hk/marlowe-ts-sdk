@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Marlowe Run Very Lite POC</title>
+  </head>
+  <body>
+    <h1>Marlowe Run Lite Lite</h1>
+    <div>
+      <h2>1. Setup contract and Runtime</h2>
+
+      <label for="runtimeUrl">URL to a Marlowe Runtime instance:</label>
+      <input
+        id="runtimeUrl"
+        type="text"
+        autocomplete="on"
+        placeholder="https://marlowe-runtime-preprod-web.scdev.aws.iohkdev.io/"
+      />
+      <br />
+      <label for="wallet">Select wallet:</label>
+      <select id="wallet" name="wallet">
+        <option value="nami">Nami</option>
+        <option value="eternl">Eternl</option>
+      </select>
+      <div>
+        <h3>1.1 Create contract</h3>
+        <label for="contract">JSON Contract:</label>
+        <textarea id="contract" type="text" style="width: 100%; height: 20em">
+"close"</textarea
+        >
+      </div>
+      <br />
+      <input id="create-contract" type="button" value="Create contract" />
+    </div>
+    <div>
+      <h3>1.2 Load contract</h3>
+      <label for="contract-id">Contract ID:</label>
+      <input id="contract-id" type="text" />
+    </div>
+    <hr />
+    <div>
+      <h2>2. Run contract</h2>
+      <i>ContractId</i>: <a id="contract-id-indicator">-</a>
+      <h4>Actions</h4>
+      <br />
+      <div>
+        <div>
+          Deposit
+          <input type="number" id="deposit-amount" value="0" />
+          of token with policy id
+          <input type="text" id="deposit-policy-id" />
+          and token name
+          <input type="text" id="deposit-token-name" />
+          into account of
+          <select id="deposit-into-type">
+            <option value="address">Address</option>
+            <!--option value="role">Role</option-->
+          </select>
+          <input type="text" id="deposit-token-name" />
+          <input id="deposit" type="button" value="Deposit" />
+        </div>
+        <div>Choice</div>
+        <div>Notify</div>
+      </div>
+    </div>
+
+    <h2>Console</h2>
+    <div id="console"></div>
+    <script  src="./jsdeliver-importmap.js">
+
+    </script>
+    <script type="module">
+      import { Browser } from "@marlowe.io/runtime-lifecycle";
+      import {} from '@marlowe.io/runtime-rest-client'
+      const consoleDiv = document.getElementById("console");
+
+      function setContractIdIndicator(contractId) {
+        const contractIdIndicator = document.getElementById(
+          "contract-id-indicator"
+        );
+        contractIdIndicator.innerHTML = contractId;
+        // TODO: Add a network selector
+        const url = `https://preprod.marlowescan.com/contractView?tab=state&contractId=${contractId.replace(
+          "#",
+          "%23"
+        )}`;
+        contractIdIndicator.href = url;
+        contractIdIndicator.target = "_blank";
+      }
+
+      const log = (message) => {
+        var currentContent = consoleDiv.innerHTML;
+        consoleDiv.innerHTML = currentContent + "<\BR>" + message;
+      };
+
+      async function createContract() {
+        const runtimeUrlInput = document.getElementById("runtimeUrl");
+        const runtimeURL = runtimeUrlInput.value || "http://localhost:32952";
+        const walletInput = document.getElementById("wallet");
+        const walletName = walletInput.value;
+        const contractInput = document.getElementById("contract");
+        const contract = JSON.parse(contractInput.value);
+
+        const runtime = await Browser.mkRuntimeLifecycle({
+          runtimeURL,
+          walletName,
+        });
+
+        const contractId = await runtime.contracts.create({ contract });
+        log("Contract created with id: " + contractId);
+        setContractIdIndicator(contractId);
+      }
+      /*
+      console.log("Browser", Browser);
+
+      async function cip30Flow() {
+        // Clear console
+        consoleDiv.innerHTML = "";
+
+        const runtimeUrlInput = document.getElementById("runtimeUrl");
+        const runtimeUrl = runtimeUrlInput.value || "http://localhost:32952";
+        const walletInput = document.getElementById("wallet");
+        const wallet = walletInput.value;
+
+        log(`<h2>Accessing ${wallet} Wallet Extension</h2>`);
+        const runtime = await Browser.mkRuntimeLifecycle(runtimeUrl)(wallet)();
+        log("");
+        log("Reading Wallet information...");
+        log("");
+
+        const cip30Network = await runtime.wallet.getCIP30Network();
+        log(`* <b>Network</b>: ${cip30Network}`);
+        log(
+          "&nbsp;&nbsp;&nbsp;NOTE: The CIP30 standard can't distinguish between testnet networks (preprod/preview/etc)"
+        );
+        log("");
+
+        const lovelaces = await runtime.wallet.getLovelaces();
+        log("- <b>Lovelaces</b>: " + lovelaces.right);
+        const tokensResult = await runtime.wallet.getTokens();
+        log("");
+
+        log(`- <b>Tokens</b>: (${tokensResult.right.length} tokens)`);
+        tokensResult.right.map((token) => {
+          const tokenName =
+            token.assetId.assetName == ""
+              ? "lovelaces"
+              : token.assetId.assetName;
+          log(`&nbsp;&nbsp;&nbsp; <i>${tokenName}</i> - ${token.quantity}`);
+        });
+        log("");
+
+        const changeAddress = await runtime.wallet.getChangeAddress();
+        log("- <b>Change Address</b>: " + changeAddress);
+        log("");
+
+        const usedAddresses = await runtime.wallet.getUsedAddresses();
+        log(`- <b>Used Addresses</b>: (${usedAddresses.length} addresses)`);
+        usedAddresses.map((usedAddress) =>
+          log("&nbsp;&nbsp;&nbsp; - " + usedAddress)
+        );
+        log("");
+
+        const collaterals = await runtime.wallet.getCollaterals();
+        log(`- <b>Collaterals</b>: (${collaterals.length} collaterals)`);
+        collaterals.map((collateral) =>
+          log("&nbsp;&nbsp;&nbsp; - " + collateral)
+        );
+        log("");
+
+        const utxos = await runtime.wallet.getUTxOs();
+        log(`- <b>UTxOs</b>: (${utxos.length} utxos)`);
+        utxos.map((utxo) => log("&nbsp;&nbsp;&nbsp; - " + utxo));
+      }
+      */
+      const createContractButton = document.getElementById("create-contract");
+      createContractButton.addEventListener("click", createContract);
+    </script>
+  </body>
+</html>

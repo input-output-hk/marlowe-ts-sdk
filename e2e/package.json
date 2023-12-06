@@ -1,0 +1,35 @@
+{
+  "name": "e2e",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "precucumber": "rimraf reports && mkdir reports && echo {} > reports/reports.json",
+    "transpile": "rimraf dist && babel --extensions .ts --out-dir dist src",
+    "cucumber-compile": "yarn transpile && cucumber-js",
+    "cucumber": "COMMON_CONFIG_FILE=env/common.env yarn cucumber-compile",
+    "postcucumber": "COMMON_CONFIG_FILE=env/common.env ts-node ./src/reporter/cucumber-report.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@babel/cli": "^7.21.5",
+    "@babel/core": "^7.21.8",
+    "@babel/preset-env": "^7.21.5",
+    "@babel/preset-typescript": "^7.21.5",
+    "@cucumber/cucumber": "^9.1.2",
+    "@marlowe.io/adapter": "^0.2.0-alpha-5",
+    "@marlowe.io/language-core-v1": "^0.2.0-alpha-5",
+    "@playwright/test": "^1.33.0",
+    "cucumber-html-reporter": "^6.0.0",
+    "dotenv": "^16.0.3",
+    "fs-extra": "^11.1.1",
+    "moment": "^2.29.4",
+    "playwright": "^1.33.0",
+    "playwright-testing-library": "^4.5.0",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.0.4",
+    "typescript-language-server": "^3.3.2"
+  }
+}

@@ -1,0 +1,4 @@
+{
+  "contract-input":  {"role": "textbox", "name": "contract-input" },
+  "choice-input":  {"role": "spinbutton", "name": "choice-input" }
+}
