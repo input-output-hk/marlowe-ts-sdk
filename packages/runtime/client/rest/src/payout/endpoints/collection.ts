@@ -26,6 +26,19 @@ export const ContractsRange = fromNewtype<ContractsRange>(t.string);
 export const unContractsRange = iso<ContractsRange>().unwrap;
 export const contractsRange = iso<ContractsRange>().wrap;
 
+export type GetPayoutsRequest = {
+  contractIds: ContractId[];
+  roleTokens: AssetId[];
+  status?: PayoutStatus;
+  range?: ContractsRange;
+};
+
+export type GetPayoutsResponse = {
+  headers: PayoutHeader[];
+  previousRange?: ContractsRange;
+  nextRange?: ContractsRange;
+};
+
 export type GETHeadersByRange = (
   rangeOption: O.Option<ContractsRange>
 ) => (

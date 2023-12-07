@@ -211,8 +211,14 @@ export interface RestClient {
   //   getContractAdjacency: ContractSource.GET_ADJACENCY;  // - Jamie, is it this one? https://docs.marlowe.iohk.io/api/get-adjacency-by-id if so lets unify
   //   getContractClosure: ContractSource.GET_CLOSURE; // Jamie is it this one? - https://docs.marlowe.iohk.io/api/get-closure-by-id
 
-  //   getPayouts: Payouts.GET;
-  //   getPayoutById: Payout.GET;
+  /**
+   * Get payouts to parties from role-based contracts.
+   * @see {@link https://docs.marlowe.iohk.io/api/get-role-payouts | The backend documentation}
+   */
+  getPayouts(
+    request: Payouts.GetPayoutsRequest
+  ): Promise<Payouts.GetPayoutsResponse>;
+
 }
 
 /**
@@ -360,6 +366,24 @@ export function mkRestClient(baseURL: string): RestClient {
           () => true
         )
       )(),
+    async getPayouts({ contractIds, roleTokens, range, status }) {
+      const result = await unsafeTaskEither(
+        Payouts.getHeadersByRangeViaAxios(axiosInstance)(O.fromNullable(range))(
+          contractIds
+        )(roleTokens)(O.fromNullable(status))
+      );
+      return {
+        headers: result.headers,
+        ...O.match(
+          () => ({}),
+          (previousRange) => ({ previousRange })
+        )(result.previousRange),
+        ...O.match(
+          () => ({}),
+          (nextRange) => ({ nextRange })
+        )(result.nextRange),
+      };
+    },
   };
 }
 
