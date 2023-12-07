@@ -16,7 +16,7 @@
 export {
   ClosedRoleGuard as ClosedRole,
   OpenRoleGuard as OpenRole,
-  OpenessGuard as Openess,
+  OpennessGuard as Openess,
   UsePolicyWithClosedRoleTokensGuard as UsePolicyWithClosedRoleTokens,
   UsePolicyWithOpenRoleTokensGuard as UsePolicyWithOpenRoleTokens,
   TokenMetadataFileGuard as TokenMetadataFile,

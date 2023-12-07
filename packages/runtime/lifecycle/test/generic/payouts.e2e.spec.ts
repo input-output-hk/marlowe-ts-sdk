@@ -53,7 +53,7 @@ describe("Payouts", () => {
       adaProvider
     ).contracts.createContract({
       contractOrSourceId: swapContract,
-      rolesConfiguration: {
+      roles: {
         [swapRequest.provider.roleName]: mintRole(
           adaProvider.address as unknown as AddressBech32
         ),

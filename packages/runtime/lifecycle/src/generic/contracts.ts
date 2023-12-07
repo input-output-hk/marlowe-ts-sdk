@@ -160,12 +160,12 @@ export const submitCreateTxFpTs: (
 
             contractOrSourceId: createContractRequest.contractOrSourceId,
             threadRoleName: createContractRequest.threadRoleName,
-            rolesConfiguration: createContractRequest.rolesConfiguration,
+            roles: createContractRequest.roles,
 
             tags: createContractRequest.tags,
             metadata: createContractRequest.metadata,
-            mininmumLovelaceUTxODeposit:
-              createContractRequest.mininmumLovelaceUTxODeposit,
+            minimumLovelaceUTxODeposit:
+              createContractRequest.minimumLovelaceUTxODeposit,
           })
         )
       ),

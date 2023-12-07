@@ -19,12 +19,11 @@ import {
 } from "@marlowe.io/runtime-core";
 import { onlyByContractIds } from "@marlowe.io/runtime-lifecycle/api";
 import { MINUTES } from "@marlowe.io/adapter/time";
-import { mintRole } from "@marlowe.io/runtime-rest-client/contract";
+import { mintRole, openRole } from "@marlowe.io/runtime-rest-client/contract";
 import {
   AddressBech32,
   AddressBech32Guard,
 } from "@marlowe.io/runtime-rest-client/contract/rolesConfigurations.js";
-import { unsafeEither } from "@marlowe.io/adapter/fp-ts";
 
 global.console = console;
 
@@ -67,7 +66,7 @@ describe("swap", () => {
         adaProvider
       ).contracts.createContract({
         contractOrSourceId: swapContract,
-        rolesConfiguration: {
+        roles: {
           [swapRequest.provider.roleName]: mintRole(
             adaProvider.address as unknown as AddressBech32
           ),

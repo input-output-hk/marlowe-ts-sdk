@@ -57,7 +57,6 @@ import { CreateContractSourcesResponse } from "./contract/endpoints/sources.js";
  *
  * **WARNING**: Not all endpoints are implemented yet.
  */
-// DISCUSSION: @N.H: Should we rename this to RestClient?
 export interface RestClient {
   /**
    * Gets a paginated list of contracts {@link contract.ContractHeader }
@@ -254,11 +253,14 @@ export function mkRestClient(baseURL: string): RestClient {
         version: request.version,
         metadata: request.metadata ?? {},
         tags: request.tags ?? {},
-        ...(request.mininmumLovelaceUTxODeposit && {
-          minUTxODeposit: request.mininmumLovelaceUTxODeposit,
+        ...(request.minimumLovelaceUTxODeposit && {
+          minUTxODeposit: request.minimumLovelaceUTxODeposit,
         }),
-        ...(request.rolesConfiguration && {
-          roles: request.rolesConfiguration,
+        ...(request.roles && {
+          roles: request.roles,
+        }),
+        ...(request.threadRoleName && {
+          threadTokenName: request.threadRoleName,
         }),
       };
       const addressesAndCollaterals = {

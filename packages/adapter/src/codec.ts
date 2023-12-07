@@ -21,7 +21,7 @@ export type DecodingError = string[];
 export class UnexpectedRuntimeResponse extends Error {
   public type = "UnexpectedRuntimeResponse" as const;
   constructor(message: string) {
-    super();
+    super(message);
   }
 }
 

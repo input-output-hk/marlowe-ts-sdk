@@ -199,7 +199,7 @@ export const GetContractsResponseGuard = assertGuardEqual(
 );
 
 /**
- * Either a Non Merkleized Marlowe Contract or a Merkleized One
+ * Either a non-merkleized Marlowe Contract or a merkleized One
  * @category Endpoint : Build Create Contract Tx
  */
 export type ContractOrSourceId = Contract | SourceId;
@@ -216,11 +216,46 @@ export const ContractOrSourceIdGuard: t.Type<ContractOrSourceId> = t.union([
 /**
  * Request options for the {@link index.RestClient#buildCreateContractTx | Build Create Contract Tx } endpoint
  * @category Endpoint : Build Create Contract Tx
+ * @example
+ * - Minimal Simple Contract Close
+ * ```json
+ *  { "changeAddress" : "addr_test1qqe342swyfn75mp2anj45f8ythjyxg6m7pu0pznptl6f2d84kwuzrh8c83gzhrq5zcw7ytmqc863z5rhhwst3w4x87eq0td9ja",
+ *    "contractOrSourceId" : "close",
+ *    "tags" : {"ts-sdk.documentation.example" : {"infoA" : 5} },
+ *    "version" : "v1"
+ *  }
+ * ```
+ * - Simple Contract Close with Optional Fields
+ * ```json
+ *  { "changeAddress" : "addr_test1qqe342swyfn75mp2anj45f8ythjyxg6m7pu0pznptl6f2d84kwuzrh8c83gzhrq5zcw7ytmqc863z5rhhwst3w4x87eq0td9ja",
+ *    "usedAddresses": ["addr_test1qqe342swyfn75mp2anj45f8ythjyxg6m7pu0pznptl6f2d84kwuzrh8c83gzhrq5zcw7ytmqc863z5rhhwst3w4x87eq0td9ja"],
+ *    "collateralUTxOs": [],
+ *    "contractOrSourceId" : "close",
+ *    "tags" : {"ts-sdk.documentation.example" : {"infoA" : 5} },
+ *    "minimumLovelaceUTxODeposit" : 3000000,
+ *    "threadRoleName" : "ThreadRoleToken",
+ *    "version" : "v1"
+ *  }
+ * ```
+ * - Swap Contract Copy/Pasted from Playground with Role Token Configuration  (NFT Open Role for Both)
+ * ```json
+ *  { "changeAddress" : "addr_test1qqe342swyfn75mp2anj45f8ythjyxg6m7pu0pznptl6f2d84kwuzrh8c83gzhrq5zcw7ytmqc863z5rhhwst3w4x87eq0td9ja",
+ *    "usedAddresses": ["addr_test1qqe342swyfn75mp2anj45f8ythjyxg6m7pu0pznptl6f2d84kwuzrh8c83gzhrq5zcw7ytmqc863z5rhhwst3w4x87eq0td9ja"],
+ *    "collateralUTxOs": [],
+ *    "contractOrSourceId" : {"when":[{"then":{"when":[{"then":{"token":{"token_name":"","currency_symbol":""},"to":{"party":{"role_token":"Dollar provider"}},"then":{"token":{"token_name":"dollar","currency_symbol":"85bb65"},"to":{"party":{"role_token":"Ada provider"}},"then":"close","pay":0,"from_account":{"role_token":"Dollar provider"}},"pay":{"times":0,"multiply":1000000},"from_account":{"role_token":"Ada provider"}},"case":{"party":{"role_token":"Dollar provider"},"of_token":{"token_name":"dollar","currency_symbol":"85bb65"},"into_account":{"role_token":"Dollar provider"},"deposits":0}}],"timeout_continuation":"close","timeout":1701773934770},"case":{"party":{"role_token":"Ada provider"},"of_token":{"token_name":"","currency_symbol":""},"into_account":{"role_token":"Ada provider"},"deposits":{"times":0,"multiply":1000000}}}],"timeout_continuation":"close","timeout":1701772134770},
+ *    "tags" : {"ts-sdk.documentation.example" : {"infoA" : 5} },
+ *    "roles" : {"Ada provider" : {"recipients": {"OpenRole" : 1} }
+ *              ,"Dollar provider" : {"recipients": {"OpenRole" : 1} } },
+ *    "minimumLovelaceUTxODeposit" : 3000000,
+ *    "threadRoleName" : "ThreadRoleToken",
+ *    "version" : "v1"
+ *  }
+ * ```
  */
 export interface BuildCreateContractTxRequest {
   /**
-   * The Marlowe Runtime utilizes this Optional field to set a stake address
-   * where to send staking rewards for the Marlowe script outputs of this contract.
+   * Marlowe contracts can have staking rewards for the ADA locked in the contract.
+   * Use this field to set the recipient address of those rewards
    */
   stakeAddress?: StakeAddressBech32;
   /**
@@ -300,14 +335,14 @@ export interface BuildCreateContractTxRequest {
    * <h4>Properties</h4>
    * <p>
    * Metadata can be expressed as a JSON object with some restrictions:
-   *   - All top-level keys must be integers between 0 and 2^64 - 1.
+   *   - All top-level keys must be integers between 0 and 2^63 - 1.
    *   - Each metadata value is tagged with its type.
-   *   - Strings must be at most 64 bytes when UTF-8 is encoded.
+   *   - Strings must be at most  64 characters long (64 bytes) when UTF-8 is encoded.
    *   - Bytestrings are hex-encoded, with a maximum length of 64 bytes.
    *
    * Metadata aren't stored as JSON on the Cardano blockchain but are instead stored using a compact binary encoding (CBOR).
    * The binary encoding of metadata values supports three simple types:
-   *    - Integers in the range `-(2^64 - 1)` to `2^64 - 1`
+   *    - Integers in the range `-(2^63 - 1)` to `2^63 - 1`
    *    - Strings (UTF-8 encoded)
    *    - Bytestrings
    *    - And two compound types:
@@ -324,37 +359,36 @@ export interface BuildCreateContractTxRequest {
    * is computed automatically within the Runtime, so this parameter is only necessary if you need some custom adjustment.
    *
    * <h4>Justification</h4>
-   * <p>Creating a Marlowe Contracts over Cardano is about creating UTxO entries on the Ledger.
+   * <p>Creating a Marlowe contract over Cardano is about creating UTxO entries on the Ledger.
    *
    * To protect the ledger from growing beyond a certain size that will cost too much to maintain,
-   * a constraint called "Minimum ada value requirement (mininmumLovelaceUTxODeposit)" that adjust
+   * a constraint called "Minimum ada value requirement (minimumLovelaceUTxODeposit)" that adjust
    * the value (in ADA) of each UTxO has been added.
    *
-   * The more the UTxOs entries are big in size, the more the value of minimum
-   * of ADAs needs to be contained.</p>
+   * The bigger the UTxOs entries are in terms of bytesize, the higher the value if minimum ADA required.</p>
    * @see
    * https://docs.cardano.org/native-tokens/minimum-ada-value-requirement
    */
-  mininmumLovelaceUTxODeposit?: number;
+  minimumLovelaceUTxODeposit?: number;
 
   /**
    * @experimental
-   * Thread Roles are a details of implementation within the runtime. It allows provide a custom name
-   * if the thread role name is conflicting with other role names used.
+   * The Thread Roles capability is an implementation details of the runtime.
+   * It allows you to provide a custom name if the thread role name is conflicting with other role names used.
    * @default
    *  - the Thread Role Name is "" by default.
    */
   threadRoleName?: RoleName;
 
   /**
-   * Role Token Configuration for the contract passed in the `contractOrSourceId` field.
+   * Role Token Configuration for the new contract passed in the `contractOrSourceId` field.
    *
-   * <h4>Prerequisite</h4>
+   * <h4>Participants</h4>
    * <p>
    * Participants ({@link @marlowe.io/language-core-v1!index.Party | Party}) in a Marlowe Contract can be expressed in 2 ways:
    *
-   *  1. **By Adressses** : Addresses are directly defined within the Marlowe Contract and no configuration are necessary in that context.
-   *  2. **By Roles** : Defined by {@link @marlowe.io/language-core-v1!index.RoleName | RoleNames} within the Marlowe Contract, they have to match a Token Name when created in Cardano. This field `rolesConfiguration` is about configuring this use case
+   *  1. **By Adressses** : When an address is fixed in the contract we don't need to provide further configuration.
+   *  2. **By Roles** : When the participation is done through a Role Token, we need to define if that token is minted as part of the contract creation transaction or if it was minted beforehand.
    * </p>
    *
    * <h4>Configuration Options</h4>
@@ -364,7 +398,7 @@ export interface BuildCreateContractTxRequest {
    *   - **Within the Runtime** : At the contrat creation, these defined Roles Tokens will be minted "on the fly" by the runtime.
    *   - **Without the Runtime** : before the creation, these Role Tokens are already defined (via an NFT platform, `cardano-cli`, another Marlowe Contract Created, etc.. )
    * - **How to distribute**
-   *   - **Closedly** (Closed Roles) : At the creation of contract or before, the Role Tokens are released to the participants. All the participants are knowned at the creation and therfore we consider the participation as being closed.
+   *   - **Closedly** (Closed Roles) : At the creation of contract or before, the Role Tokens are released to the participants. All the participants are known at the creation and therefore we consider the participation as being closed.
    *   - **Openly** (Open Roles) : Whoever applies an input (IDeposit or IChoice) on the contract `contractOrSourceId` first will be identified as a participant by receiving the Role Token in their wallet. In that case, participants are unknown at the creation and the participation is open to any meeting the criteria.
    * - **With or without Metadata**
    * - **Quantities to create(Mint)** : When asking to mint the tokens within the Runtime, quantities can defined as well.
@@ -434,7 +468,7 @@ export interface BuildCreateContractTxRequest {
    * - {@link @marlowe.io/runtime-rest-client!contract.mintRole}
    * - Open Roles Runtime Implementation : https://github.com/input-output-hk/marlowe-cardano/blob/main/marlowe-runtime/doc/open-roles.md
    */
-  rolesConfiguration?: RolesConfiguration;
+  roles?: RolesConfiguration;
 
   /**
    * The Marlowe validator version to use.
@@ -457,12 +491,13 @@ export type PostContractsRequest = t.TypeOf<typeof PostContractsRequest>;
  */
 export const PostContractsRequest = t.intersection([
   t.type({
-    contract: ContractOrSourceIdGuard,
     version: MarloweVersion,
+    contract: ContractOrSourceIdGuard,
     tags: TagsGuard,
     metadata: Metadata,
   }),
   t.partial({ roles: RolesConfigurationGuard }),
+  t.partial({ threadTokenName: G.RoleName }),
   t.partial({ minUTxODeposit: t.number }),
 ]);
 

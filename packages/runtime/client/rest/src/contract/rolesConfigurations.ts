@@ -50,7 +50,7 @@ export const openRole = "OpenRole";
  *  @category Roles Configuration
  */
 export type Openness = ClosedRole | OpenRole;
-export const OpenessGuard: t.Type<Openness, string> = t.union([
+export const OpennessGuard: t.Type<Openness, string> = t.union([
   ClosedRoleGuard,
   OpenRoleGuard,
 ]);
@@ -94,11 +94,10 @@ export const TokenMetadataFileGuard: t.Type<TokenMetadataFile> = t.type({
 });
 
 /**
+ *  Token Metadata (CIP-25)
  *  @category Roles Configuration
- *  TODO : Which CIP are we following here ?
  *  @see
- *  - https://developers.cardano.org/docs/native-tokens/minting-nfts/
- *  - https://docs.nmkr.io/nmkr-studio/token/metadata/metadata-standard-for-fungible-tokens
+ *  - https://github.com/cardano-foundation/CIPs/blob/master/CIP-0025/README.md
  */
 export interface TokenMetadata {
   name?: string;

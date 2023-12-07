@@ -39,34 +39,37 @@ export type ContractsDI = WalletDI & RestDI;
 
 export type CreateContractRequest = {
   /**
-   * A Marlowe Contract or a Merkleized One (referred by its source Id) to create over Cardano
+   * A Marlowe Contract or a merkleized One (referred by its source Id) to create over Cardano
    * @see Large/Deep Contracts Support (Contract Merkleization) and `@marlowe.io/language-core`
    */
   contractOrSourceId: ContractOrSourceId;
 
   /**
-   * The Marlowe Runtime utilizes this Optional field to set a stake address
-   * where to send staking rewards for the Marlowe script outputs of this contract.
+   * Marlowe contracts can have staking rewards for the ADA locked in the contract.
+   * Use this field to set the recipient address of those rewards
    */
   stakeAddress?: StakeAddressBech32;
   /**
    * @experimental
-   * Thread Roles are a details of implementation within the runtime. It allows provide a custom name
-   * if the thread role name is conflicting with other role names used.
+   * The Thread Roles capability is an implementation details of the runtime.
+   * It allows you to provide a custom name if the thread role name is conflicting with other role names used.
    * @default
    *  - the Thread Role Name is "" by default.
+   * @see
+   *  - https://github.com/input-output-hk/marlowe-cardano/blob/main/marlowe-runtime/doc/open-roles.md
    */
   threadRoleName?: RoleName;
 
   /**
-     * Role Token Configuration for the contract passed in the `contractOrSourceId` field.
+     * Role Token Configuration for the new contract passed in the `contractOrSourceId` field.
      *
-     * <h4>Prerequisite</h4>
+     * <h4>Participants</h4>
      * <p>
      * Participants ({@link @marlowe.io/language-core-v1!index.Party | Party}) in a Marlowe Contract can be expressed in 2 ways:
-     *
-     *  1. **By Adressses** : Addresses are directly defined within the Marlowe Contract and no configuration are necessary in that context.
-     *  2. **By Roles** : Defined by {@link @marlowe.io/language-core-v1!index.RoleName | RoleNames} within the Marlowe Contract, they have to match a Token Name when created in Cardano. This field `rolesConfiguration` is about configuring this use case
+     * 
+     *  1. **By Adressses** : When an address is fixed in the contract we don't need to provide further configuration.
+     *  2. **By Roles** : When the participation is done through a Role Token, we need to define if that token is minted as part of the contract creation transaction or if it was minted beforehand.
+     * 
      * </p>
      *
      * <h4>Configuration Options</h4>
@@ -76,7 +79,7 @@ export type CreateContractRequest = {
      *   - **Within the Runtime** : At the contrat creation, these defined Roles Tokens will be minted "on the fly" by the runtime.
      *   - **Without the Runtime** : before the creation, these Role Tokens are already defined (via an NFT platform, `cardano-cli`, another Marlowe Contract Created, etc.. )
      * - **How to distribute**
-     *   - **Closedly** (Closed Roles) : At the creation of contract or before, the Role Tokens are released to the participants. All the participants are knowned at the creation and therfore we consider the participation as being closed.
+     *   - **Closedly** (Closed Roles) : At the creation of contract or before, the Role Tokens are released to the participants. All the participants are known at the creation and therefore we consider the participation as being closed.
      *   - **Openly** (Open Roles) : Whoever applies an input (IDeposit or IChoice) on the contract `contractOrSourceId` first will be identified as a participant by receiving the Role Token in their wallet. In that case, participants are unknown at the creation and the participation is open to any meeting the criteria.
      * - **With or without Metadata**
      * - **Quantities to create(Mint)** : When asking to mint the tokens within the Runtime, quantities can defined as well.
@@ -145,7 +148,7 @@ export type CreateContractRequest = {
       * - {@link @marlowe.io/runtime-rest-client!contract.mintRole}
       * - Open Roles Runtime Implementation : https://github.com/input-output-hk/marlowe-cardano/blob/main/marlowe-runtime/doc/open-roles.md
       */
-  rolesConfiguration?: RolesConfiguration;
+  roles?: RolesConfiguration;
 
   /**
    * Marlowe Tags are stored as Metadata within the Transaction Metadata under the top-level Marlowe Reserved Key (`1564`).
@@ -171,14 +174,14 @@ export type CreateContractRequest = {
    * <h4>Properties</h4>
    * <p>
    * Metadata can be expressed as a JSON object with some restrictions:
-   *   - All top-level keys must be integers between 0 and 2^64 - 1.
+   *   - All top-level keys must be integers between 0 and 2^63 - 1.
    *   - Each metadata value is tagged with its type.
-   *   - Strings must be at most 64 bytes when UTF-8 is encoded.
+   *   - Strings must be at most 64 characters long (64 bytes) when UTF-8 is encoded.
    *   - Bytestrings are hex-encoded, with a maximum length of 64 bytes.
    *
    * Metadata aren't stored as JSON on the Cardano blockchain but are instead stored using a compact binary encoding (CBOR).
    * The binary encoding of metadata values supports three simple types:
-   *    - Integers in the range `-(2^64 - 1)` to `2^64 - 1`
+   *    - Integers in the range `-(2^63 - 1)` to `2^63 - 1`
    *    - Strings (UTF-8 encoded)
    *    - Bytestrings
    *    - And two compound types:
@@ -196,18 +199,18 @@ export type CreateContractRequest = {
    * is computed automatically within the Runtime, so this parameter is only necessary if you need some custom adjustment.
    *
    * <h4>Justification</h4>
-   * <p>Creating a Marlowe Contracts over Cardano is about creating UTxO entries on the Ledger.
+   * <p>Creating a Marlowe contract over Cardano is about creating UTxO entries on the Ledger.
    *
    * To protect the ledger from growing beyond a certain size that will cost too much to maintain,
-   * a constraint called "Minimum ada value requirement (mininmumLovelaceUTxODeposit)" that adjust
+   * a constraint called "Minimum ada value requirement (minimumLovelaceUTxODeposit)" that adjust
    * the value (in ADA) of each UTxO has been added.
    *
-   * The more the UTxOs entries are big in size, the more the value of minimum
-   * of ADAs needs to be contained.</p>
+   * The bigger the UTxOs entries are in terms of bytesize, the higher the value if minimum ADA required.</p>
+   *
    * @see
    * https://docs.cardano.org/native-tokens/minimum-ada-value-requirement
    */
-  mininmumLovelaceUTxODeposit?: number;
+  minimumLovelaceUTxODeposit?: number;
 };
 
 export type ApplyInputsRequest = {
