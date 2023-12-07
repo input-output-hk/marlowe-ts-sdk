@@ -52,7 +52,7 @@ describe("Payouts", () => {
     const [contractId, txCreatedContract] = await runtime(
       adaProvider
     ).contracts.createContract({
-      contractOrSourceId: swapContract,
+      contract: swapContract,
       roles: {
         [swapRequest.provider.roleName]: mintRole(
           adaProvider.address as unknown as AddressBech32

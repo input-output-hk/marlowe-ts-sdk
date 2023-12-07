@@ -33,7 +33,7 @@ describe("Runtime Contract Lifecycle ", () => {
         getBankPrivateKey()
       );
       const [contractId, txIdContractCreated] =
-        await runtime.contracts.createContract({ contractOrSourceId: close });
+        await runtime.contracts.createContract({ contract: close });
       await runtime.wallet.waitConfirmation(txIdContractCreated);
       console.log("contractID created", contractId);
     },
@@ -51,7 +51,7 @@ describe("Runtime Contract Lifecycle ", () => {
         const notifyTimeout = pipe(addDays(Date.now(), 1), datetoTimeout);
         const [contractId, txIdContractCreated] =
           await runtime.contracts.createContract({
-            contractOrSourceId: oneNotifyTrue(notifyTimeout),
+            contract: oneNotifyTrue(notifyTimeout),
           });
         await runtime.wallet.waitConfirmation(txIdContractCreated);
 

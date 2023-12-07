@@ -11,10 +11,7 @@ import {
   TxId,
 } from "@marlowe.io/runtime-core";
 import { RestDI } from "@marlowe.io/runtime-rest-client";
-import {
-  ContractOrSourceId,
-  RolesConfiguration,
-} from "@marlowe.io/runtime-rest-client/contract";
+import { RolesConfiguration } from "@marlowe.io/runtime-rest-client/contract";
 import { ISO8601 } from "@marlowe.io/adapter/time";
 import {
   Contract,
@@ -39,10 +36,9 @@ export type ContractsDI = WalletDI & RestDI;
 
 export type CreateContractRequest = {
   /**
-   * A Marlowe Contract or a merkleized One (referred by its source Id) to create over Cardano
-   * @see Large/Deep Contracts Support (Contract Merkleization) and `@marlowe.io/language-core`
+   * A Marlowe Contract to create over Cardano
    */
-  contractOrSourceId: ContractOrSourceId;
+  contract: Contract;
 
   /**
    * Marlowe contracts can have staking rewards for the ADA locked in the contract.
@@ -61,7 +57,7 @@ export type CreateContractRequest = {
   threadRoleName?: RoleName;
 
   /**
-     * Role Token Configuration for the new contract passed in the `contractOrSourceId` field.
+     * Role Token Configuration for the new contract passed in the `contract` field.
      *
      * <h4>Participants</h4>
      * <p>
@@ -80,7 +76,7 @@ export type CreateContractRequest = {
      *   - **Without the Runtime** : before the creation, these Role Tokens are already defined (via an NFT platform, `cardano-cli`, another Marlowe Contract Created, etc.. )
      * - **How to distribute**
      *   - **Closedly** (Closed Roles) : At the creation of contract or before, the Role Tokens are released to the participants. All the participants are known at the creation and therefore we consider the participation as being closed.
-     *   - **Openly** (Open Roles) : Whoever applies an input (IDeposit or IChoice) on the contract `contractOrSourceId` first will be identified as a participant by receiving the Role Token in their wallet. In that case, participants are unknown at the creation and the participation is open to any meeting the criteria.
+     *   - **Openly** (Open Roles) : Whoever applies an input (IDeposit or IChoice) on the contract `contract` first will be identified as a participant by receiving the Role Token in their wallet. In that case, participants are unknown at the creation and the participation is open to any meeting the criteria.
      * - **With or without Metadata**
      * - **Quantities to create(Mint)** : When asking to mint the tokens within the Runtime, quantities can defined as well.
      * 

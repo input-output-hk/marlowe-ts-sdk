@@ -109,7 +109,7 @@
         });
 
         const contractId = await runtime.contracts.createContract({
-          contractOrSourceId: contract,
+          contract: contract,
         });
         log("Contract created with id: " + contractId);
         setContractIdIndicator(contractId);
