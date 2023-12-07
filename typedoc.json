@@ -22,6 +22,9 @@
     "fp-ts": {
       "Option": "https://gcanti.github.io/fp-ts/modules/Option.ts.html"
     },
+    "lucid-cardano": {
+      "Lucid": "https://deno.land/x/lucid@0.10.7/mod.ts?s=Lucid"
+    },
     "global": {
       "io-ts-usage": "https://github.com/gcanti/io-ts/blob/master/index.md#basic-usage"
     }

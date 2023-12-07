@@ -40,6 +40,11 @@
       "require": "./dist/bundled/cjs/browser.cjs",
       "types": "./dist/esm/browser/index.d.ts"
     },
+    "./lucid": {
+      "import": "./dist/esm/lucid/index.js",
+      "require": "./dist/bundled/cjs/lucid.cjs",
+      "types": "./dist/esm/lucid/index.d.ts"
+    },
     "./nodejs": {
       "import": "./dist/esm/nodejs/index.js",
       "require": "./dist/bundled/cjs/nodejs.cjs",
