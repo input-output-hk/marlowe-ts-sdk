@@ -1,6 +1,6 @@
 {
   "name": "@marlowe.io/marlowe-object",
-  "version": "0.2.0-beta",
+  "version": "0.3.0-beta-rc1",
   "description": "Large contract support",
   "repository": "https://github.com/input-output-hk/marlowe-ts-sdk",
   "publishConfig": {
@@ -37,7 +37,7 @@
     }
   },
   "dependencies": {
-    "@marlowe.io/language-core-v1": "0.2.0-beta",
+    "@marlowe.io/language-core-v1": "0.3.0-beta-rc1",
     "date-fns": "2.29.3",
     "fp-ts": "^2.16.1"
   }

@@ -50,9 +50,11 @@ Before version 1, the TS-SDK adheres to beta rules:
    - `npm publish --workspaces` (for the moment @hrajchert and @nhenin have publish access)
 
 4. **GitHub Release:**
+
    - Publish release(s) on GitHub along with release notes from the collected changelog.
 
 5. **Documentation:**
+
    - Manually trigger the `deploy docs` github action
 
 6. **Announcement:**
