@@ -1,0 +1,24 @@
+{
+  "name": "marlowe-typedoc-theme",
+  "version": "0.0.1",
+  "main": "dist/index.js",
+  "license": "Apache-2.0",
+  "keywords": [
+    "typedoc-theme"
+  ],
+  "engines": {
+    "node": ">= 14.20.1"
+  },
+  "devDependencies": {
+    "typedoc": "^0.24.8",
+    "typescript": "^4.9.5"
+  },
+  "peerDependencies": {
+    "typedoc": "^0.24.8"
+  },
+  "scripts": {
+    "build": "tsc",
+    "predocs": "tsc",
+    "docs": "typedoc src --plugin dist/index.js"
+  }
+}
