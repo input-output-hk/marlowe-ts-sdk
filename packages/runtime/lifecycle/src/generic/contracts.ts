@@ -158,7 +158,7 @@ export const submitCreateTxFpTs: (
             collateralUTxOs: addressesAndCollaterals.collateralUTxOs,
             stakeAddress: createContractRequest.stakeAddress,
 
-            contractOrSourceId: createContractRequest.contract,
+            contract: createContractRequest.contract,
             threadRoleName: createContractRequest.threadRoleName,
             roles: createContractRequest.roles,
 

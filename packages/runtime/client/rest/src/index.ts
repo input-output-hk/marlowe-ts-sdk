@@ -41,6 +41,7 @@ import { submitContractViaAxios } from "./contract/endpoints/singleton.js";
 import { ContractDetails } from "./contract/details.js";
 import { TransactionDetails } from "./contract/transaction/details.js";
 import { CreateContractSourcesResponse } from "./contract/endpoints/sources.js";
+import { BuildCreateContractTxRequestWithContract } from "./contract/index.js";
 // import curlirize from 'axios-curlirize';
 
 /**
@@ -249,7 +250,7 @@ export function mkRestClient(baseURL: string): RestClient {
     },
     buildCreateContractTx(request) {
       const postContractsRequest = {
-        contract: request.contractOrSourceId,
+        contract: "contract" in request ? request.contract : request.sourceId,
         version: request.version,
         metadata: request.metadata ?? {},
         tags: request.tags ?? {},

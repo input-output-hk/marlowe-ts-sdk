@@ -214,13 +214,36 @@ export const ContractOrSourceIdGuard: t.Type<ContractOrSourceId> = t.union([
 ]);
 
 /**
+ * Request for the {@link index.RestClient#buildCreateContractTx | Build Create Contract Tx } endpoint using a source Id (merkleized contract)
+ * @category Endpoint : Build Create Contract Tx
+ */
+export type BuildCreateContractTxRequestWithContract = {
+  /**
+   * A Marlowe Contract to create over Cardano
+   */
+  contract: Contract;
+} & BuildCreateContractTxRequestOptions;
+
+/**
+ * Request for the {@link index.RestClient#buildCreateContractTx | Build Create Contract Tx } endpoint using a contract
+ * @category Endpoint : Build Create Contract Tx
+ */
+export type BuildCreateContractTxRequestWithSourceId = {
+  /**
+   * A merkleized Contract (referred by its source Id) to create over Cardano
+   * @see Large/Deep Contracts Support (Contract Merkleization) and `@marlowe.io/language-core`
+   */
+  sourceId: SourceId;
+} & BuildCreateContractTxRequestOptions;
+
+/**
  * Request options for the {@link index.RestClient#buildCreateContractTx | Build Create Contract Tx } endpoint
  * @category Endpoint : Build Create Contract Tx
  * @example
  * - Minimal Simple Contract Close
  * ```json
  *  { "changeAddress" : "addr_test1qqe342swyfn75mp2anj45f8ythjyxg6m7pu0pznptl6f2d84kwuzrh8c83gzhrq5zcw7ytmqc863z5rhhwst3w4x87eq0td9ja",
- *    "contractOrSourceId" : "close",
+ *    "contract" : "close",
  *    "tags" : {"ts-sdk.documentation.example" : {"infoA" : 5} },
  *    "version" : "v1"
  *  }
@@ -230,7 +253,7 @@ export const ContractOrSourceIdGuard: t.Type<ContractOrSourceId> = t.union([
  *  { "changeAddress" : "addr_test1qqe342swyfn75mp2anj45f8ythjyxg6m7pu0pznptl6f2d84kwuzrh8c83gzhrq5zcw7ytmqc863z5rhhwst3w4x87eq0td9ja",
  *    "usedAddresses": ["addr_test1qqe342swyfn75mp2anj45f8ythjyxg6m7pu0pznptl6f2d84kwuzrh8c83gzhrq5zcw7ytmqc863z5rhhwst3w4x87eq0td9ja"],
  *    "collateralUTxOs": [],
- *    "contractOrSourceId" : "close",
+ *    "contract" : "close",
  *    "tags" : {"ts-sdk.documentation.example" : {"infoA" : 5} },
  *    "minimumLovelaceUTxODeposit" : 3000000,
  *    "threadRoleName" : "ThreadRoleToken",
@@ -242,7 +265,7 @@ export const ContractOrSourceIdGuard: t.Type<ContractOrSourceId> = t.union([
  *  { "changeAddress" : "addr_test1qqe342swyfn75mp2anj45f8ythjyxg6m7pu0pznptl6f2d84kwuzrh8c83gzhrq5zcw7ytmqc863z5rhhwst3w4x87eq0td9ja",
  *    "usedAddresses": ["addr_test1qqe342swyfn75mp2anj45f8ythjyxg6m7pu0pznptl6f2d84kwuzrh8c83gzhrq5zcw7ytmqc863z5rhhwst3w4x87eq0td9ja"],
  *    "collateralUTxOs": [],
- *    "contractOrSourceId" : {"when":[{"then":{"when":[{"then":{"token":{"token_name":"","currency_symbol":""},"to":{"party":{"role_token":"Dollar provider"}},"then":{"token":{"token_name":"dollar","currency_symbol":"85bb65"},"to":{"party":{"role_token":"Ada provider"}},"then":"close","pay":0,"from_account":{"role_token":"Dollar provider"}},"pay":{"times":0,"multiply":1000000},"from_account":{"role_token":"Ada provider"}},"case":{"party":{"role_token":"Dollar provider"},"of_token":{"token_name":"dollar","currency_symbol":"85bb65"},"into_account":{"role_token":"Dollar provider"},"deposits":0}}],"timeout_continuation":"close","timeout":1701773934770},"case":{"party":{"role_token":"Ada provider"},"of_token":{"token_name":"","currency_symbol":""},"into_account":{"role_token":"Ada provider"},"deposits":{"times":0,"multiply":1000000}}}],"timeout_continuation":"close","timeout":1701772134770},
+ *    "contract" : {"when":[{"then":{"when":[{"then":{"token":{"token_name":"","currency_symbol":""},"to":{"party":{"role_token":"Dollar provider"}},"then":{"token":{"token_name":"dollar","currency_symbol":"85bb65"},"to":{"party":{"role_token":"Ada provider"}},"then":"close","pay":0,"from_account":{"role_token":"Dollar provider"}},"pay":{"times":0,"multiply":1000000},"from_account":{"role_token":"Ada provider"}},"case":{"party":{"role_token":"Dollar provider"},"of_token":{"token_name":"dollar","currency_symbol":"85bb65"},"into_account":{"role_token":"Dollar provider"},"deposits":0}}],"timeout_continuation":"close","timeout":1701773934770},"case":{"party":{"role_token":"Ada provider"},"of_token":{"token_name":"","currency_symbol":""},"into_account":{"role_token":"Ada provider"},"deposits":{"times":0,"multiply":1000000}}}],"timeout_continuation":"close","timeout":1701772134770},
  *    "tags" : {"ts-sdk.documentation.example" : {"infoA" : 5} },
  *    "roles" : {"Ada provider" : {"recipients": {"OpenRole" : 1} }
  *              ,"Dollar provider" : {"recipients": {"OpenRole" : 1} } },
@@ -252,7 +275,15 @@ export const ContractOrSourceIdGuard: t.Type<ContractOrSourceId> = t.union([
  *  }
  * ```
  */
-export interface BuildCreateContractTxRequest {
+export type BuildCreateContractTxRequest =
+  | BuildCreateContractTxRequestWithContract
+  | BuildCreateContractTxRequestWithSourceId;
+
+/**
+ * Request options for the {@link index.RestClient#buildCreateContractTx | Build Create Contract Tx } endpoint
+ * @category Endpoint : Build Create Contract Tx
+ */
+export interface BuildCreateContractTxRequestOptions {
   /**
    * Marlowe contracts can have staking rewards for the ADA locked in the contract.
    * Use this field to set the recipient address of those rewards
@@ -306,11 +337,6 @@ export interface BuildCreateContractTxRequest {
    */
   collateralUTxOs?: TxOutRef[];
 
-  /**
-   * A Marlowe Contract or a Merkleized One (referred by its source Id) to create over Cardano
-   * @see Large/Deep Contracts Support (Contract Merkleization) and `@marlowe.io/language-core`
-   */
-  contractOrSourceId: ContractOrSourceId;
   /**
    * Marlowe Tags are stored as Metadata within the Transaction Metadata under the top-level Marlowe Reserved Key (`1564`).
    * Tags allows to Query created Marlowe Contracts via {@link index.RestClient#getContracts | Get contracts }

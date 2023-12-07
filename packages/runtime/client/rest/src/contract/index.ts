@@ -38,6 +38,9 @@ export {
   ContractsRange,
   ContractOrSourceId,
   BuildCreateContractTxRequest,
+  BuildCreateContractTxRequestWithContract,
+  BuildCreateContractTxRequestWithSourceId,
+  BuildCreateContractTxRequestOptions,
   BuildCreateContractTxResponse,
 } from "./endpoints/collection.js";
 export { TxHeader } from "./transaction/header.js";
