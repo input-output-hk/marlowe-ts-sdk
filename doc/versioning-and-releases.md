@@ -36,17 +36,27 @@ Before version 1, the TS-SDK adheres to beta rules:
 1. **Release Notes:**
 
    - Generate release notes from the `changelog.d` folder(s).
+   - This can be done using `scriv collect` from the nix shell.
 
 2. **Release Tag:**
 
-   - Create and push a release tag.
+   - Use git to create and push a release tag.
+   - `git tag -a 0.3.0-beta -m "Release v0.3.0-beta"`
+   - `git push --tags`
 
 3. **Packages Build and Publish:**
 
    - Build and publish packages from the release tag.
+   - `npm publish --workspaces` (for the moment @hrajchert and @nhenin have publish access)
 
 4. **GitHub Release:**
-   - Publish release(s) on GitHub along with release notes.
+   - Publish release(s) on GitHub along with release notes from the collected changelog.
+
+5. **Documentation:**
+   - Manually trigger the `deploy docs` github action
+
+6. **Announcement:**
+   - Contact the marketing and devrel team to announce the release.
 
 ## Note:
 
