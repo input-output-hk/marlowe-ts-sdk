@@ -219,6 +219,13 @@ export interface RestClient {
     request: Payouts.GetPayoutsRequest
   ): Promise<Payouts.GetPayoutsResponse>;
 
+  /**
+   * Get payout information associated with payout ID
+   * @see {@link https://docs.marlowe.iohk.io/api/get-payout-by-id | The backend documentation}
+   */
+  getPayoutById(
+    request: Payout.GetPayoutByIdRequest
+  ): Promise<Payout.GetPayoutByIdResponse>;
 }
 
 /**
@@ -382,6 +389,23 @@ export function mkRestClient(baseURL: string): RestClient {
           () => ({}),
           (nextRange) => ({ nextRange })
         )(result.nextRange),
+      };
+    },
+    async getPayoutById({ payoutId }) {
+      const result = await unsafeTaskEither(
+        Payout.getViaAxios(axiosInstance)(payoutId)
+      );
+      return {
+        payoutId: result.payoutId,
+        contractId: result.contractId,
+        ...O.match(
+          () => ({}),
+          (withdrawalId) => ({ withdrawalId })
+        )(result.withdrawalId),
+        role: result.role,
+        payoutValidatorAddress: result.payoutValidatorAddress,
+        status: result.status,
+        assets: result.assets,
       };
     },
   };
