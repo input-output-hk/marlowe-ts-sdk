@@ -17,7 +17,7 @@
 
 import { WalletAPI } from "@marlowe.io/wallet";
 import * as Generic from "./generic/runtime.js";
-import { mkFPTSRestClient } from "@marlowe.io/runtime-rest-client";
+import { mkFPTSRestClient, mkRestClient } from "@marlowe.io/runtime-rest-client";
 
 export * as Browser from "./browser/index.js";
 
@@ -42,6 +42,7 @@ export function mkRuntimeLifecycle({
   runtimeURL,
   wallet,
 }: RuntimeLifecycleOptions) {
-  const restClient = mkFPTSRestClient(runtimeURL);
-  return Generic.mkRuntimeLifecycle(restClient, wallet);
+  const deprecatedRestAPI = mkFPTSRestClient(runtimeURL);
+  const restClient = mkRestClient(runtimeURL);
+  return Generic.mkRuntimeLifecycle(deprecatedRestAPI,restClient, wallet);
 }

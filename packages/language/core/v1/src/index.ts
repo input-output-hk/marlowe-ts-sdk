@@ -55,7 +55,7 @@ export {
   MerkleizedInput,
 } from "./inputs.js";
 
-export { role, Party, Address, Role } from "./participants.js";
+export { role, Party, Address, Role, RoleName } from "./participants.js";
 
 export { Payee, PayeeAccount, PayeeParty, AccountId } from "./payee.js";
 

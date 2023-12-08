@@ -22,7 +22,7 @@ import { TxStatus } from "./transaction/status.js";
  * Use {@link index.RestClient#getContractById} to get full contract details
  *
  * @see The {@link https://github.com/input-output-hk/marlowe-cardano/blob/b39fe3c3ed67d41cdea6d45700093e7ffa4fad62/marlowe-runtime-web/src/Language/Marlowe/Runtime/Web/Types.hs#L502 | The backend definition } of this type
- * @category GetContractsResponse
+ * @category Endpoint : Get Contracts
  */
 export interface ContractHeader {
   /**
@@ -58,7 +58,7 @@ export interface ContractHeader {
 /**
  * This is a {@link !io-ts-usage | Dynamic type validator} for a {@link ContractHeaderGuard:type}.
  * @category Validator
- * @category GetContractsResponse
+ * @category Endpoint : Get Contracts
  * @hidden
  */
 export const ContractHeaderGuard = t.type({

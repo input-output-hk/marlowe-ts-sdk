@@ -13,6 +13,8 @@
   @packageDocumentation
  */
 
+export { PolicyIdGuard as PolicyId } from "./policyId.js";
+
 export {
   ActionGuard as Action,
   DepositGuard as Deposit,
@@ -58,6 +60,7 @@ export {
 
 export {
   RoleGuard as Role,
+  RoleNameGuard as RoleName,
   PartyGuard as Party,
   AddressGuard as Address,
 } from "./participants.js";

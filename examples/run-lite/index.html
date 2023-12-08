@@ -108,7 +108,9 @@
           walletName,
         });
 
-        const contractId = await runtime.contracts.createContract({ contract });
+        const contractId = await runtime.contracts.createContract({
+          contract: contract,
+        });
         log("Contract created with id: " + contractId);
         setContractIdIndicator(contractId);
       }

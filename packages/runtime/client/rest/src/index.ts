@@ -41,20 +41,9 @@ import { submitContractViaAxios } from "./contract/endpoints/singleton.js";
 import { ContractDetails } from "./contract/details.js";
 import { TransactionDetails } from "./contract/transaction/details.js";
 import { CreateContractSourcesResponse } from "./contract/endpoints/sources.js";
+import { BuildCreateContractTxRequestWithContract } from "./contract/index.js";
 // import curlirize from 'axios-curlirize';
 
-// TODO: DELETE
-// export * from "./contract/index.js";
-// export * from "./withdrawal/index.js";
-// export * from "./payout/index.js";
-// TODO: Revisit
-export { Assets, Tokens } from "./payout/index.js";
-export { RolesConfig } from "./contract/index.js";
-// Jamie Straw suggestion: 20 endpoints
-// Runtime Rest API docs: 18 endpoints (missing, getPayouts and getPayoutById, I assume version 0.0.5)
-// Current TS-SDK: 16 endpoints
-//   https://docs.marlowe.iohk.io/api
-// openapi.json on main (RC 0.0.5): 20 endpoints
 /**
  * The RestClient offers a simple abstraction for the {@link https://docs.marlowe.iohk.io/api/ | Marlowe Runtime REST API}  endpoints.
  * You can create an instance of the RestClient using the {@link mkRestClient} function.
@@ -69,7 +58,6 @@ export { RolesConfig } from "./contract/index.js";
  *
  * **WARNING**: Not all endpoints are implemented yet.
  */
-// DISCUSSION: @N.H: Should we rename this to RestClient?
 export interface RestClient {
   /**
    * Gets a paginated list of contracts {@link contract.ContractHeader }
@@ -89,12 +77,9 @@ export interface RestClient {
    * @throws DecodingError - If the response from the server can't be decoded
    * @see {@link https://docs.marlowe.iohk.io/api/create-a-new-contract | The backend documentation}
    */
-  // TODO: Jamie, remove the `s from the end of the endpoint name in the docs site
-  // DISCUSSION: @Jamie, @N.H: Should this be called `buildCreateContractTx` instead? As it is not creating the
-  //             contract, rather it is creating the transaction to be signed
-  createContract(
-    request: Contracts.CreateContractRequest
-  ): Promise<Contracts.CreateContractResponse>;
+  buildCreateContractTx(
+    request: Contracts.BuildCreateContractTxRequest
+  ): Promise<Contracts.BuildCreateContractTxResponse>;
 
   /**
    * Uploads a marlowe-object bundle to the runtime, giving back the hash of the main contract and the hashes of the intermediate objects.
@@ -135,6 +120,9 @@ export interface RestClient {
    * Create an unsigned transaction which applies inputs to a contract.
    * @see {@link https://docs.marlowe.iohk.io/api/apply-inputs-to-contract | The backend documentation}
    */
+  // TODO: Jamie, remove the `s from the end of the endpoint name in the docs site
+  // DISCUSSION: @Jamie, @N.H: Should this be called `buildApplyInputsToContractTx` instead? As it is not applying inputs to the
+  //             contract, rather it is creating the transaction to be signed
   applyInputsToContract(
     request: Transactions.ApplyInputsToContractRequest
   ): Promise<Transactions.TransactionTextEnvelope>;
@@ -166,6 +154,9 @@ export interface RestClient {
    * Build an unsigned transaction (sign with the {@link @marlowe.io/wallet!api.WalletAPI#signTx} procedure) which withdraws available payouts from a contract (when applied with the {@link @marlowe.io/runtime-rest-client!index.RestClient#submitWithdrawal} procedure).
    * @see {@link https://docs.marlowe.iohk.io/api/withdraw-payouts | The backend documentation}
    */
+  // TODO: Jamie, remove the `s from the end of the endpoint name in the docs site
+  // DISCUSSION: @Jamie, @N.H: Should this be called `buildWithdrawPayoutsTx` instead? As it is not withdrawing the
+  //             payout, rather it is creating the transaction to be signed
   withdrawPayouts(
     request: Withdrawals.WithdrawPayoutsRequest
   ): Promise<Withdrawals.WithdrawPayoutsResponse>;
@@ -257,14 +248,21 @@ export function mkRestClient(baseURL: string): RestClient {
     getContractById(contractId) {
       return unsafeTaskEither(Contract.getViaAxios(axiosInstance)(contractId));
     },
-    createContract(request) {
+    buildCreateContractTx(request) {
       const postContractsRequest = {
-        contract: request.contract,
+        contract: "contract" in request ? request.contract : request.sourceId,
         version: request.version,
         metadata: request.metadata ?? {},
         tags: request.tags ?? {},
-        minUTxODeposit: request.minUTxODeposit,
-        roles: request.roles,
+        ...(request.minimumLovelaceUTxODeposit && {
+          minUTxODeposit: request.minimumLovelaceUTxODeposit,
+        }),
+        ...(request.roles && {
+          roles: request.roles,
+        }),
+        ...(request.threadRoleName && {
+          threadTokenName: request.threadRoleName,
+        }),
       };
       const addressesAndCollaterals = {
         changeAddress: request.changeAddress,
@@ -274,7 +272,8 @@ export function mkRestClient(baseURL: string): RestClient {
       return unsafeTaskEither(
         Contracts.postViaAxios(axiosInstance)(
           postContractsRequest,
-          addressesAndCollaterals
+          addressesAndCollaterals,
+          request.stakeAddress
         )
       );
     },
@@ -457,7 +456,7 @@ export interface ContractsAPI {
   /**
    * @see {@link https://docs.marlowe.iohk.io/api/create-contracts}
    */
-  post: Contracts.POST;
+  post: Contracts.BuildCreateContractTxEndpoint;
   contract: {
     /**
      * Get a single contract by id
@@ -500,7 +499,7 @@ export interface ContractsAPI {
  * @description Dependency Injection for the Rest Client API
  * @hidden
  */
-export type RestDI = { rest: FPTSRestAPI };
+export type RestDI = { deprecatedRestAPI: FPTSRestAPI; restClient: RestClient };
 
 /**
  * @hidden

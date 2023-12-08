@@ -29,8 +29,8 @@ export interface Address {
  */
 export const AddressGuard: t.Type<Address> = t.type({ address: AddressBech32 });
 
-type RoleName = string;
-const RoleNameGuard: t.Type<RoleName> = t.string;
+export type RoleName = string;
+export const RoleNameGuard: t.Type<RoleName> = t.string;
 
 /**
  * Search [[lower-name-builders]]

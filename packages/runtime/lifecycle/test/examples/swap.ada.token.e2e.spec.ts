@@ -13,9 +13,17 @@ import {
 } from "../context.js";
 import { provisionAnAdaAndTokenProvider } from "../provisionning.js";
 import console from "console";
-import { runtimeTokenToMarloweTokenValue } from "@marlowe.io/runtime-core";
+import {
+  runtimeTokenToMarloweTokenValue,
+  unAddressBech32,
+} from "@marlowe.io/runtime-core";
 import { onlyByContractIds } from "@marlowe.io/runtime-lifecycle/api";
 import { MINUTES } from "@marlowe.io/adapter/time";
+import { mintRole, openRole } from "@marlowe.io/runtime-rest-client/contract";
+import {
+  AddressBech32,
+  AddressBech32Guard,
+} from "@marlowe.io/runtime-rest-client/contract/rolesConfigurations.js";
 
 global.console = console;
 
@@ -59,8 +67,12 @@ describe("swap", () => {
       ).contracts.createContract({
         contract: swapContract,
         roles: {
-          [swapRequest.provider.roleName]: adaProvider.address,
-          [swapRequest.swapper.roleName]: tokenProvider.address,
+          [swapRequest.provider.roleName]: mintRole(
+            adaProvider.address as unknown as AddressBech32
+          ),
+          [swapRequest.swapper.roleName]: mintRole(
+            tokenProvider.address as unknown as AddressBech32
+          ),
         },
       });
       await runtime(adaProvider).wallet.waitConfirmation(txIdContractCreated);

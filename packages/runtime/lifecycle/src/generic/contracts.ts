@@ -7,7 +7,6 @@ import {
   ContractsAPI,
   ContractsDI,
   CreateContractRequest,
-  minUTxODepositDefault,
 } from "../api.js";
 
 import { getAddressesAndCollaterals, WalletAPI } from "@marlowe.io/wallet/api";
@@ -20,20 +19,26 @@ import {
   HexTransactionWitnessSet,
   unAddressBech32,
   unPolicyId,
+  transactionWitnessSetTextEnvelope,
 } from "@marlowe.io/runtime-core";
 
-import { FPTSRestAPI } from "@marlowe.io/runtime-rest-client";
+import { FPTSRestAPI, RestClient } from "@marlowe.io/runtime-rest-client";
 import { DecodingError } from "@marlowe.io/adapter/codec";
-import { TransactionTextEnvelope } from "@marlowe.io/runtime-rest-client/contract/transaction/endpoints/collection";
+
 import { Next, noNext } from "@marlowe.io/language-core-v1/next";
 import { isNone, none, Option } from "fp-ts/lib/Option.js";
-import { ContractsRange } from "@marlowe.io/runtime-rest-client/contract/index";
+import {
+  BuildCreateContractTxResponse,
+  ContractsRange,
+  TransactionTextEnvelope,
+} from "@marlowe.io/runtime-rest-client/contract";
 
 export function mkContractLifecycle(
   wallet: WalletAPI,
-  rest: FPTSRestAPI
+  deprecatedRestAPI: FPTSRestAPI,
+  restClient: RestClient
 ): ContractsAPI {
-  const di = { wallet, rest };
+  const di = { wallet, deprecatedRestAPI, restClient };
   return {
     createContract: submitCreateTx(di),
     applyInputs: submitApplyInputsTx(di),
@@ -43,31 +48,33 @@ export function mkContractLifecycle(
 }
 
 const submitCreateTx =
-  ({ wallet, rest }: ContractsDI) =>
+  ({ wallet, restClient }: ContractsDI) =>
   (
     createContractRequest: CreateContractRequest
   ): Promise<[ContractId, TxId]> => {
     return unsafeTaskEither(
-      submitCreateTxFpTs(rest)(wallet)(createContractRequest)
+      submitCreateTxFpTs(restClient)(wallet)(createContractRequest)
     );
   };
 
 const submitApplyInputsTx =
-  ({ wallet, rest }: ContractsDI) =>
+  ({ wallet, deprecatedRestAPI }: ContractsDI) =>
   async (
     contractId: ContractId,
     applyInputsRequest: ApplyInputsRequest
   ): Promise<TxId> => {
     return unsafeTaskEither(
-      submitApplyInputsTxFpTs(rest)(wallet)(contractId)(applyInputsRequest)
+      submitApplyInputsTxFpTs(deprecatedRestAPI)(wallet)(contractId)(
+        applyInputsRequest
+      )
     );
   };
 
 const getApplicableInputs =
-  ({ wallet, rest }: ContractsDI) =>
+  ({ wallet, deprecatedRestAPI }: ContractsDI) =>
   async (contractId: ContractId, environement: Environment): Promise<Next> => {
     const contractDetails = await unsafeTaskEither(
-      rest.contracts.contract.get(contractId)
+      deprecatedRestAPI.contracts.contract.get(contractId)
     );
     if (isNone(contractDetails.currentContract)) {
       return noNext;
@@ -76,13 +83,15 @@ const getApplicableInputs =
         contractDetails.roleTokenMintingPolicyId
       );
       return await unsafeTaskEither(
-        rest.contracts.contract.next(contractId)(environement)(parties)
+        deprecatedRestAPI.contracts.contract.next(contractId)(environement)(
+          parties
+        )
       );
     }
   };
 
 const getContractIds =
-  ({ rest, wallet }: ContractsDI) =>
+  ({ deprecatedRestAPI, wallet }: ContractsDI) =>
   async (): Promise<ContractId[]> => {
     const partyAddresses = [
       await wallet.getChangeAddress(),
@@ -93,7 +102,9 @@ const getContractIds =
       range: Option<ContractsRange>,
       acc: ContractId[]
     ): Promise<ContractId[]> => {
-      const result = await rest.contracts.getHeadersByRange(range)(kwargs)();
+      const result = await deprecatedRestAPI.contracts.getHeadersByRange(range)(
+        kwargs
+      )();
       if (result._tag === "Left") throw result.left;
       const response = result.right;
       const contractIds = [
@@ -128,7 +139,7 @@ const getParties: (
   };
 
 export const submitCreateTxFpTs: (
-  client: FPTSRestAPI
+  client: RestClient
 ) => (
   wallet: WalletAPI
 ) => (
@@ -138,39 +149,48 @@ export const submitCreateTxFpTs: (
     pipe(
       tryCatchDefault(() => getAddressesAndCollaterals(wallet)),
       TE.chain((addressesAndCollaterals) =>
-        client.contracts.post(
-          {
-            contract: createContractRequest.contract,
+        tryCatchDefault(() =>
+          client.buildCreateContractTx({
             version: "v1",
+
+            changeAddress: addressesAndCollaterals.changeAddress,
+            usedAddresses: addressesAndCollaterals.usedAddresses,
+            collateralUTxOs: addressesAndCollaterals.collateralUTxOs,
+            stakeAddress: createContractRequest.stakeAddress,
+
+            contract: createContractRequest.contract,
+            threadRoleName: createContractRequest.threadRoleName,
             roles: createContractRequest.roles,
-            tags: createContractRequest.tags ? createContractRequest.tags : {},
-            metadata: createContractRequest.metadata
-              ? createContractRequest.metadata
-              : {},
-            minUTxODeposit: createContractRequest.minUTxODeposit
-              ? createContractRequest.minUTxODeposit
-              : minUTxODepositDefault,
-          },
-          addressesAndCollaterals
+
+            tags: createContractRequest.tags,
+            metadata: createContractRequest.metadata,
+            minimumLovelaceUTxODeposit:
+              createContractRequest.minimumLovelaceUTxODeposit,
+          })
         )
       ),
-      TE.chainW((contractTextEnvelope) =>
-        pipe(
-          tryCatchDefault(() => wallet.signTx(contractTextEnvelope.tx.cborHex)),
-          TE.chain((hexTransactionWitnessSet) =>
-            client.contracts.contract.put(
-              contractTextEnvelope.contractId,
-              hexTransactionWitnessSet
-            )
-          ),
-          TE.map(() => contractTextEnvelope.contractId)
-        )
+      TE.chainW(
+        (buildCreateContractTxResponse: BuildCreateContractTxResponse) =>
+          pipe(
+            tryCatchDefault(() =>
+              wallet.signTx(buildCreateContractTxResponse.tx.cborHex)
+            ),
+            TE.chain((hexTransactionWitnessSet) =>
+              tryCatchDefault(() =>
+                client.submitContract(
+                  buildCreateContractTxResponse.contractId,
+                  transactionWitnessSetTextEnvelope(hexTransactionWitnessSet)
+                )
+              )
+            ),
+            TE.map(() => buildCreateContractTxResponse.contractId)
+          )
       ),
       TE.map((contractId) => [contractId, contractIdToTxId(contractId)])
     );
 
 export const createContractFpTs: (
-  client: FPTSRestAPI
+  client: RestClient
 ) => (
   wallet: WalletAPI
 ) => (

@@ -17,18 +17,19 @@ import {
   withdrawalIdToTxId,
 } from "@marlowe.io/runtime-core";
 
-import { FPTSRestAPI } from "@marlowe.io/runtime-rest-client";
+import { FPTSRestAPI, RestClient } from "@marlowe.io/runtime-rest-client";
 
-import * as Rest from "@marlowe.io/runtime-rest-client";
+import * as RestPayout from "@marlowe.io/runtime-rest-client/payout";
 
 import { DecodingError } from "@marlowe.io/adapter/codec";
 import { stringify } from "json-bigint";
 
 export function mkPayoutLifecycle(
   wallet: WalletAPI,
-  rest: FPTSRestAPI
+  deprecatedRestAPI: FPTSRestAPI,
+  restClient: RestClient
 ): PayoutsAPI {
-  const di = { wallet, rest };
+  const di = { wallet, deprecatedRestAPI, restClient };
   return {
     available: fetchAvailablePayouts(di),
     withdraw: withdrawPayouts(di),
@@ -37,22 +38,28 @@ export function mkPayoutLifecycle(
 }
 
 const fetchAvailablePayouts =
-  ({ wallet, rest }: PayoutsDI) =>
+  ({ wallet, deprecatedRestAPI }: PayoutsDI) =>
   (filters?: Filters): Promise<PayoutAvailable[]> => {
     return unsafeTaskEither(
-      fetchAvailablePayoutsFpTs(rest)(wallet)(O.fromNullable(filters))
+      fetchAvailablePayoutsFpTs(deprecatedRestAPI)(wallet)(
+        O.fromNullable(filters)
+      )
     );
   };
 const withdrawPayouts =
-  ({ wallet, rest }: PayoutsDI) =>
+  ({ wallet, deprecatedRestAPI }: PayoutsDI) =>
   (payoutIds: PayoutId[]): Promise<void> => {
-    return unsafeTaskEither(withdrawPayoutsFpTs(rest)(wallet)(payoutIds));
+    return unsafeTaskEither(
+      withdrawPayoutsFpTs(deprecatedRestAPI)(wallet)(payoutIds)
+    );
   };
 const fetchWithdrawnPayouts =
-  ({ wallet, rest }: PayoutsDI) =>
+  ({ wallet, deprecatedRestAPI }: PayoutsDI) =>
   (filters?: Filters): Promise<PayoutWithdrawn[]> => {
     return unsafeTaskEither(
-      fetchWithdrawnPayoutsFpTs(rest)(wallet)(O.fromNullable(filters))
+      fetchWithdrawnPayoutsFpTs(deprecatedRestAPI)(wallet)(
+        O.fromNullable(filters)
+      )
     );
   };
 
@@ -163,12 +170,12 @@ const fetchWithdrawnPayoutsFpTs: (
       )
     );
 
-const convertAsset: (assets: Rest.Assets) => Assets = (restAssets) => ({
+const convertAsset: (assets: RestPayout.Assets) => Assets = (restAssets) => ({
   lovelaces: restAssets.lovelace,
   tokens: convertTokens(restAssets.tokens),
 });
 
-const convertTokens: (tokens: Rest.Tokens) => Tokens = (restTokens) =>
+const convertTokens: (tokens: RestPayout.Tokens) => Tokens = (restTokens) =>
   Object.entries(restTokens)
     .map(([policyId, x]) =>
       Object.entries(x).map(([assetName, quantity]) =>

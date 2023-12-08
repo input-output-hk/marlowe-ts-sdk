@@ -16,6 +16,8 @@ import console from "console";
 import { runtimeTokenToMarloweTokenValue } from "@marlowe.io/runtime-core";
 import { onlyByContractIds } from "@marlowe.io/runtime-lifecycle/api";
 import { MINUTES } from "@marlowe.io/adapter/time";
+import { mintRole } from "@marlowe.io/runtime-rest-client/contract";
+import { AddressBech32 } from "@marlowe.io/runtime-rest-client/contract/rolesConfigurations.js";
 
 global.console = console;
 
@@ -52,8 +54,12 @@ describe("Payouts", () => {
     ).contracts.createContract({
       contract: swapContract,
       roles: {
-        [swapRequest.provider.roleName]: adaProvider.address,
-        [swapRequest.swapper.roleName]: tokenProvider.address,
+        [swapRequest.provider.roleName]: mintRole(
+          adaProvider.address as unknown as AddressBech32
+        ),
+        [swapRequest.swapper.roleName]: mintRole(
+          tokenProvider.address as unknown as AddressBech32
+        ),
       },
     });
     await runtime(adaProvider).wallet.waitConfirmation(txCreatedContract);

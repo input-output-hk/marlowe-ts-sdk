@@ -36,12 +36,21 @@
       "require": "./dist/bundled/cjs/transaction.cjs",
       "types": "./dist/esm/contract/transaction/index.d.ts"
     },
+    "./payout": {
+      "import": "./dist/esm/payout/index.js",
+      "require": "./dist/bundled/cjs/payout.cjs",
+      "types": "./dist/esm/payout/index.d.ts"
+    },
     "./withdrawal": {
       "import": "./dist/esm/withdrawal/index.js",
       "require": "./dist/bundled/cjs/withdrawal.cjs",
       "types": "./dist/esm/withdrawal/index.d.ts"
     },
-    "./contract/*": "./dist/esm/contract/*.js"
+    "./contract": {
+      "import": "./dist/esm/contract/index.js",
+      "require": "./dist/bundled/cjs/contract.cjs",
+      "types": "./dist/esm/contract/index.d.ts"
+    }
   },
   "dependencies": {
     "@marlowe.io/adapter": "0.3.0-beta-rc1",

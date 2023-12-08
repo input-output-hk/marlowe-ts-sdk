@@ -5,6 +5,26 @@ import JSONbigint from "json-bigint";
 
 export type DecodingError = string[];
 
+/**
+ * ```ts
+ * try {
+ *  myRuntimeEndpoint(myRequest);
+ * } catch (error){
+ *  if(error instanceOf UnexpectedRuntimeResponse) {
+ *    console.error("The Runtime answered an unexpected message, please contact our desk support",error)
+ *  } else  {
+ *    console.error("another type of error",error)
+ *  }
+ * }
+ * ```
+ */
+export class UnexpectedRuntimeResponse extends Error {
+  public type = "UnexpectedRuntimeResponse" as const;
+  constructor(message: string) {
+    super(message);
+  }
+}
+
 export const MarloweJSON = JSONbigint({
   alwaysParseAsBig: true,
   useNativeBigInt: true,

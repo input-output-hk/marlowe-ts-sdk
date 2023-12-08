@@ -4,10 +4,8 @@ import { Contract, MarloweState } from "@marlowe.io/language-core-v1";
 import * as G from "@marlowe.io/language-core-v1/guards";
 import { MarloweVersion } from "@marlowe.io/language-core-v1/version";
 import { ContractIdGuard } from "@marlowe.io/runtime-core";
-
 import { TxStatus } from "./transaction/status.js";
 
-import { RoleName } from "./role.js";
 import {
   TxOutRef,
   BlockHeaderGuard,
@@ -34,21 +32,23 @@ export const Payout = t.type({
    */
   payoutId: TxOutRef,
   /**
-   * The {@link RoleName} of the participant that has the unclaimed Payout.
+   * The {@link @marlowe.io/language-core-v1!index.RoleName | Role Name} of the participant that has the unclaimed Payout.
    */
-  role: RoleName,
+  role: G.RoleName,
 });
 
 /**
- * Represents the response of the {@link index.RestClient#getContractById | Get contract by id } endpoint
+ * Represents the response of the {@link index.RestClient#getContractById | Get Contract By Id } endpoint
  * @see The {@link ContractDetails:var | dynamic validator} for this type.
  * @interface
+ * @category Endpoint : Get Contract By Id
  */
 export interface ContractDetails extends t.TypeOf<typeof ContractDetails> {}
 
 /**
  * This is a {@link !io-ts-usage | Dynamic type validator} for the {@link ContractDetails:type}.
  * @category Validator
+ * @category Endpoint : Get Contract By Id
  */
 // DISCUSSION : Tags are missing in the ts-sdk and available in the REST API
 export const ContractDetails = t.type({

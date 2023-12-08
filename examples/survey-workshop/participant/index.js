@@ -124,7 +124,7 @@ async function createContract(
 
   const lifecycle = await H.getLifecycle();
   const [contractId] = await lifecycle.contracts.createContract({
-    contract,
+    contract: contract,
     tags: { MarloweSurvey: "test 1" },
   });
 
