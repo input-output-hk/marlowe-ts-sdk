@@ -10,8 +10,29 @@ import { formatValidationErrors } from "jsonbigint-io-ts-reporters";
 import * as HTTP from "@marlowe.io/adapter/http";
 import { DecodingError } from "@marlowe.io/adapter/codec";
 
-import { PayoutId, unPayoutId } from "@marlowe.io/runtime-core";
-import { PayoutDetails } from "../details.js";
+import {
+  AddressBech32,
+  AssetId,
+  ContractId,
+  PayoutId,
+  WithdrawalId,
+  unPayoutId,
+} from "@marlowe.io/runtime-core";
+import { PayoutStatus, PayoutDetails, Assets } from "../index.js";
+
+export type GetPayoutByIdRequest = {
+  payoutId: PayoutId;
+};
+
+export type GetPayoutByIdResponse = {
+  payoutId: PayoutId;
+  contractId: ContractId;
+  withdrawalId?: WithdrawalId;
+  role: AssetId;
+  payoutValidatorAddress: AddressBech32;
+  status: PayoutStatus;
+  assets: Assets;
+};
 
 export type GET = (
   payoutId: PayoutId
