@@ -2,6 +2,7 @@ import { Bundle, Case, Reference } from "@marlowe.io/marlowe-object";
 import {
   Action,
   Choice,
+  datetoTimeout,
   Deposit,
   InputContent,
   lovelace,
@@ -10,7 +11,7 @@ import {
   Timeout,
 } from "@marlowe.io/language-core-v1";
 import { MarloweJSON } from "@marlowe.io/adapter/codec";
-import { type } from "os";
+
 type ContractBundle = {
   contract: Reference;
   bundle: Bundle;
@@ -57,14 +58,18 @@ type DelayPaymentParameters = {
 
 type DelayPaymentSM = StateMachine<DelayPaymentState>;
 
-const undefSM = null as unknown as DelayPaymentSM;
+let globalCounter = 0;
+function fixmeCounter() {
+  return globalCounter++;
+}
 
 function closeSM<T>(state: T): StateMachine<T> {
+  const ref = `close-${fixmeCounter()}`;
   return {
     state,
     continuationBundle: {
-      contract: { ref: "close" },
-      bundle: [{ label: "close", type: "contract", value: "close" }],
+      contract: { ref },
+      bundle: [{ label: ref, type: "contract", value: "close" }],
     },
   };
 }
@@ -73,14 +78,14 @@ type WhenSMParams<T> = {
   state: T;
   on: [Action, StateMachine<T>][];
   timeout: Timeout;
-  onTimeout: (timeout: Timeout) => StateMachine<T>;
+  onTimeout: StateMachine<T>;
 };
 
 function whenSM<T>(params: WhenSMParams<T>): StateMachine<T> {
-  const timeoutStateMachine = params.onTimeout(params.timeout);
+  const timeoutStateMachine = params.onTimeout;
   const timeoutRef = timeoutStateMachine.continuationBundle.contract;
 
-  const whenLabel = "when"; // FIXME
+  const whenLabel = `when-${fixmeCounter()}`; // FIXME
 
   const cases = params.on.map(([action, cont]) => {
     return {
@@ -91,7 +96,6 @@ function whenSM<T>(params: WhenSMParams<T>): StateMachine<T> {
   const bundles = params.on.flatMap(
     ([_, cont]) => cont.continuationBundle.bundle
   );
-
 
   const whenBundle: Bundle = [
     {
@@ -105,8 +109,9 @@ function whenSM<T>(params: WhenSMParams<T>): StateMachine<T> {
     },
   ];
 
-  const bundle =
-    timeoutStateMachine.continuationBundle.bundle.concat(bundles.concat(whenBundle));
+  const bundle = timeoutStateMachine.continuationBundle.bundle.concat(
+    bundles.concat(whenBundle)
+  );
 
   return {
     state: params.state,
@@ -118,32 +123,50 @@ function whenSM<T>(params: WhenSMParams<T>): StateMachine<T> {
 }
 
 function delayPayment(input: DelayPaymentParameters): DelayPaymentSM {
-
-
-  return whenSM<DelayPaymentState>({
-    state: { type: "before-deposit" },
-    on: [
-      [
-        {
-          party: input.payer,
-          deposits: input.amount,
-          of_token: lovelace,
-          into_account: input.payee,
-        },
-        closeSM({ type: "closed", reason: "deposit succesfully payed" }),
+  const initialDeposit = (cont: DelayPaymentSM) =>
+    whenSM<DelayPaymentState>({
+      state: { type: "before-deposit" },
+      on: [
+        [
+          {
+            party: input.payer,
+            deposits: input.amount,
+            of_token: lovelace,
+            into_account: input.payee,
+          },
+          cont,
+        ],
       ],
-    ],
-    timeout: 0n,
-    onTimeout: () =>
-      closeSM({ type: "closed", reason: "initial deposit timeout" }),
+      timeout: input.deposit_timeout,
+      onTimeout: closeSM({ type: "closed", reason: "initial deposit timeout" }),
+    });
+  const waitForRelease = whenSM<DelayPaymentState>({
+    state: { type: "waiting-for-release", amount: input.amount },
+    on: [],
+    timeout: input.release_timeout,
+    onTimeout: closeSM({ type: "closed", reason: "deposit succesfully payed" }),
   });
+
+  return initialDeposit(waitForRelease);
 }
 
 const example = delayPayment({
-  payer: { address: "addr_test1qqzejnp7fn6vqs7qnfany8fmpnd7e6eeexfrclun3n7amcwgqvtgteuax0yajw3ljzmu4dtprgr2uvd8xmfaqzx8dvdsmffljy" },
-  payee: { address: "addr_test1qqzejnp7fn6vqs7qnfany8fmpnd7e6eeexfrclun3n7amcwgqvtgteuax0yajw3ljzmu4dtprgr2uvd8xmfaqzx8dvdsmffljy" },
+  payer: {
+    address:
+      "addr_test1qqzejnp7fn6vqs7qnfany8fmpnd7e6eeexfrclun3n7amcwgqvtgteuax0yajw3ljzmu4dtprgr2uvd8xmfaqzx8dvdsmffljy",
+  },
+  payee: {
+    address:
+      "addr_test1qqzejnp7fn6vqs7qnfany8fmpnd7e6eeexfrclun3n7amcwgqvtgteuax0yajw3ljzmu4dtprgr2uvd8xmfaqzx8dvdsmffljy",
+  },
   amount: 100_000_000n,
-  deposit_timeout: 1733889316000n,
-  release_timeout: 1733889316000n,
+  deposit_timeout: datetoTimeout(new Date("2024-01-01")),
+  release_timeout: datetoTimeout(new Date("2024-01-02")),
 });
-console.log(MarloweJSON.stringify(example.continuationBundle, null, 2));
+console.log(
+  MarloweJSON.stringify(
+    [example.continuationBundle.contract.ref, example.continuationBundle.bundle],
+    null,
+    2
+  )
+);
