@@ -1,0 +1,37 @@
+{
+  "name": "@marlowe.io/generic-guards",
+  "version": "0.3.0-beta-rc1",
+  "description": "TODO",
+  "repository": "https://github.com/input-output-hk/marlowe-ts-sdk",
+  "publishConfig": {
+    "access": "public"
+  },
+  "contributors": [
+    "Nicolas Henin <nicolas.henin@iohk.io> (https://iohk.io)",
+    "Hernan Rajchert <hernan.rajchert@iohk.io> (https://iohk.io)",
+    "Bjorn Kihlberg <bjorn.kihlberg@iohk.io> (https://iohk.io)"
+  ],
+  "license": "Apache-2.0",
+  "scripts": {
+    "build": "tsc --build src",
+    "clean": "shx rm -rf dist",
+    "test": "echo 'no test defined for marlowe-examples'"
+  },
+  "type": "module",
+  "module": "./dist/esm/index.js",
+  "main": "./dist/esm/index.js",
+  "types": "./dist/esm/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "import": "./dist/esm/index.js",
+      "require": "./dist/bundled/cjs/language-examples.cjs",
+      "types": "./dist/esm/index.d.ts"
+    }
+  },
+  "dependencies": {
+    "fp-ts": "^2.16.1"
+  }
+}
