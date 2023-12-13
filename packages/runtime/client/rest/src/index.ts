@@ -40,8 +40,7 @@ import {
 import { submitContractViaAxios } from "./contract/endpoints/singleton.js";
 import { ContractDetails } from "./contract/details.js";
 import { TransactionDetails } from "./contract/transaction/details.js";
-import { CreateContractSourcesResponse } from "./contract/endpoints/sources.js";
-import { BuildCreateContractTxRequestWithContract } from "./contract/index.js";
+import * as ContractSources from "./contract/endpoints/sources.js";
 // import curlirize from 'axios-curlirize';
 
 /**
@@ -89,7 +88,30 @@ export interface RestClient {
   createContractSources(
     mainId: Label,
     bundle: Bundle
-  ): Promise<CreateContractSourcesResponse>;
+  ): Promise<ContractSources.CreateContractSourcesResponse>;
+
+  getContractSourceById(
+    request: ContractSources.GetContractBySourceIdRequest
+  ): Promise<ContractSources.GetContractBySourceIdResponse>;
+
+  getContractSourceAdjacency(
+    request: ContractSources.GetContractSourceAdjacencyRequest
+  ): Promise<ContractSources.GetContractSourceAdjacencyResponse>;
+
+  getContractSourceClosure(
+    request: ContractSources.GetContractSourceClosureRequest
+  ): Promise<ContractSources.GetContractSourceClosureResponse>;
+
+  getNextStepsForContract(
+    request: ContractNext.GetNextStepsForContractRequest
+  ): Promise<ContractNext.GetNextStepsForContractResponse>;
+
+  //   getContractSource: ContractSource.GET; // - Jamie, is it this one? https://docs.marlowe.iohk.io/api/get-contract-import-by-id
+  //   getContractAdjacency: ContractSource.GET_ADJACENCY;  // - Jamie, is it this one? https://docs.marlowe.iohk.io/api/get-adjacency-by-id if so lets unify
+  //   getContractClosure: ContractSource.GET_CLOSURE; // Jamie is it this one? - https://docs.marlowe.iohk.io/api/get-closure-by-id
+
+  //   getNextStepsForContract: Next.GET; // - Jamie, is it this one? https://docs.marlowe.iohk.io/api/get-transaction-output-by-id? if so lets unify
+
   /**
    * Gets a single contract by id
    * @param contractId The id of the contract to get
@@ -97,6 +119,7 @@ export interface RestClient {
    * @see {@link https://docs.marlowe.iohk.io/api/get-contract-by-id | The backend documentation}
    */
   getContractById(contractId: ContractId): Promise<ContractDetails>;
+
   /**
    * Submits a signed contract creation transaction
    * @see {@link https://docs.marlowe.iohk.io/api/submit-contract-to-chain | The backend documentation}
@@ -105,6 +128,7 @@ export interface RestClient {
     contractId: ContractId,
     txEnvelope: TextEnvelope
   ): Promise<void>;
+
   /**
    * Gets a paginated list of  {@link contract.TxHeader } for a given contract.
    * @see {@link https://docs.marlowe.iohk.io/api/get-transactions-for-contract | The backend documentation }
@@ -116,6 +140,7 @@ export interface RestClient {
     contractId: ContractId,
     range?: TransactionsRange
   ): Promise<Transactions.GetTransactionsForContractResponse>;
+
   /**
    * Create an unsigned transaction which applies inputs to a contract.
    * @see {@link https://docs.marlowe.iohk.io/api/apply-inputs-to-contract | The backend documentation}
@@ -126,6 +151,7 @@ export interface RestClient {
   applyInputsToContract(
     request: Transactions.ApplyInputsToContractRequest
   ): Promise<Transactions.TransactionTextEnvelope>;
+
   //   getTransactionById: Transaction.GET; // - https://docs.marlowe.iohk.io/api/get-transaction-by-id
   /**
    * Submit a signed transaction (generated with {@link @marlowe.io/runtime-rest-client!index.RestClient#applyInputsToContract} and signed with the {@link @marlowe.io/wallet!api.WalletAPI#signTx} procedure) that applies inputs to a contract.
@@ -194,13 +220,6 @@ export interface RestClient {
    * @see {@link https://docs.marlowe.iohk.io/api/health-check-endpoint | The backend documentation}
    */
   healthcheck(): Promise<Boolean>;
-
-  //   getNextStepsForContract: Next.GET; // - Jamie, is it this one? https://docs.marlowe.iohk.io/api/get-transaction-output-by-id? if so lets unify
-
-  //   postContractSource: ContractSources.POST; // - Jamie, is it this one? https://docs.marlowe.iohk.io/api/access-contract-import if so lets unify
-  //   getContractSource: ContractSource.GET; // - Jamie, is it this one? https://docs.marlowe.iohk.io/api/get-contract-import-by-id
-  //   getContractAdjacency: ContractSource.GET_ADJACENCY;  // - Jamie, is it this one? https://docs.marlowe.iohk.io/api/get-adjacency-by-id if so lets unify
-  //   getContractClosure: ContractSource.GET_CLOSURE; // Jamie is it this one? - https://docs.marlowe.iohk.io/api/get-closure-by-id
 
   /**
    * Get payouts to parties from role-based contracts.
@@ -279,6 +298,18 @@ export function mkRestClient(baseURL: string): RestClient {
     },
     createContractSources(mainId, bundle) {
       return Sources.createContractSources(axiosInstance)(mainId, bundle);
+    },
+    getContractSourceById(request) {
+      throw "Not implemented!";
+    },
+    getContractSourceAdjacency(request) {
+      throw "Not implemented!";
+    },
+    getContractSourceClosure(request) {
+      throw "Not implemented!";
+    },
+    getNextStepsForContract(request) {
+      throw "Not implemented!";
     },
     submitContract(contractId, txEnvelope) {
       return submitContractViaAxios(axiosInstance)(contractId, txEnvelope);

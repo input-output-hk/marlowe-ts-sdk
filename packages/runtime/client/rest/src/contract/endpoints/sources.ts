@@ -40,3 +40,12 @@ export const createContractSources = (axiosInstance: AxiosInstance) => {
     );
   };
 };
+
+export interface GetContractBySourceIdRequest {}
+export interface GetContractBySourceIdResponse {}
+
+export interface GetContractSourceAdjacencyRequest {}
+export interface GetContractSourceAdjacencyResponse {}
+
+export interface GetContractSourceClosureRequest {}
+export interface GetContractSourceClosureResponse {}
