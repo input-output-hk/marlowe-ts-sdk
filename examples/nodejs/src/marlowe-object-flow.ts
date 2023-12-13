@@ -8,12 +8,129 @@ import arg from "arg";
 
 import { mkLucidWallet } from "@marlowe.io/wallet";
 import { mkRuntimeLifecycle } from "@marlowe.io/runtime-lifecycle";
-import { Lucid, Blockfrost } from "lucid-cardano";
+import { Lucid, Blockfrost, C } from "lucid-cardano";
 import { readConfig } from "./config.js";
 import { datetoTimeout } from "@marlowe.io/language-core-v1";
-import { addressBech32 } from "@marlowe.io/runtime-core";
-
+import { addressBech32, ContractId } from "@marlowe.io/runtime-core";
+import { Address } from "@marlowe.io/language-core-v1";
+import { Bundle, Label, lovelace } from "@marlowe.io/marlowe-object";
+import { input, select } from "@inquirer/prompts";
 main();
+
+function bech32Validator(value: string) {
+  try {
+    C.Address.from_bech32(value);
+    return true;
+  } catch (e) {
+    return "Invalid address";
+  }
+}
+function positiveBigIntValidator (value: string) {
+  try {
+    if (BigInt(value) > 0) {
+      return true;
+    } else {
+      return "The amount must be greater than 0";
+    }
+  } catch (e) {
+    return "The amount must be a number";
+  }
+}
+
+function dateInFutureValidator (value: string) {
+  const d = new Date(value);
+  if (isNaN(d.getTime())) {
+    return "Invalid date";
+  }
+  if (d <= new Date()) {
+    return "The date must be in the future";
+  }
+  return true;
+}
+
+async function createContractMenu() {
+  const payee = await input({
+    message: "Enter the payee address",
+    validate: bech32Validator,
+  });
+  console.log(payee);
+  const amountStr = await input({
+    message: "Enter the payment amount in lovelaces",
+    validate: positiveBigIntValidator,
+  });
+
+  const amount = BigInt(amountStr);
+  console.log(amount);
+
+  const depositDeadlineStr = await input({
+    message: "Enter the deposit deadline",
+    validate: dateInFutureValidator,
+  });
+  const depositDeadline = new Date(depositDeadlineStr);
+  console.log(depositDeadline);
+
+  const releaseDeadlineStr = await input({
+    message: "Enter the release deadline",
+    validate: dateInFutureValidator,
+  });
+  const releaseDeadline = new Date(releaseDeadlineStr);
+  console.log(releaseDeadline);
+  await contractMenu();
+}
+
+async function loadContractMenu() {
+  const answer = await input({
+    message: "Enter the contractId",
+  });
+  console.log(answer);
+  await contractMenu();
+}
+
+// async function contractMenu(contractId: ContractId) {
+async function contractMenu() {
+  console.log("TODO: print contract state");
+  const answer = await select({
+    message: "Contract menu",
+    choices: [
+      { name: "Re-check contract state", value: "check-state" },
+      { name: "Deposit", value: "deposit" },
+      { name: "Release funds", value: "release" },
+      { name: "Return to main menu", value: "return" },
+    ],
+  });
+}
+
+async function mainLoop() {
+  try {
+    while (true) {
+      const action = await select({
+        message: "Main menu",
+        choices: [
+          { name: "Create a contract", value: "create" },
+          { name: "Load contract", value: "load" },
+          { name: "Exit", value: "exit" },
+        ],
+      });
+      switch (action) {
+        case "create":
+          await createContractMenu();
+          break;
+        case "load":
+          await loadContractMenu();
+          break;
+        case "exit":
+          process.exit(0);
+      }
+    }
+  } catch (e) {
+    if (e instanceof Error && e.message.includes("closed the prompt")) {
+      process.exit(0);
+    } else {
+      throw e;
+    }
+  }
+}
+
 type CliArgs = ReturnType<typeof parseCliArgs>;
 
 function parseCliArgs() {
@@ -99,8 +216,59 @@ function parseCliArgs() {
   };
 }
 
+interface DelayPaymentSchema {
+  payFrom: Address;
+  payTo: Address;
+  amount: bigint;
+  depositDeadline: Date;
+  releaseDeadline: Date;
+}
+// TODO: move to marlowe-object
+type ContractBundle = {
+  main: Label;
+  bundle: Bundle;
+};
+
+function mkDelayPayment(schema: DelayPaymentSchema): ContractBundle {
+  return {
+    main: "initial-deposit",
+    bundle: [
+      {
+        label: "release-funds",
+        type: "contract",
+        value: {
+          when: [],
+          timeout: datetoTimeout(schema.releaseDeadline),
+          timeout_continuation: "close",
+        },
+      },
+      {
+        label: "initial-deposit",
+        type: "contract",
+        value: {
+          when: [
+            {
+              case: {
+                party: schema.payFrom,
+                deposits: schema.amount,
+                of_token: lovelace,
+                into_account: schema.payTo,
+              },
+              then: {
+                ref: "release-funds",
+              },
+            },
+          ],
+          timeout: datetoTimeout(schema.depositDeadline),
+          timeout_continuation: "close",
+        },
+      },
+    ],
+  };
+}
+
 async function main() {
-  const args = parseCliArgs();
+  // const args = parseCliArgs();
   const config = await readConfig();
   const lucid = await Lucid.new(
     new Blockfrost(config.blockfrostUrl, config.blockfrostProjectId),
@@ -117,7 +285,11 @@ async function main() {
     wallet,
   });
   const walletAddress = await wallet.getChangeAddress();
-
-  console.log(`Making a delayed payment from  ${walletAddress} to ${args.payTo} for ${args.amount} lovelaces`);
-  console.log(`The payment must be deposited by ${args.depositDeadline} and will be released to ${args.payTo} by ${args.releaseDeadline}`);
+  await mainLoop();
+  // console.log(
+  //   `Making a delayed payment from  ${walletAddress} to ${args.payTo} for ${args.amount} lovelaces`
+  // );
+  // console.log(
+  //   `The payment must be deposited by ${args.depositDeadline} and will be released to ${args.payTo} by ${args.releaseDeadline}`
+  // );
 }
