@@ -49,4 +49,4 @@ async function main() {
   log("Wallet flow done 🎉");
 }
 
-await main();
+main();
