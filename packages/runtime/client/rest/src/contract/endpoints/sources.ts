@@ -102,6 +102,32 @@ export const getContractSourceAdjacency =
     );
   };
 
-export interface GetContractSourceClosureRequest {}
+export interface GetContractSourceClosureRequest {
+  contractSourceId: BuiltinByteString;
+}
 
-export interface GetContractSourceClosureResponse {}
+export interface GetContractSourceClosureResponse {
+  results: BuiltinByteString[];
+}
+
+const GetContractSourceClosureResponseGuard: t.Type<GetContractSourceClosureResponse> =
+  t.type({ results: t.array(G.BuiltinByteString) });
+
+export const getContractSourceClosure =
+  (axiosInstance: AxiosInstance) =>
+  async ({
+    contractSourceId,
+  }: GetContractSourceClosureRequest): Promise<GetContractSourceClosureResponse> => {
+    const response = await axiosInstance.get(
+      `/contracts/sources/${encodeURIComponent(contractSourceId)}/closure`
+    );
+    return pipe(
+      GetContractSourceClosureResponseGuard.decode(response.data),
+      E.match(
+        (e) => {
+          throw formatValidationErrors(e);
+        },
+        (e) => e
+      )
+    );
+  };

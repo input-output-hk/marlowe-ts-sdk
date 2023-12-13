@@ -107,6 +107,11 @@ export interface RestClient {
     request: Sources.GetContractSourceAdjacencyRequest
   ): Promise<Sources.GetContractSourceAdjacencyResponse>;
 
+  /**
+   * Get the contract source IDs which appear in the full hierarchy of a contract source (including the ID of the contract source itself).
+   * @throws DecodingError - If the response from the server can't be decoded
+   * @see {@link https://docs.marlowe.iohk.io/api/get-contract-source-closure-by-id | The backend documentation}
+   */
   getContractSourceClosure(
     request: Sources.GetContractSourceClosureRequest
   ): Promise<Sources.GetContractSourceClosureResponse>;
@@ -311,9 +316,7 @@ export function mkRestClient(baseURL: string): RestClient {
     getContractSourceById: Sources.getContractSourceById(axiosInstance),
     getContractSourceAdjacency:
       Sources.getContractSourceAdjacency(axiosInstance),
-    getContractSourceClosure(request) {
-      throw "Not implemented!";
-    },
+    getContractSourceClosure: Sources.getContractSourceClosure(axiosInstance),
     getNextStepsForContract(request) {
       throw "Not implemented!";
     },
