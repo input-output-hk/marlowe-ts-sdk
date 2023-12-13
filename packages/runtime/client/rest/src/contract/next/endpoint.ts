@@ -1,6 +1,4 @@
 import { AxiosInstance } from "axios";
-import * as t from "io-ts/lib/index.js";
-import * as G from "@marlowe.io/language-core-v1/guards";
 import * as E from "fp-ts/lib/Either.js";
 import * as TE from "fp-ts/lib/TaskEither.js";
 import { pipe } from "fp-ts/lib/function.js";
@@ -12,7 +10,6 @@ import { Next } from "@marlowe.io/language-core-v1/next";
 import { stringify } from "qs";
 import { DecodingError } from "@marlowe.io/adapter/codec";
 import { posixTimeToIso8601 } from "@marlowe.io/adapter/time";
-import { partiesToStrings } from "@marlowe.io/language-core-v1/participants.js";
 
 export type GET = (
   contractId: ContractId
