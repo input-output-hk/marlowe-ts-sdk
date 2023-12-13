@@ -40,7 +40,6 @@ import {
 import { submitContractViaAxios } from "./contract/endpoints/singleton.js";
 import { ContractDetails } from "./contract/details.js";
 import { TransactionDetails } from "./contract/transaction/details.js";
-import * as ContractSources from "./contract/endpoints/sources.js";
 // import curlirize from 'axios-curlirize';
 
 /**
@@ -88,19 +87,24 @@ export interface RestClient {
   createContractSources(
     mainId: Label,
     bundle: Bundle
-  ): Promise<ContractSources.CreateContractSourcesResponse>;
+  ): Promise<Sources.CreateContractSourcesResponse>;
 
+  /**
+   * Gets the contract associated with given source id
+   * @throws DecodingError - If the response from the server can't be decoded
+   * @see {@link https://docs.marlowe.iohk.io/api/get-contract-source-by-id | The backend documentation}
+   */
   getContractSourceById(
-    request: ContractSources.GetContractBySourceIdRequest
-  ): Promise<ContractSources.GetContractBySourceIdResponse>;
+    request: Sources.GetContractBySourceIdRequest
+  ): Promise<Sources.GetContractBySourceIdResponse>;
 
   getContractSourceAdjacency(
-    request: ContractSources.GetContractSourceAdjacencyRequest
-  ): Promise<ContractSources.GetContractSourceAdjacencyResponse>;
+    request: Sources.GetContractSourceAdjacencyRequest
+  ): Promise<Sources.GetContractSourceAdjacencyResponse>;
 
   getContractSourceClosure(
-    request: ContractSources.GetContractSourceClosureRequest
-  ): Promise<ContractSources.GetContractSourceClosureResponse>;
+    request: Sources.GetContractSourceClosureRequest
+  ): Promise<Sources.GetContractSourceClosureResponse>;
 
   getNextStepsForContract(
     request: ContractNext.GetNextStepsForContractRequest
@@ -299,9 +303,7 @@ export function mkRestClient(baseURL: string): RestClient {
     createContractSources(mainId, bundle) {
       return Sources.createContractSources(axiosInstance)(mainId, bundle);
     },
-    getContractSourceById(request) {
-      throw "Not implemented!";
-    },
+    getContractSourceById: Sources.getContractSourceById(axiosInstance),
     getContractSourceAdjacency(request) {
       throw "Not implemented!";
     },

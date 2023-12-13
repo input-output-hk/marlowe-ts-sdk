@@ -4,7 +4,7 @@ import * as E from "fp-ts/lib/Either.js";
 import { pipe } from "fp-ts/lib/function.js";
 import { formatValidationErrors } from "jsonbigint-io-ts-reporters";
 
-import { BuiltinByteString } from "@marlowe.io/language-core-v1";
+import { BuiltinByteString, Contract } from "@marlowe.io/language-core-v1";
 import { Bundle, Label } from "@marlowe.io/marlowe-object";
 import { AxiosInstance } from "axios";
 
@@ -41,11 +41,43 @@ export const createContractSources = (axiosInstance: AxiosInstance) => {
   };
 };
 
-export interface GetContractBySourceIdRequest {}
-export interface GetContractBySourceIdResponse {}
+export interface GetContractBySourceIdRequest {
+  contractSourceId: BuiltinByteString;
+  expand?: boolean;
+}
+
+export interface GetContractBySourceIdResponse {
+  contract: Contract;
+}
+
+const GetContractBySourceIdResponseGuard: t.Type<GetContractBySourceIdResponse> =
+  t.type({ contract: G.Contract });
+
+export const getContractSourceById =
+  (axiosInstance: AxiosInstance) =>
+  async ({
+    contractSourceId,
+    expand,
+  }: GetContractBySourceIdRequest): Promise<GetContractBySourceIdResponse> => {
+    const response = await axiosInstance.get(
+      `/contracts/sources/${encodeURIComponent(contractSourceId)}`,
+      { params: { expand } }
+    );
+    return pipe(
+      GetContractBySourceIdResponseGuard.decode(response.data),
+      E.match(
+        (e) => {
+          throw formatValidationErrors(e);
+        },
+        (e) => e
+      )
+    );
+  };
 
 export interface GetContractSourceAdjacencyRequest {}
+
 export interface GetContractSourceAdjacencyResponse {}
 
 export interface GetContractSourceClosureRequest {}
+
 export interface GetContractSourceClosureResponse {}
