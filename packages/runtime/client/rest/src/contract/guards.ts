@@ -23,5 +23,4 @@ export {
   TokenMetadataGuard as TokenMetadata,
   RoleTokenConfigurationGuard as RoleTokenConfiguration,
   RolesConfigurationGuard as RolesConfiguration,
-  AddressBech32Guard as AddressBech32,
 } from "./rolesConfigurations.js";

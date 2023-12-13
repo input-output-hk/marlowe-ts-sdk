@@ -2,19 +2,27 @@ import * as t from "io-ts/lib/index.js";
 import { iso, Newtype } from "newtype-ts";
 import { fromNewtype } from "io-ts-types";
 import { TxOutRef } from "./tx/outRef.js";
+import { unsafeEither } from "@marlowe.io/adapter/fp-ts";
 
-export type AddressBech32 = Newtype<
-  { readonly AddressBech32: unique symbol },
-  string
->;
-export const AddressBech32 = fromNewtype<AddressBech32>(t.string);
-export const unAddressBech32 = iso<AddressBech32>().unwrap;
-export const addressBech32 = iso<AddressBech32>().wrap;
+export interface AddressBech32Brand {
+  readonly AddressBech32: unique symbol;
+}
+
+export const AddressBech32Guard = t.brand(
+  t.string,
+  (s): s is t.Branded<string, AddressBech32Brand> => true,
+  "AddressBech32"
+);
+
+export type AddressBech32 = t.TypeOf<typeof AddressBech32Guard>;
+
+export const addressBech32 = (s: string) =>
+  unsafeEither(AddressBech32Guard.decode(s));
 
 export type AddressesAndCollaterals = t.TypeOf<typeof AddressesAndCollaterals>;
 export const AddressesAndCollaterals = t.type({
-  changeAddress: AddressBech32,
-  usedAddresses: t.array(AddressBech32),
+  changeAddress: AddressBech32Guard,
+  usedAddresses: t.array(AddressBech32Guard),
   collateralUTxOs: t.array(TxOutRef),
 });
 

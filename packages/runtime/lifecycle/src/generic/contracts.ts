@@ -17,7 +17,6 @@ import {
   TxId,
   AddressesAndCollaterals,
   HexTransactionWitnessSet,
-  unAddressBech32,
   unPolicyId,
   transactionWitnessSetTextEnvelope,
 } from "@marlowe.io/runtime-core";
@@ -124,12 +123,12 @@ const getParties: (
   (walletAPI) => async (roleMintingPolicyId) => {
     const changeAddress: Party = await walletAPI
       .getChangeAddress()
-      .then((addressBech32) => ({ address: unAddressBech32(addressBech32) }));
+      .then((addressBech32) => ({ address: addressBech32 }));
     const usedAddresses: Party[] = await walletAPI
       .getUsedAddresses()
       .then((addressesBech32) =>
         addressesBech32.map((addressBech32) => ({
-          address: unAddressBech32(addressBech32),
+          address: addressBech32,
         }))
       );
     const roles: Party[] = (await walletAPI.getTokens())

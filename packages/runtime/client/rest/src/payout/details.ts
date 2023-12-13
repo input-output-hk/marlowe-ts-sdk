@@ -8,6 +8,7 @@ import {
   AddressBech32,
   WithdrawalId,
   AssetQuantity,
+  AddressBech32Guard,
 } from "@marlowe.io/runtime-core";
 
 import { PayoutStatus } from "./status.js";
@@ -24,7 +25,7 @@ export const PayoutDetails = t.type({
   contractId: ContractIdGuard,
   withdrawalId: optionFromNullable(WithdrawalId),
   role: AssetId,
-  payoutValidatorAddress: AddressBech32,
+  payoutValidatorAddress: AddressBech32Guard,
   status: PayoutStatus,
   assets: Assets,
 });

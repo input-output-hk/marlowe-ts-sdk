@@ -30,7 +30,6 @@ import {
   AddressBech32,
   TxOutRef,
   addressBech32,
-  unAddressBech32,
   MarloweTxCBORHex,
   Token,
   lovelaces,
@@ -136,9 +135,7 @@ export class SingleAddressWallet implements WalletAPI {
 
   async getTokens(): Promise<Token[]> {
     try {
-      const content = await this.blockfrostApi.addresses(
-        unAddressBech32(this.address)
-      );
+      const content = await this.blockfrostApi.addresses(this.address);
       return pipe(
         content.amount ?? [],
         A.map((tokenBlockfrost) =>
@@ -158,9 +155,7 @@ export class SingleAddressWallet implements WalletAPI {
 
   async getLovelaces(): Promise<bigint> {
     try {
-      const content = await this.blockfrostApi.addresses(
-        unAddressBech32(this.address)
-      );
+      const content = await this.blockfrostApi.addresses(this.address);
       return pipe(
         content.amount ?? [],
         A.filter((amount) => amount.unit === "lovelace"),
@@ -178,7 +173,7 @@ export class SingleAddressWallet implements WalletAPI {
   ) =>
     pipe(
       TE.tryCatch(
-        () => this.blockfrostApi.addresses(unAddressBech32(this.address)),
+        () => this.blockfrostApi.addresses(this.address),
         (reason) => new Error(`Error while retrieving assetBalance : ${reason}`)
       ),
       TE.map((content) =>
@@ -205,7 +200,7 @@ export class SingleAddressWallet implements WalletAPI {
       A.reduce(
         this.lucid.newTx(),
         (tx: Tx, account: [SingleAddressWallet, bigint]) =>
-          tx.payToAddress(unAddressBech32(account[0].address), {
+          tx.payToAddress(account[0].address, {
             lovelace: account[1],
           })
       ),
@@ -215,9 +210,7 @@ export class SingleAddressWallet implements WalletAPI {
 
   // see [[testing-wallet-discussion]]
   public randomPolicyId(): [Script, PolicyId] {
-    const { paymentCredential } = getAddressDetails(
-      unAddressBech32(this.address)
-    );
+    const { paymentCredential } = getAddressDetails(this.address);
     const before = this.lucid.currentSlot() + 5 * 60;
     const json: NativeScript = {
       type: "all",
