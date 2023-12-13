@@ -7,6 +7,7 @@ import { Lucid, Blockfrost } from "lucid-cardano";
 import { readConfig } from "./config.js";
 import { datetoTimeout } from "@marlowe.io/language-core-v1";
 import { addressBech32 } from "@marlowe.io/runtime-core";
+import { mintRole } from "@marlowe.io/runtime-rest-client/contract";
 
 const args = arg({
   "--help": Boolean,
@@ -112,7 +113,11 @@ async function main(
 
   const [contractId, txId] = await runtime.contracts.createContract({
     contract: escrow,
-    roles: { Buyer, Seller, Mediator },
+    roles: {
+      Buyer: mintRole(Buyer),
+      Seller: mintRole(Seller),
+      Mediator: mintRole(Mediator),
+    },
   });
 
   console.log("Contract ID: " + contractId);
