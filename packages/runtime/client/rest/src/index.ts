@@ -312,11 +312,18 @@ export function mkRestClient(baseURL: string): RestClient {
     createContractSources(mainId, bundle) {
       return Sources.createContractSources(axiosInstance)(mainId, bundle);
     },
-    getContractSourceById: Sources.getContractSourceById(axiosInstance),
-    getContractSourceAdjacency:
-      Sources.getContractSourceAdjacency(axiosInstance),
-    getContractSourceClosure: Sources.getContractSourceClosure(axiosInstance),
-    getNextStepsForContract: Next.getNextStepsForContract(axiosInstance),
+    getContractSourceById(request) {
+      return Sources.getContractSourceById(axiosInstance)(request);
+    },
+    getContractSourceAdjacency(request) {
+      return Sources.getContractSourceAdjacency(axiosInstance)(request);
+    },
+    getContractSourceClosure(request) {
+      return Sources.getContractSourceClosure(axiosInstance)(request);
+    },
+    getNextStepsForContract(request) {
+      return Next.getNextStepsForContract(axiosInstance)(request);
+    },
     submitContract(contractId, txEnvelope) {
       return submitContractViaAxios(axiosInstance)(contractId, txEnvelope);
     },
