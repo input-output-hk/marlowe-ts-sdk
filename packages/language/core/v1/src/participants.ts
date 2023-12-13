@@ -7,8 +7,9 @@ import * as t from "io-ts/lib/index.js";
 import { pipe } from "fp-ts/lib/function.js";
 import * as A from "fp-ts/lib/Array.js";
 
-import { AddressBech32 } from "./address.js";
+import { AddressBech32, AddressBech32Guard } from "./address.js";
 import { Sort, strCmp } from "@marlowe.io/adapter/assoc-map";
+import { assertGuardEqual, proxy } from "@marlowe.io/adapter/io-ts";
 
 /**
  *
@@ -27,7 +28,10 @@ export interface Address {
  * {@link !io-ts-usage | Dynamic type guard} for the {@link Address | address type}.
  * @category Party
  */
-export const AddressGuard: t.Type<Address> = t.type({ address: AddressBech32 });
+export const AddressGuard = assertGuardEqual(
+  proxy<Address>(),
+  t.type({ address: AddressBech32Guard })
+);
 
 export type RoleName = string;
 export const RoleNameGuard: t.Type<RoleName> = t.string;

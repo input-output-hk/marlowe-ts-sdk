@@ -1,6 +1,7 @@
 import { Sort, strCmp } from "@marlowe.io/adapter/assoc-map";
 import * as t from "io-ts/lib/index.js";
 import { Party, partyCmp, PartyGuard } from "./participants.js";
+import { assertGuardEqual, proxy } from "@marlowe.io/adapter/io-ts";
 
 /**
  * Represents a choice topic.
@@ -27,10 +28,13 @@ export interface ChoiceId {
  * {@link !io-ts-usage | Dynamic type guard} for the {@link @marlowe.io/language-core-v1!index.ChoiceId | choice id type}.
  * @category Choice
  */
-export const ChoiceIdGuard: t.Type<ChoiceId> = t.type({
-  choice_name: ChoiceNameGuard,
-  choice_owner: PartyGuard,
-});
+export const ChoiceIdGuard = assertGuardEqual(
+  proxy<ChoiceId>(),
+  t.type({
+    choice_name: ChoiceNameGuard,
+    choice_owner: PartyGuard,
+  })
+);
 
 /**
  * Sorting function for ChoiceId as defined in the Marlowe Specification (SemanticsGuarantees.thy)

@@ -23,6 +23,8 @@
  * @packageDocumentation
  */
 
+export { AddressBech32, addressBech32 } from "./address.js";
+
 export { Action, Deposit, Notify, Choice } from "./actions.js";
 export { ChoiceName, ChoiceId, Bound, ChosenNum } from "./choices.js";
 export {

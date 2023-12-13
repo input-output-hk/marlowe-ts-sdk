@@ -1,27 +1,12 @@
 import * as t from "io-ts/lib/index.js";
 
-import { PolicyId, RoleName } from "@marlowe.io/language-core-v1";
+import {
+  AddressBech32,
+  PolicyId,
+  RoleName,
+} from "@marlowe.io/language-core-v1";
 
 import * as G from "@marlowe.io/language-core-v1/guards";
-
-/**
- *  @category Roles Configuration
- */
-export interface AddressBech32Brand {
-  readonly AddressBech32: unique symbol;
-}
-
-export const AddressBech32Guard = t.brand(
-  t.string,
-  (s): s is t.Branded<string, AddressBech32Brand> => true,
-  "AddressBech32"
-);
-
-/**
- *  Cardano Address in a Bech32 format
- *  @category Roles Configuration
- */
-export type AddressBech32 = t.TypeOf<typeof AddressBech32Guard>;
 
 /**
  *  Definition a of Closed Role Tlken
@@ -30,7 +15,7 @@ export type AddressBech32 = t.TypeOf<typeof AddressBech32Guard>;
  *  @category Roles Configuration
  */
 export type ClosedRole = AddressBech32;
-export const ClosedRoleGuard: t.Type<ClosedRole, string> = AddressBech32Guard;
+export const ClosedRoleGuard: t.Type<ClosedRole, string> = G.AddressBech32;
 
 /**
  *  Definition of an Open Role Token
@@ -147,7 +132,7 @@ export const TokenQuantityGuard: t.Type<TokenQuantity> = t.bigint;
  */
 export interface RoleTokenConfiguration {
   recipients:
-    | { [x: string & t.Brand<AddressBech32Brand>]: TokenQuantity }
+    | { [x: AddressBech32]: TokenQuantity }
     | { OpenRole: TokenQuantity };
   metadata?: TokenMetadata;
 }

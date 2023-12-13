@@ -14,6 +14,7 @@
  */
 
 export { PolicyIdGuard as PolicyId } from "./policyId.js";
+export { AddressBech32Guard as AddressBech32 } from "./address.js";
 
 export {
   ActionGuard as Action,

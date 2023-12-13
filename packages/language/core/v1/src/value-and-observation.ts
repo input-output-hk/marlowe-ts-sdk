@@ -7,6 +7,7 @@ import * as t from "io-ts/lib/index.js";
 import { ChoiceId, ChoiceIdGuard } from "./choices.js";
 import { AccountId, AccountIdGuard } from "./payee.js";
 import { Token, TokenGuard } from "./token.js";
+import { assertGuardEqual, proxy } from "@marlowe.io/adapter/io-ts";
 
 /**
  * Represents the amount of money available in a participants internal account
@@ -21,10 +22,13 @@ export interface AvailableMoney {
  * {@link !io-ts-usage | Dynamic type guard} for the {@link @marlowe.io/language-core-v1!index.AvailableMoney | available money type}.
  * @category Value
  */
-export const AvailableMoneyGuard: t.Type<AvailableMoney> = t.type({
-  amount_of_token: TokenGuard,
-  in_account: AccountIdGuard,
-});
+export const AvailableMoneyGuard = assertGuardEqual(
+  proxy<AvailableMoney>(),
+  t.type({
+    amount_of_token: TokenGuard,
+    in_account: AccountIdGuard,
+  })
+);
 
 /**
  * Search [[lower-name-builders]]

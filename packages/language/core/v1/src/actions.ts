@@ -11,6 +11,7 @@ import { AccountId, AccountIdGuard } from "./payee.js";
 import { Token, TokenGuard } from "./token.js";
 import { ValueGuard } from "./value-and-observation.js";
 import { Bound, BoundGuard } from "./choices.js";
+import { assertGuardEqual, proxy } from "@marlowe.io/adapter/io-ts";
 
 /**
  * TODO: Comment
@@ -26,8 +27,11 @@ export interface Choice {
  * TODO: Comment
  * @category Action
  */
-export const ChoiceGuard: t.Type<Choice> = t.recursion("Choice", () =>
-  t.type({ choose_between: t.array(BoundGuard), for_choice: ChoiceIdGuard })
+export const ChoiceGuard = t.recursion("Choice", () =>
+  assertGuardEqual(
+    proxy<Choice>(),
+    t.type({ choose_between: t.array(BoundGuard), for_choice: ChoiceIdGuard })
+  )
 );
 
 /**
@@ -45,12 +49,15 @@ export interface Deposit {
  * TODO: Comment
  * @category Action
  */
-export const DepositGuard: t.Type<Deposit> = t.type({
-  party: PartyGuard,
-  deposits: ValueGuard,
-  of_token: TokenGuard,
-  into_account: AccountIdGuard,
-});
+export const DepositGuard = assertGuardEqual(
+  proxy<Deposit>(),
+  t.type({
+    party: PartyGuard,
+    deposits: ValueGuard,
+    of_token: TokenGuard,
+    into_account: AccountIdGuard,
+  })
+);
 
 /**
  * TODO: Comment
