@@ -4,6 +4,7 @@ import { PolicyId, RoleName } from "@marlowe.io/language-core-v1";
 
 import * as G from "@marlowe.io/language-core-v1/guards";
 import { AddressBech32, AddressBech32Guard } from "@marlowe.io/runtime-core";
+import { assertGuardEqual, proxy } from "@marlowe.io/adapter/io-ts";
 
 /**
  *  Definition a of Closed Role Tlken
@@ -148,11 +149,21 @@ export const RoleTokenConfigurationGuard: t.Type<RoleTokenConfiguration> =
 /**
  *  @category Roles Configuration
  */
-export type MintRolesTokens = { [x: RoleName]: RoleTokenConfiguration };
+export type RoleTokenConfigurations = RoleTokenConfiguration | ClosedRole;
 
-export const MintRolesTokensGuard: t.Type<MintRolesTokens> = t.record(
-  G.RoleName,
-  RoleTokenConfigurationGuard
+export const RoleConfigurationsGuard = t.union([
+  RoleTokenConfigurationGuard,
+  ClosedRoleGuard,
+]);
+
+/**
+ *  @category Roles Configuration
+ */
+export type MintRolesTokens = { [x: RoleName]: RoleTokenConfigurations };
+
+export const MintRolesTokensGuard = assertGuardEqual(
+  proxy<MintRolesTokens>(),
+  t.record(G.RoleName, RoleConfigurationsGuard)
 );
 
 /**
