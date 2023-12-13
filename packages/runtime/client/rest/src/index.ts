@@ -27,8 +27,8 @@ import * as Contracts from "./contract/endpoints/collection.js";
 import * as Transaction from "./contract/transaction/endpoints/singleton.js";
 import * as Transactions from "./contract/transaction/endpoints/collection.js";
 import * as Sources from "./contract/endpoints/sources.js";
+import * as Next from "./contract/next/endpoint.js";
 import { TransactionsRange } from "./contract/transaction/endpoints/collection.js";
-import * as ContractNext from "./contract/next/endpoint.js";
 import { unsafeTaskEither } from "@marlowe.io/adapter/fp-ts";
 import {
   ContractId,
@@ -116,15 +116,14 @@ export interface RestClient {
     request: Sources.GetContractSourceClosureRequest
   ): Promise<Sources.GetContractSourceClosureResponse>;
 
+  /**
+   * Get inputs which could be performed on a contract within a time range by the requested parties.
+   * @throws DecodingError - If the response from the server can't be decoded
+   * @see {@link https://docs.marlowe.iohk.io/api/get-next-contract-steps | The backend documentation}
+   */
   getNextStepsForContract(
-    request: ContractNext.GetNextStepsForContractRequest
-  ): Promise<ContractNext.GetNextStepsForContractResponse>;
-
-  //   getContractSource: ContractSource.GET; // - Jamie, is it this one? https://docs.marlowe.iohk.io/api/get-contract-import-by-id
-  //   getContractAdjacency: ContractSource.GET_ADJACENCY;  // - Jamie, is it this one? https://docs.marlowe.iohk.io/api/get-adjacency-by-id if so lets unify
-  //   getContractClosure: ContractSource.GET_CLOSURE; // Jamie is it this one? - https://docs.marlowe.iohk.io/api/get-closure-by-id
-
-  //   getNextStepsForContract: Next.GET; // - Jamie, is it this one? https://docs.marlowe.iohk.io/api/get-transaction-output-by-id? if so lets unify
+    request: Next.GetNextStepsForContractRequest
+  ): Promise<Next.GetNextStepsForContractResponse>;
 
   /**
    * Gets a single contract by id
@@ -317,9 +316,7 @@ export function mkRestClient(baseURL: string): RestClient {
     getContractSourceAdjacency:
       Sources.getContractSourceAdjacency(axiosInstance),
     getContractSourceClosure: Sources.getContractSourceClosure(axiosInstance),
-    getNextStepsForContract(request) {
-      throw "Not implemented!";
-    },
+    getNextStepsForContract: Next.getNextStepsForContract(axiosInstance),
     submitContract(contractId, txEnvelope) {
       return submitContractViaAxios(axiosInstance)(contractId, txEnvelope);
     },
@@ -510,7 +507,7 @@ export interface ContractsAPI {
     /**
      * @see {@link }
      */
-    next: ContractNext.GET;
+    next: Next.GET;
     transactions: {
       /**
        * @see {@link }
@@ -590,7 +587,7 @@ export function mkFPTSRestClient(baseURL: string): FPTSRestAPI {
       contract: {
         get: Contract.getViaAxios(axiosInstance),
         put: Contract.putViaAxios(axiosInstance),
-        next: ContractNext.getViaAxios(axiosInstance),
+        next: Next.getViaAxios(axiosInstance),
         transactions: {
           getHeadersByRange:
             Transactions.getHeadersByRangeViaAxios(axiosInstance),

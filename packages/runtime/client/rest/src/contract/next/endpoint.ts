@@ -1,4 +1,6 @@
 import { AxiosInstance } from "axios";
+import * as t from "io-ts/lib/index.js";
+import * as G from "@marlowe.io/language-core-v1/guards";
 import * as E from "fp-ts/lib/Either.js";
 import * as TE from "fp-ts/lib/TaskEither.js";
 import { pipe } from "fp-ts/lib/function.js";
@@ -10,6 +12,7 @@ import { Next } from "@marlowe.io/language-core-v1/next";
 import { stringify } from "qs";
 import { DecodingError } from "@marlowe.io/adapter/codec";
 import { posixTimeToIso8601 } from "@marlowe.io/adapter/time";
+import { partiesToStrings } from "@marlowe.io/language-core-v1/participants.js";
 
 export type GET = (
   contractId: ContractId
@@ -41,5 +44,47 @@ export const getViaAxios: (axiosInstance: AxiosInstance) => GET =
 const contractNextEndpoint = (contractId: ContractId): string =>
   `/contracts/${encodeURIComponent(unContractId(contractId))}/next`;
 
-export interface GetNextStepsForContractRequest {}
-export interface GetNextStepsForContractResponse {}
+export interface GetNextStepsForContractRequest {
+  contractId: ContractId;
+  validityStart: bigint;
+  validityEnd: bigint;
+  parties?: Party[];
+}
+
+export type GetNextStepsForContractResponse = Next;
+
+const GetNextStepsForContractResponseGuard = Next;
+
+export const getNextStepsForContract =
+  (axiosInstance: AxiosInstance) =>
+  async ({
+    contractId,
+    validityStart,
+    validityEnd,
+    parties,
+  }: GetNextStepsForContractRequest): Promise<GetNextStepsForContractResponse> => {
+    const response = await axiosInstance.get(
+      `/contracts/${encodeURIComponent(
+        unContractId(contractId)
+      )}/next?${stringify({
+        validityStart: posixTimeToIso8601(validityStart),
+        validityEnd: posixTimeToIso8601(validityEnd),
+        party: parties,
+      })}`,
+      {
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    return pipe(
+      GetNextStepsForContractResponseGuard.decode(response.data),
+      E.match(
+        (e) => {
+          throw formatValidationErrors(e);
+        },
+        (e) => e
+      )
+    );
+  };
