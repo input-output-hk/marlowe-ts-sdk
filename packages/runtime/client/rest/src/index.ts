@@ -98,6 +98,11 @@ export interface RestClient {
     request: Sources.GetContractBySourceIdRequest
   ): Promise<Sources.GetContractBySourceIdResponse>;
 
+  /**
+   * Get the contract source IDs which are adjacent to a contract source (they appear directly in the contract source).
+   * @throws DecodingError - If the response from the server can't be decoded
+   * @see {@link https://docs.marlowe.iohk.io/api/get-adjacent-contract-source-i-ds-by-id | The backend documentation}
+   */
   getContractSourceAdjacency(
     request: Sources.GetContractSourceAdjacencyRequest
   ): Promise<Sources.GetContractSourceAdjacencyResponse>;
@@ -304,9 +309,8 @@ export function mkRestClient(baseURL: string): RestClient {
       return Sources.createContractSources(axiosInstance)(mainId, bundle);
     },
     getContractSourceById: Sources.getContractSourceById(axiosInstance),
-    getContractSourceAdjacency(request) {
-      throw "Not implemented!";
-    },
+    getContractSourceAdjacency:
+      Sources.getContractSourceAdjacency(axiosInstance),
     getContractSourceClosure(request) {
       throw "Not implemented!";
     },
