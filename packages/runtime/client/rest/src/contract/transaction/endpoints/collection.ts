@@ -25,7 +25,6 @@ import {
   TextEnvelopeGuard,
   TxId,
   TxOutRef,
-  unAddressBech32,
   unTxOutRef,
 } from "@marlowe.io/runtime-core";
 
@@ -164,13 +163,9 @@ export const postViaAxios: (axiosInstance: AxiosInstance) => POST =
             Accept:
               "application/vendor.iog.marlowe-runtime.apply-inputs-tx-json",
             "Content-Type": "application/json",
-            "X-Change-Address": unAddressBech32(
-              addressesAndCollaterals.changeAddress
-            ),
-            "X-Address": pipe(
-              addressesAndCollaterals.usedAddresses,
-              A.map(unAddressBech32),
-              (a) => a.join(",")
+            "X-Change-Address": addressesAndCollaterals.changeAddress,
+            "X-Address": pipe(addressesAndCollaterals.usedAddresses, (a) =>
+              a.join(",")
             ),
             "X-Collateral-UTxO": pipe(
               addressesAndCollaterals.collateralUTxOs,

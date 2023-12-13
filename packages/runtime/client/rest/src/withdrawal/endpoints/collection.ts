@@ -23,7 +23,6 @@ import {
   TextEnvelopeGuard,
   TxOutRef,
   WithdrawalId,
-  unAddressBech32,
   unPolicyId,
   unTxOutRef,
 } from "@marlowe.io/runtime-core";
@@ -147,13 +146,9 @@ export const postViaAxios: (axiosInstance: AxiosInstance) => POST =
           headers: {
             Accept: "application/vendor.iog.marlowe-runtime.withdraw-tx-json",
             "Content-Type": "application/json",
-            "X-Change-Address": unAddressBech32(
-              addressesAndCollaterals.changeAddress
-            ),
-            "X-Address": pipe(
-              addressesAndCollaterals.usedAddresses,
-              A.map(unAddressBech32),
-              (a) => a.join(",")
+            "X-Change-Address": addressesAndCollaterals.changeAddress,
+            "X-Address": pipe(addressesAndCollaterals.usedAddresses, (a) =>
+              a.join(",")
             ),
             "X-Collateral-UTxO": pipe(
               addressesAndCollaterals.collateralUTxOs,

@@ -25,7 +25,6 @@ import {
   Metadata,
   TextEnvelope,
   TextEnvelopeGuard,
-  unAddressBech32,
   unTxOutRef,
   AddressesAndCollaterals,
   AddressBech32,
@@ -584,13 +583,9 @@ export const postViaAxios: (
           ...(stakeAddress && {
             "X-Stake-Address": unStakeAddressBech32(stakeAddress),
           }),
-          "X-Change-Address": unAddressBech32(
-            addressesAndCollaterals.changeAddress
-          ),
-          "X-Address": pipe(
-            addressesAndCollaterals.usedAddresses,
-            A.map(unAddressBech32),
-            (a) => a.join(",")
+          "X-Change-Address": addressesAndCollaterals.changeAddress,
+          "X-Address": pipe(addressesAndCollaterals.usedAddresses, (a) =>
+            a.join(",")
           ),
           "X-Collateral-UTxO": pipe(
             addressesAndCollaterals.collateralUTxOs,

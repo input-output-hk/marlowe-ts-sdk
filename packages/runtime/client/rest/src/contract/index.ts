@@ -16,8 +16,6 @@ export { ContractDetails } from "./details.js";
 export {
   useMintedRoles,
   mintRole,
-  AddressBech32Brand,
-  AddressBech32,
   openRole,
   ClosedRole,
   OpenRole,

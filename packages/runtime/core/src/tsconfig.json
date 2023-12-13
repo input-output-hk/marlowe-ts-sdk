@@ -1,6 +1,14 @@
 {
   "extends": "../../../../tsconfig-base.json",
   "compilerOptions": {
-    "outDir": "../dist/esm"
-  }
+    "outDir": "../dist/esm",
+    "paths": {
+      "@marlowe.io/adapter/*": ["../../../../adapter/src/*"],
+      "@marlowe.io/language-core-v1/*": ["../../../../language/core/v1/src/*"]
+    }
+  },
+  "references": [
+    { "path": "../../../adapter/src" },
+    { "path": "../../../language/core/v1/src" }
+  ]
 }

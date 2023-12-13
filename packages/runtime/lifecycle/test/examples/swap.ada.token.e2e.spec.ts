@@ -13,10 +13,7 @@ import {
 } from "../context.js";
 import { provisionAnAdaAndTokenProvider } from "../provisionning.js";
 import console from "console";
-import {
-  runtimeTokenToMarloweTokenValue,
-  unAddressBech32,
-} from "@marlowe.io/runtime-core";
+import { runtimeTokenToMarloweTokenValue } from "@marlowe.io/runtime-core";
 import { onlyByContractIds } from "@marlowe.io/runtime-lifecycle/api";
 import { MINUTES } from "@marlowe.io/adapter/time";
 import { mintRole, openRole } from "@marlowe.io/runtime-rest-client/contract";
