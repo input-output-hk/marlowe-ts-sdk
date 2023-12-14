@@ -9,6 +9,14 @@ export type Label = string;
 export const LabelGuard: t.Type<Label> = t.string;
 
 /**
+ * A label for one of the {@link ObjectType}
+ * @category Object
+ */
+export type ContractSourceId = string;
+
+export const ContractSourceIdGuard: t.Type<ContractSourceId> = t.string;
+
+/**
  * A reference to an {@link ObjectType}.
  * @category Object
  */
@@ -20,4 +28,6 @@ export interface Reference {
  * {@link !io-ts-usage | Dynamic type guard} for the {@link Reference | reference type}.
  * @category Object
  */
-export const ReferenceGuard: t.Type<Reference> = t.type({ ref: t.string });
+export const ReferenceGuard: t.Type<Reference> = t.type({
+  ref: ContractSourceIdGuard,
+});

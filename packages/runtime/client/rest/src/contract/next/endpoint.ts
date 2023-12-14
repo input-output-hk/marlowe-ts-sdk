@@ -40,3 +40,48 @@ export const getViaAxios: (axiosInstance: AxiosInstance) => GET =
 
 const contractNextEndpoint = (contractId: ContractId): string =>
   `/contracts/${encodeURIComponent(unContractId(contractId))}/next`;
+
+export interface GetNextStepsForContractRequest {
+  contractId: ContractId;
+  validityStart: bigint;
+  validityEnd: bigint;
+  parties?: Party[];
+}
+
+export type GetNextStepsForContractResponse = Next;
+
+const GetNextStepsForContractResponseGuard = Next;
+
+export const getNextStepsForContract =
+  (axiosInstance: AxiosInstance) =>
+  async ({
+    contractId,
+    validityStart,
+    validityEnd,
+    parties,
+  }: GetNextStepsForContractRequest): Promise<GetNextStepsForContractResponse> => {
+    const response = await axiosInstance.get(
+      `/contracts/${encodeURIComponent(
+        unContractId(contractId)
+      )}/next?${stringify({
+        validityStart: posixTimeToIso8601(validityStart),
+        validityEnd: posixTimeToIso8601(validityEnd),
+        party: parties,
+      })}`,
+      {
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    return pipe(
+      GetNextStepsForContractResponseGuard.decode(response.data),
+      E.match(
+        (e) => {
+          throw formatValidationErrors(e);
+        },
+        (e) => e
+      )
+    );
+  };
