@@ -39,7 +39,7 @@ export function logJSON(message, json) {
 export function getRuntimeUrl() {
   const runtimeUrlInput = document.getElementById("runtimeUrl");
   return (
-    runtimeUrlInput.value ||
+    (runtimeUrlInput && runtimeUrlInput.value) ||
     "https://marlowe-runtime-preprod-web.demo.scdev.aws.iohkdev.io/"
   );
 }
