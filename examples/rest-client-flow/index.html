@@ -135,6 +135,43 @@
         >/contracts/:contractId/transactions/:transactionId</a
       >
       <br />
+      <input
+        id="getContractSourceById"
+        type="button"
+        value="Get contract source by contract Source id"
+        class="endpoint"
+      />
+      GETs contract source by contract Source ID
+      <a
+        href="https://input-output-hk.github.io/marlowe-ts-sdk/interfaces/_marlowe_io_runtime_rest_client.index.RestClient.html#getContractSourceById"
+        >/contracts/sources/:contractSourceId</a
+      >
+      <br />
+      <input
+        id="getContractSourceAdjacency"
+        type="button"
+        value="Get adjacent contract Source IDs"
+        class="endpoint"
+      />
+      GETs the contract Source IDs which are adjacent to a contract
+      <a
+        href="https://input-output-hk.github.io/marlowe-ts-sdk/interfaces/_marlowe_io_runtime_rest_client.index.RestClient.html#getContractSourceAdjacency"
+        >/contracts/sources/:contractSourceId/adjacency</a
+      >
+      <br />
+      <input
+        id="getContractSourceClosure"
+        type="button"
+        value="Get contract Source IDs in contract"
+        class="endpoint"
+      />
+      GETs the contract Source IDs which appear in the full hierarchy of a
+      contract source
+      <a
+        href="https://input-output-hk.github.io/marlowe-ts-sdk/interfaces/_marlowe_io_runtime_rest_client.index.RestClient.html#getContractSourceClosure"
+        >/contracts/sources/:contractSourceId/closure</a
+      >
+      <br />
     </div>
 
     <h2>Console</h2>
