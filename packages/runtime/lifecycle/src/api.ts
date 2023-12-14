@@ -10,7 +10,7 @@ import {
   Tags,
   TxId,
 } from "@marlowe.io/runtime-core";
-import { RestDI } from "@marlowe.io/runtime-rest-client";
+import { RestClient, RestDI } from "@marlowe.io/runtime-rest-client";
 import { RolesConfiguration } from "@marlowe.io/runtime-rest-client/contract";
 import { ISO8601 } from "@marlowe.io/adapter/time";
 import {
@@ -23,6 +23,7 @@ import { Next } from "@marlowe.io/language-core-v1/next";
 
 export type RuntimeLifecycle = {
   wallet: WalletAPI;
+  restClient: RestClient;
   contracts: ContractsAPI;
   payouts: PayoutsAPI;
 };

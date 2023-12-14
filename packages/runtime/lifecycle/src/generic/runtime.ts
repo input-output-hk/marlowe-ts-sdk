@@ -13,6 +13,7 @@ export function mkRuntimeLifecycle(
 ): RuntimeLifecycle {
   return {
     wallet: wallet,
+    restClient,
     contracts: mkContractLifecycle(wallet, deprecatedRestAPI, restClient),
     payouts: mkPayoutLifecycle(wallet, deprecatedRestAPI, restClient),
   };
