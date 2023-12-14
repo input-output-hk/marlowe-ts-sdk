@@ -1,6 +1,11 @@
 export { Action, Deposit, Notify, Choice } from "./actions.js";
 export { ChoiceName, ChoiceId, Bound, ChosenNum } from "./choices.js";
-export { Reference, Label } from "./reference.js";
+export {
+  Reference,
+  Label,
+  ContractSourceId,
+  ContractSourceIdGuard,
+} from "./reference.js";
 export { Address, Role, Party } from "./participants.js";
 export { Payee, PayeeAccount, PayeeParty, AccountId } from "./payee.js";
 

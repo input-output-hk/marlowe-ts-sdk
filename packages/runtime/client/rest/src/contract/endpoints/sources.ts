@@ -4,21 +4,26 @@ import * as E from "fp-ts/lib/Either.js";
 import { pipe } from "fp-ts/lib/function.js";
 import { formatValidationErrors } from "jsonbigint-io-ts-reporters";
 
-import { BuiltinByteString, Contract } from "@marlowe.io/language-core-v1";
-import { Bundle, Label } from "@marlowe.io/marlowe-object";
+import { Contract } from "@marlowe.io/language-core-v1";
+import {
+  Bundle,
+  Label,
+  ContractSourceId,
+  ContractSourceIdGuard,
+} from "@marlowe.io/marlowe-object";
 import { AxiosInstance } from "axios";
 
 export interface CreateContractSourcesResponse {
-  contractSourceId: BuiltinByteString;
+  contractSourceId: ContractSourceId;
   intermediateIds: {
-    [key: Label]: BuiltinByteString;
+    [key: Label]: ContractSourceId;
   };
 }
 
 const CreateContractSourcesResponseGuard: t.Type<CreateContractSourcesResponse> =
   t.type({
-    contractSourceId: G.BuiltinByteString,
-    intermediateIds: t.record(t.string, G.BuiltinByteString),
+    contractSourceId: ContractSourceIdGuard,
+    intermediateIds: t.record(t.string, ContractSourceIdGuard),
   });
 
 export const createContractSources = (axiosInstance: AxiosInstance) => {
@@ -42,7 +47,7 @@ export const createContractSources = (axiosInstance: AxiosInstance) => {
 };
 
 export interface GetContractBySourceIdRequest {
-  contractSourceId: BuiltinByteString;
+  contractSourceId: ContractSourceId;
   expand?: boolean;
 }
 
@@ -73,15 +78,15 @@ export const getContractSourceById =
   };
 
 export interface GetContractSourceAdjacencyRequest {
-  contractSourceId: BuiltinByteString;
+  contractSourceId: ContractSourceId;
 }
 
 export interface GetContractSourceAdjacencyResponse {
-  results: BuiltinByteString[];
+  results: ContractSourceId[];
 }
 
 const GetContractSourceAdjacencyResponseGuard: t.Type<GetContractSourceAdjacencyResponse> =
-  t.type({ results: t.array(G.BuiltinByteString) });
+  t.type({ results: t.array(ContractSourceIdGuard) });
 
 export const getContractSourceAdjacency =
   (axiosInstance: AxiosInstance) =>
@@ -103,15 +108,15 @@ export const getContractSourceAdjacency =
   };
 
 export interface GetContractSourceClosureRequest {
-  contractSourceId: BuiltinByteString;
+  contractSourceId: ContractSourceId;
 }
 
 export interface GetContractSourceClosureResponse {
-  results: BuiltinByteString[];
+  results: ContractSourceId[];
 }
 
 const GetContractSourceClosureResponseGuard: t.Type<GetContractSourceClosureResponse> =
-  t.type({ results: t.array(G.BuiltinByteString) });
+  t.type({ results: t.array(ContractSourceIdGuard) });
 
 export const getContractSourceClosure =
   (axiosInstance: AxiosInstance) =>
