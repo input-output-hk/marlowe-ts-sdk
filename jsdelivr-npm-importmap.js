@@ -18,6 +18,7 @@ const importMap = {
     "@marlowe.io/language-examples": "https://cdn.jsdelivr.net/npm/@marlowe.io/language-examples@0.3.0-beta-rc1/dist/bundled/esm/language-examples.js",
     "@marlowe.io/language-specification-client": "https://cdn.jsdelivr.net/npm/@marlowe.io/language-specification-client@0.3.0-beta-rc1/dist/bundled/esm/language-specification-client.js",
     "@marlowe.io/token-metadata-client": "https://cdn.jsdelivr.net/npm/@marlowe.io/token-metadata-client@0.3.0-beta-rc1/dist/bundled/esm/token-metadata-client.js",
+    "@marlowe.io/generic-guards": "https://cdn.jsdelivr.net/npm/@marlowe.io/generic-guards@0.3.0-beta-rc1/dist/bundled/esm/generic-guards.js",
     "@marlowe.io/wallet": "https://cdn.jsdelivr.net/npm/@marlowe.io/wallet@0.3.0-beta-rc1/dist/bundled/esm/wallet.js",
     "@marlowe.io/wallet/api": "https://cdn.jsdelivr.net/npm/@marlowe.io/wallet@0.3.0-beta-rc1/dist/bundled/esm/api.js",
     "@marlowe.io/wallet/browser": "https://cdn.jsdelivr.net/npm/@marlowe.io/wallet@0.3.0-beta-rc1/dist/bundled/esm/browser.js",

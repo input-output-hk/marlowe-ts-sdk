@@ -29,6 +29,7 @@
     "packages/language/examples",
     "packages/language/specification-client",
     "packages/token-metadata-client",
+    "packages/generic-guards",
     "packages/wallet",
     "packages/runtime/client/rest",
     "packages/runtime/core",
