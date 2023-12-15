@@ -7,7 +7,7 @@ import {
 } from "@marlowe.io/language-core-v1";
 import * as G from "@marlowe.io/language-core-v1/guards";
 
-type SurveyOptions = {
+export type SurveyOptions = {
   surveyParticipant: Address;
   custodian: Address;
   questions: Question[];
@@ -16,7 +16,7 @@ type SurveyOptions = {
   rewardToken: Token;
 };
 
-type Question = {
+export type Question = {
   choiceName: string;
   bounds: Bound;
 };

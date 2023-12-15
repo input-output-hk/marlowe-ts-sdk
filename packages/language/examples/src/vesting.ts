@@ -1,6 +1,7 @@
 /**
- * This module offers capabalities for running a Vesting contract, this contract is defined
- * as follows :
+ * <h4>Description</h4>
+ * <p>
+ * This module offers capabalities for running a Vesting contract :
  *   1. There are `N` vesting periods.
  *   2. Each vesting period involves `P` tokens.
  *   3. The Provider initially deposits `N * P` tokens into the contract.
@@ -19,9 +20,16 @@
  *
  *   8. The Provider may cancel the contract during the first vesting period.
  *   9. The Provider may not cancel the contract after all funds have been vested.
+ * </p>
+ *
+ * <h4>Limitations</h4>
+ * <p>
+ *
+ * Without Merkleization, this contract can't be deployed above 3 periods of time without reaching the Plutus constraints
+ * when running on chain our Marlowe/Plutus Validators.</p>
+ *
  * @packageDocumentation
  */
-
 import {
   Contract,
   Case,
@@ -35,7 +43,6 @@ import {
   Environment,
   mkEnvironment,
   Input,
-  NormalInput,
   IChoice,
 } from "@marlowe.io/language-core-v1";
 
@@ -529,7 +536,7 @@ const claimerDepositDistribution = function (
 /**  NOTE: Currently this logic presents the withdrawal and cancel for the last period, even though it doesn't make sense
  *        because there is nothing to cancel, and even if the claimer does a partial withdrawal, they receive the balance in their account.
  */
-const recursiveClaimerDepositDistribution = function (
+export const recursiveClaimerDepositDistribution = function (
   request: VestingRequest,
   periodIndex: bigint
 ): Contract {

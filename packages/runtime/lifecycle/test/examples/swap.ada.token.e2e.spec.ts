@@ -2,7 +2,6 @@ import { pipe } from "fp-ts/lib/function.js";
 import { addDays } from "date-fns";
 
 import { Deposit } from "@marlowe.io/language-core-v1/next";
-import * as Examples from "@marlowe.io/language-examples";
 
 import { datetoTimeout, adaValue } from "@marlowe.io/language-core-v1";
 import { mkFPTSRestClient } from "@marlowe.io/runtime-rest-client/index.js";
@@ -16,11 +15,8 @@ import console from "console";
 import { runtimeTokenToMarloweTokenValue } from "@marlowe.io/runtime-core";
 import { onlyByContractIds } from "@marlowe.io/runtime-lifecycle/api";
 import { MINUTES } from "@marlowe.io/adapter/time";
-import { mintRole, openRole } from "@marlowe.io/runtime-rest-client/contract";
-import {
-  AddressBech32,
-  AddressBech32Guard,
-} from "@marlowe.io/runtime-rest-client/contract/rolesConfigurations.js";
+import { mintRole } from "@marlowe.io/runtime-rest-client/contract";
+import { AtomicSwap } from "@marlowe.io/language-examples";
 
 global.console = console;
 
@@ -44,35 +40,38 @@ describe("swap", () => {
           getBankPrivateKey(),
           provisionScheme
         );
-      const swapRequest = {
-        provider: {
-          roleName: "Ada provider",
-          depositTimeout: pipe(addDays(Date.now(), 1), datetoTimeout),
-          value: adaValue(2n),
+      const scheme: AtomicSwap.Scheme = {
+        participants: {
+          seller: { address: adaProvider.address },
+          buyer: { role_token: "buyer" },
         },
-        swapper: {
-          roleName: "Token provider",
-          depositTimeout: pipe(addDays(Date.now(), 2), datetoTimeout),
-          value: runtimeTokenToMarloweTokenValue(tokenValueMinted),
+        offer: {
+          deadline: pipe(addDays(Date.now(), 1), datetoTimeout),
+          asset: adaValue(2n),
+        },
+        ask: {
+          deadline: pipe(addDays(Date.now(), 1), datetoTimeout),
+          asset: runtimeTokenToMarloweTokenValue(tokenValueMinted),
+        },
+        swapConfirmation: {
+          deadline: pipe(addDays(Date.now(), 1), datetoTimeout),
         },
       };
-      const swapContract = Examples.SwapADAToken.mkSwapContract(swapRequest);
 
-      // Creation of the Contract
-      const [contractId, txIdContractCreated] = await runtime(
+      const swapContract = AtomicSwap.mkContract(scheme);
+
+      const [contractId, txCreatedContract] = await runtime(
         adaProvider
       ).contracts.createContract({
         contract: swapContract,
         roles: {
-          [swapRequest.provider.roleName]: mintRole(
-            adaProvider.address as unknown as AddressBech32
-          ),
-          [swapRequest.swapper.roleName]: mintRole(
-            tokenProvider.address as unknown as AddressBech32
+          [scheme.participants.buyer.role_token]: mintRole(
+            tokenProvider.address
           ),
         },
       });
-      await runtime(adaProvider).wallet.waitConfirmation(txIdContractCreated);
+
+      await runtime(adaProvider).wallet.waitConfirmation(txCreatedContract);
       // Applying the first Deposit
       let next = await runtime(adaProvider).contracts.getApplicableInputs(
         contractId
