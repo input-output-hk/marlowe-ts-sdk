@@ -8,15 +8,15 @@ import { mkLucidWallet, WalletAPI } from "@marlowe.io/wallet";
 import { mkRuntimeLifecycle } from "@marlowe.io/runtime-lifecycle";
 import { Lucid, Blockfrost, C } from "lucid-cardano";
 import { readConfig } from "./config.js";
-import { datetoTimeout } from "@marlowe.io/language-core-v1";
+import { datetoTimeout, getNextTimeout, Timeout } from "@marlowe.io/language-core-v1";
 import {
   addressBech32,
+  contractId,
   ContractId,
   contractIdToTxId,
   Tags,
   transactionWitnessSetTextEnvelope,
   TxId,
-  unAddressBech32,
 } from "@marlowe.io/runtime-core";
 import { Address } from "@marlowe.io/language-core-v1";
 import { Bundle, Label, lovelace } from "@marlowe.io/marlowe-object";
@@ -108,7 +108,7 @@ async function createContractMenu(lifecycle: RuntimeLifecycle) {
   );
 
   const [contractId, txId] = await createContract(lifecycle, {
-    payFrom: { address: unAddressBech32(walletAddress) },
+    payFrom: { address: walletAddress },
     payTo: { address: payee },
     amount,
     depositDeadline,
@@ -118,20 +118,43 @@ async function createContractMenu(lifecycle: RuntimeLifecycle) {
   console.log(`Contract created with id ${contractId}`);
   await waitIndicator(lifecycle.wallet, txId);
 
-  await contractMenu();
+  await contractMenu(lifecycle, contractId);
 }
 
-async function loadContractMenu() {
-  const answer = await input({
+async function loadContractMenu(lifecycle: RuntimeLifecycle) {
+  const cid = await input({
     message: "Enter the contractId",
   });
-  console.log(answer);
-  await contractMenu();
+  await contractMenu(lifecycle, contractId(cid));
 }
 
-// async function contractMenu(contractId: ContractId) {
-async function contractMenu() {
+async function contractMenu(
+  lifecycle: RuntimeLifecycle,
+  contractId: ContractId
+) {
   console.log("TODO: print contract state");
+  const contractDetails = await lifecycle.restClient.getContractById(
+    contractId
+  );
+  const now = datetoTimeout(new Date());
+
+  if (contractDetails.currentContract._tag === "None") {
+    console.log("DEBUG: current contract none");
+  }
+
+  const currentContract =
+    contractDetails.currentContract._tag === "None"
+      ? contractDetails.initialContract
+      : contractDetails.currentContract.value;
+  const nextTimeout = getNextTimeout(currentContract, now);
+  const oneDayFrom = (time: Timeout) => time + 24n * 60n * 60n * 1000n; // in milliseconds
+  const applicableInputs = await lifecycle.contracts.getApplicableInputs(
+    contractId,
+    { timeInterval: { from: now, to: nextTimeout ?? oneDayFrom(now)} }
+  );
+  console.log("applicable inputs");
+  console.log(applicableInputs);
+
   const answer = await select({
     message: "Contract menu",
     choices: [
@@ -159,7 +182,7 @@ async function mainLoop(lifecycle: RuntimeLifecycle) {
           await createContractMenu(lifecycle);
           break;
         case "load":
-          await loadContractMenu();
+          await loadContractMenu(lifecycle);
           break;
         case "exit":
           process.exit(0);

@@ -63,6 +63,7 @@ export {
   datetoTimeout,
   timeoutToDate,
   Timeout,
+  getNextTimeout
 } from "./contract.js";
 export { Environment, mkEnvironment, TimeInterval } from "./environment.js";
 
