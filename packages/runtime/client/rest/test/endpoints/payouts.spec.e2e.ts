@@ -2,7 +2,7 @@ import { pipe } from "fp-ts/lib/function.js";
 import * as TE from "fp-ts/lib/TaskEither.js";
 import * as O from "fp-ts/lib/Option.js";
 
-import { mkFPTSRestClient } from "@marlowe.io/runtime-rest-client/index.js";
+import { mkFPTSRestClient } from "@marlowe.io/runtime-rest-client";
 
 import { getMarloweRuntimeUrl } from "../context.js";
 

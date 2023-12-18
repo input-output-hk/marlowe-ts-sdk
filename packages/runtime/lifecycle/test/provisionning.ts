@@ -1,6 +1,9 @@
 import { TokenName } from "@marlowe.io/language-core-v1";
 import { mkRuntimeLifecycle } from "@marlowe.io/runtime-lifecycle/generic";
-import { FPTSRestAPI } from "@marlowe.io/runtime-rest-client/index.js";
+import {
+  mkFPTSRestClient,
+  mkRestClient,
+} from "@marlowe.io/runtime-rest-client";
 import {
   Context,
   SingleAddressWallet,
@@ -19,11 +22,14 @@ export type ProvisionScheme = {
 };
 
 export async function provisionAnAdaAndTokenProvider(
-  restAPI: FPTSRestAPI,
+  runtimeURL: string,
   walletContext: Context,
   bankPrivateKey: PrivateKeysAsHex,
   scheme: ProvisionScheme
 ) {
+  const deprecatedRestAPI = mkFPTSRestClient(runtimeURL);
+  const restClient = mkRestClient(runtimeURL);
+
   // Generating/Initialising Accounts
   const bank = await SingleAddressWallet.Initialise(
     walletContext,
@@ -71,16 +77,20 @@ export async function provisionAnAdaAndTokenProvider(
     adaProvider: adaProvider,
     tokenProvider: tokenProvider,
     tokenValueMinted: tokenValueMinted,
-    restAPI: restAPI,
-    runtime: (wallet: WalletAPI) => mkRuntimeLifecycle(restAPI, wallet),
+    restClient: restClient,
+    runtime: (wallet: WalletAPI) =>
+      mkRuntimeLifecycle(deprecatedRestAPI, restClient, wallet),
   };
 }
 
 export async function initialiseBankAndverifyProvisionning(
-  restAPI: FPTSRestAPI,
+  runtimeURL: string,
   walletContext: Context,
   bankPrivateKey: PrivateKeysAsHex
 ) {
+  const deprecatedRestAPI = mkFPTSRestClient(runtimeURL);
+  const restClient = mkRestClient(runtimeURL);
+
   const bank = await SingleAddressWallet.Initialise(
     walletContext,
     bankPrivateKey
@@ -95,7 +105,7 @@ export async function initialiseBankAndverifyProvisionning(
 
   return {
     bank: bank,
-    restAPI: restAPI,
-    runtime: mkRuntimeLifecycle(restAPI, bank),
+    restClient: restClient,
+    runtime: mkRuntimeLifecycle(deprecatedRestAPI, restClient, bank),
   };
 }
