@@ -1,20 +1,29 @@
 /**
- *  This module exports static types (only useful in TypeScript) for the JSON schema as specified in the Appendix E of the {@link https://github.com/input-output-hk/marlowe/releases/download/v3/Marlowe.pdf | Marlowe specification}
+ * This module is the main entrypoint for the language-core-v1 package. It offers static types and utility functions to work with
+ * the {@link https://github.com/input-output-hk/marlowe/releases/download/v3/Marlowe.pdf | Marlowe Core Specification}.
+ * The static types can only be used with TypeScript, but we offer the {@link @marlowe.io/language-core-v1!guards} module to check
+ * at runtime if an object has the expected shape (which is useful for both JavaScript and TypeScript).
 
    ```
-  import { Contract, datetoTimeout } from "./contract.js";
-  import { Value } from "./value-and-observation.js";
-  import { lovelace } from './token.js';
-  import { Party } from "./participants.js";
+  import { Contract, Party, Value, lovelace, datetoTimeout } from "@marlowe.io/language-core-v1"
 
-  const oneADA = 1000000n;
+  // 1 Ada is equal to 1 Million lovelaces. The `n` at the end of the number is JavaScript way of
+  // using bigint. Marlowe uses bigint to define Constant values.
+  const oneADA: Value = 1000000n;
+
+  // Other Marlowe datatypes are encoded as plain JSON objects as defined in the Appendix E of the Marlowe
+  // Specification. For example, to express a MulValue object (multiplication), you need to define the
+  // following JSON object
   const tenADA: Value = { multiply: 10n, times: oneADA };
-  // is the same as
+
+  // Note that the explicit `: Value` type annotation is not strictly needed, the following line would
+  //  also work both in TypeScript and JavaScript
   // const tenADA = { multiply: 10n, times: oneADA};
 
-  // these party definitions are the same, but specifying the type 'Party'
-  // adds static guardrails to the type, making the dev process
-  // more intuative
+  // The only difference is when we make a mistake. When we add the explicit annotation we inmediatly
+  // get a compiler error close to the problematic code.
+
+  // Try to modify "role_token" for "rle_token" in these expressions to see the difference.
   const bob: Party = { "role_token": "Bob" };
   const alice = { "role_token": "Alice" };
 
