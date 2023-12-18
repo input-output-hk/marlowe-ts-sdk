@@ -29,7 +29,16 @@ export interface Address {
  */
 export const AddressGuard: t.Type<Address> = t.type({ address: AddressBech32 });
 
+/**
+ * Type alias for the role name.
+ * @category Party
+ */
 export type RoleName = string;
+
+/**
+ * {@link !io-ts-usage | Dynamic type guard} for the {@link RoleName | role name type}.
+ * @category Party
+ */
 export const RoleNameGuard: t.Type<RoleName> = t.string;
 
 /**
