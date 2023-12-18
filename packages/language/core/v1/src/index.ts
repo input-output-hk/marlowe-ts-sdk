@@ -2,22 +2,36 @@
  *  This module exports static types (only useful in TypeScript) for the JSON schema as specified in the Appendix E of the {@link https://github.com/input-output-hk/marlowe/releases/download/v3/Marlowe.pdf | Marlowe specification}
 
    ```
-  import {Value, Contract} from "@marlowe/language-core-v1"
-  const four: Value = { add: 2n, and: 2n};
+  import { Contract, datetoTimeout } from "./contract.js";
+  import { Value } from "./value-and-observation.js";
+  import { lovelace } from './token.js';
+  import { Party } from "./participants.js";
+
+  const oneADA = 1000000n;
+  const tenADA: Value = { multiply: 10n, times: oneADA };
+  // is the same as
+  // const tenADA = { multiply: 10n, times: oneADA};
+
+  // these party definitions are the same, but specifying the type 'Party'
+  // adds static guardrails to the type, making the dev process
+  // more intuative
+  const bob: Party = { "role_token": "Bob" };
+  const alice = { "role_token": "Alice" };
+
   const contract: Contract = {
     "when": [
       {
         "then": "close",
         "case": {
-          "party": { "role_token": "Bob" },
-          "of_token": { "token_name": "", "currency_symbol": "" },
-          "into_account": { "role_token": "Alice" },
-          "deposits": 1n
+          "party": bob,
+          "of_token": lovelace,
+          "into_account": alice,
+          "deposits": tenADA
         }
       }
     ],
     "timeout_continuation": "close",
-    "timeout": 1696345114737n
+    "timeout": datetoTimeout(new Date("2024-05-22"))
   }
   ```
  * @packageDocumentation
