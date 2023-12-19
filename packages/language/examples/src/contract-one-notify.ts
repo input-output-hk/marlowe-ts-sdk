@@ -1,9 +1,8 @@
-/* eslint-disable sort-keys-fix/sort-keys-fix */
-
 import { Contract, close, Timeout } from "@marlowe.io/language-core-v1";
 
 /**
  * Marlowe Example : A contract with One Step (one true notify)
+ * @packageDocumentation
  */
 
 export const oneNotifyTrue: (notifyTimeout: Timeout) => Contract = (

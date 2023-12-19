@@ -1,4 +1,4 @@
-import { survey, verifySurvey } from "@marlowe.io/language-examples";
+import { Survey } from "@marlowe.io/language-examples";
 import * as H from "../../js/poc-helpers.js";
 import { datetoTimeout, timeoutToDate } from "@marlowe.io/language-core-v1";
 
@@ -45,7 +45,7 @@ const expectedQuestions = [
 ];
 
 export const mkWorkshopSurvey = (options) =>
-  survey({
+  Survey.survey({
     surveyParticipant: options.surveyParticipant,
     custodian: custodianParty,
     questions: expectedQuestions,
@@ -55,7 +55,7 @@ export const mkWorkshopSurvey = (options) =>
   });
 
 export function verifySurveyContract(actual, optionalSurveyParticipant = null) {
-  const result = verifySurvey(expectedQuestions, actual);
+  const result = Survey.verifySurvey(expectedQuestions, actual);
   let match = result.match;
   if (!match) {
     result.logs.forEach((entry) =>
