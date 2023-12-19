@@ -1,7 +1,7 @@
 import { pipe } from "fp-ts/lib/function.js";
 import { addDays } from "date-fns";
 
-import { Swap } from "@marlowe.io/language-examples";
+import { AtomicSwap } from "@marlowe.io/language-examples";
 import { datetoTimeout, adaValue } from "@marlowe.io/language-core-v1";
 import { Deposit } from "@marlowe.io/language-core-v1/next";
 import { mkFPTSRestClient } from "@marlowe.io/runtime-rest-client/index.js";
@@ -35,16 +35,14 @@ describe("Payouts", () => {
         getBankPrivateKey(),
         provisionScheme
       );
-    const scheme: Swap.Scheme = {
-      participants: {
-        seller: { address: adaProvider.address },
-        buyer: { role_token: "buyer" },
-      },
+    const scheme: AtomicSwap.Scheme = {
       offer: {
+        seller: { address: adaProvider.address },
         deadline: pipe(addDays(Date.now(), 1), datetoTimeout),
         asset: adaValue(2n),
       },
       ask: {
+        buyer: { role_token: "buyer" },
         deadline: pipe(addDays(Date.now(), 1), datetoTimeout),
         asset: runtimeTokenToMarloweTokenValue(tokenValueMinted),
       },
@@ -53,13 +51,13 @@ describe("Payouts", () => {
       },
     };
 
-    const swapContract = Swap.mkAtomicSwap(scheme);
+    const swapContract = AtomicSwap.mkContract(scheme);
     const [contractId, txCreatedContract] = await runtime(
       adaProvider
     ).contracts.createContract({
       contract: swapContract,
       roles: {
-        [scheme.participants.buyer.role_token]: mintRole(tokenProvider.address),
+        [scheme.ask.buyer.role_token]: mintRole(tokenProvider.address),
       },
     });
 

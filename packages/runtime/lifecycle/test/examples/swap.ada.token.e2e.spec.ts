@@ -41,15 +41,13 @@ describe("swap", () => {
           provisionScheme
         );
       const scheme: AtomicSwap.Scheme = {
-        participants: {
-          seller: { address: adaProvider.address },
-          buyer: { role_token: "buyer" },
-        },
         offer: {
+          seller: { address: adaProvider.address },
           deadline: pipe(addDays(Date.now(), 1), datetoTimeout),
           asset: adaValue(2n),
         },
         ask: {
+          buyer: { role_token: "buyer" },
           deadline: pipe(addDays(Date.now(), 1), datetoTimeout),
           asset: runtimeTokenToMarloweTokenValue(tokenValueMinted),
         },
@@ -65,9 +63,7 @@ describe("swap", () => {
       ).contracts.createContract({
         contract: swapContract,
         roles: {
-          [scheme.participants.buyer.role_token]: mintRole(
-            tokenProvider.address
-          ),
+          [scheme.ask.buyer.role_token]: mintRole(tokenProvider.address),
         },
       });
 

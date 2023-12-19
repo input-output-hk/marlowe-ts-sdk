@@ -1,9 +1,7 @@
 /**
  * <h4>Contract Examples</h4>
  * <p>
- * Here are examples of contracts that you can reuse/modify at your free will.</p>
- *
- * Some of them are used in prototypes, others only in tests or in our examples folder at the root of this project:
+ * This package contains some examples that demonstrate how to create Marlowe contracts.</p>
  * - Vesting : https://github.com/input-output-hk/marlowe-token-plans
  * - Swap : https://github.com/input-output-hk/marlowe-order-book-swap
  * - Survey : https://github.com/input-output-hk/marlowe-ts-sdk/tree/main/examples/survey-workshop

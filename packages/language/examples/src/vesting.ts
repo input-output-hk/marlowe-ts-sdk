@@ -140,8 +140,7 @@ export type VestingState =
   | UnknownState;
 
 /**
- * `WaitingDepositByProvider` State :
- * The contract has been created. But no inputs has been applied yet.
+ * {@link VestingState:type | Vesting State} where The contract has been created. But no inputs has been applied yet.
  * Inputs are predefined, as a user of this contract, you don't need to create these inputs yourself.
  * You can provide this input directly to `applyInputs` on the `ContractLifeCycleAPI` :
  * 1. `depositInput` is availaible if the connected wallet is the Provider.
