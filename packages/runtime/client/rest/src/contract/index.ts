@@ -55,9 +55,8 @@ export {
   GetContractSourceAdjacencyRequest,
   GetContractBySourceIdRequest,
   GetContractSourceClosureRequest,
-
 } from "./endpoints/sources.js";
 export { TransactionDetails } from "./transaction/details.js";
 export { TxStatus } from "./transaction/status.js";
-export {GetNextStepsForContractRequest} from "./next/endpoint.js"
+export { GetNextStepsForContractRequest } from "./next/endpoint.js";
 export { TransactionTextEnvelope } from "./transaction/endpoints/collection.js";

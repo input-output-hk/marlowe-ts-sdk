@@ -6,7 +6,7 @@
     "./src/atomicSwap.ts",
     "./src/survey.ts",
     "./src/playground-v1/escrow.ts",
-    "./src/playground-v1/escrow-with-collateral.ts",
+    "./src/playground-v1/escrow-with-collateral.ts"
   ],
   "tsconfig": "./src/tsconfig.json",
   "categorizeByGroup": false
