@@ -142,7 +142,7 @@ export type VestingState =
 /**
  * {@link VestingState:type | Vesting State} where The contract has been created. But no inputs has been applied yet.
  * Inputs are predefined, as a user of this contract, you don't need to create these inputs yourself.
- * You can provide this input directly to `applyInputs` on the `ContractLifeCycleAPI` :
+ * You can provide this input directly to `submitApplyInputs` on the `ContractLifeCycleAPI` :
  * 1. `depositInput` is availaible if the connected wallet is the Provider.
  * @category Vesting State
  */
@@ -169,7 +169,7 @@ export type NoDepositBeforeDeadline = {
 /**
  * {@link VestingState:type | Vesting State} where the contract in within a vesting period `currentPeriod`
  * Inputs are predefined, as a user of this contract, you don't need to create these inputs yourself.
- * You can provide this input directly to `applyInputs` on the `ContractLifeCycleAPI` :
+ * You can provide this input directly to `submitApplyInputs` on the `ContractLifeCycleAPI` :
  * 1. `cancelInput` is availaible if the connected wallet is the Provider.
  * 2. `withdrawInput` is availaible if the connected wallet is the Claimer.
  * @category Vesting State
@@ -187,7 +187,7 @@ export type WithinVestingPeriod = {
 /**
  * {@link VestingState:type | Vesting State} where the contract has passed all its vesting periods
  * Inputs are predefined, as a user of this contract, you don't need to create these inputs yourself.
- * You can provide this input directly to `applyInputs` on the `ContractLifeCycleAPI` :
+ * You can provide this input directly to `submitApplyInputs` on the `ContractLifeCycleAPI` :
  *  - `withdrawInput` is availaible if the connected wallet is the Claimer.
  * @category Vesting State
  */

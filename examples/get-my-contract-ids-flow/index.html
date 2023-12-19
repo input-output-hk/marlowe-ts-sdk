@@ -38,9 +38,9 @@
       timeout,
     });
 
-    window.createContract = async () => {
+    window.submitCreateContract = async () => {
       const address = await window.runtimeLifeCycle.wallet.getChangeAddress();
-      return runtimeLifeCycle.contracts.createContract({
+      return runtimeLifeCycle.contracts.submitCreateContract({
         contract: mkContract(address, Date.now() + 1000 * 60 * 10),
       });
     };

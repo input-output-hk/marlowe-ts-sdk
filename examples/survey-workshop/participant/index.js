@@ -77,7 +77,7 @@ async function createContractFromFileUpload() {
       yieldSection.style.display = "none";
       const answerTimeout = timeoutToDate(verification.answerTimeout);
       const rewardTimeout = timeoutToDate(verification.rewardTimeout);
-      createContract(answerTimeout, rewardTimeout);
+      submitCreateContract(answerTimeout, rewardTimeout);
     }
   }
   reader.addEventListener("load", H.tryCatchEvent(handleFile));
@@ -90,10 +90,10 @@ async function createContractFromTemplate() {
     return;
   }
   const { answerTimeout, rewardTimeout } = getTimeouts();
-  createContract(answerTimeout, rewardTimeout, true);
+  submitCreateContract(answerTimeout, rewardTimeout, true);
 }
 
-async function createContract(
+async function submitCreateContract(
   answerTimeout,
   rewardTimeout,
   showContract = false
@@ -123,7 +123,7 @@ async function createContract(
   );
 
   const lifecycle = await H.getLifecycle();
-  const [contractId] = await lifecycle.contracts.createContract({
+  const [contractId] = await lifecycle.contracts.submitCreateContract({
     contract: contract,
     tags: { MarloweSurvey: "test 1" },
   });
@@ -167,7 +167,7 @@ async function submitAllAnswers() {
   );
 
   const lifecycle = await H.getLifecycle();
-  const txId = await lifecycle.contracts.applyInputs(window.contractId, {
+  const txId = await lifecycle.contracts.submitApplyInputs(window.contractId, {
     inputs,
     tags: encryptResult.chunks,
   });
