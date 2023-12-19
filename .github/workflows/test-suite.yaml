@@ -27,8 +27,15 @@ jobs:
             experimental-features = nix-command flakes
       - name: 🔨 Build project
         run: |
-          nix develop --show-trace --command bash -c "npm i && npm run build"
+          nix develop --show-trace --command bash -c "npm i && npm run build && treefmt jsdelivr-npm-importmap.js"
 
       - name: 🧪 Run tests
         run: |
           nix develop --show-trace --command bash -c "npm test"
+
+      - name: 🏥 Check docs generation
+        run: |
+          nix develop --show-trace --command bash -c "npm run docs"
+      - name: 📝 Check formatting
+        run: |
+          nix develop --show-trace --command bash -c "treefmt --fail-on-change"

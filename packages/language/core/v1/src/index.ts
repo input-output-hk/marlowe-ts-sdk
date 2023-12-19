@@ -17,7 +17,7 @@
   const tenADA: Value = { multiply: 10n, times: oneADA };
 
   // Note that the explicit `: Value` type annotation is not strictly needed, the following line would
-  //  also work both in TypeScript and JavaScript
+  // also work both in TypeScript and JavaScript
   // const tenADA = { multiply: 10n, times: oneADA};
 
   // The only difference is when we make a mistake. When we add the explicit annotation we inmediatly

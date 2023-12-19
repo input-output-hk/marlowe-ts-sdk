@@ -70,7 +70,7 @@ import {
 } from "@marlowe.io/language-core-v1";
 import * as G from "@marlowe.io/language-core-v1/guards";
 
-type IReduce = void;
+export type IReduce = void;
 const iReduce: void = undefined;
 
 /**
