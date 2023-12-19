@@ -110,7 +110,7 @@ async function main(
   console.log("Mediator: " + Mediator);
   console.log("Amount: " + amount);
 
-  const [contractId, txId] = await runtime.contracts.createContract({
+  const [contractId, txId] = await runtime.contracts.submitCreateContract({
     contract: escrow,
     roles: { Buyer, Seller, Mediator },
   });

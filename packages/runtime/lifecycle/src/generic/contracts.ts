@@ -39,8 +39,8 @@ export function mkContractLifecycle(
 ): ContractsAPI {
   const di = { wallet, deprecatedRestAPI, restClient };
   return {
-    createContract: submitCreateTx(di),
-    applyInputs: submitApplyInputsTx(di),
+    submitCreateContract: submitCreateTx(di),
+    submitApplyInputs: submitApplyInputsTx(di),
     getApplicableInputs: getApplicableInputs(di),
     getContractIds: getContractIds(di),
   };

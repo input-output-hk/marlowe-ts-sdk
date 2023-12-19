@@ -61,7 +61,7 @@ describe.skip("swap", () => {
 
       const [contractId, txCreatedContract] = await runtime(
         adaProvider
-      ).contracts.createContract({
+      ).contracts.submitCreateContract({
         contract: swapContract,
         roles: {
           [scheme.participants.buyer.role_token]: mintRole(
@@ -77,7 +77,7 @@ describe.skip("swap", () => {
       );
       const txFirstTokensDeposited = await runtime(
         adaProvider
-      ).contracts.applyInputs(contractId, {
+      ).contracts.submitApplyInputs(contractId, {
         inputs: [pipe(next.applicable_inputs.deposits[0], Deposit.toInput)],
       });
       await runtime(adaProvider).wallet.waitConfirmation(
@@ -88,7 +88,7 @@ describe.skip("swap", () => {
       next = await runtime(tokenProvider).contracts.getApplicableInputs(
         contractId
       );
-      await runtime(tokenProvider).contracts.applyInputs(contractId, {
+      await runtime(tokenProvider).contracts.submitApplyInputs(contractId, {
         inputs: [pipe(next.applicable_inputs.deposits[0], Deposit.toInput)],
       });
       await runtime(tokenProvider).wallet.waitConfirmation(
