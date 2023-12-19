@@ -53,8 +53,6 @@ import { TransactionDetails } from "./contract/transaction/details.js";
  *
  * @remarks
  * This version of the RestClient targets version `0.0.5` of the Marlowe Runtime.
- *
- * **WARNING**: Not all endpoints are implemented yet.
  */
 export interface RestClient {
   /**
