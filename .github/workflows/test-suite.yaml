@@ -36,3 +36,6 @@ jobs:
       - name: 🏥 Check docs generation
         run: |
           nix develop --show-trace --command bash -c "npm run docs"
+      - name: 📝 Check formatting
+        run: |
+          nix develop --show-trace --command bash -c "treefmt --fail-on-change"
