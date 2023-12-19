@@ -63,7 +63,7 @@ import {
   Contract,
 } from "@marlowe.io/language-core-v1/playground-v1";
 
-interface EscrowParams {
+export interface EscrowParams {
   price: number;
   depositTimeout: Timeout;
   disputeTimeout: Timeout;
