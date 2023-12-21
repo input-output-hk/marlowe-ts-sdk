@@ -1,19 +1,25 @@
 import * as t from "io-ts/lib/index.js";
-import { iso, Newtype } from "newtype-ts";
-import { fromNewtype } from "io-ts-types";
 import { split } from "fp-ts/lib/string.js";
 import { pipe } from "fp-ts/lib/function.js";
 import { head } from "fp-ts/lib/ReadonlyNonEmptyArray.js";
 import { TxId } from "../tx/id.js";
+import { unsafeEither } from "@marlowe.io/adapter/fp-ts";
 
-export type ContractId = Newtype<
-  { readonly ContractId: unique symbol },
-  string
->;
-export const ContractIdGuard = fromNewtype<ContractId>(t.string);
-export const unContractId = iso<ContractId>().unwrap;
-export const contractId = iso<ContractId>().wrap;
+export interface ContractIdBrand {
+  readonly ContractId: unique symbol;
+}
+
+export const ContractIdGuard = t.brand(
+  t.string,
+  (s): s is t.Branded<string, ContractIdBrand> => true,
+  "ContractId"
+);
+
+export type ContractId = t.TypeOf<typeof ContractIdGuard>;
+
+export const contractId = (s: string) =>
+  unsafeEither(ContractIdGuard.decode(s));
 
 export const contractIdToTxId: (contractId: ContractId) => TxId = (
   contractId
-) => pipe(contractId, unContractId, split("#"), head);
+) => pipe(contractId, split("#"), head);

@@ -16,15 +16,18 @@ import {
   transactionWitnessSetTextEnvelope,
 } from "@marlowe.io/runtime-core";
 
-import { ContractDetails } from "../details.js";
-import { ContractId, unContractId } from "@marlowe.io/runtime-core";
+import { ContractDetails, ContractDetailsGuard } from "../details.js";
+import { ContractId } from "@marlowe.io/runtime-core";
 
 export type GET = (
   contractId: ContractId
 ) => TE.TaskEither<Error | DecodingError, ContractDetails>;
 
 type GETPayload = t.TypeOf<typeof GETPayload>;
-const GETPayload = t.type({ links: t.type({}), resource: ContractDetails });
+const GETPayload = t.type({
+  links: t.type({}),
+  resource: ContractDetailsGuard,
+});
 
 /**
  * @see {@link https://docs.marlowe.iohk.io/api/get-contracts-by-id}
@@ -84,4 +87,4 @@ export const putViaAxios: (axiosInstance: AxiosInstance) => PUT =
     );
 
 const contractEndpoint = (contractId: ContractId): string =>
-  `/contracts/${encodeURIComponent(unContractId(contractId))}`;
+  `/contracts/${encodeURIComponent(contractId)}`;

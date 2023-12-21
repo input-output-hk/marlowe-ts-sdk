@@ -37,32 +37,37 @@ export async function provisionAnAdaAndTokenProvider(
   );
   const adaProvider = await SingleAddressWallet.Random(walletContext);
   const tokenProvider = await SingleAddressWallet.Random(walletContext);
-  // Check Banks treasury
+  log(`Check Bank treasury`);
   const bankBalance = await bank.getLovelaces();
   log(`Bank (${bank.address})`);
   log(`  - ${formatADA(bankBalance)}`);
 
   expect(bankBalance).toBeGreaterThan(100_000_000);
 
-  // Provisionning
+  log(`Provisionning testing accounts`);
+  log(`Seller ${adaProvider.address}`);
+  log(`Buyer  ${tokenProvider.address}`);
+
   await bank.provision([
     [adaProvider, scheme.provider.adaAmount],
     [tokenProvider, scheme.swapper.adaAmount],
   ]);
 
+  log(`Ada provisionning Done`);
+  const adaProviderBalance = await adaProvider.getLovelaces();
+  const tokenProviderADABalance = await tokenProvider.getLovelaces();
+
+  log(`Seller (${adaProvider.address}`);
+  log(`   - ${formatADA(adaProviderBalance)}`);
+  log(`Buyer (${tokenProvider.address})`);
+  log(`   - ${formatADA(tokenProviderADABalance)}`);
+
+  log(`Minting new Random Tokens`);
   const tokenValueMinted = await tokenProvider.mintRandomTokens(
     scheme.swapper.tokenName,
     scheme.swapper.tokenAmount
   );
 
-  // Provisionning Checks
-  // Ada Provider
-  const adaProviderBalance = await adaProvider.getLovelaces();
-  log(`Ada Provider (${adaProvider.address}`);
-  log(`   - ${formatADA(adaProviderBalance)}`);
-
-  // Token Provider
-  const tokenProviderADABalance = await tokenProvider.getLovelaces();
   const tokenBalance = await tokenProvider.tokenBalance(
     tokenValueMinted.assetId
   );

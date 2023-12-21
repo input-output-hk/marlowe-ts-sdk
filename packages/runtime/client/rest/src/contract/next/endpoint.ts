@@ -4,7 +4,7 @@ import * as TE from "fp-ts/lib/TaskEither.js";
 import { pipe } from "fp-ts/lib/function.js";
 import * as HTTP from "@marlowe.io/adapter/http";
 import { formatValidationErrors } from "jsonbigint-io-ts-reporters";
-import { ContractId, unContractId } from "@marlowe.io/runtime-core";
+import { ContractId } from "@marlowe.io/runtime-core";
 import { Environment, Party } from "@marlowe.io/language-core-v1";
 import { Next } from "@marlowe.io/language-core-v1/next";
 import { stringify } from "qs";
@@ -39,7 +39,7 @@ export const getViaAxios: (axiosInstance: AxiosInstance) => GET =
     );
 
 const contractNextEndpoint = (contractId: ContractId): string =>
-  `/contracts/${encodeURIComponent(unContractId(contractId))}/next`;
+  `/contracts/${encodeURIComponent(contractId)}/next`;
 
 export interface GetNextStepsForContractRequest {
   contractId: ContractId;
@@ -61,9 +61,7 @@ export const getNextStepsForContract =
     parties,
   }: GetNextStepsForContractRequest): Promise<GetNextStepsForContractResponse> => {
     const response = await axiosInstance.get(
-      `/contracts/${encodeURIComponent(
-        unContractId(contractId)
-      )}/next?${stringify({
+      `/contracts/${encodeURIComponent(contractId)}/next?${stringify({
         validityStart: posixTimeToIso8601(validityStart),
         validityEnd: posixTimeToIso8601(validityEnd),
         party: parties,

@@ -13,12 +13,13 @@ import { DecodingError } from "@marlowe.io/adapter/codec";
 import {
   AddressBech32,
   AssetId,
+  AssetsMap,
   ContractId,
   PayoutId,
   WithdrawalId,
   unPayoutId,
 } from "@marlowe.io/runtime-core";
-import { PayoutStatus, PayoutDetails, Assets } from "../index.js";
+import { PayoutStatus, PayoutDetails } from "../index.js";
 
 export type GetPayoutByIdRequest = {
   payoutId: PayoutId;
@@ -31,7 +32,7 @@ export type GetPayoutByIdResponse = {
   role: AssetId;
   payoutValidatorAddress: AddressBech32;
   status: PayoutStatus;
-  assets: Assets;
+  assets: AssetsMap;
 };
 
 export type GET = (

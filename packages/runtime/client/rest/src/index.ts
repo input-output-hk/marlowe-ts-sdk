@@ -28,7 +28,6 @@ import * as Transaction from "./contract/transaction/endpoints/singleton.js";
 import * as Transactions from "./contract/transaction/endpoints/collection.js";
 import * as Sources from "./contract/endpoints/sources.js";
 import * as Next from "./contract/next/endpoint.js";
-import { TransactionsRange } from "./contract/transaction/endpoints/collection.js";
 import { unsafeTaskEither } from "@marlowe.io/adapter/fp-ts";
 import {
   ContractId,
@@ -40,16 +39,25 @@ import {
 import { submitContractViaAxios } from "./contract/endpoints/singleton.js";
 import { ContractDetails } from "./contract/details.js";
 import { TransactionDetails } from "./contract/transaction/details.js";
+import { ItemRange } from "./pagination.js";
 // import curlirize from 'axios-curlirize';
+
+export {
+  Page,
+  ItemRange,
+  ItemRangeGuard,
+  ItemRangeBrand,
+  PageGuard,
+} from "./pagination.js";
 
 /**
  * The RestClient offers a simple abstraction for the {@link https://docs.marlowe.iohk.io/api/ | Marlowe Runtime REST API}  endpoints.
  * You can create an instance of the RestClient using the {@link mkRestClient} function.
  * ```
-   import { mkRestClient } from "@marlowe.io/runtime-rest-client";
-   const restClient = mkRestClient("http://localhost:8080");
-   const isHealthy = await restClient.healthcheck();
-  ```
+ * import { mkRestClient } from "@marlowe.io/runtime-rest-client";
+ * const restClient = mkRestClient("http://localhost:8080");
+ * const isHealthy = await restClient.healthcheck();
+ *```
  *
  * @remarks
  * This version of the RestClient targets version `0.0.5` of the Marlowe Runtime.
@@ -149,7 +157,7 @@ export interface RestClient {
   //             ContractNotFound error and specify it in the docs.
   getTransactionsForContract(
     contractId: ContractId,
-    range?: TransactionsRange
+    range?: ItemRange
   ): Promise<Transactions.GetTransactionsForContractResponse>;
 
   /**
@@ -263,12 +271,12 @@ export function mkRestClient(baseURL: string): RestClient {
 
   return {
     getContracts(request) {
-      const rangeOption = O.fromNullable(request?.range);
+      const range = request?.range;
       const tags = request?.tags ?? [];
       const partyAddresses = request?.partyAddresses ?? [];
       const partyRoles = request?.partyRoles ?? [];
       return unsafeTaskEither(
-        Contracts.getHeadersByRangeViaAxios(axiosInstance)(rangeOption)({
+        Contracts.getHeadersByRangeViaAxios(axiosInstance)(range)({
           tags,
           partyAddresses,
           partyRoles,
@@ -327,10 +335,7 @@ export function mkRestClient(baseURL: string): RestClient {
     },
     getTransactionsForContract(contractId, range) {
       return unsafeTaskEither(
-        Transactions.getHeadersByRangeViaAxios(axiosInstance)(
-          contractId,
-          O.fromNullable(range)
-        )
+        Transactions.getHeadersByRangeViaAxios(axiosInstance)(contractId, range)
       );
     },
     submitContractTransaction(
@@ -415,22 +420,11 @@ export function mkRestClient(baseURL: string): RestClient {
         )
       )(),
     async getPayouts({ contractIds, roleTokens, range, status }) {
-      const result = await unsafeTaskEither(
-        Payouts.getHeadersByRangeViaAxios(axiosInstance)(O.fromNullable(range))(
-          contractIds
-        )(roleTokens)(O.fromNullable(status))
+      return await unsafeTaskEither(
+        Payouts.getHeadersByRangeViaAxios(axiosInstance)(range)(contractIds)(
+          roleTokens
+        )(O.fromNullable(status))
       );
-      return {
-        headers: result.headers,
-        ...O.match(
-          () => ({}),
-          (previousRange) => ({ previousRange })
-        )(result.previousRange),
-        ...O.match(
-          () => ({}),
-          (nextRange) => ({ nextRange })
-        )(result.nextRange),
-      };
     },
     async getPayoutById({ payoutId }) {
       const result = await unsafeTaskEither(

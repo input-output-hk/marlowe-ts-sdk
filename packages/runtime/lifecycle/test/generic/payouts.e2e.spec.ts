@@ -54,9 +54,7 @@ describe.skip("Payouts", () => {
       adaProvider
     ).contracts.submitCreateContract({
       contract: swapContract,
-      roles: {
-        [scheme.ask.buyer.role_token]: mintRole(tokenProvider.address),
-      },
+      roles: { [scheme.ask.buyer.role_token]: mintRole(tokenProvider.address) },
     });
 
     await runtime(adaProvider).wallet.waitConfirmation(txCreatedContract);

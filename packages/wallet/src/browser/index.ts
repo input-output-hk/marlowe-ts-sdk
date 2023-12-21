@@ -13,7 +13,7 @@ import {
   token,
   lovelaces,
   assetId,
-  mkPolicyId,
+  policyId,
   unTxOutRef,
 } from "@marlowe.io/runtime-core";
 
@@ -188,15 +188,15 @@ function deserializeTxOutRef(utxoStr: string): TxOutRef {
 const deserializeValue = (value: string) =>
   C.Value.from_bytes(hex.decode(value));
 
-const valueToTokens = (value: Lucid.Core.Value) => {
+const valueToTokens = (value: Lucid.C.Value) => {
   const tokenValues: Token[] = [lovelaces(valueToLovelaces(value))];
 
   const multiAsset = value.multiasset();
   if (multiAsset !== undefined) {
     const policies = multiAsset.keys();
     for (let i = 0; i < policies.len(); i += 1) {
-      const policyId = policies.get(i);
-      const policyAssets = multiAsset.get(policyId);
+      const aPolicyId = policies.get(i);
+      const policyAssets = multiAsset.get(aPolicyId);
       if (policyAssets !== undefined) {
         const policyAssetNames = policyAssets.keys();
         for (let j = 0; j < policyAssetNames.len(); j += 1) {
@@ -205,7 +205,7 @@ const valueToTokens = (value: Lucid.Core.Value) => {
             policyAssets.get(assetName) ?? C.BigNum.from_str("0");
           tokenValues.push(
             token(BigInt(quantity.to_str()).valueOf())(
-              assetId(mkPolicyId(policyId.to_hex()))(
+              assetId(policyId(aPolicyId.to_hex()))(
                 utf8.decode(assetName.to_bytes()).substring(1) // N.H : investigate why 1 aditional character is returned
               )
             )
@@ -218,5 +218,5 @@ const valueToTokens = (value: Lucid.Core.Value) => {
   return tokenValues;
 };
 
-const valueToLovelaces = (value: Lucid.Core.Value) =>
+const valueToLovelaces = (value: Lucid.C.Value) =>
   BigInt(value.coin().to_str()).valueOf();

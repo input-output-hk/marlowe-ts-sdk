@@ -35,13 +35,12 @@ import {
   lovelaces,
   token,
   assetId,
-  mkPolicyId,
-  unPolicyId,
+  policyId,
   AssetId,
 } from "@marlowe.io/runtime-core";
 import { WalletAPI } from "../api.js";
 import * as Codec from "@47ng/codec";
-
+import { MarloweJSON } from "@marlowe.io/adapter/codec";
 const log = (message: string) => console.log(`\t## - ${message}`);
 
 // TODO: Make nominal
@@ -142,7 +141,7 @@ export class SingleAddressWallet implements WalletAPI {
           tokenBlockfrost.unit === "lovelace"
             ? lovelaces(BigInt(tokenBlockfrost.quantity))
             : token(BigInt(tokenBlockfrost.quantity).valueOf())(
-                assetId(mkPolicyId(fromUnit(tokenBlockfrost.unit).policyId))(
+                assetId(policyId(fromUnit(tokenBlockfrost.unit).policyId))(
                   getAssetName(tokenBlockfrost.unit)
                 )
               )
@@ -158,7 +157,7 @@ export class SingleAddressWallet implements WalletAPI {
       const content = await this.blockfrostApi.addresses(this.address);
       return pipe(
         content.amount ?? [],
-        A.filter((amount) => amount.unit === "lovelace"),
+        A.filter((amount) => amount.unit === "lovelaces"),
         A.map((amount) => BigInt(amount.quantity)),
         A.head,
         O.getOrElse(() => 0n)
@@ -182,7 +181,7 @@ export class SingleAddressWallet implements WalletAPI {
           A.filter(
             (amount) =>
               amount.unit ===
-              toUnit(unPolicyId(assetId.policyId), fromText(assetId.assetName))
+              toUnit(assetId.policyId, fromText(assetId.assetName))
           ),
           A.map((amount) => BigInt(amount.quantity)),
           A.head,
@@ -209,15 +208,17 @@ export class SingleAddressWallet implements WalletAPI {
     );
 
   // see [[testing-wallet-discussion]]
-  public randomPolicyId(): [Script, PolicyId] {
-    const { paymentCredential } = getAddressDetails(this.address);
-    const before = this.lucid.currentSlot() + 5 * 60;
+  public async randomPolicyId(): Promise<[Script, PolicyId]> {
+    const { paymentCredential } = this.lucid.utils.getAddressDetails(
+      await this.lucid.wallet.address()
+    );
+
     const json: NativeScript = {
       type: "all",
       scripts: [
         {
           type: "before",
-          slot: before.valueOf(),
+          slot: this.lucid.utils.unixTimeToSlot(Date.now() + 1000000),
         },
         { type: "sig", keyHash: paymentCredential?.hash! },
       ],
@@ -228,23 +229,26 @@ export class SingleAddressWallet implements WalletAPI {
   }
 
   // see [[testing-wallet-discussion]]
-  public mintRandomTokens(assetName: string, amount: bigint): Promise<Token> {
-    const policyRefs = this.randomPolicyId();
-    const [mintingPolicy, policyId] = policyRefs;
+  public async mintRandomTokens(
+    assetName: string,
+    amount: bigint
+  ): Promise<Token> {
+    const policyRefs = await this.randomPolicyId();
+    const [mintingPolicy, aPolicyId] = policyRefs;
+    const assets = {
+      [toUnit(aPolicyId, fromText(assetName))]: amount.valueOf(),
+    };
+
     return unsafeTaskEither(
       pipe(
         this.lucid
           .newTx()
-          .mintAssets({
-            [toUnit(policyId, fromText(assetName))]: amount.valueOf(),
-          })
+          .mintAssets(assets)
           .validTo(Date.now() + 100000)
           .attachMintingPolicy(mintingPolicy),
         build,
         TE.chain(this.signSubmitAndWaitConfirmation),
-        TE.map(() =>
-          token(amount)(assetId(mkPolicyId(policyRefs[1]))(assetName))
-        )
+        TE.map(() => token(amount)(assetId(policyId(aPolicyId))(assetName)))
       )
     );
   }
@@ -302,7 +306,7 @@ export class SingleAddressWallet implements WalletAPI {
   public getUTxOs: T.Task<TxOutRef[]> = T.of([]);
 }
 
-const build: (tx: Tx) => TE.TaskEither<Error, TxComplete> = (tx) =>
+const build = (tx: Tx): TE.TaskEither<Error, TxComplete> =>
   TE.tryCatch(
     () => tx.complete(),
     (reason) => new Error(`Error while building Tx : ${reason}`)

@@ -56,7 +56,7 @@
     "io-ts": "2.2.21",
     "newtype-ts": "0.3.5",
     "@47ng/codec": "1.1.0",
-    "lucid-cardano": "0.9.4",
+    "lucid-cardano": "0.10.7",
     "@blockfrost/blockfrost-js": "^5.4.0"
   }
 }

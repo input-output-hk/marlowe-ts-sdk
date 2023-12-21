@@ -16,7 +16,7 @@ import {
 } from "@marlowe.io/runtime-core";
 
 import { TransactionDetailsGuard, TransactionDetails } from "../details.js";
-import { ContractId, unContractId } from "@marlowe.io/runtime-core";
+import { ContractId } from "@marlowe.io/runtime-core";
 
 export type GET = (
   contractId: ContractId,
@@ -68,8 +68,7 @@ export const putViaAxios: (axiosInstance: AxiosInstance) => PUT =
     );
 
 const endpointURI = (contractId: ContractId, transactionId: TxId): string =>
-  `/contracts/${pipe(
-    contractId,
-    unContractId,
+  `/contracts/${pipe(contractId, encodeURIComponent)}/transactions/${pipe(
+    transactionId,
     encodeURIComponent
-  )}/transactions/${pipe(transactionId, encodeURIComponent)}`;
+  )}`;

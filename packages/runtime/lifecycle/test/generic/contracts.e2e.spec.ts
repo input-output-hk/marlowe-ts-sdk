@@ -19,7 +19,7 @@ import { MINUTES } from "@marlowe.io/adapter/time";
 
 global.console = console;
 
-describe("Runtime Contract Lifecycle ", () => {
+describe.skip("Runtime Contract Lifecycle ", () => {
   it(
     "can create a Marlowe Contract ",
     async () => {

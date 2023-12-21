@@ -13,6 +13,7 @@ import {
   TagsGuard,
   ContractId,
   ContractIdGuard,
+  PolicyIdGuard,
 } from "@marlowe.io/runtime-core";
 
 import { TxStatus } from "./transaction/status.js";
@@ -63,7 +64,7 @@ export interface ContractHeader {
  */
 export const ContractHeaderGuard = t.type({
   contractId: ContractIdGuard,
-  roleTokenMintingPolicyId: PolicyId,
+  roleTokenMintingPolicyId: PolicyIdGuard,
   version: MarloweVersion,
   // TODO: Add continuations
   tags: TagsGuard,

@@ -5,10 +5,6 @@ import { pipe } from "fp-ts/lib/function.js";
 import * as t from "io-ts/lib/index.js";
 import * as E from "fp-ts/lib/Either.js";
 import * as A from "fp-ts/lib/Array.js";
-import * as O from "fp-ts/lib/Option.js";
-
-import { Newtype, iso } from "newtype-ts";
-import { fromNewtype, optionFromNullable } from "io-ts-types";
 
 import { formatValidationErrors } from "jsonbigint-io-ts-reporters";
 
@@ -23,21 +19,15 @@ import {
   TextEnvelopeGuard,
   TxOutRef,
   WithdrawalId,
-  unPolicyId,
   unTxOutRef,
 } from "@marlowe.io/runtime-core";
 
 import { WithdrawalHeader } from "../header.js";
 import { stringify } from "qs";
-
-export interface WithdrawalsRange
-  extends Newtype<{ readonly WithdrawalsRange: unique symbol }, string> {}
-export const WithdrawalsRange = fromNewtype<WithdrawalsRange>(t.string);
-export const unWithdrawalsRange = iso<WithdrawalsRange>().unwrap;
-export const contractsRange = iso<WithdrawalsRange>().wrap;
+import { ItemRange, PageGuard } from "../../pagination.js";
 
 export type GetWithdrawalsRequest = {
-  range?: WithdrawalsRange;
+  range?: ItemRange;
   partyRoles?: AssetId[];
 };
 
@@ -46,7 +36,7 @@ export type GETHeadersByRange = (
 ) => TE.TaskEither<Error | DecodingError, GetWithdrawalsResponse>;
 
 const roleToParameter = (roleToken: AssetId) =>
-  `${unPolicyId(roleToken.policyId)}.${roleToken.assetName}`;
+  `${roleToken.policyId}.${roleToken.assetName}`;
 
 /**
  * @see {@link https://docs.marlowe.iohk.io/api/get-withdrawals}
@@ -64,14 +54,15 @@ export const getHeadersByRangeViaAxios: (
             )
           : ""
       }`,
-      request && request.range
-        ? { headers: { Range: unWithdrawalsRange(request.range) } }
-        : {}
+      request && request.range ? { headers: { Range: request.range } } : {}
     ),
     TE.map(([headers, data]) => ({
       data: data,
-      previousRange: headers["prev-range"],
-      nextRange: headers["next-range"],
+      page: {
+        current: headers["content-range"],
+        next: headers["next-range"],
+        total: Number(headers["total-count"]).valueOf(),
+      },
     })),
     TE.chainW((data) =>
       TE.fromEither(
@@ -79,12 +70,11 @@ export const getHeadersByRangeViaAxios: (
       )
     ),
     TE.map((rawResponse) => ({
-      headers: pipe(
+      withdrawals: pipe(
         rawResponse.data.results,
         A.map((result) => result.resource)
       ),
-      previousRange: rawResponse.previousRange,
-      nextRange: rawResponse.nextRange,
+      page: rawResponse.page,
     }))
   );
 
@@ -98,15 +88,13 @@ const GETByRangeRawResponse = t.type({
       })
     ),
   }),
-  previousRange: optionFromNullable(WithdrawalsRange),
-  nextRange: optionFromNullable(WithdrawalsRange),
+  page: PageGuard,
 });
 
 export type GetWithdrawalsResponse = t.TypeOf<typeof GetWithdrawalsResponse>;
 export const GetWithdrawalsResponse = t.type({
-  headers: t.array(WithdrawalHeader),
-  previousRange: optionFromNullable(WithdrawalsRange),
-  nextRange: optionFromNullable(WithdrawalsRange),
+  withdrawals: t.array(WithdrawalHeader),
+  page: PageGuard,
 });
 
 export type WithdrawPayoutsRequest = {
