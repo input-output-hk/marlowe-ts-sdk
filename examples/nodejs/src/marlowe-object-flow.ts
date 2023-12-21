@@ -22,6 +22,7 @@ import { Address } from "@marlowe.io/language-core-v1";
 import { Bundle, Label, lovelace } from "@marlowe.io/marlowe-object";
 import { input, select } from "@inquirer/prompts";
 import { RuntimeLifecycle } from "@marlowe.io/runtime-lifecycle/api";
+import { MarloweJSON } from "@marlowe.io/adapter/codec";
 main();
 
 // #region Interactive menu
@@ -118,7 +119,7 @@ async function createContractMenu(lifecycle: RuntimeLifecycle) {
   console.log(`Contract created with id ${contractId}`);
   await waitIndicator(lifecycle.wallet, txId);
 
-  await contractMenu(lifecycle, contractId);
+  // await contractMenu(lifecycle, contractId);
 }
 
 async function loadContractMenu(lifecycle: RuntimeLifecycle) {
@@ -146,14 +147,16 @@ async function contractMenu(
     contractDetails.currentContract._tag === "None"
       ? contractDetails.initialContract
       : contractDetails.currentContract.value;
-  const nextTimeout = getNextTimeout(currentContract, now);
   const oneDayFrom = (time: Timeout) => time + 24n * 60n * 60n * 1000n; // in milliseconds
+  const nextTimeout = getNextTimeout(currentContract, now) ?? oneDayFrom(now);
+  const timeInterval = { from: now, to: nextTimeout - 1n };
+  console.log("time interval", timeInterval);
   const applicableInputs = await lifecycle.contracts.getApplicableInputs(
     contractId,
-    { timeInterval: { from: now, to: nextTimeout ?? oneDayFrom(now)} }
+    { timeInterval }
   );
   console.log("applicable inputs");
-  console.log(applicableInputs);
+  console.log(MarloweJSON.stringify(applicableInputs, null, 2));
 
   const answer = await select({
     message: "Contract menu",

@@ -533,21 +533,24 @@ function reduceContractStep(
 /**
  * @hidden
  */
-type ReduceResult =
-  | {
+export type ContractQuiescentReduceResult =
+  {
       type: "ContractQuiescent";
       reduced: boolean;
       state: MarloweState;
       warnings: ReduceWarning[];
       payments: Payment[];
       continuation: Contract;
-    }
-  | AmbiguousTimeIntervalError;
+  }
+/**
+ * @hidden
+ */
+type ReduceResult = ContractQuiescentReduceResult| AmbiguousTimeIntervalError;
 
 /**
  * @hidden
  */
-function reduceContractUntilQuiescent(
+export function reduceContractUntilQuiescent(
   env: Environment,
   state: MarloweState,
   cont: Contract
@@ -749,7 +752,7 @@ function applyCases(
 /**
  * @hidden
  */
-function applyInput(
+export function applyInput(
   env: Environment,
   state: MarloweState,
   input: Input,
@@ -770,7 +773,7 @@ type TransactionWarning =
   | Shadowing
   | AssertionFailed;
 
-function convertReduceWarning(warnings: ReduceWarning[]): TransactionWarning[] {
+export function convertReduceWarning(warnings: ReduceWarning[]): TransactionWarning[] {
   return warnings.filter((w) => w !== "NoWarning") as TransactionWarning[];
 }
 
