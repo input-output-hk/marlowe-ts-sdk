@@ -23,6 +23,8 @@ import { Bundle, Label, lovelace } from "@marlowe.io/marlowe-object";
 import { input, select } from "@inquirer/prompts";
 import { RuntimeLifecycle } from "@marlowe.io/runtime-lifecycle/api";
 import { MarloweJSON } from "@marlowe.io/adapter/codec";
+import { ContractDetails } from "@marlowe.io/runtime-rest-client/contract";
+import { getApplicableActions } from "./applicable-inputs.js";
 main();
 
 // #region Interactive menu
@@ -129,14 +131,7 @@ async function loadContractMenu(lifecycle: RuntimeLifecycle) {
   await contractMenu(lifecycle, contractId(cid));
 }
 
-async function contractMenu(
-  lifecycle: RuntimeLifecycle,
-  contractId: ContractId
-) {
-  console.log("TODO: print contract state");
-  const contractDetails = await lifecycle.restClient.getContractById(
-    contractId
-  );
+async function debugGetNext(lifecycle: RuntimeLifecycle, contractDetails: ContractDetails, contractId: ContractId) {
   const now = datetoTimeout(new Date());
 
   if (contractDetails.currentContract._tag === "None") {
@@ -157,6 +152,32 @@ async function contractMenu(
   );
   console.log("applicable inputs");
   console.log(MarloweJSON.stringify(applicableInputs, null, 2));
+
+}
+
+async function contractMenu(
+  lifecycle: RuntimeLifecycle,
+  contractId: ContractId
+) {
+  console.log("TODO: print contract state");
+  const contractDetails = await lifecycle.restClient.getContractById(
+    contractId
+  );
+  // await debugGetNext(lifecycle, contractDetails, contractId);
+
+  const applicableActions = await getApplicableActions(lifecycle.restClient, contractId);
+  applicableActions.forEach(action => {
+    console.log("***");
+    console.log(MarloweJSON.stringify(action, null, 2));
+    let result;
+    if (action.type === "Choice") {
+      console.log("automatically choosing", action.choice.choose_between[0].from);
+      result = action.applyAction(action.choice.choose_between[0].from);
+    } else {
+      result = action.applyAction();
+    }
+    console.log("expected results", MarloweJSON.stringify(result, null, 2));
+  })
 
   const answer = await select({
     message: "Contract menu",

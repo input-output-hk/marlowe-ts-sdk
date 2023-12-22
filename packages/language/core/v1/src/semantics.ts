@@ -59,7 +59,7 @@ import { Action } from "./actions.js";
 import { choiceIdCmp, inBounds } from "./choices.js";
 import { Case, Contract, matchContract } from "./contract.js";
 import { Environment, TimeInterval } from "./environment.js";
-import { Input, InputContent } from "./inputs.js";
+import { IChoice, IDeposit, Input, InputContent } from "./inputs.js";
 import { Party } from "./participants.js";
 import { AccountId, matchPayee, Payee } from "./payee.js";
 import { Accounts, accountsCmp, MarloweState } from "./state.js";
@@ -109,7 +109,7 @@ export {
   TransactionSuccess,
   TransactionOutput,
 } from "./transaction.js";
-
+export {inBounds};
 /**
  * The function moneyInAccount returns the number of tokens a particular AccountId has in their account.
  * @hidden
@@ -718,6 +718,21 @@ const hashMismatchError = "TEHashMismatch" as const;
 
 type ApplyResult = AppliedResult | ApplyNoMatchError | HashMismatchError;
 
+
+function inputToInputContent (input: Input): InputContent {
+  if (input === "input_notify") {
+    return "input_notify";
+  }
+  if ("that_deposits" in input) {
+    input
+    return input as IDeposit
+  }
+  if ("input_that_chooses_num" in input) {
+    input
+    return input as IChoice;
+  }
+  return "input_notify"
+}
 /**
  * @hidden
  */
@@ -731,7 +746,7 @@ function applyCases(
   const [headCase, ...tailCases] = cases;
   const action = headCase.case;
   const cont = getContinuation(input, headCase);
-  const result = applyAction(env, state, input, action);
+  const result = applyAction(env, state, inputToInputContent(input), action);
   switch (result.type) {
     case "AppliedAction":
       if (typeof cont === "undefined") {
@@ -752,7 +767,7 @@ function applyCases(
 /**
  * @hidden
  */
-export function applyInput(
+function applyInput(
   env: Environment,
   state: MarloweState,
   input: Input,
@@ -824,7 +839,7 @@ type ApplyAllResult =
 /**
  * @hidden
  */
-function applyAllInputs(
+export function applyAllInputs(
   env: Environment,
   state: MarloweState,
   cont: Contract,

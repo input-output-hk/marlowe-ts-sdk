@@ -4,7 +4,6 @@ import {
   Contract,
   Deposit,
   Choice,
-  BuiltinByteString,
   Input,
   ChosenNum,
   Environment,
@@ -14,11 +13,17 @@ import {
   Case,
   Action,
   Notify,
+  IDeposit,
+  IChoice,
+  INotify,
+  InputContent,
 } from "@marlowe.io/language-core-v1";
 import {
-  applyInput,
-  ContractQuiescentReduceResult,
+  applyAllInputs,
   convertReduceWarning,
+  evalObservation,
+  evalValue,
+  inBounds,
   Payment,
   reduceContractUntilQuiescent,
   TransactionWarning,
@@ -28,130 +33,60 @@ import { RestClient } from "@marlowe.io/runtime-rest-client";
 
 type ActionApplicant = Party | "anybody";
 
-interface CanNotify {
-  type: "Notify";
+interface AppliedActionResult {
   /**
-   * Who can make the action
+   * What inputs needs to be provided to apply the action
    */
-  applicant: "anybody";
+  inputs: Input[];
 
   /**
-   * If the Case is merkleized, this is the continuation hash
+   * What is the environment to apply the inputs
    */
-  merkleizedContinuation?: BuiltinByteString;
+  environment: Environment;
   /**
-   * What is the new state after applying this action and reducing until quiescent
+   * What is the new state after applying an action and reducing until quiescent
    */
   reducedState: MarloweState;
   /**
-   * What is the new contract after applying this action and reducing until quiescent
+   * What is the new contract after applying an action and reducing until quiescent
    */
   reducedContract: Contract;
   /**
-   * What warnings were produced while applying this action
+   * What warnings were produced while applying an action
    */
   warnings: TransactionWarning[];
   /**
-   * What payments were produced while applying this action
+   * What payments were produced while applying an action
    */
   payments: Payment[];
+}
 
-  toInput(): Promise<Input[]>;
+interface CanNotify {
+  type: "Notify";
+
+  applyAction(): AppliedActionResult;
 }
 
 interface CanDeposit {
   type: "Deposit";
 
-  /**
-   * Who can make the action
-   */
-  applicant: ActionApplicant;
-  /**
-   * If the Case is merkleized, this is the continuation hash
-   */
-  merkleizedContinuation?: BuiltinByteString;
-
   deposit: Deposit;
-  /**
-   * What is the new state after applying this action and reducing until quiescent
-   */
-  reducedState: MarloweState;
-  /**
-   * What is the new contract after applying this action and reducing until quiescent
-   */
-  reducedContract: Contract;
-  /**
-   * What warnings were produced while applying this action
-   */
-  warnings: TransactionWarning[];
-  /**
-   * What payments were produced while applying this action
-   */
-  payments: Payment[];
 
-  toInput(): Promise<Input[]>;
+  applyAction(): AppliedActionResult;
 }
 
 interface CanChoose {
   type: "Choice";
 
-  /**
-   * Who can make the action
-   */
-  applicant: ActionApplicant;
-
-  /**
-   * If the Case is merkleized, this is the continuation hash
-   */
-  merkleizedContinuation?: BuiltinByteString;
-
   choice: Choice;
-  /**
-   * What is the new state after applying this action and reducing until quiescent
-   */
-  reducedState: MarloweState;
-  /**
-   * What is the new contract after applying this action and reducing until quiescent
-   */
-  reducedContract: Contract;
-  /**
-   * What warnings were produced while applying this action
-   */
-  warnings: TransactionWarning[];
-  /**
-   * What payments were produced while applying this action
-   */
-  payments: Payment[];
 
-  toInput(choice: ChosenNum): Promise<Input[]>;
+  applyAction(choice: ChosenNum): AppliedActionResult;
 }
 
 interface CanAdvanceTimeout {
   type: "AdvanceTimeout";
 
-  /**
-   * Who can make the action
-   */
-  applicant: "anybody";
-
-  /**
-   * What is the new state after applying this action and reducing until quiescent
-   */
-  reducedState: MarloweState;
-  /**
-   * What is the new contract after applying this action and reducing until quiescent
-   */
-  reducedContract: Contract;
-  /**
-   * What warnings were produced while applying this action
-   */
-  warnings: TransactionWarning[];
-  /**
-   * What payments were produced while applying this action
-   */
-  payments: Payment[];
-
-  toInput(): Promise<Input[]>;
+  applyAction(): AppliedActionResult;
 }
 
 export type ApplicableAction =
@@ -159,6 +94,18 @@ export type ApplicableAction =
   | CanDeposit
   | CanChoose
   | CanAdvanceTimeout;
+
+function getApplicant(action: ApplicableAction): ActionApplicant {
+  switch (action.type) {
+    case "Notify":
+    case "AdvanceTimeout":
+      return "anybody";
+    case "Deposit":
+      return action.deposit.party;
+    case "Choice":
+      return action.choice.for_choice.choice_owner;
+  }
+}
 
 export async function getApplicableActions(
   restClient: RestClient,
@@ -178,7 +125,11 @@ export async function getApplicableActions(
   const timeInterval = { from: now, to: nextTimeout - 1n };
 
   const env = environment ?? { timeInterval };
-  if (contractDetails.state._tag == "None") throw new Error("State not set");
+  if (contractDetails.state._tag == "None") {
+    // TODO: Check, I believe this happens when a contract is in a closed state, but it would be nice
+    //       if the API returned something more explicit.
+    return [];
+  }
   const initialReduce = reduceContractUntilQuiescent(
     env,
     contractDetails.state.value,
@@ -189,29 +140,42 @@ export async function getApplicableActions(
   if (initialReduce.reduced) {
     applicableActions.push({
       type: "AdvanceTimeout",
-      applicant: "anybody",
-      reducedState: initialReduce.state,
-      reducedContract: initialReduce.continuation,
-      warnings: convertReduceWarning(initialReduce.warnings),
-      payments: initialReduce.payments,
-      async toInput() {
-        return [];
+      applyAction() {
+        return {
+          inputs: [],
+          environment: env,
+          reducedState: initialReduce.state,
+          reducedContract: initialReduce.continuation,
+          warnings: convertReduceWarning(initialReduce.warnings),
+          payments: initialReduce.payments,
+        };
       },
     });
   }
+  const cont = initialReduce.continuation;
+  if (cont === "close") return applicableActions;
+  if ("when" in cont) {
+    const applicableActionsFromCases = await Promise.all(
+      cont.when.map((cse) =>
+        getApplicableActionFromCase(
+          restClient,
+          env,
+          initialReduce.continuation,
+          initialReduce.state,
+          initialReduce.payments,
+          convertReduceWarning(initialReduce.warnings),
+          cse
+        )
+      )
+    );
+    applicableActions = applicableActions.concat(applicableActionsFromCases.filter(x => x !== undefined) as ApplicableAction[]);
+
+  }
+
 
   return applicableActions;
 }
 
-function getApplicableInputsFromReduction(
-  initialReduce: ContractQuiescentReduceResult
-) {
-  const cont = initialReduce.continuation;
-  if (cont == "close") return [];
-  if ("when" in cont) {
-    // cont.when
-  }
-}
 
 function isDepositAction(action: Action): action is Deposit {
   return "party" in action;
@@ -225,29 +189,125 @@ function isChoice(action: Action): action is Choice {
   return "choose_between" in action;
 }
 
-async function getApplicableActionFromCase(restClient: RestClient, cse: Case) {
-  // async function getApplicableActionFromCase(restClient: RestClient, cse: Case): ApplicableAction {
-  let cont: Contract;
+async function getApplicableActionFromCase(
+  restClient: RestClient,
+  env: Environment,
+  currentContract: Contract,
+  state: MarloweState,
+  previousPayments: Payment[],
+  previousWarnings: TransactionWarning[],
+  cse: Case
+): Promise<ApplicableAction | undefined> {
+  let cseContinuation: Contract;
   if ("merkleized_then" in cse) {
-    cont = await restClient.getContractSourceById({
+    cseContinuation = await restClient.getContractSourceById({
       contractSourceId: cse.merkleized_then,
     });
   } else {
-    cont = cse.then;
+    cseContinuation = cse.then;
   }
-  // Para armar el input necesito el choice, para los warnings, payments y etc
-  // necesito el input, eso significa que tengo que cambiar la firma para que el toInput devuelva el
-  // input y los effects
+  function decorateInput(content: InputContent): Input {
+    if ("merkleized_then" in cse) {
+      const merkleizedHashAndContinuation = {
+        continuation_hash: cse.merkleized_then,
+        merkleized_continuation: cseContinuation
+      }
+      // MerkleizedNotify are serialized as the plain merkle object
+      if (content === "input_notify") {
+        return merkleizedHashAndContinuation;
+      } else {
+        // For IDeposit and IChoice is the InputContent + the merkle object
+        return {
+          ...merkleizedHashAndContinuation,
+          ...content
+        }
+      }
+    } else {
+      return content;
+    }
+  }
+
   if (isDepositAction(cse.case)) {
-    applyInput(env, state, input, cont);
-    // return {
-    //   applicant: cse.case.party,
-    //   type: "Deposit"
+    const deposit = cse.case;
+    return {
+      type: "Deposit",
+      deposit,
 
-    // }
-  } else if (isNotify(cse.case)) {
+      applyAction() {
+        const input = decorateInput({
+          input_from_party: deposit.party,
+          that_deposits: evalValue(env, state, deposit.deposits),
+          of_token: deposit.of_token,
+          into_account: deposit.into_account,
+        });
+        // TODO: Re-check if this env should be the same as the initial env or a new one.
+        const appliedInput = applyAllInputs(env, state, currentContract, [input]);
+
+        // TODO: Improve error handling
+        if (typeof appliedInput === "string") throw new Error(appliedInput);
+        return {
+          inputs: [input],
+          environment: env,
+          reducedState: appliedInput.state,
+          reducedContract: appliedInput.continuation,
+          warnings: [...previousWarnings, ...appliedInput.warnings],
+          payments: [...previousPayments, ...appliedInput.payments],
+        };
+      },
+    };
+  } else if (isChoice(cse.case)) {
+    const choice = cse.case;
+
+    return {
+      type: "Choice",
+      choice,
+
+      applyAction(chosenNum: ChosenNum) {
+        if (!inBounds(chosenNum, choice.choose_between)) {
+          throw new Error("Chosen number is not in bounds");
+        }
+        const input = decorateInput({
+          for_choice_id: choice.for_choice,
+          input_that_chooses_num: chosenNum,
+        });
+        // TODO: Re-check if this env should be the same as the initial env or a new one.
+        const appliedInput = applyAllInputs(env, state, currentContract, [input]);
+        // TODO: Improve error handling
+        if (typeof appliedInput === "string") throw new Error(appliedInput);
+        return {
+          inputs: [input],
+          environment: env,
+          reducedState: appliedInput.state,
+          reducedContract: appliedInput.continuation,
+          warnings: [...previousWarnings, ...appliedInput.warnings],
+          payments: [...previousPayments, ...appliedInput.payments],
+        };
+      },
+    };
   } else {
-  }
+    const notify = cse.case;
+    if (!evalObservation(env, state, notify.notify_if)) {
+      return;
+    }
 
-  // if (cse.case)
+    return {
+      type: "Notify",
+
+      applyAction() {
+        const input = decorateInput("input_notify");
+        // TODO: Re-check if this env should be the same as the initial env or a new one.
+        const appliedInput = applyAllInputs(env, state, currentContract, [input]);
+        // TODO: Improve error handling
+        if (typeof appliedInput === "string") throw new Error(appliedInput);
+        return {
+          inputs: [input],
+          environment: env,
+          reducedState: appliedInput.state,
+          reducedContract: appliedInput.continuation,
+          warnings: [...previousWarnings, ...appliedInput.warnings],
+          payments: [...previousPayments, ...appliedInput.payments],
+        };
+      },
+    };
+  }
 }
