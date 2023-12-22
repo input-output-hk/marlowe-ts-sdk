@@ -40,8 +40,8 @@ export function mkContractLifecycle(
 ): ContractsAPI {
   const di = { wallet, deprecatedRestAPI, restClient };
   return {
-    submitCreateContract: submitCreateTx(di),
-    submitApplyInputs: submitApplyInputsTx(di),
+    createContract: submitCreateTx(di),
+    applyInputs: applyInputsTx(di),
     getApplicableInputs: getApplicableInputs(di),
     getContractIds: getContractIds(di),
   };
@@ -57,14 +57,14 @@ const submitCreateTx =
     );
   };
 
-const submitApplyInputsTx =
+const applyInputsTx =
   ({ wallet, deprecatedRestAPI }: ContractsDI) =>
   async (
     contractId: ContractId,
     applyInputsRequest: ApplyInputsRequest
   ): Promise<TxId> => {
     return unsafeTaskEither(
-      submitApplyInputsTxFpTs(deprecatedRestAPI)(wallet)(contractId)(
+      applyInputsTxFpTs(deprecatedRestAPI)(wallet)(contractId)(
         applyInputsRequest
       )
     );
@@ -206,7 +206,7 @@ export const createContractFpTs: (
       )
     );
 
-export const submitApplyInputsTxFpTs: (
+export const applyInputsTxFpTs: (
   client: FPTSRestAPI
 ) => (
   wallet: WalletAPI
@@ -262,7 +262,7 @@ export const applyInputsFpTs: (
 ) => TE.TaskEither<Error | DecodingError, TxId> =
   (client) => (wallet) => (contractId) => (applyInputsRequest) =>
     pipe(
-      submitApplyInputsTxFpTs(client)(wallet)(contractId)(applyInputsRequest),
+      applyInputsTxFpTs(client)(wallet)(contractId)(applyInputsRequest),
       TE.chainW((txId) =>
         tryCatchDefault(() => wallet.waitConfirmation(txId).then((_) => txId))
       )

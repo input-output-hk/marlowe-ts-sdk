@@ -226,7 +226,7 @@ export interface ContractsAPI {
    * @returns ContractId (Marlowe id) and TxId (Cardano id) of the submitted Tx
    * @throws DecodingError
    */
-  submitCreateContract(
+  createContract(
     createContractRequest: CreateContractRequest
   ): Promise<[ContractId, TxId]>;
 
@@ -236,7 +236,7 @@ export interface ContractsAPI {
    * @param applyInputsRequest inputs to apply
    * @throws DecodingError
    */
-  submitApplyInputs(
+  applyInputs(
     contractId: ContractId,
     applyInputsRequest: ApplyInputsRequest
   ): Promise<TxId>;

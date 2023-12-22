@@ -95,7 +95,7 @@
         contractIdIndicator.target = "_blank";
       }
 
-      async function submitCreateContract() {
+      async function createContract() {
         const runtimeUrlInput = document.getElementById("runtimeUrl");
         const runtimeURL = runtimeUrlInput.value || "http://localhost:32952";
         const walletInput = document.getElementById("wallet");
@@ -108,7 +108,7 @@
           walletName,
         });
 
-        const contractId = await runtime.contracts.submitCreateContract({
+        const contractId = await runtime.contracts.createContract({
           contract: contract,
         });
         log("Contract created with id: " + contractId);
@@ -118,7 +118,7 @@
       H.setupLocalStorageRuntimeUrl();
 
       const createContractButton = document.getElementById("create-contract");
-      createContractButton.addEventListener("click", submitCreateContract);
+      createContractButton.addEventListener("click", createContract);
 
       const clearConsoleButton = document.getElementById("clear-console");
       clearConsoleButton.addEventListener("click", clearConsole);

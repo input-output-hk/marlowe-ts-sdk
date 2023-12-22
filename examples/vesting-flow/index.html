@@ -115,7 +115,7 @@
       const [request, vestingContract] = generateVestingContract();
 
       const [contractId, txIdCreated] =
-        await runtimeLifeCycle.contracts.submitCreateContract({
+        await runtimeLifeCycle.contracts.createContract({
           contract: vestingContract,
           tags: { [dappId]: { scheme: request.scheme } },
         });
@@ -206,7 +206,7 @@
       log(`<pre>${contractIdSelected} is in state ${vestingState.name}</pre>`);
       switch (vestingState.name) {
         case "WaitingDepositByProvider": {
-          const txId = await runtimeLifeCycle.contracts.submitApplyInputs(
+          const txId = await runtimeLifeCycle.contracts.applyInputs(
             contractIdSelected,
             { inputs: vestingState.depositInput }
           );
@@ -218,7 +218,7 @@
           break;
         }
         case "NoDepositBeforeDeadline": {
-          const txId = await runtimeLifeCycle.contracts.submitApplyInputs(
+          const txId = await runtimeLifeCycle.contracts.applyInputs(
             contractIdSelected,
             { inputs: vestingState.payMinUtxoBackInput }
           );
@@ -231,7 +231,7 @@
         }
         case "WithinVestingPeriod": {
           if (vestingState.withdrawInput) {
-            const txId = await runtimeLifeCycle.contracts.submitApplyInputs(
+            const txId = await runtimeLifeCycle.contracts.applyInputs(
               contractIdSelected,
               { inputs: vestingState.withdrawInput }
             );
@@ -242,7 +242,7 @@
             await listContracts();
             break;
           } else if (vestingState.cancelInput) {
-            const txId = await runtimeLifeCycle.contracts.submitApplyInputs(
+            const txId = await runtimeLifeCycle.contracts.applyInputs(
               contractIdSelected,
               { inputs: vestingState.cancelInput }
             );
@@ -255,7 +255,7 @@
           }
         }
         case "VestingEnded": {
-          const txId = await runtimeLifeCycle.contracts.submitApplyInputs(
+          const txId = await runtimeLifeCycle.contracts.applyInputs(
             contractIdSelected,
             { inputs: vestingState.withdrawInput }
           );
