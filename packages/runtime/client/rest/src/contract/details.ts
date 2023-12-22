@@ -63,12 +63,16 @@ export type ContractDetails = {
   tags: Tags;
   metadata: Metadata;
   unclaimedPayouts: Payout[];
-} /** only available when the contract is Active */
-& { currentContract?: Contract; state?: MarloweState ,utxo?: TxOutRef } 
-/** only available when the contract is confirmed */
-& {block?: BlockHeader;} 
-& {txBody?: TextEnvelope } 
-
+} /** Only available when the contract is Unsigned/Submitted and Active */ & {
+  currentContract?: Contract;
+  state?: MarloweState;
+} /** Only available when Active */ & {
+  utxo?: TxOutRef;
+} /** Only available when the contract is confirmed */ & {
+  block?: BlockHeader;
+} /** Only available When the contract is Unsigned/Submitted */ & {
+  txBody?: TextEnvelope;
+};
 
 /**
  * This is a {@link !io-ts-usage | Dynamic type validator} for the {@link ContractDetails:type}.
@@ -88,8 +92,9 @@ export const ContractDetailsGuard = assertGuardEqual(
       metadata: Metadata,
       unclaimedPayouts: t.array(Payout),
     }),
-    t.partial({ currentContract: G.Contract, state: G.MarloweState,utxo: TxOutRef}),
+    t.partial({ currentContract: G.Contract, state: G.MarloweState }),
+    t.partial({ utxo: TxOutRef }),
     t.partial({ block: BlockHeaderGuard }),
-    t.partial({ txBody: TextEnvelopeGuard })
+    t.partial({ txBody: TextEnvelopeGuard }),
   ])
 );
