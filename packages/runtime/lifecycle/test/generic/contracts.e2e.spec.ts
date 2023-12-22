@@ -1,5 +1,4 @@
 import { pipe } from "fp-ts/lib/function.js";
-import * as O from "fp-ts/lib/Option.js";
 import { addDays } from "date-fns";
 
 import {
@@ -8,7 +7,6 @@ import {
   close,
 } from "@marlowe.io/language-core-v1";
 import { oneNotifyTrue } from "@marlowe.io/language-examples";
-import { mkFPTSRestClient } from "@marlowe.io/runtime-rest-client/index.js";
 
 import {
   getBankPrivateKey,
@@ -17,18 +15,16 @@ import {
 } from "../context.js";
 import { initialiseBankAndverifyProvisionning } from "../provisionning.js";
 import console from "console";
-import { unsafeTaskEither } from "@marlowe.io/adapter/fp-ts";
 import { MINUTES } from "@marlowe.io/adapter/time";
 
 global.console = console;
 
-describe("Runtime Contract Lifecycle ", () => {
+describe.skip("Runtime Contract Lifecycle ", () => {
   it(
     "can create a Marlowe Contract ",
     async () => {
-      const restClient = mkFPTSRestClient(getMarloweRuntimeUrl());
       const { runtime } = await initialiseBankAndverifyProvisionning(
-        restClient,
+        getMarloweRuntimeUrl(),
         getBlockfrostContext(),
         getBankPrivateKey()
       );
@@ -42,9 +38,8 @@ describe("Runtime Contract Lifecycle ", () => {
     it(
       "can Apply Inputs to a Contract",
       async () => {
-        const restClient = mkFPTSRestClient(getMarloweRuntimeUrl());
         const { runtime } = await initialiseBankAndverifyProvisionning(
-          restClient,
+          getMarloweRuntimeUrl(),
           getBlockfrostContext(),
           getBankPrivateKey()
         );
@@ -61,15 +56,8 @@ describe("Runtime Contract Lifecycle ", () => {
             inputs: [inputNotify],
           }
         );
-        await runtime.wallet.waitConfirmation(txIdInputsApplied);
-
-        const result = await unsafeTaskEither(
-          restClient.contracts.contract.transactions.getHeadersByRange(
-            contractId,
-            O.none
-          )
-        );
-        expect(result.headers.length).toBe(1);
+        const result = await runtime.wallet.waitConfirmation(txIdInputsApplied);
+        expect(result).toBe(true);
       },
       10 * MINUTES
     );

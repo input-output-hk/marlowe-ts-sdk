@@ -50,6 +50,8 @@ const importMap = {
       "https://cdn.jsdelivr.net/npm/@marlowe.io/runtime-rest-client@0.3.0-beta-rc1/dist/bundled/esm/runtime-rest-client.js",
     "@marlowe.io/runtime-rest-client/contract":
       "https://cdn.jsdelivr.net/npm/@marlowe.io/runtime-rest-client@0.3.0-beta-rc1/dist/bundled/esm/contract.js",
+    "@marlowe.io/runtime-rest-client/guards":
+      "https://cdn.jsdelivr.net/npm/@marlowe.io/runtime-rest-client@0.3.0-beta-rc1/dist/bundled/esm/guards.js",
     "@marlowe.io/runtime-rest-client/payout":
       "https://cdn.jsdelivr.net/npm/@marlowe.io/runtime-rest-client@0.3.0-beta-rc1/dist/bundled/esm/payout.js",
     "@marlowe.io/runtime-rest-client/transaction":

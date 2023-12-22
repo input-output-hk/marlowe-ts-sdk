@@ -1,12 +1,9 @@
 import * as t from "io-ts/lib/index.js";
-import { Newtype, iso } from "newtype-ts";
 import * as E from "fp-ts/lib/Either.js";
 import * as A from "fp-ts/lib/Array.js";
-import * as O from "fp-ts/lib/Option.js";
 import * as TE from "fp-ts/lib/TaskEither.js";
 import { pipe } from "fp-ts/lib/function.js";
 import { formatValidationErrors } from "jsonbigint-io-ts-reporters";
-import { fromNewtype, optionFromNullable } from "io-ts-types";
 import { AxiosInstance } from "axios";
 
 import * as G from "@marlowe.io/language-core-v1/guards";
@@ -29,46 +26,31 @@ import {
 } from "@marlowe.io/runtime-core";
 
 import { TxHeader, TxHeaderGuard } from "../header.js";
-import {
-  ContractId,
-  ContractIdGuard,
-  unContractId,
-} from "@marlowe.io/runtime-core";
+import { ContractId, ContractIdGuard } from "@marlowe.io/runtime-core";
 import { assertGuardEqual, proxy } from "@marlowe.io/adapter/io-ts";
 import { Input } from "@marlowe.io/language-core-v1";
-
-/**
- * A transaction range provides pagination options for the {@link index.RestClient#getTransactionsForContract | Get transactions for contract } endpoint
- */
-export interface TransactionsRange
-  extends Newtype<{ readonly TransactionsRange: unique symbol }, string> {}
-export const TransactionsRangeGuard = fromNewtype<TransactionsRange>(t.string);
-export const unTransactionsRange = iso<TransactionsRange>().unwrap;
-export const transactionsRange = iso<TransactionsRange>().wrap;
+import { ItemRange, Page, PageGuard } from "../../../pagination.js";
 
 export type GETHeadersByRange = (
   contractId: ContractId,
-  rangeOption: O.Option<TransactionsRange>
+  range?: ItemRange
 ) => TE.TaskEither<Error | DecodingError, GetTransactionsForContractResponse>;
 
 export const getHeadersByRangeViaAxios: (
   axiosInstance: AxiosInstance
-) => GETHeadersByRange = (axiosInstance) => (contractId, rangeOption) =>
+) => GETHeadersByRange = (axiosInstance) => (contractId, range) =>
   pipe(
     HTTP.GetWithDataAndHeaders(axiosInstance)(
       transactionsEndpoint(contractId),
-      pipe(
-        rangeOption,
-        O.match(
-          () => ({}),
-          (range) => ({ headers: { Range: unTransactionsRange(range) } })
-        )
-      )
+      range ? { headers: { Range: range } } : {}
     ),
     TE.map(([headers, data]) => ({
       data: data,
-      previousRange: headers["prev-range"],
-      nextRange: headers["next-range"],
+      page: {
+        current: headers["content-range"],
+        next: headers["next-range"],
+        total: Number(headers["total-count"]).valueOf(),
+      },
     })),
     TE.chainW((data) =>
       TE.fromEither(
@@ -76,12 +58,11 @@ export const getHeadersByRangeViaAxios: (
       )
     ),
     TE.map((rawResponse) => ({
-      headers: pipe(
+      transactions: pipe(
         rawResponse.data.results,
         A.map((result) => result.resource)
       ),
-      previousRange: rawResponse.previousRange,
-      nextRange: rawResponse.nextRange,
+      page: rawResponse.page,
     }))
   );
 
@@ -90,8 +71,7 @@ const GetContractsRawResponse = t.type({
   data: t.type({
     results: t.array(t.type({ links: t.type({}), resource: TxHeaderGuard })),
   }),
-  previousRange: optionFromNullable(TransactionsRangeGuard),
-  nextRange: optionFromNullable(TransactionsRangeGuard),
+  page: PageGuard,
 });
 
 /**
@@ -99,18 +79,8 @@ const GetContractsRawResponse = t.type({
  * @category GetTransactionsForContractResponse
  */
 export interface GetTransactionsForContractResponse {
-  /**
-   * The list of transactions heading information for the contract
-   */
-  headers: TxHeader[];
-  /**
-   * The previous range header. This is used for pagination.
-   */
-  previousRange: O.Option<TransactionsRange>;
-  /**
-   * The next range header. This is used for pagination.
-   */
-  nextRange: O.Option<TransactionsRange>;
+  transactions: TxHeader[];
+  page: Page;
 }
 
 /**
@@ -119,9 +89,8 @@ export interface GetTransactionsForContractResponse {
 export const GetTransactionsForContractResponseGuard = assertGuardEqual(
   proxy<GetTransactionsForContractResponse>(),
   t.type({
-    headers: t.array(TxHeaderGuard),
-    previousRange: optionFromNullable(TransactionsRangeGuard),
-    nextRange: optionFromNullable(TransactionsRangeGuard),
+    transactions: t.array(TxHeaderGuard),
+    page: PageGuard,
   })
 );
 
@@ -202,4 +171,4 @@ export const PostResponse = t.type({
 });
 
 const transactionsEndpoint = (contractId: ContractId): string =>
-  `/contracts/${encodeURIComponent(unContractId(contractId))}/transactions`;
+  `/contracts/${encodeURIComponent(contractId)}/transactions`;

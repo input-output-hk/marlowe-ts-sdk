@@ -136,7 +136,7 @@
     async function listContracts() {
       const contractIds = (
         await restClient.getContracts({ tags: [dappId] })
-      ).headers.map((header) => header.contractId);
+      ).contracts.map((contract) => contract.contractId);
       const contractIdsAndDetails = await Promise.all(
         contractIds.map((contractId) =>
           restClient
@@ -150,16 +150,16 @@
             .getTransactionsForContract(contractId)
             .then((result) =>
               Promise.all(
-                result.headers.map((txHeader) =>
+                result.transactions.map((transaction) =>
                   restClient.getContractTransactionById(
                     contractId,
-                    txHeader.transactionId
+                    transaction.transactionId
                   )
                 )
               )
             )
-            .then((txsDetails) =>
-              txsDetails.map((txDetails) => txDetails.inputs).flat()
+            .then((transactions) =>
+              transactions.map((transaction) => transaction.inputs).flat()
             )
             .then((inputHistory) => [contractId, details, inputHistory])
         )

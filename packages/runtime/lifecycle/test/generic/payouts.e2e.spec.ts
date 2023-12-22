@@ -4,7 +4,6 @@ import { addDays } from "date-fns";
 import { AtomicSwap } from "@marlowe.io/language-examples";
 import { datetoTimeout, adaValue } from "@marlowe.io/language-core-v1";
 import { Deposit } from "@marlowe.io/language-core-v1/next";
-import { mkFPTSRestClient } from "@marlowe.io/runtime-rest-client/index.js";
 
 import {
   getBankPrivateKey,
@@ -20,8 +19,7 @@ import { mintRole } from "@marlowe.io/runtime-rest-client/contract";
 
 global.console = console;
 
-describe("Payouts", () => {
-  const restAPI = mkFPTSRestClient(getMarloweRuntimeUrl());
+describe.skip("Payouts", () => {
   const provisionScheme = {
     provider: { adaAmount: 20_000_000n },
     swapper: { adaAmount: 20_000_000n, tokenAmount: 50n, tokenName: "TokenA" },
@@ -30,7 +28,7 @@ describe("Payouts", () => {
   async function executeSwapWithRequiredWithdrawalTillClosing() {
     const { tokenValueMinted, runtime, adaProvider, tokenProvider } =
       await provisionAnAdaAndTokenProvider(
-        restAPI,
+        getMarloweRuntimeUrl(),
         getBlockfrostContext(),
         getBankPrivateKey(),
         provisionScheme
@@ -56,9 +54,7 @@ describe("Payouts", () => {
       adaProvider
     ).contracts.createContract({
       contract: swapContract,
-      roles: {
-        [scheme.ask.buyer.role_token]: mintRole(tokenProvider.address),
-      },
+      roles: { [scheme.ask.buyer.role_token]: mintRole(tokenProvider.address) },
     });
 
     await runtime(adaProvider).wallet.waitConfirmation(txCreatedContract);

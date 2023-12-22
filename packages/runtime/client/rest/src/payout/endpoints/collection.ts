@@ -6,41 +6,33 @@ import { pipe } from "fp-ts/lib/function.js";
 import * as E from "fp-ts/lib/Either.js";
 import * as A from "fp-ts/lib/Array.js";
 import * as O from "fp-ts/lib/Option.js";
-import { Newtype, iso } from "newtype-ts";
 import { formatValidationErrors } from "jsonbigint-io-ts-reporters";
-import { fromNewtype, optionFromNullable } from "io-ts-types";
 import { stringify } from "qs";
 
 import * as HTTP from "@marlowe.io/adapter/http";
 import { DecodingError } from "@marlowe.io/adapter/codec";
 
-import { AssetId, unPolicyId, unContractId } from "@marlowe.io/runtime-core";
+import { AssetId } from "@marlowe.io/runtime-core";
 
 import { ContractId } from "@marlowe.io/runtime-core";
 import { PayoutHeader } from "../header.js";
 import { PayoutStatus } from "../status.js";
-
-export interface ContractsRange
-  extends Newtype<{ readonly ContractsRange: unique symbol }, string> {}
-export const ContractsRange = fromNewtype<ContractsRange>(t.string);
-export const unContractsRange = iso<ContractsRange>().unwrap;
-export const contractsRange = iso<ContractsRange>().wrap;
+import { ItemRange, Page, PageGuard } from "../../pagination.js";
 
 export type GetPayoutsRequest = {
   contractIds: ContractId[];
   roleTokens: AssetId[];
   status?: PayoutStatus;
-  range?: ContractsRange;
+  range?: ItemRange;
 };
 
 export type GetPayoutsResponse = {
-  headers: PayoutHeader[];
-  previousRange?: ContractsRange;
-  nextRange?: ContractsRange;
+  payouts: PayoutHeader[];
+  page: Page;
 };
 
 export type GETHeadersByRange = (
-  rangeOption: O.Option<ContractsRange>
+  range?: ItemRange
 ) => (
   contractIds: ContractId[]
 ) => (
@@ -50,9 +42,7 @@ export type GETHeadersByRange = (
 ) => TE.TaskEither<Error | DecodingError, GETByRangeResponse>;
 
 const roleToParameter = (roleToken: AssetId) =>
-  `${unPolicyId(roleToken.policyId)}.${roleToken.assetName}`;
-const contractIdToParameter = (contractId: ContractId) =>
-  unContractId(contractId);
+  `${roleToken.policyId}.${roleToken.assetName}`;
 const statusOptionToParameter = (statusOption: O.Option<PayoutStatus>) =>
   pipe(
     statusOption,
@@ -65,11 +55,7 @@ const statusOptionToParameter = (statusOption: O.Option<PayoutStatus>) =>
 export const getHeadersByRangeViaAxios: (
   axiosInstance: AxiosInstance
 ) => GETHeadersByRange =
-  (axiosInstance) =>
-  (rangeOption) =>
-  (contractIds) =>
-  (roles) =>
-  (statusOption) =>
+  (axiosInstance) => (range) => (contractIds) => (roles) => (statusOption) =>
     pipe(
       {
         url:
@@ -77,25 +63,22 @@ export const getHeadersByRangeViaAxios: (
           statusOptionToParameter(statusOption) +
           stringify(
             {
-              contractId: contractIds.map(contractIdToParameter),
+              contractId: contractIds,
               roleToken: roles.map(roleToParameter),
             },
             { indices: false }
           ),
-        configs: pipe(
-          rangeOption,
-          O.match(
-            () => ({}),
-            (range) => ({ headers: { Range: unContractsRange(range) } })
-          )
-        ),
+        configs: range ? { headers: { Range: range } } : {},
       },
       ({ url, configs }) =>
         HTTP.GetWithDataAndHeaders(axiosInstance)(url, configs),
       TE.map(([headers, data]) => ({
         data: data,
-        previousRange: headers["prev-range"],
-        nextRange: headers["next-range"],
+        page: {
+          current: headers["content-range"],
+          next: headers["next-range"],
+          total: Number(headers["total-count"]).valueOf(),
+        },
       })),
       TE.chainW((data) =>
         TE.fromEither(
@@ -103,12 +86,11 @@ export const getHeadersByRangeViaAxios: (
         )
       ),
       TE.map((rawResponse) => ({
-        headers: pipe(
+        payouts: pipe(
           rawResponse.data.results,
           A.map((result) => result.resource)
         ),
-        previousRange: rawResponse.previousRange,
-        nextRange: rawResponse.nextRange,
+        page: rawResponse.page,
       }))
     );
 
@@ -119,13 +101,11 @@ export const GETByRangeRawResponse = t.type({
       t.type({ links: t.type({ payout: t.string }), resource: PayoutHeader })
     ),
   }),
-  previousRange: optionFromNullable(ContractsRange),
-  nextRange: optionFromNullable(ContractsRange),
+  page: PageGuard,
 });
 
 export type GETByRangeResponse = t.TypeOf<typeof GETByRangeResponse>;
 export const GETByRangeResponse = t.type({
-  headers: t.array(PayoutHeader),
-  previousRange: optionFromNullable(ContractsRange),
-  nextRange: optionFromNullable(ContractsRange),
+  payouts: t.array(PayoutHeader),
+  page: PageGuard,
 });

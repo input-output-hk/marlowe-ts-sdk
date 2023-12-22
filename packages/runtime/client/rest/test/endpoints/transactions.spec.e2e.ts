@@ -1,10 +1,10 @@
-import { mkFPTSRestClient } from "@marlowe.io/runtime-rest-client/index.js";
+import { mkFPTSRestClient } from "@marlowe.io/runtime-rest-client";
 import console from "console";
 import { getMarloweRuntimeUrl } from "../context.js";
 
 global.console = console;
 
-describe.skip("ransactions endpoints", () => {
+describe("Transactions endpoints", () => {
   const restClient = mkFPTSRestClient(getMarloweRuntimeUrl());
 
   it(

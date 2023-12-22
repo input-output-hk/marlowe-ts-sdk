@@ -21,6 +21,8 @@ test-dist
 .cache
 .local
 yarn.lock
+
+
 # nixago: ignore-linked-files
 /lefthook.yml
 /.editorconfig

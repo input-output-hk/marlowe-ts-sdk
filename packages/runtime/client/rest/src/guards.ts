@@ -23,4 +23,6 @@ export {
   TokenMetadataGuard as TokenMetadata,
   RoleTokenConfigurationGuard as RoleTokenConfiguration,
   RolesConfigurationGuard as RolesConfiguration,
-} from "./rolesConfigurations.js";
+} from "./contract/rolesConfigurations.js";
+
+export { ContractDetailsGuard as ContractDetails } from "./contract/details.js";

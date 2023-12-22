@@ -9,17 +9,11 @@ import {
   PayoutAvailable,
   AssetId,
   PayoutWithdrawn,
-  Assets,
-  Tokens,
-  assetId,
-  mkPolicyId,
-  token,
   withdrawalIdToTxId,
+  unMapAsset,
 } from "@marlowe.io/runtime-core";
 
 import { FPTSRestAPI, RestClient } from "@marlowe.io/runtime-rest-client";
-
-import * as RestPayout from "@marlowe.io/runtime-rest-client/payout";
 
 import { DecodingError } from "@marlowe.io/adapter/codec";
 import { stringify } from "json-bigint";
@@ -75,7 +69,7 @@ const fetchAvailablePayoutsFpTs: (
       getAssetIds(walletApi),
       TE.chain((walletAssetIds) =>
         pipe(
-          restAPI.payouts.getHeadersByRange(O.none)(
+          restAPI.payouts.getHeadersByRange()(
             pipe(
               filtersOption,
               O.match(
@@ -92,12 +86,12 @@ const fetchAvailablePayoutsFpTs: (
               )
             )
           )(O.some("available")),
-          TE.map((result) => result.headers)
+          TE.map((result) => result.payouts)
         )
       ),
-      TE.chain((headers) =>
+      TE.chain((payouts) =>
         TE.sequenceArray(
-          headers.map((header) => restAPI.payouts.get(header.payoutId))
+          payouts.map((payout) => restAPI.payouts.get(payout.payoutId))
         )
       ),
       TE.map((payoutsDetails) =>
@@ -105,7 +99,7 @@ const fetchAvailablePayoutsFpTs: (
           payoutId: payoutDetails.payoutId,
           contractId: payoutDetails.contractId,
           role: payoutDetails.role,
-          assets: convertAsset(payoutDetails.assets),
+          assets: unMapAsset(payoutDetails.assets),
         }))
       )
     );
@@ -122,7 +116,7 @@ const fetchWithdrawnPayoutsFpTs: (
       getAssetIds(walletApi),
       TE.chain((walletAssetIds) =>
         pipe(
-          restAPI.payouts.getHeadersByRange(O.none)(
+          restAPI.payouts.getHeadersByRange()(
             pipe(
               filtersOption,
               O.match(
@@ -139,12 +133,12 @@ const fetchWithdrawnPayoutsFpTs: (
               )
             )
           )(O.some("withdrawn")),
-          TE.map((result) => result.headers)
+          TE.map((result) => result.payouts)
         )
       ),
-      TE.chain((headers) =>
+      TE.chain((payouts) =>
         TE.sequenceArray(
-          headers.map((header) => restAPI.payouts.get(header.payoutId))
+          payouts.map((payout) => restAPI.payouts.get(payout.payoutId))
         )
       ),
       TE.map((payoutsDetails) =>
@@ -162,27 +156,13 @@ const fetchWithdrawnPayoutsFpTs: (
                 payoutId: payoutDetails.payoutId,
                 contractId: payoutDetails.contractId,
                 role: payoutDetails.role,
-                assets: convertAsset(payoutDetails.assets),
+                assets: unMapAsset(payoutDetails.assets),
               })
             )
           )
         )
       )
     );
-
-const convertAsset: (assets: RestPayout.Assets) => Assets = (restAssets) => ({
-  lovelaces: restAssets.lovelace,
-  tokens: convertTokens(restAssets.tokens),
-});
-
-const convertTokens: (tokens: RestPayout.Tokens) => Tokens = (restTokens) =>
-  Object.entries(restTokens)
-    .map(([policyId, x]) =>
-      Object.entries(x).map(([assetName, quantity]) =>
-        token(quantity)(assetId(mkPolicyId(policyId))(assetName))
-      )
-    )
-    .flat();
 
 const getAssetIds: (walletApi: WalletAPI) => TE.TaskEither<Error, AssetId[]> = (
   walletAPI

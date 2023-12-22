@@ -6,9 +6,7 @@ import { pipe } from "fp-ts/lib/function.js";
 import * as E from "fp-ts/lib/Either.js";
 import * as A from "fp-ts/lib/Array.js";
 import * as O from "fp-ts/lib/Option.js";
-import { Newtype, iso } from "newtype-ts";
 import { formatValidationErrors } from "jsonbigint-io-ts-reporters";
-import { fromNewtype, optionFromNullable } from "io-ts-types";
 import { stringify } from "qs";
 import { assertGuardEqual, proxy } from "@marlowe.io/adapter/io-ts";
 import { Contract, RoleName } from "@marlowe.io/language-core-v1";
@@ -30,7 +28,6 @@ import {
   AddressBech32,
   TxOutRef,
   AssetId,
-  unPolicyId,
   StakeAddressBech32,
   unStakeAddressBech32,
   SourceId,
@@ -44,19 +41,7 @@ import {
 } from "../rolesConfigurations.js";
 
 import { ContractId, ContractIdGuard } from "@marlowe.io/runtime-core";
-
-/**
- * @category Endpoint : Get Contracts
- */
-export interface ContractsRange
-  extends Newtype<{ readonly ContractsRange: unique symbol }, string> {}
-
-/**
- * @category Endpoint : Get Contracts
- */
-export const ContractsRange = fromNewtype<ContractsRange>(t.string);
-export const unContractsRange = iso<ContractsRange>().unwrap;
-export const contractsRange = iso<ContractsRange>().wrap;
+import { ItemRange, Page, PageGuard } from "../../pagination.js";
 
 /**
  * Request options for the {@link index.RestClient#getContracts | Get contracts } endpoint
@@ -67,7 +52,7 @@ export interface GetContractsRequest {
    * Optional pagination request. Note that when you call {@link index.RestClient#getContracts | Get contracts }
    * the response includes the next and previous range headers.
    */
-  range?: ContractsRange;
+  range?: ItemRange;
   /**
    * Optional tags to filter the contracts by.
    */
@@ -85,7 +70,7 @@ export interface GetContractsRequest {
 }
 
 export type GETHeadersByRange = (
-  rangeOption: O.Option<ContractsRange>
+  range?: ItemRange
 ) => (kwargs: {
   tags: Tag[];
   partyAddresses: AddressBech32[];
@@ -93,7 +78,7 @@ export type GETHeadersByRange = (
 }) => TE.TaskEither<Error | DecodingError, GetContractsResponse>;
 
 const roleToParameter = (roleToken: AssetId) =>
-  `${unPolicyId(roleToken.policyId)}.${roleToken.assetName}`;
+  `${roleToken.policyId}.${roleToken.assetName}`;
 
 /**
  * @see {@link https://docs.marlowe.iohk.io/api/get-contracts}
@@ -102,7 +87,7 @@ export const getHeadersByRangeViaAxios: (
   axiosInstance: AxiosInstance
 ) => GETHeadersByRange =
   (axiosInstance) =>
-  (rangeOption) =>
+  (range) =>
   ({ tags, partyAddresses, partyRoles }) =>
     pipe(
       {
@@ -116,38 +101,36 @@ export const getHeadersByRangeViaAxios: (
             },
             { indices: false }
           ),
-        configs: pipe(
-          rangeOption,
-          O.match(
-            () => ({}),
-            (range) => ({ headers: { Range: unContractsRange(range) } })
-          )
-        ),
+        configs: range ? { headers: { Range: range } } : {},
       },
       ({ url, configs }) =>
         HTTP.GetWithDataAndHeaders(axiosInstance)(url, configs),
       TE.map(([headers, data]) => ({
         data: data,
-        previousRange: headers["prev-range"],
-        nextRange: headers["next-range"],
+        page: {
+          current: headers["content-range"],
+          next: headers["next-range"],
+          total: Number(headers["total-count"]).valueOf(),
+        },
       })),
       TE.chainW((data) =>
         TE.fromEither(
-          E.mapLeft(formatValidationErrors)(GETByRangeRawResponse.decode(data))
+          E.mapLeft(formatValidationErrors)(
+            GETByRangeRawResponseGuard.decode(data)
+          )
         )
       ),
       TE.map((rawResponse) => ({
-        headers: pipe(
+        contracts: pipe(
           rawResponse.data.results,
           A.map((result) => result.resource)
         ), // All logic instead of Any, TODO : Add the flexibility to chose between Any and All
-        previousRange: rawResponse.previousRange,
-        nextRange: rawResponse.nextRange,
+        page: rawResponse.page,
       }))
     );
 
-export type GETByRangeRawResponse = t.TypeOf<typeof GETByRangeRawResponse>;
-export const GETByRangeRawResponse = t.type({
+export type GETByRangeRawResponse = t.TypeOf<typeof GETByRangeRawResponseGuard>;
+export const GETByRangeRawResponseGuard = t.type({
   data: t.type({
     results: t.array(
       t.type({
@@ -156,30 +139,19 @@ export const GETByRangeRawResponse = t.type({
       })
     ),
   }),
-  previousRange: optionFromNullable(ContractsRange),
-  nextRange: optionFromNullable(ContractsRange),
+  page: PageGuard,
 });
 
 /**
  * Represents the response of the {@link index.RestClient#getContracts | Get contracts } endpoint
+ * @remarks
+ *  - Contracts are paginated and the response is self-sufficient to be able to navigate through pages
+ *  - Only minimal Contract information is provided (`ContractHeader`)
  * @category Endpoint : Get Contracts
  */
 export interface GetContractsResponse {
-  /**
-   * A list of minimal contract information that can be used to identify a contract.
-   */
-  // DISCUSSION: Rename to "contracts" or "results"
-  headers: ContractHeader[];
-  // TODO: Change Option for nullable
-  /**
-   * The previous query range. This is used for pagination.
-   */
-  previousRange: O.Option<ContractsRange>;
-  /**
-   * The next query range. This is used for pagination.
-   */
-  nextRange: O.Option<ContractsRange>;
-  // TODO: Add current range
+  contracts: ContractHeader[];
+  page: Page;
 }
 
 /**
@@ -191,9 +163,8 @@ export interface GetContractsResponse {
 export const GetContractsResponseGuard = assertGuardEqual(
   proxy<GetContractsResponse>(),
   t.type({
-    headers: t.array(ContractHeaderGuard),
-    previousRange: optionFromNullable(ContractsRange),
-    nextRange: optionFromNullable(ContractsRange),
+    contracts: t.array(ContractHeaderGuard),
+    page: PageGuard,
   })
 );
 

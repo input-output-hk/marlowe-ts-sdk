@@ -34,7 +34,6 @@ export {
 export {
   GetContractsResponse,
   GetContractsRequest,
-  ContractsRange,
   ContractOrSourceId,
   BuildCreateContractTxRequest,
   BuildCreateContractTxRequestWithContract,
@@ -43,8 +42,8 @@ export {
   BuildCreateContractTxResponse,
 } from "./endpoints/collection.js";
 export { TxHeader } from "./transaction/header.js";
+
 export {
-  TransactionsRange,
   GetTransactionsForContractResponse,
   ApplyInputsToContractRequest,
 } from "./transaction/endpoints/collection.js";
@@ -56,6 +55,7 @@ export {
   GetContractBySourceIdRequest,
   GetContractSourceClosureRequest,
 } from "./endpoints/sources.js";
+
 export { TransactionDetails } from "./transaction/details.js";
 export { TxStatus } from "./transaction/status.js";
 export { GetNextStepsForContractRequest } from "./next/endpoint.js";

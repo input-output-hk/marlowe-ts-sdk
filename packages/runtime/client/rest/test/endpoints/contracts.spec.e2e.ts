@@ -1,37 +1,44 @@
-import { pipe } from "fp-ts/lib/function.js";
-import * as TE from "fp-ts/lib/TaskEither.js";
-import * as O from "fp-ts/lib/Option.js";
-
-import { mkFPTSRestClient } from "@marlowe.io/runtime-rest-client/index.js";
+import { mkRestClient } from "@marlowe.io/runtime-rest-client";
 
 import { getMarloweRuntimeUrl } from "../context.js";
 
 import console from "console";
+
 global.console = console;
 
 describe("contracts endpoints", () => {
-  const restClient = mkFPTSRestClient(getMarloweRuntimeUrl());
+  const restClient = mkRestClient(getMarloweRuntimeUrl());
 
   it(
-    "can navigate throught Initialised Marlowe Contracts pages" +
-      "(GET:  /contracts/)",
+    "can navigate throught Marlowe Contracts pages" + "(GET:  /contracts/)",
     async () => {
-      await pipe(
-        restClient.contracts.getHeadersByRange(O.none)({
-          tags: [],
-          partyAddresses: [],
-          partyRoles: [],
-        }),
-        TE.match(
-          (e) => {
-            console.dir(e, { depth: null });
-            expect(e).not.toBeDefined();
-          },
-          (a) => {
-            console.log("result", a.headers.length);
-          }
-        )
-      )();
-    }
+      const firstPage = await restClient.getContracts({
+        tags: [],
+        partyAddresses: [],
+        partyRoles: [],
+      });
+      expect(firstPage.contracts.length).toBe(100);
+      expect(firstPage.page.total).toBeGreaterThan(100);
+
+      expect(firstPage.page.next).toBeDefined();
+
+      const secondPage = await restClient.getContracts({
+        range: firstPage.page.next,
+      });
+      expect(secondPage.contracts.length).toBe(100);
+      expect(secondPage.page.total).toBeGreaterThan(100);
+
+      expect(secondPage.page.next).toBeDefined();
+
+      const thirdPage = await restClient.getContracts({
+        range: secondPage.page.next,
+      });
+
+      expect(thirdPage.contracts.length).toBe(100);
+      expect(thirdPage.page.total).toBeGreaterThan(100);
+
+      expect(thirdPage.page.next).toBeDefined();
+    },
+    100_000
   );
 });

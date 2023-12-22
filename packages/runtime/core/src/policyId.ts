@@ -1,8 +1,16 @@
 import * as t from "io-ts/lib/index.js";
-import { iso, Newtype } from "newtype-ts";
-import { fromNewtype } from "io-ts-types";
+import { unsafeEither } from "@marlowe.io/adapter/fp-ts";
 
-export type PolicyId = Newtype<{ readonly PolicyId: unique symbol }, string>;
-export const PolicyId = fromNewtype<PolicyId>(t.string);
-export const unPolicyId = iso<PolicyId>().unwrap;
-export const mkPolicyId = iso<PolicyId>().wrap;
+export interface PolicyIdBrand {
+  readonly PolicyId: unique symbol;
+}
+
+export const PolicyIdGuard = t.brand(
+  t.string,
+  (s): s is t.Branded<string, PolicyIdBrand> => true,
+  "PolicyId"
+);
+
+export type PolicyId = t.TypeOf<typeof PolicyIdGuard>;
+
+export const policyId = (s: string) => unsafeEither(PolicyIdGuard.decode(s));

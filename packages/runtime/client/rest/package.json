@@ -16,7 +16,7 @@
     "build": "tsc --build src",
     "clean": "shx rm -rf dist",
     "test": "echo 'The client rest doesnt have unit tests'",
-    "test:e2e": "NODE_OPTIONS='--experimental-vm-modules --no-warnings' jest --runInBand --config test/jest.e2e.config.mjs --verbose"
+    "test:e2e": "npm run clean && npm run build && NODE_OPTIONS='--experimental-vm-modules --no-warnings' jest --runInBand --config test/jest.e2e.config.mjs --verbose"
   },
   "type": "module",
   "module": "./dist/esm/index.js",
@@ -30,6 +30,11 @@
       "import": "./dist/esm/index.js",
       "require": "./dist/bundled/cjs/runtime-rest-client.cjs",
       "types": "./dist/esm/index.d.ts"
+    },
+    "./guards": {
+      "import": "./dist/esm/guards.js",
+      "require": "./dist/bundled/cjs/guards.cjs",
+      "types": "./dist/esm/guards.d.ts"
     },
     "./transaction": {
       "import": "./dist/esm/contract/transaction/index.js",

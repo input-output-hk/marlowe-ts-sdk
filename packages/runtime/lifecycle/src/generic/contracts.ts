@@ -17,18 +17,19 @@ import {
   TxId,
   AddressesAndCollaterals,
   HexTransactionWitnessSet,
-  unPolicyId,
   transactionWitnessSetTextEnvelope,
 } from "@marlowe.io/runtime-core";
 
-import { FPTSRestAPI, RestClient } from "@marlowe.io/runtime-rest-client";
+import {
+  FPTSRestAPI,
+  RestClient,
+  ItemRange,
+} from "@marlowe.io/runtime-rest-client";
 import { DecodingError } from "@marlowe.io/adapter/codec";
 
 import { Next, noNext } from "@marlowe.io/language-core-v1/next";
-import { isNone, none, Option } from "fp-ts/lib/Option.js";
 import {
   BuildCreateContractTxResponse,
-  ContractsRange,
   TransactionTextEnvelope,
 } from "@marlowe.io/runtime-rest-client/contract";
 
@@ -40,7 +41,7 @@ export function mkContractLifecycle(
   const di = { wallet, deprecatedRestAPI, restClient };
   return {
     createContract: submitCreateTx(di),
-    applyInputs: submitApplyInputsTx(di),
+    applyInputs: applyInputsTx(di),
     getApplicableInputs: getApplicableInputs(di),
     getContractIds: getContractIds(di),
   };
@@ -56,14 +57,14 @@ const submitCreateTx =
     );
   };
 
-const submitApplyInputsTx =
+const applyInputsTx =
   ({ wallet, deprecatedRestAPI }: ContractsDI) =>
   async (
     contractId: ContractId,
     applyInputsRequest: ApplyInputsRequest
   ): Promise<TxId> => {
     return unsafeTaskEither(
-      submitApplyInputsTxFpTs(deprecatedRestAPI)(wallet)(contractId)(
+      applyInputsTxFpTs(deprecatedRestAPI)(wallet)(contractId)(
         applyInputsRequest
       )
     );
@@ -75,7 +76,7 @@ const getApplicableInputs =
     const contractDetails = await unsafeTaskEither(
       deprecatedRestAPI.contracts.contract.get(contractId)
     );
-    if (isNone(contractDetails.currentContract)) {
+    if (contractDetails.state) {
       return noNext;
     } else {
       const parties = await getParties(wallet)(
@@ -98,8 +99,8 @@ const getContractIds =
     ];
     const kwargs = { tags: [], partyAddresses, partyRoles: [] };
     const loop = async (
-      range: Option<ContractsRange>,
-      acc: ContractId[]
+      acc: ContractId[],
+      range?: ItemRange
     ): Promise<ContractId[]> => {
       const result = await deprecatedRestAPI.contracts.getHeadersByRange(range)(
         kwargs
@@ -108,13 +109,13 @@ const getContractIds =
       const response = result.right;
       const contractIds = [
         ...acc,
-        ...response.headers.map(({ contractId }) => contractId),
+        ...response.contracts.map(({ contractId }) => contractId),
       ];
-      return response.nextRange._tag === "None"
-        ? contractIds
-        : loop(response.nextRange, contractIds);
+      return response.page.next
+        ? loop(contractIds, response.page.next)
+        : contractIds;
     };
-    return loop(none, []);
+    return loop([]);
   };
 
 const getParties: (
@@ -133,7 +134,7 @@ const getParties: (
       );
     const roles: Party[] = (await walletAPI.getTokens())
       .filter((token) => token.assetId.policyId == roleMintingPolicyId)
-      .map((token) => ({ role_token: unPolicyId(token.assetId.policyId) }));
+      .map((token) => ({ role_token: token.assetId.policyId }));
     return roles.concat([changeAddress]).concat(usedAddresses);
   };
 
@@ -205,7 +206,7 @@ export const createContractFpTs: (
       )
     );
 
-export const submitApplyInputsTxFpTs: (
+export const applyInputsTxFpTs: (
   client: FPTSRestAPI
 ) => (
   wallet: WalletAPI
@@ -261,7 +262,7 @@ export const applyInputsFpTs: (
 ) => TE.TaskEither<Error | DecodingError, TxId> =
   (client) => (wallet) => (contractId) => (applyInputsRequest) =>
     pipe(
-      submitApplyInputsTxFpTs(client)(wallet)(contractId)(applyInputsRequest),
+      applyInputsTxFpTs(client)(wallet)(contractId)(applyInputsRequest),
       TE.chainW((txId) =>
         tryCatchDefault(() => wallet.waitConfirmation(txId).then((_) => txId))
       )

@@ -16,7 +16,7 @@
     "build": "tsc --build src",
     "clean": "shx rm -rf dist",
     "test": "echo 'The legact runtime doesnt have unit tests'",
-    "test:e2e": "NODE_OPTIONS='--experimental-vm-modules --no-warnings' jest --runInBand --config test/jest.e2e.config.mjs --verbose",
+    "test:e2e": "npm run clean && npm run build && NODE_OPTIONS='--experimental-vm-modules --no-warnings' jest --runInBand --config test/jest.e2e.config.mjs --verbose",
     "build:e2e": "tsc --build test"
   },
   "type": "module",

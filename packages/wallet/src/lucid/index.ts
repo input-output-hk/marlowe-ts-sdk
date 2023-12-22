@@ -81,9 +81,9 @@ const getTokens =
           return runtimeCore.lovelaces(quantity);
         } else {
           return runtimeCore.token(quantity)(
-            runtimeCore.assetId(
-              runtimeCore.mkPolicyId(fromUnit(unit).policyId)
-            )(getAssetName(unit))
+            runtimeCore.assetId(runtimeCore.policyId(fromUnit(unit).policyId))(
+              getAssetName(unit)
+            )
           );
         }
       })
