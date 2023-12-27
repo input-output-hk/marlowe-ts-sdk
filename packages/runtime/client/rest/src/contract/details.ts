@@ -1,4 +1,4 @@
-import { optionFromNullable } from "io-ts-types";
+import { fromNullable } from "io-ts-types";
 import * as t from "io-ts/lib/index.js";
 import { Contract, MarloweState } from "@marlowe.io/language-core-v1";
 import * as G from "@marlowe.io/language-core-v1/guards";
@@ -22,7 +22,11 @@ import {
   TextEnvelopeGuard,
   PolicyId,
 } from "@marlowe.io/runtime-core";
-import { assertGuardEqual, proxy } from "@marlowe.io/adapter/io-ts";
+import {
+  assertGuardEqual,
+  convertNullableToUndefined,
+  proxy,
+} from "@marlowe.io/adapter/io-ts";
 import { TxStatus } from "./transaction/status.js";
 
 // QUESTION: Where do we have global documentation about how Roles and payouts work?
@@ -92,9 +96,12 @@ export const ContractDetailsGuard = assertGuardEqual(
       metadata: Metadata,
       unclaimedPayouts: t.array(Payout),
     }),
-    t.partial({ currentContract: G.Contract, state: G.MarloweState }),
-    t.partial({ utxo: TxOutRef }),
-    t.partial({ block: BlockHeaderGuard }),
-    t.partial({ txBody: TextEnvelopeGuard }),
+    t.partial({
+      currentContract: convertNullableToUndefined(G.Contract),
+      state: convertNullableToUndefined(G.MarloweState),
+    }),
+    t.partial({ utxo: convertNullableToUndefined(TxOutRef) }),
+    t.partial({ block: convertNullableToUndefined(BlockHeaderGuard) }),
+    t.partial({ txBody: convertNullableToUndefined(TextEnvelopeGuard) }),
   ])
 );

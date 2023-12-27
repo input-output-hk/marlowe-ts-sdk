@@ -18,6 +18,7 @@ import {
 
 import { ContractDetails, ContractDetailsGuard } from "../details.js";
 import { ContractId } from "@marlowe.io/runtime-core";
+import { unsafeEither, unsafeTaskEither } from "@marlowe.io/adapter/fp-ts";
 
 export type GET = (
   contractId: ContractId
@@ -30,24 +31,25 @@ const GETPayload = t.type({
 });
 
 /**
- * @see {@link https://docs.marlowe.iohk.io/api/get-contracts-by-id}
+ * @see {@link https://docs.marlowe.iohk.io/api/get-contract-by-id}
  */
-export const getViaAxios: (axiosInstance: AxiosInstance) => GET =
-  (axiosInstance) => (contractId) =>
-    pipe(
-      HTTP.Get(axiosInstance)(contractEndpoint(contractId), {
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
-      }),
-      TE.chainW((data) =>
-        TE.fromEither(
-          E.mapLeft(formatValidationErrors)(GETPayload.decode(data))
-        )
-      ),
-      TE.map((payload) => payload.resource)
-    );
+export const getContractById = async (
+  axiosInstance: AxiosInstance,
+  contractId: ContractId
+): Promise<ContractDetails> => {
+  const data = await unsafeTaskEither(
+    HTTP.Get(axiosInstance)(contractEndpoint(contractId), {
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+    })
+  );
+  const payload = unsafeEither(
+    E.mapLeft(formatValidationErrors)(GETPayload.decode(data))
+  );
+  return payload.resource;
+};
 
 export type PUT = (
   contractId: ContractId,

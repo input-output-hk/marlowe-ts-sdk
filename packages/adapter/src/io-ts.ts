@@ -1,5 +1,5 @@
 import * as t from "io-ts/lib/index.js";
-
+import { withValidate } from "io-ts-types";
 /**
  * In the TS-SDK we duplicate the type and guard definition for each type as the
  * inferred type from io-ts does not produce a good type export when used with
@@ -59,4 +59,19 @@ export function assertGuardEqual<A, G extends t.Type<A, any, any>>(
  */
 export function proxy<A = never>(): A {
   return null as any;
+}
+
+/**
+ * converts a null value to an undefined one.
+ * @returns
+ */
+export function convertNullableToUndefined<C extends t.Mixed>(
+  codec: C,
+  name = `fromNullableToUndefined(${codec.name})`
+): C {
+  return withValidate(
+    codec,
+    (u, c) => (u == null ? t.success(undefined) : codec.validate(u, c)),
+    name
+  );
 }

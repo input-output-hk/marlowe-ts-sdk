@@ -284,7 +284,7 @@ export function mkRestClient(baseURL: string): RestClient {
       );
     },
     getContractById(contractId) {
-      return unsafeTaskEither(Contract.getViaAxios(axiosInstance)(contractId));
+      return Contract.getContractById(axiosInstance, contractId);
     },
     buildCreateContractTx(request) {
       const postContractsRequest = {
@@ -584,7 +584,10 @@ export function mkFPTSRestClient(baseURL: string): FPTSRestAPI {
       getHeadersByRange: Contracts.getHeadersByRangeViaAxios(axiosInstance),
       post: Contracts.postViaAxios(axiosInstance),
       contract: {
-        get: Contract.getViaAxios(axiosInstance),
+        get: (contractId) =>
+          TE.fromTask(() =>
+            Contract.getContractById(axiosInstance, contractId)
+          ),
         put: Contract.putViaAxios(axiosInstance),
         next: Next.getViaAxios(axiosInstance),
         transactions: {
