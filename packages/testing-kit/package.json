@@ -1,0 +1,39 @@
+{
+  "name": "@marlowe.io/testing-kit",
+  "version": "0.3.0-beta-rc1",
+  "description": "Testing libraries to Support Marlowe Development",
+  "repository": "https://github.com/input-output-hk/marlowe-ts-sdk",
+  "publishConfig": {
+    "access": "public"
+  },
+  "contributors": [
+    "Nicolas Henin <nicolas.henin@iohk.io> (https://iohk.io)",
+    "Hernan Rajchert <hernan.rajchert@iohk.io> (https://iohk.io)",
+    "Bjorn Kihlberg <bjorn.kihlberg@iohk.io> (https://iohk.io)"
+  ],
+  "license": "Apache-2.0",
+  "scripts": {
+    "build": "tsc --build src",
+    "clean": "shx rm -rf dist",
+    "test": "echo 'testing-kit doesnt have tests for the moment'"
+  },
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "import": "./dist/esm/index.js",
+      "require": "./dist/bundled/cjs/index.cjs",
+      "types": "./dist/esm/index.d.ts"
+    }
+  },
+  "dependencies": {
+    "@marlowe.io/wallet": "0.3.0-beta-rc1",
+    "@marlowe.io/runtime-core": "0.3.0-beta-rc1",
+    "@marlowe.io/adapter": "0.3.0-beta-rc1",
+    "@marlowe.io/language-core-v1": "0.3.0-beta-rc1",
+    "bip39": "3.1.0",
+    "fp-ts": "2.16.1"
+  }
+}

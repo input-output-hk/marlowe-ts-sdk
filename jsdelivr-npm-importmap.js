@@ -16,6 +16,8 @@ const importMap = {
       "https://cdn.jsdelivr.net/npm/@marlowe.io/adapter@0.3.0-beta-rc1/dist/bundled/esm/http.js",
     "@marlowe.io/adapter/io-ts":
       "https://cdn.jsdelivr.net/npm/@marlowe.io/adapter@0.3.0-beta-rc1/dist/bundled/esm/io-ts.js",
+    "@marlowe.io/adapter/lucid":
+      "https://cdn.jsdelivr.net/npm/@marlowe.io/adapter@0.3.0-beta-rc1/dist/bundled/esm/lucid.js",
     "@marlowe.io/adapter/time":
       "https://cdn.jsdelivr.net/npm/@marlowe.io/adapter@0.3.0-beta-rc1/dist/bundled/esm/time.js",
     "@marlowe.io/language-core-v1":
@@ -72,6 +74,8 @@ const importMap = {
       "https://cdn.jsdelivr.net/npm/@marlowe.io/marlowe-object@0.3.0-beta-rc1/dist/bundled/esm/marlowe-object.js",
     "@marlowe.io/marlowe-object/guards":
       "https://cdn.jsdelivr.net/npm/@marlowe.io/marlowe-object@0.3.0-beta-rc1/dist/bundled/esm/guards.js",
+    "@marlowe.io/testing-kit":
+      "https://cdn.jsdelivr.net/npm/@marlowe.io/testing-kit@0.3.0-beta-rc1/dist/bundled/esm/testing-kit.js",
     "lucid-cardano": "https://unpkg.com/lucid-cardano@0.10.7/web/mod.js",
   },
 };
