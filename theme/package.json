@@ -6,6 +6,10 @@
   "keywords": [
     "typedoc-theme"
   ],
+  "files": [
+    "dist",
+    "assets"
+  ],
   "engines": {
     "node": ">= 14.20.1"
   },
@@ -18,7 +22,6 @@
   },
   "scripts": {
     "build": "tsc",
-    "predocs": "tsc",
-    "docs": "typedoc src --plugin dist/index.js"
+    "ts-check": "tsc --noEmit"
   }
 }
