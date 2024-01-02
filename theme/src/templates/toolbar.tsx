@@ -14,7 +14,9 @@ export const toolbar = (context: DefaultThemeRenderContext, props: PageEvent<Ref
         <div class="field">
           <div id="tsd-toolbar-links">
             {Object.entries(context.options.getValue('navigationLinks')).map(([label, url]) => (
-              <a href={url}>{label}</a>
+              <a href={url}>
+                <img class="github-icon" src={context.relativeURL('assets/marlowe/github.svg', true)} />
+              </a>
             ))}
           </div>
         </div>
@@ -30,6 +32,7 @@ export const toolbar = (context: DefaultThemeRenderContext, props: PageEvent<Ref
         >
           <div class="logo-container">
             <img class="marlowe-logo" src={context.relativeURL('assets/marlowe/logo.svg', true)} alt="logo" />
+            <h3>&nbsp;v{props.project.packageVersion}</h3>
           </div>
         </a>
       </div>
