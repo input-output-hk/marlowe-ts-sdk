@@ -1,5 +1,7 @@
 /* https://github.com/elad2412/the-new-css-reset */
-*:where(:not(html, iframe, canvas, img, svg, video, audio):not(svg *, symbol *)) {
+*:where(
+    :not(html, iframe, canvas, img, svg, video, audio):not(svg *, symbol *)
+  ) {
   all: unset;
   display: revert;
 }
@@ -12,12 +14,15 @@
 }
 
 /* Reapply the pointer cursor for anchor tags */
-a, button {
+a,
+button {
   cursor: revert;
 }
 
 /* Remove list styles (bullets/numbers) */
-ol, ul, menu {
+ol,
+ul,
+menu {
   list-style: none;
 }
 
@@ -74,7 +79,8 @@ meter {
   --light-button-color-hover: rgb(36, 41, 47);
   --light-button-background-hover: rgb(239, 241, 243);
   --light-button-border-color-hover: rgba(31, 35, 40, 0.15);
-  --light-button-box-shadow: rgba(31, 35, 40, 0.04) 0 1px 0, rgba(255, 255, 255, 0.25) 0 1px 0 inset;
+  --light-button-box-shadow: rgba(31, 35, 40, 0.04) 0 1px 0,
+    rgba(255, 255, 255, 0.25) 0 1px 0 inset;
   --light-input-border-color: rgb(208, 215, 222);
   --light-input-border-color-focus: rgb(9, 105, 218);
 
@@ -98,8 +104,10 @@ meter {
   --pre-color-background: var(--color-background-secondary);
   --code-color-background: var(--color-background-secondary);
 
-  --font-family-body: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
-  --font-family-mono: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
+  --font-family-body: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans",
+    Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+  --font-family-mono: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas,
+    Liberation Mono, monospace;
 
   --font-size-h1: 2.1rem;
   --font-size-h2: 1.8rem;
@@ -126,33 +134,33 @@ meter {
 
 @media (prefers-color-scheme: light) {
   :root {
-      --select-chevron: var(--light-select-chevron);
-      --code-color-background: var(--light-code-color-background);
-      --button-color: var(--light-button-color);
-      --button-background: var(--light-button-background);
-      --button-border-color: var(--light-button-border-color);
-      --button-color-hover: var(--light-button-color-hover);
-      --button-background-hover: var(--light-button-background-hover);
-      --button-border-color-hover: var(--light-button-border-color-hover);
-      --button-box-shadow: var(--light-button-box-shadow);
-      --input-border-color: var(--light-input-border-color);
-      --input-border-color-focus: var(--light-input-border-color-focus);
+    --select-chevron: var(--light-select-chevron);
+    --code-color-background: var(--light-code-color-background);
+    --button-color: var(--light-button-color);
+    --button-background: var(--light-button-background);
+    --button-border-color: var(--light-button-border-color);
+    --button-color-hover: var(--light-button-color-hover);
+    --button-background-hover: var(--light-button-background-hover);
+    --button-border-color-hover: var(--light-button-border-color-hover);
+    --button-box-shadow: var(--light-button-box-shadow);
+    --input-border-color: var(--light-input-border-color);
+    --input-border-color-focus: var(--light-input-border-color-focus);
   }
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-      --select-chevron: var(--dark-select-chevron);
-      --code-color-background: var(--dark-code-color-background);
-      --button-color: var(--dark-button-color);
-      --button-background: var(--dark-button-background);
-      --button-border-color: var(--dark-button-border-color);
-      --button-color-hover: var(--dark-button-color-hover);
-      --button-background-hover: var(--dark-button-background-hover);
-      --button-border-color-hover: var(--dark-button-border-color-hover);
-      --button-box-shadow: var(--dark-button-box-shadow);
-      --input-border-color: var(--dark-input-border-color);
-      --input-border-color-focus: var(--dark-input-border-color-focus);
+    --select-chevron: var(--dark-select-chevron);
+    --code-color-background: var(--dark-code-color-background);
+    --button-color: var(--dark-button-color);
+    --button-background: var(--dark-button-background);
+    --button-border-color: var(--dark-button-border-color);
+    --button-color-hover: var(--dark-button-color-hover);
+    --button-background-hover: var(--dark-button-background-hover);
+    --button-border-color-hover: var(--dark-button-border-color-hover);
+    --button-box-shadow: var(--dark-button-box-shadow);
+    --input-border-color: var(--dark-input-border-color);
+    --input-border-color-focus: var(--dark-input-border-color-focus);
   }
 }
 
@@ -189,11 +197,13 @@ body {
   line-height: var(--line-height);
 }
 
-b, strong {
+b,
+strong {
   font-weight: 600;
 }
 
-i, em {
+i,
+em {
   font-style: italic;
 }
 
@@ -231,7 +241,10 @@ select:focus {
   box-shadow: 0 0 0 1px var(--input-border-color-focus);
 }
 
-dl, menu, ol, ul {
+dl,
+menu,
+ol,
+ul {
   margin: 0 0 var(--header-margin) 0;
 }
 
@@ -285,7 +298,8 @@ table {
   max-width: 100%;
 }
 
-th, td {
+th,
+td {
   padding: var(--table-padding);
 }
 
@@ -494,7 +508,8 @@ ul.tsd-parameter-list > li > h5:last-child {
 
 /* Show parameter signature as a cut-in block */
 .tsd-parameter-signature {
-  margin: calc(var(--paragraph-spacing) / -2) calc(var(--paragraph-spacing) * -1) calc(var(--paragraph-spacing) / 2);
+  margin: calc(var(--paragraph-spacing) / -2)
+    calc(var(--paragraph-spacing) * -1) calc(var(--paragraph-spacing) / 2);
   padding: var(--paragraph-spacing);
   padding-bottom: 0.05px;
   background: var(--color-background-secondary);
@@ -774,7 +789,6 @@ a.tsd-index-link {
   flex-grow: 1;
   padding: 0.3em var(--toolbar-icon-width) 0.3em 0.7em;
   border: solid 1px rgb(208, 215, 222);
-  background-color: ;
 }
 
 #tsd-search .field input:focus {
@@ -859,82 +873,90 @@ a.tsd-index-link {
 
 @media (max-width: 769px) {
   :root {
-      --font-size-h1: 1.8rem;
-      --font-size-h2: 1.5rem;
-      --font-size-h3: 1.3rem;
-      --font-size-aside: 0.875rem;
-      --header-height: 3rem;
-      --line-height: 1.5;
-      --member-group-spacing: 2rem;
-      --member-spacing: 1.5rem;
-      --paragraph-spacing: 0.5rem;
-      --header-margin: 1rem 0 0.5rem 0;
-      --term-spacing: 0.2rem;
-      --list-spacing: 1rem;
-      --menu-spacing-vertical: 0.4rem;
-      --menu-spacing-horizontal: 1.5rem;
-      --header-border-spacing: 0.1rem;
-      --border-radius: 0.35rem;
-      --table-padding: 0.5rem;
-      --content-spacing: 1.2rem;
-      --anchor-icon-offset: -1.1rem;
-      --anchor-icon-size: 1.1rem;
+    --font-size-h1: 1.8rem;
+    --font-size-h2: 1.5rem;
+    --font-size-h3: 1.3rem;
+    --font-size-aside: 0.875rem;
+    --header-height: 3rem;
+    --line-height: 1.5;
+    --member-group-spacing: 2rem;
+    --member-spacing: 1.5rem;
+    --paragraph-spacing: 0.5rem;
+    --header-margin: 1rem 0 0.5rem 0;
+    --term-spacing: 0.2rem;
+    --list-spacing: 1rem;
+    --menu-spacing-vertical: 0.4rem;
+    --menu-spacing-horizontal: 1.5rem;
+    --header-border-spacing: 0.1rem;
+    --border-radius: 0.35rem;
+    --table-padding: 0.5rem;
+    --content-spacing: 1.2rem;
+    --anchor-icon-offset: -1.1rem;
+    --anchor-icon-size: 1.1rem;
   }
 
-  h1, h2, h3, h4, h5, h6 {
-      word-break: break-word;
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    word-break: break-word;
   }
 
   .col-sidebar {
-      gap: 0 !important;
-      padding: var(--paragraph-spacing) !important;;
-      overflow-y: auto;
-      overflow-x: hidden;
+    gap: 0 !important;
+    padding: var(--paragraph-spacing) !important;
+    overflow-y: auto;
+    overflow-x: hidden;
   }
 
   .site-menu {
-      padding: var(--paragraph-spacing) 0 0 0 !important;
+    padding: var(--paragraph-spacing) 0 0 0 !important;
   }
 
   .tsd-page-toolbar .tsd-toolbar-icon.menu {
-      display: flex;
+    display: flex;
   }
 }
 
 @media (min-width: 770px) and (max-width: 1399px) {
   .col-sidebar {
-      padding: var(--paragraph-spacing) 0;
-      max-height: calc(100vh - var(--header-height));
-      overflow-y: auto;
-      overflow-x: hidden;
-      position: sticky;
-      top: var(--header-height);
+    padding: var(--paragraph-spacing) 0;
+    max-height: calc(100vh - var(--header-height));
+    overflow-y: auto;
+    overflow-x: hidden;
+    position: sticky;
+    top: var(--header-height);
   }
 
   .page-menu {
-      padding: 0 0 0 var(--content-spacing);
-      margin: 0 0 var(--paragraph-spacing) 0;
+    padding: 0 0 0 var(--content-spacing);
+    margin: 0 0 var(--paragraph-spacing) 0;
   }
 
   .site-menu {
-      padding: 0 0 0 var(--content-spacing);
-      margin: 0;
+    padding: 0 0 0 var(--content-spacing);
+    margin: 0;
   }
 }
 
 @media (min-width: 1200px) {
-  .page-menu, .site-menu {
-      max-height: calc(100vh - var(--header-height));
-      overflow: auto;
-      position: sticky;
-      top: var(--header-height);
+  .page-menu,
+  .site-menu {
+    max-height: calc(100vh - var(--header-height));
+    overflow: auto;
+    position: sticky;
+    top: var(--header-height);
   }
 
   .page-menu {
-      padding: var(--paragraph-spacing) var(--content-spacing) var(--paragraph-spacing) 0;
+    padding: var(--paragraph-spacing) var(--content-spacing)
+      var(--paragraph-spacing) 0;
   }
 
   .site-menu {
-      padding: var(--paragraph-spacing) 0 var(--paragraph-spacing) var(--content-spacing);
+    padding: var(--paragraph-spacing) 0 var(--paragraph-spacing)
+      var(--content-spacing);
   }
 }
