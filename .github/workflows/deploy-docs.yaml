@@ -42,7 +42,7 @@ jobs:
 
       - name: 🔨 Build Docs
         run: |
-          nix develop --show-trace --command bash -c "npm i && npm run build && npm run docs"
+          nix develop --show-trace --command bash -c "npm i && npm run build && npm --prefix ./theme/ run build && npm run docs"
 
       - name: 📘 Upload artifact
         uses: actions/upload-pages-artifact@v2
