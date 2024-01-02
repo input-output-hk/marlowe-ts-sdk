@@ -10,7 +10,7 @@ import {
   MarloweState,
 } from "@marlowe.io/language-core-v1";
 import {
-  getBankPrivateKey,
+  getBankSeedPhrase,
   getBlockfrostContext,
   getMarloweRuntimeUrl,
 } from "../context.js";
@@ -29,6 +29,7 @@ import {
 import { AtomicSwap } from "@marlowe.io/language-examples";
 import { RestClient } from "@marlowe.io/runtime-rest-client";
 import { generateSeedPhrase } from "@marlowe.io/testing-kit";
+import { AxiosError } from "axios";
 
 global.console = console;
 
@@ -36,58 +37,70 @@ describe("swap", () => {
   it(
     "can execute the nominal case",
     async () => {
-      const { runtime, provisionResponse } = await setUp(
-        {
-          runtimeURL: getMarloweRuntimeUrl(),
-          blockfrost: getBlockfrostContext(),
-          bankPrivateKey: getBankPrivateKey(),
-        },
-        {
-          seller: [
-            generateSeedPhrase("24-words"),
-            { lovelacesToTransfer: 15_000_000n, assetsToMint: { tokenA: 15n } },
-          ],
-          buyer: [
-            generateSeedPhrase("24-words"),
-            { lovelacesToTransfer: 15_000_000n, assetsToMint: { tokenB: 10n } },
-          ],
-        }
-      );
-      const { seller, buyer } = provisionResponse;
-      const sellerAddress = await seller.wallet.getChangeAddress();
-      const scheme: AtomicSwap.Scheme = {
-        offer: {
-          seller: { address: sellerAddress },
-          deadline: pipe(addDays(Date.now(), 1), datetoTimeout),
-          asset: runtimeTokenToMarloweTokenValue(
-            seller.assetsProvisionned.tokens[0]
-          ),
-        },
-        ask: {
-          buyer: { role_token: "buyer" },
-          deadline: pipe(addDays(Date.now(), 1), datetoTimeout),
-          asset: runtimeTokenToMarloweTokenValue(
-            buyer.assetsProvisionned.tokens[0]
-          ),
-        },
-        swapConfirmation: {
-          deadline: pipe(addDays(Date.now(), 1), datetoTimeout),
-        },
-      };
+      try {
+        const { runtime, provisionResponse } = await setUp(
+          {
+            runtimeURL: getMarloweRuntimeUrl(),
+            lucid: getBlockfrostContext(),
+            bankSeedPhrase: getBankSeedPhrase(),
+          },
+          {
+            seller: [
+              generateSeedPhrase("24-words"),
+              {
+                lovelacesToTransfer: 15_000_000n,
+                assetsToMint: { tokenA: 15n },
+              },
+            ],
+            buyer: [
+              generateSeedPhrase("24-words"),
+              {
+                lovelacesToTransfer: 15_000_000n,
+                assetsToMint: { tokenB: 10n },
+              },
+            ],
+          }
+        );
+        const { seller, buyer } = provisionResponse;
+        const sellerAddress = await seller.wallet.getChangeAddress();
+        const scheme: AtomicSwap.Scheme = {
+          offer: {
+            seller: { address: sellerAddress },
+            deadline: pipe(addDays(Date.now(), 1), datetoTimeout),
+            asset: runtimeTokenToMarloweTokenValue(
+              seller.assetsProvisionned.tokens[0]
+            ),
+          },
+          ask: {
+            buyer: { role_token: "buyer" },
+            deadline: pipe(addDays(Date.now(), 1), datetoTimeout),
+            asset: runtimeTokenToMarloweTokenValue(
+              buyer.assetsProvisionned.tokens[0]
+            ),
+          },
+          swapConfirmation: {
+            deadline: pipe(addDays(Date.now(), 1), datetoTimeout),
+          },
+        };
 
-      // const swapContract = AtomicSwap.mkContract(scheme);
+        const swapContract = AtomicSwap.mkContract(scheme);
 
-      // const [contractId, txCreatedContract] = await runtime(
-      //   adaProvider
-      // ).contracts.createContract({
-      //   contract: swapContract,
-      //   roles: {
-      //     [scheme.ask.buyer.role_token]: mintRole(tokenProvider.address),
-      //   },
-      // });
+        const [contractId, txCreatedContract] = await runtime(
+          seller.wallet
+        ).contracts.createContract({
+          contract: swapContract,
+          roles: {
+            [scheme.ask.buyer.role_token]: mintRole(sellerAddress),
+          },
+        });
 
-      // await runtime(adaProvider).wallet.waitConfirmation(txCreatedContract);
-
+        await runtime(seller.wallet).wallet.waitConfirmation(txCreatedContract);
+      } catch (e) {
+        const error = e as AxiosError;
+        console.log(`catched : ${JSON.stringify(error.response?.data)}`);
+        console.log(`catched : ${JSON.stringify(error)}`);
+        expect(true).toBe(false);
+      }
       // const inputHistory = await getInputHistory(restClient, contractId);
       // const marloweState = await getMarloweStatefromAnActiveContract(
       //   restClient,

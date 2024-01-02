@@ -18,6 +18,9 @@
     "test": "echo 'testing-kit doesnt have tests for the moment'"
   },
   "type": "module",
+  "module": "./dist/esm/index.js",
+  "main": "./dist/esm/index.js",
+  "types": "./dist/esm/index.d.ts",
   "files": [
     "dist"
   ],
@@ -31,6 +34,7 @@
   "dependencies": {
     "@marlowe.io/wallet": "0.3.0-beta-rc1",
     "@marlowe.io/runtime-core": "0.3.0-beta-rc1",
+    "@marlowe.io/runtime-rest-client": "0.3.0-beta-rc1",
     "@marlowe.io/adapter": "0.3.0-beta-rc1",
     "@marlowe.io/language-core-v1": "0.3.0-beta-rc1",
     "bip39": "3.1.0",

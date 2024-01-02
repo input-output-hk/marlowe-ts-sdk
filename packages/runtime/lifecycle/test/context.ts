@@ -16,11 +16,13 @@ export function getBlockfrostContext(): Context {
   );
 }
 
-export function getBankPrivateKey(): string {
-  const { BANK_PK_HEX } = process.env;
-  if (BANK_PK_HEX == undefined)
+export function getBankSeedPhrase(): string[] {
+  const { BANK_SEED_PHRASE } = process.env;
+  if (BANK_SEED_PHRASE !== undefined) {
+    return JSON.parse(BANK_SEED_PHRASE);
+  } else {
     throw "environment configurations not available (BANK_PK_HEX)";
-  return getPrivateKeyFromHexString(BANK_PK_HEX as string);
+  }
 }
 
 export function getMarloweRuntimeUrl(): string {

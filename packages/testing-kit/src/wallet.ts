@@ -17,11 +17,13 @@
  */
 
 import {
+  C,
   Lucid,
   toUnit,
   fromText,
   NativeScript,
   Network,
+  Tx,
   Script,
   Assets as LucidAssets,
 } from "lucid-cardano";
@@ -33,7 +35,8 @@ import { mergeAssets } from "@marlowe.io/adapter/lucid";
 import * as RuntimeCore from "@marlowe.io/runtime-core";
 import { pipe } from "fp-ts/lib/function.js";
 import * as A from "fp-ts/lib/Array.js";
-import { MarloweTxCBORHex } from "@marlowe.io/runtime-core";
+import { RestClient } from "@marlowe.io/runtime-rest-client";
+import { MarloweJSON } from "@marlowe.io/adapter/codec";
 
 type LucidExtendedDI = { lucid: Lucid; wallet: WalletAPI };
 export type TxHashSubmitted = string;
@@ -73,9 +76,20 @@ export interface WalletTestAPI extends WalletAPI {
   provision(request: ProvisionRequest): Promise<ProvisionResponse>;
 }
 
-const convertToAssets = (assets: RuntimeCore.Assets): LucidAssets => {
+const toAssetsToTransfer = (assets: RuntimeCore.Assets): LucidAssets => {
   var lucidAssets: { [key: string]: bigint } = {};
-  lucidAssets["lovelaces"] = assets.lovelaces;
+  lucidAssets["lovelace"] = assets.lovelaces;
+  assets.tokens.map(
+    (token) =>
+      (lucidAssets[
+        toUnit(token.assetId.policyId, fromText(token.assetId.assetName))
+      ] = token.quantity)
+  );
+  return lucidAssets;
+};
+
+const toAssetsToMint = (assets: RuntimeCore.Assets): LucidAssets => {
+  var lucidAssets: { [key: string]: bigint } = {};
   assets.tokens.map(
     (token) =>
       (lucidAssets[
@@ -102,58 +116,77 @@ export type ProvisionResponse = {
   };
 };
 
+const waitRuntimeSynced =
+  (di: LucidExtendedDI) =>
+  async (restClient: RestClient): Promise<void> => {
+    const { lucid, wallet } = di;
+    const lucidSlot = lucid.currentSlot();
+    const s = await restClient.healthcheck();
+  };
+
 const provision =
   (di: LucidExtendedDI) =>
   async (requests: ProvisionRequest): Promise<ProvisionResponse> => {
     const { lucid, wallet } = di;
+
     const mintingDeadline = addDays(Date.now(), 1);
 
     const [script, policyId] = await mkPolicyWithDeadlineAndOneAuthorizedSigner(
       di
     )(mintingDeadline);
-    // const assetsToMint = pipe(Object.values(requests)
-    //                          ,A.map((request) => {toUnit(policyId, fromText(request.scheme.assetsToMint))]: amount.valueOf()})
-    //                          ,A.reduce(mergeAssets.empty, mergeAssets.concat))
 
     const distributions = await Promise.all(
       Object.entries(requests).map(([participant, x]) =>
-        x.wallet
-          .getChangeAddress()
-          .then(
-            (address) =>
-              [
-                participant,
-                x.wallet,
-                RuntimeCore.addressBech32(address),
-                {
-                  lovelaces: x.scheme.lovelacesToTransfer,
-                  tokens: Object.entries(x.scheme.assetsToMint).map(
-                    ([assetName, quantity]) => ({
-                      quantity,
-                      assetId: { assetName, policyId },
-                    })
-                  ),
-                },
-              ] as [
-                string,
-                WalletTestAPI,
-                RuntimeCore.AddressBech32,
-                RuntimeCore.Assets
-              ]
-          )
+        x.wallet.getChangeAddress().then(
+          (address) =>
+            [
+              participant,
+              x.wallet,
+              RuntimeCore.addressBech32(address),
+              {
+                lovelaces: x.scheme.lovelacesToTransfer,
+                tokens: Object.entries(x.scheme.assetsToMint).map(
+                  ([assetName, quantity]) => ({
+                    quantity,
+                    assetId: { assetName, policyId },
+                  })
+                ),
+              },
+            ] as [
+              string,
+              WalletTestAPI,
+              RuntimeCore.AddressBech32,
+              RuntimeCore.Assets
+            ]
+        )
       )
     );
 
+    const assetsToMint = pipe(
+      distributions,
+      A.map((aDistribution) => toAssetsToMint(aDistribution[3])),
+      A.reduce(mergeAssets.empty, mergeAssets.concat)
+    );
+
+    console.log("Distribution : ", MarloweJSON.stringify(distributions));
+    console.log("Assets to mint : ", MarloweJSON.stringify(assetsToMint));
     const mintTx = lucid
       .newTx()
-      .mintAssets({})
+      .mintAssets(assetsToMint)
       .validTo(Date.now() + 100000)
       .attachMintingPolicy(script);
 
     const transferTx = await pipe(
       distributions,
-      A.reduce(lucid.newTx(), (tx, aDistribution) =>
-        tx.payToAddress(aDistribution[2], convertToAssets(aDistribution[3]))
+      A.reduce(
+        lucid.newTx(),
+        (tx, aDistribution) =>
+          tx
+            .payToAddress(
+              aDistribution[2],
+              toAssetsToTransfer(aDistribution[3])
+            )
+            .payToAddress(aDistribution[2], { lovelace: 5_000_000n }) // add a Collateral
       )
     );
 
