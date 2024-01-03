@@ -12,16 +12,7 @@ import { formatValidationErrors } from "jsonbigint-io-ts-reporters";
 import * as E from "fp-ts/lib/Either.js";
 import * as t from "io-ts/lib/index.js";
 import { MarloweJSON, MarloweJSONCodec } from "@marlowe.io/adapter/codec";
-export type BlockHash = string;
-
-export type RuntimeVersion = string;
-
-export type CompatibleRuntimeVersion = "0.0.6" | "0.0.5";
-
-export const CompatibleRuntimeVersionGuard: t.Type<
-  CompatibleRuntimeVersion,
-  string
-> = t.union([t.literal("0.0.6"), t.literal("0.0.5")]);
+import { RuntimeVersion } from "./version.js";
 
 /**
  *  A **Tip** represents the last block read in a "projection" process.
@@ -60,8 +51,6 @@ export type RuntimeStatus = {
   version: RuntimeVersion;
   /**
    * Set of Tips providing information on how healthy is the flow of Projections :  Node > Runtime Chain > Runtime
-   * The Runtime Tip indicates if the information Queried is up to date. The Node and the Runtime Chain Tips are
-   * here to help the diagnostic of a Runtime Tip that would be too long in the past or not being updated anymore.
    */
   tips: {
     node: Tip;

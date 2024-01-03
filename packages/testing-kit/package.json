@@ -1,7 +1,7 @@
 {
-  "name": "@marlowe.io/runtime-core",
+  "name": "@marlowe.io/testing-kit",
   "version": "0.3.0-beta-rc1",
-  "description": "Core concepts used throughout the Marlowe Runtime libraries",
+  "description": "Testing libraries to Support Marlowe Development",
   "repository": "https://github.com/input-output-hk/marlowe-ts-sdk",
   "publishConfig": {
     "access": "public"
@@ -15,7 +15,8 @@
   "scripts": {
     "build": "tsc --build src",
     "clean": "shx rm -rf dist",
-    "test": "echo 'adapter doesnt have tests for the moment'"
+    "genSeedPhrase" : "npm run build && node ./dist/esm/executable/generateSeedPhrase.js",
+    "test": "echo 'testing-kit doesnt have tests for the moment'"
   },
   "type": "module",
   "module": "./dist/esm/index.js",
@@ -27,18 +28,17 @@
   "exports": {
     ".": {
       "import": "./dist/esm/index.js",
-      "require": "./dist/bundled/cjs/runtime-core.cjs",
+      "require": "./dist/bundled/cjs/index.cjs",
       "types": "./dist/esm/index.d.ts"
     }
   },
   "dependencies": {
-    "@marlowe.io/language-core-v1": "0.3.0-beta-rc1",
+    "@marlowe.io/wallet": "0.3.0-beta-rc1",
+    "@marlowe.io/runtime-core": "0.3.0-beta-rc1",
+    "@marlowe.io/runtime-rest-client": "0.3.0-beta-rc1",
     "@marlowe.io/adapter": "0.3.0-beta-rc1",
-    "fp-ts": "^2.16.1",
-    "io-ts": "2.2.21",
-    "newtype-ts": "0.3.5"
-  },
-  "devDependencies": {
-    "@marlowe.io/testing-kit": "0.3.0-beta-rc1"
+    "@marlowe.io/language-core-v1": "0.3.0-beta-rc1",
+    "bip39": "3.1.0",
+    "fp-ts": "2.16.1"
   }
 }
