@@ -18,6 +18,9 @@
     "test": "echo 'adapter doesnt have tests for the moment'"
   },
   "type": "module",
+  "module": "./dist/esm/index.js",
+  "main": "./dist/esm/index.js",
+  "types": "./dist/esm/index.d.ts",
   "files": [
     "dist"
   ],
@@ -61,6 +64,11 @@
       "import": "./dist/esm/assoc-map.js",
       "require": "./dist/bundled/cjs/assoc-map.cjs",
       "types": "./dist/esm/assoc-map.d.ts"
+    },
+    "./lucid": {
+      "import": "./dist/esm/lucid.js",
+      "require": "./dist/bundled/cjs/lucid.cjs",
+      "types": "./dist/esm/lucid.d.ts"
     },
     "./deep-equal": {
       "import": "./dist/esm/deep-equal.js",

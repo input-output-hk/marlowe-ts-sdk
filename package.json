@@ -33,7 +33,8 @@
     "packages/runtime/client/rest",
     "packages/runtime/core",
     "packages/runtime/lifecycle",
-    "packages/marlowe-object"
+    "packages/marlowe-object",
+    "packages/testing-kit"
   ],
   "devDependencies": {
     "@blockfrost/blockfrost-js": "5.2.0",

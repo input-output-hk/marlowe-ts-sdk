@@ -58,5 +58,8 @@
     "io-ts": "2.2.21",
     "newtype-ts": "0.3.5",
     "monocle-ts": "2.3.13"
+  },
+  "devDependencies": {
+    "@marlowe.io/testing-kit": "0.3.0-beta-rc1"
   }
 }
