@@ -1,0 +1,18 @@
+{
+  "extends": "../../../tsconfig-base.json",
+  "compilerOptions": {
+    "outDir": "../dist/esm",
+    "paths": {
+      "@marlowe.io/adapter/*": ["../../adapter/src/*"],
+      "@marlowe.io/runtime-core/*": ["../../runtime/core/src/*"],
+      "@marlowe.io/wallet/*": ["../../wallet/src/*"],
+      "@marlowe.io/language-core-v1/*": ["../../language/core/v1/src/*"]
+    }
+  },
+  "references": [
+    { "path": "../../adapter/src" },
+    { "path": "../../wallet/src" },
+    { "path": "../../language/core/v1/src" },
+    { "path": "../../runtime/core/src" }
+  ]
+}
