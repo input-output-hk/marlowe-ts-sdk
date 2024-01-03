@@ -40,6 +40,7 @@ import { submitContractViaAxios } from "./contract/endpoints/singleton.js";
 import { ContractDetails } from "./contract/details.js";
 import { TransactionDetails } from "./contract/transaction/details.js";
 import { ItemRange } from "./pagination.js";
+import { RuntimeStatus, getRuntimeStatus } from "./runtime/status.js";
 // import curlirize from 'axios-curlirize';
 
 export {
@@ -63,6 +64,11 @@ export {
  * This version of the RestClient targets version `0.0.5` of the Marlowe Runtime.
  */
 export interface RestClient {
+  /**
+   * Get a Set of Runtime Environment information (Tips, NetworkId and Runtime Version Deployed)
+   */
+  getRuntimeStatus(): Promise<RuntimeStatus>;
+
   /**
    * Gets a paginated list of contracts {@link contract.ContractHeader }
    * @param request Optional filtering and pagination options.
@@ -270,6 +276,9 @@ export function mkRestClient(baseURL: string): RestClient {
   });
 
   return {
+    getRuntimeStatus() {
+      return getRuntimeStatus(axiosInstance);
+    },
     getContracts(request) {
       const range = request?.range;
       const tags = request?.tags ?? [];
