@@ -2,8 +2,8 @@ import * as API from "@blockfrost/blockfrost-js";
 import {
   Blockfrost,
   Lucid,
-  C,
   Network,
+  C,
   PrivateKey,
   PolicyId,
   getAddressDetails,
@@ -38,6 +38,7 @@ import {
   policyId,
   AssetId,
 } from "@marlowe.io/runtime-core";
+import * as RuntimeCore from "@marlowe.io/runtime-core";
 import { WalletAPI } from "../api.js";
 import * as Codec from "@47ng/codec";
 import { MarloweJSON } from "@marlowe.io/adapter/codec";
@@ -50,17 +51,30 @@ export type Address = string;
 // TODO: This is a pure datatype, convert to type alias or interface
 export class Context {
   projectId: string;
-  network: Network;
+  network: RuntimeCore.Network;
   blockfrostUrl: string;
 
   public constructor(
     projectId: string,
     blockfrostUrl: string,
-    network: Network
+    network: RuntimeCore.Network
   ) {
     this.projectId = projectId;
     this.network = network;
     this.blockfrostUrl = blockfrostUrl;
+  }
+
+  public toLucidNetwork(): Network {
+    switch (this.network) {
+      case "private":
+        return "Custom";
+      case "preview":
+        return "Preview";
+      case "preprod":
+        return "Preprod";
+      case "mainnet":
+        return "Mainnet";
+    }
   }
 }
 
@@ -119,7 +133,7 @@ export class SingleAddressWallet implements WalletAPI {
   private async initialise() {
     this.lucid = await Lucid.new(
       new Blockfrost(this.context.blockfrostUrl, this.context.projectId),
-      this.context.network
+      this.context.toLucidNetwork()
     );
     this.lucid.selectWalletFromPrivateKey(this.privateKeyBech32);
     this.address = addressBech32(await this.lucid.wallet.address());
