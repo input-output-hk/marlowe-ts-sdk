@@ -9,3 +9,4 @@ export * from "./contract/id.js";
 export * from "./sourceId.js";
 export * from "./asset/index.js";
 export * from "./payout/index.js";
+export * from "./network.js";
