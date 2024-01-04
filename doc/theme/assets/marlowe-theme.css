@@ -960,3 +960,33 @@ a.tsd-index-link {
       var(--content-spacing);
   }
 }
+
+/* -------------------------------------------------- FOOTER -------------------------------------------------- */
+
+.tsd-generator {
+  padding-top: 0rem;
+  max-height: none;
+}
+
+.footer-links {
+  padding: 0 calc(var(--content-spacing) + 0.4rem);
+}
+
+.footer-copyright {
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.tsd-generator table, th, tr, td {
+  border: none;
+  padding: 0;
+}
+
+.tsd-generator td {
+  font-size: smaller;
+}
+
+.tsd-generator a:hover {
+  text-decoration: none;
+}

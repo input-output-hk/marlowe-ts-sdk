@@ -34,30 +34,30 @@ export function load(app: Application) {
     </>
   ));
 
-  app.renderer.hooks.on("body.end", (event) => (
-    <script>
-      <JSX.Raw
-        html={
-          /* js */ `
-          try {
-            const generateLinkElement = document.querySelector(".tsd-generator a");
-            const link = document.createElement("a");
-            Object.assign(link, {
-              href: "https://github.com/input-output-hk/marlowe-ts-sdk",
-              target: "_blank",
-              rel: "noreferrer",
-              innerText: "marlowe-theme."
-            });
-            generateLinkElement.insertAdjacentElement("afterend", link);
-            generateLinkElement.insertAdjacentText("afterend", " with ");
-          } catch (error) {
+  // app.renderer.hooks.on("body.end", (event) => (
+  //   <script>
+  //     <JSX.Raw
+  //       html={
+  //         /* js */ `
+  //         try {
+  //           const generateLinkElement = document.querySelector(".tsd-generator a");
+  //           const link = document.createElement("a");
+  //           Object.assign(link, {
+  //             href: "https://github.com/input-output-hk/marlowe-ts-sdk",
+  //             target: "_blank",
+  //             rel: "noreferrer",
+  //             innerText: "marlowe-theme."
+  //           });
+  //           generateLinkElement.insertAdjacentElement("afterend", link);
+  //           generateLinkElement.insertAdjacentText("afterend", " with ");
+  //         } catch (error) {
 
-          }
-        `
-        }
-      />
-    </script>
-  ));
+  //         }
+  //       `
+  //       }
+  //     />
+  //   </script>
+  // ));
 }
 
 export function copySync(src: string, dest: string): void {
