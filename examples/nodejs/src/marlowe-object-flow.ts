@@ -8,7 +8,11 @@ import { mkLucidWallet, WalletAPI } from "@marlowe.io/wallet";
 import { mkRuntimeLifecycle } from "@marlowe.io/runtime-lifecycle";
 import { Lucid, Blockfrost, C } from "lucid-cardano";
 import { readConfig } from "./config.js";
-import { datetoTimeout, getNextTimeout, Timeout } from "@marlowe.io/language-core-v1";
+import {
+  datetoTimeout,
+  getNextTimeout,
+  Timeout,
+} from "@marlowe.io/language-core-v1";
 import {
   addressBech32,
   contractId,
@@ -24,10 +28,42 @@ import { input, select } from "@inquirer/prompts";
 import { RuntimeLifecycle } from "@marlowe.io/runtime-lifecycle/api";
 import { MarloweJSON } from "@marlowe.io/adapter/codec";
 import { ContractDetails } from "@marlowe.io/runtime-rest-client/contract";
-import { getApplicableActions } from "./applicable-inputs.js";
+import {
+  ApplicableAction,
+  getApplicableActions,
+  mkApplicableActionsFilter,
+  mkPartyFilter,
+} from "./applicable-inputs.js";
+import arg from "arg";
+
+const args = arg({
+  "--help": Boolean,
+  "--config": String,
+  "-c": "--config",
+});
+
+if (args["--help"]) {
+  printHelp(0);
+}
 main();
 
 // #region Interactive menu
+function printHelp(exitStatus: number): never {
+  console.log(
+    "Usage: npm run marlowe-object-flow -- --config <config-file>"
+  );
+  console.log("");
+  console.log("Example:");
+  console.log(
+    "  npm run marlowe-object-flow -- --config alice.config"
+  );
+  console.log("Options:");
+  console.log("  --help: Print this message");
+  console.log("  --config | -c: The path to the config file [default .config.json]");
+  process.exit(exitStatus);
+}
+
+
 async function waitIndicator(wallet: WalletAPI, txId: TxId) {
   process.stdout.write("Waiting for the transaction to be confirmed...");
   let done = false;
@@ -131,7 +167,11 @@ async function loadContractMenu(lifecycle: RuntimeLifecycle) {
   await contractMenu(lifecycle, contractId(cid));
 }
 
-async function debugGetNext(lifecycle: RuntimeLifecycle, contractDetails: ContractDetails, contractId: ContractId) {
+async function debugGetNext(
+  lifecycle: RuntimeLifecycle,
+  contractDetails: ContractDetails,
+  contractId: ContractId
+) {
   const now = datetoTimeout(new Date());
 
   if (contractDetails.currentContract._tag === "None") {
@@ -152,9 +192,25 @@ async function debugGetNext(lifecycle: RuntimeLifecycle, contractDetails: Contra
   );
   console.log("applicable inputs");
   console.log(MarloweJSON.stringify(applicableInputs, null, 2));
-
 }
 
+function debugApplicableActions(applicableActions: ApplicableAction[]) {
+  applicableActions.forEach((action) => {
+    console.log("***");
+    console.log(MarloweJSON.stringify(action, null, 2));
+    let result;
+    if (action.type === "Choice") {
+      console.log(
+        "automatically choosing",
+        action.choice.choose_between[0].from
+      );
+      result = action.applyAction(action.choice.choose_between[0].from);
+    } else {
+      result = action.applyAction();
+    }
+    console.log("expected results", MarloweJSON.stringify(result, null, 2));
+  });
+}
 async function contractMenu(
   lifecycle: RuntimeLifecycle,
   contractId: ContractId
@@ -163,21 +219,17 @@ async function contractMenu(
   const contractDetails = await lifecycle.restClient.getContractById(
     contractId
   );
+
   // await debugGetNext(lifecycle, contractDetails, contractId);
 
-  const applicableActions = await getApplicableActions(lifecycle.restClient, contractId);
-  applicableActions.forEach(action => {
-    console.log("***");
-    console.log(MarloweJSON.stringify(action, null, 2));
-    let result;
-    if (action.type === "Choice") {
-      console.log("automatically choosing", action.choice.choose_between[0].from);
-      result = action.applyAction(action.choice.choose_between[0].from);
-    } else {
-      result = action.applyAction();
-    }
-    console.log("expected results", MarloweJSON.stringify(result, null, 2));
-  })
+  const applicableActions = await getApplicableActions(
+    lifecycle.restClient,
+    contractId
+  );
+  const myActionsFilter = await mkApplicableActionsFilter(lifecycle.wallet);
+  const choices = applicableActions.filter(myActionsFilter)
+  debugApplicableActions(choices);
+
 
   const answer = await select({
     message: "Contract menu",
@@ -324,7 +376,7 @@ function mkDelayPayment(schema: DelayPaymentSchema): ContractBundle {
 }
 
 async function main() {
-  const config = await readConfig();
+  const config = await readConfig(args["--config"]);
   const lucid = await Lucid.new(
     new Blockfrost(config.blockfrostUrl, config.blockfrostProjectId),
     config.network

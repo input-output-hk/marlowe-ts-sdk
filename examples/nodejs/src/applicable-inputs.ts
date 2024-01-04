@@ -1,3 +1,9 @@
+/**
+This is an experimental module that aims to replace the current `next` features.
+TODO: After PR-8891 and as part of PLT-9054 move these to the runtime-lifecycle package
+      and create a github discussion to modify the backend.
+ */
+
 import {
   MarloweState,
   Party,
@@ -17,6 +23,7 @@ import {
   IChoice,
   INotify,
   InputContent,
+  RoleName,
 } from "@marlowe.io/language-core-v1";
 import {
   applyAllInputs,
@@ -28,8 +35,9 @@ import {
   reduceContractUntilQuiescent,
   TransactionWarning,
 } from "@marlowe.io/language-core-v1/semantics";
-import { ContractId } from "@marlowe.io/runtime-core";
+import { AddressBech32, ContractId, PolicyId } from "@marlowe.io/runtime-core";
 import { RestClient } from "@marlowe.io/runtime-rest-client";
+import { WalletAPI } from "@marlowe.io/wallet";
 
 type ActionApplicant = Party | "anybody";
 
@@ -63,13 +71,13 @@ interface AppliedActionResult {
 
 interface CanNotify {
   type: "Notify";
-
+  policyId: PolicyId;
   applyAction(): AppliedActionResult;
 }
 
 interface CanDeposit {
   type: "Deposit";
-
+  policyId: PolicyId;
   deposit: Deposit;
 
   applyAction(): AppliedActionResult;
@@ -77,7 +85,7 @@ interface CanDeposit {
 
 interface CanChoose {
   type: "Choice";
-
+  policyId: PolicyId;
   choice: Choice;
 
   applyAction(choice: ChosenNum): AppliedActionResult;
@@ -85,7 +93,7 @@ interface CanChoose {
 
 interface CanAdvanceTimeout {
   type: "AdvanceTimeout";
-
+  policyId: PolicyId;
   applyAction(): AppliedActionResult;
 }
 
@@ -140,6 +148,7 @@ export async function getApplicableActions(
   if (initialReduce.reduced) {
     applicableActions.push({
       type: "AdvanceTimeout",
+      policyId: contractDetails.roleTokenMintingPolicyId,
       applyAction() {
         return {
           inputs: [],
@@ -164,7 +173,8 @@ export async function getApplicableActions(
           initialReduce.state,
           initialReduce.payments,
           convertReduceWarning(initialReduce.warnings),
-          cse
+          cse,
+          contractDetails.roleTokenMintingPolicyId
         )
       )
     );
@@ -176,6 +186,45 @@ export async function getApplicableActions(
   return applicableActions;
 }
 
+export async function mkPartyFilter(wallet: WalletAPI) {
+  const address = await wallet.getUsedAddresses();
+  const tokens = await wallet.getTokens();
+  let tokenMap = new Map<PolicyId, RoleName[]>();
+  function getTokenMap() {
+    if (tokenMap.size === 0 && tokens.length > 0) {
+      tokens.forEach(token => {
+        // Role tokens only have 1 element
+        if (token.quantity > 1) return;
+
+        const currentTokens = tokenMap.get(token.assetId.policyId) ?? [];
+        currentTokens.push(token.assetId.assetName);
+        tokenMap.set(token.assetId.policyId, currentTokens);
+      })
+    }
+    return tokenMap;
+  }
+
+  return (party: Party, policyId: PolicyId) => {
+    if ("role_token" in party) {
+      const policyTokens = getTokenMap().get(policyId);
+      if (policyTokens === undefined) return false;
+      return policyTokens.includes(party.role_token);
+    } else {
+      return address.includes(party.address as AddressBech32)
+    }
+  }
+}
+
+export async function mkApplicableActionsFilter(
+  wallet: WalletAPI
+) {
+  const partyFilter = await mkPartyFilter(wallet);
+  return (action: ApplicableAction) => {
+    const applicant = getApplicant(action);
+    if (applicant === "anybody") return true;
+    return partyFilter(applicant, action.policyId);
+  }
+}
 
 function isDepositAction(action: Action): action is Deposit {
   return "party" in action;
@@ -196,7 +245,8 @@ async function getApplicableActionFromCase(
   state: MarloweState,
   previousPayments: Payment[],
   previousWarnings: TransactionWarning[],
-  cse: Case
+  cse: Case,
+  policyId: PolicyId
 ): Promise<ApplicableAction | undefined> {
   let cseContinuation: Contract;
   if ("merkleized_then" in cse) {
@@ -232,7 +282,7 @@ async function getApplicableActionFromCase(
     return {
       type: "Deposit",
       deposit,
-
+      policyId,
       applyAction() {
         const input = decorateInput({
           input_from_party: deposit.party,
@@ -261,7 +311,7 @@ async function getApplicableActionFromCase(
     return {
       type: "Choice",
       choice,
-
+      policyId,
       applyAction(chosenNum: ChosenNum) {
         if (!inBounds(chosenNum, choice.choose_between)) {
           throw new Error("Chosen number is not in bounds");
@@ -292,7 +342,7 @@ async function getApplicableActionFromCase(
 
     return {
       type: "Notify",
-
+      policyId,
       applyAction() {
         const input = decorateInput("input_notify");
         // TODO: Re-check if this env should be the same as the initial env or a new one.

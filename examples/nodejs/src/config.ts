@@ -19,8 +19,8 @@ const configGuard = t.type({
 
 export type Config = t.TypeOf<typeof configGuard>;
 
-export async function readConfig(): Promise<Config> {
-  const configStr = await fs.readFile("./.config.json", { encoding: "utf-8" });
+export async function readConfig(path = "./.config.json"): Promise<Config> {
+  const configStr = await fs.readFile(path, { encoding: "utf-8" });
   const result = configGuard.decode(JSON.parse(configStr));
   if (result._tag === "Left") {
     throw new Error("Invalid config.json");
