@@ -16,8 +16,11 @@ export function load(app: Application) {
 
   app.listenTo(app.renderer, RendererEvent.END, (event: RendererEvent) => {
     const src = path.join(__dirname, "..", "assets");
+    const img = path.join(__dirname, "../..", "image");
+
     const dest = path.join(event.outputDirectory, "assets", "marlowe");
     copySync(src, dest);
+    copySync(img, dest);
   });
   app.renderer.defineTheme("marlowe-theme", MarloweTheme);
 

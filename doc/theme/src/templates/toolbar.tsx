@@ -51,7 +51,7 @@ export const toolbar = (
           <div class="logo-container">
             <img
               class="marlowe-logo"
-              src={context.relativeURL("assets/marlowe/logo.svg", true)}
+              src={context.relativeURL("assets/marlowe/logo-header.svg", true)}
               alt="logo"
             />
             <h3>&nbsp;v{props.project.packageVersion}</h3>
