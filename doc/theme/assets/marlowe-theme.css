@@ -68,7 +68,7 @@ meter {
 :root {
   --light-color-background: #ffffff;
   --light-color-warning-text: #cca213;
-  --light-color-background-secondary: rgb(246, 248, 250);
+  --light-color-background-secondary: rgb(250, 250, 250);
   --light-color-active-menu-item: #ddd;
   --light-color-accent: #e0e1e1;
   --light-code-color-background: rgba(175, 184, 193, 0.2);
@@ -88,7 +88,7 @@ meter {
   --dark-color-warning-text: #f1e05a;
   --dark-color-text-aside: #9b9b9b;
   --dark-color-accent: #45464d;
-  --dark-color-background-secondary: rgb(22, 27, 34);
+  --dark-color-background-secondary: rgb(1, 3, 7);
   --dark-code-color-background: rgba(175, 184, 193, 0.2);
   --dark-select-chevron: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 24' width='25' height='20'><g transform='translate(0 2)'><path fill='%23fff' d='M4.93896 8.531L12 15.591L19.061 8.531L16.939 6.409L12 11.349L7.06098 6.409L4.93896 8.531Z'/></g></svg>");
   --dark-button-color: rgb(201, 209, 217);
@@ -319,7 +319,7 @@ td {
 
 pre {
   padding: 0.8rem 1rem;
-  font-size: 85%;
+  font-size: 92%;
   font-family: var(--font-family-mono);
   border: none;
   border-radius: var(--border-radius);
@@ -332,7 +332,7 @@ pre code {
 
 code {
   padding: 0.2rem 0.4rem;
-  font-size: 85%;
+  font-size: 92%;
   font-family: var(--font-family-mono);
   background: var(--code-color-background);
   border-radius: var(--border-radius);
@@ -964,7 +964,7 @@ a.tsd-index-link {
 /* -------------------------------------------------- FOOTER -------------------------------------------------- */
 
 .tsd-generator {
-  padding-top: 0rem;
+  padding-top: 0;
   max-height: none;
 }
 
@@ -978,7 +978,10 @@ a.tsd-index-link {
   text-align: center;
 }
 
-.tsd-generator table, th, tr, td {
+.tsd-generator table,
+th,
+tr,
+td {
   border: none;
   padding: 0;
 }
