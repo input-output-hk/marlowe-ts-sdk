@@ -24,6 +24,8 @@ import {
   INotify,
   InputContent,
   RoleName,
+  Token,
+  Bound,
 } from "@marlowe.io/language-core-v1";
 import {
   applyAllInputs,
@@ -38,7 +40,8 @@ import {
 import { AddressBech32, ContractId, PolicyId } from "@marlowe.io/runtime-core";
 import { RestClient } from "@marlowe.io/runtime-rest-client";
 import { WalletAPI } from "@marlowe.io/wallet";
-
+import { Monoid } from "fp-ts/lib/Monoid.js";
+import * as R from "fp-ts/lib/Record.js";
 type ActionApplicant = Party | "anybody";
 
 interface AppliedActionResult {
@@ -91,22 +94,22 @@ interface CanChoose {
   applyAction(choice: ChosenNum): AppliedActionResult;
 }
 
-interface CanAdvanceTimeout {
-  type: "AdvanceTimeout";
+/**
+ * This Applicable action is intended to be used when the contract is not in a quiescent state.
+ * This means that the contract is either timeouted, or it was just created and it doesn't starts with a `When`
+ */
+interface CanAdvance {
+  type: "Advance";
   policyId: PolicyId;
   applyAction(): AppliedActionResult;
 }
 
-export type ApplicableAction =
-  | CanNotify
-  | CanDeposit
-  | CanChoose
-  | CanAdvanceTimeout;
+export type ApplicableAction = CanNotify | CanDeposit | CanChoose | CanAdvance;
 
 function getApplicant(action: ApplicableAction): ActionApplicant {
   switch (action.type) {
     case "Notify":
-    case "AdvanceTimeout":
+    case "Advance":
       return "anybody";
     case "Deposit":
       return action.deposit.party;
@@ -147,7 +150,7 @@ export async function getApplicableActions(
     throw new Error("AmbiguousTimeIntervalError");
   if (initialReduce.reduced) {
     applicableActions.push({
-      type: "AdvanceTimeout",
+      type: "Advance",
       policyId: contractDetails.roleTokenMintingPolicyId,
       applyAction() {
         return {
@@ -178,10 +181,15 @@ export async function getApplicableActions(
         )
       )
     );
-    applicableActions = applicableActions.concat(applicableActionsFromCases.filter(x => x !== undefined) as ApplicableAction[]);
-
+    applicableActions = applicableActions.concat(
+      toApplicableActions(
+        applicableActionsFromCases.reduce(
+          mergeApplicableActionAccumulator.concat,
+          mergeApplicableActionAccumulator.empty
+        )
+      )
+    );
   }
-
 
   return applicableActions;
 }
@@ -192,14 +200,14 @@ export async function mkPartyFilter(wallet: WalletAPI) {
   let tokenMap = new Map<PolicyId, RoleName[]>();
   function getTokenMap() {
     if (tokenMap.size === 0 && tokens.length > 0) {
-      tokens.forEach(token => {
+      tokens.forEach((token) => {
         // Role tokens only have 1 element
         if (token.quantity > 1) return;
 
         const currentTokens = tokenMap.get(token.assetId.policyId) ?? [];
         currentTokens.push(token.assetId.assetName);
         tokenMap.set(token.assetId.policyId, currentTokens);
-      })
+      });
     }
     return tokenMap;
   }
@@ -210,20 +218,18 @@ export async function mkPartyFilter(wallet: WalletAPI) {
       if (policyTokens === undefined) return false;
       return policyTokens.includes(party.role_token);
     } else {
-      return address.includes(party.address as AddressBech32)
+      return address.includes(party.address as AddressBech32);
     }
-  }
+  };
 }
 
-export async function mkApplicableActionsFilter(
-  wallet: WalletAPI
-) {
+export async function mkApplicableActionsFilter(wallet: WalletAPI) {
   const partyFilter = await mkPartyFilter(wallet);
   return (action: ApplicableAction) => {
     const applicant = getApplicant(action);
     if (applicant === "anybody") return true;
     return partyFilter(applicant, action.policyId);
-  }
+  };
 }
 
 function isDepositAction(action: Action): action is Deposit {
@@ -238,6 +244,148 @@ function isChoice(action: Action): action is Choice {
   return "choose_between" in action;
 }
 
+/**
+ * Internal data structure to be able to accumulate and later flatter applicable actions
+ * @hidden
+ */
+type ApplicableActionAccumulator = {
+  deposits: Record<string, CanDeposit>;
+  choices: Record<string, CanChoose>;
+  notifies: CanNotify | undefined;
+};
+
+const toApplicableActions = (
+  accumulator: ApplicableActionAccumulator
+): ApplicableAction[] => {
+  const deposits = Object.values(accumulator.deposits);
+  const choices = Object.values(accumulator.choices);
+  const notifies = accumulator.notifies ? [accumulator.notifies] : [];
+  return [...deposits, ...choices, ...notifies];
+};
+
+const flattenDeposits = {
+  concat: (fst: CanDeposit, snd: CanDeposit) => {
+    return fst;
+  },
+};
+
+const partyKey = (party: Party) => {
+  if ("role_token" in party) {
+    return `role_${party.role_token}`;
+  } else {
+    return `address_${party.address}`;
+  }
+};
+
+const tokenKey = (token: Token) => {
+  return `${token.currency_symbol}-${token.token_name}`;
+};
+const accumulatorFromDeposit = (
+  env: Environment,
+  state: MarloweState,
+  action: CanDeposit
+) => {
+  const { party, into_account, of_token, deposits } = action.deposit;
+  const value = evalValue(env, state, deposits);
+
+  const depositKey = `${partyKey(party)}-${partyKey(into_account)}-${tokenKey(
+    of_token
+  )}-${value}`;
+  return {
+    deposits: { [depositKey]: action },
+    choices: {},
+    notifies: undefined,
+  };
+};
+
+const accumulatorFromChoice = (action: CanChoose) => {
+  const { for_choice } = action.choice;
+  const choiceKey = `${partyKey(for_choice.choice_owner)}-${
+    for_choice.choice_name
+  }`;
+  return {
+    deposits: {},
+    choices: { [choiceKey]: action },
+    notifies: undefined,
+  };
+};
+
+const accumulatorFromNotify = (action: CanNotify) => {
+  return {
+    deposits: {},
+    choices: {},
+    notifies: action,
+  };
+};
+// TODO: Move to adapter
+const minBigint = (a: bigint, b: bigint): bigint => (a < b ? a : b);
+const maxBigint = (a: bigint, b: bigint): bigint => (a > b ? a : b);
+
+function mergeBounds(bounds: Bound[]): Bound[] {
+  const mergedBounds: Bound[] = [];
+
+  const sortedBounds = [...bounds].sort((a, b) => (a.from > b.from ? 1 : a.from < b.from ? -1 : 0));
+
+  let currentBound: Bound | null = null;
+
+  for (const bound of sortedBounds) {
+    if (currentBound === null) {
+      currentBound = {...bound};
+    } else {
+      if (bound.from <= currentBound.to) {
+        currentBound.to = maxBigint(currentBound.to, bound.to);
+      } else {
+        mergedBounds.push(currentBound);
+        currentBound = {...bound};
+      }
+    }
+  }
+
+  if (currentBound !== null) {
+    mergedBounds.push(currentBound);
+  }
+
+  return mergedBounds;
+}
+
+const flattenChoices = {
+  concat: (fst: CanChoose, snd: CanChoose): CanChoose => {
+    const mergedBounds = mergeBounds(
+      fst.choice.choose_between.concat(snd.choice.choose_between)
+    );
+    return {
+      type: "Choice",
+      policyId: fst.policyId,
+      choice: {
+        for_choice: fst.choice.for_choice,
+        choose_between: mergedBounds,
+      },
+      applyAction: (chosenNum: ChosenNum) => {
+        if (inBounds(chosenNum, fst.choice.choose_between)) {
+          return fst.applyAction(chosenNum);
+        } else {
+          return snd.applyAction(chosenNum);
+        }
+      },
+    };
+  },
+};
+
+const mergeApplicableActionAccumulator: Monoid<ApplicableActionAccumulator> = {
+  empty: {
+    deposits: {},
+    choices: {},
+    notifies: undefined,
+  },
+  concat: (fst, snd) => {
+    return {
+      deposits: R.union(flattenDeposits)(fst.deposits)(snd.deposits),
+      choices: R.union(flattenChoices)(fst.choices)(snd.choices),
+      notifies: fst.notifies ?? snd.notifies,
+    };
+  },
+};
+
 async function getApplicableActionFromCase(
   restClient: RestClient,
   env: Environment,
@@ -247,7 +395,7 @@ async function getApplicableActionFromCase(
   previousWarnings: TransactionWarning[],
   cse: Case,
   policyId: PolicyId
-): Promise<ApplicableAction | undefined> {
+): Promise<ApplicableActionAccumulator> {
   let cseContinuation: Contract;
   if ("merkleized_then" in cse) {
     cseContinuation = await restClient.getContractSourceById({
@@ -260,8 +408,8 @@ async function getApplicableActionFromCase(
     if ("merkleized_then" in cse) {
       const merkleizedHashAndContinuation = {
         continuation_hash: cse.merkleized_then,
-        merkleized_continuation: cseContinuation
-      }
+        merkleized_continuation: cseContinuation,
+      };
       // MerkleizedNotify are serialized as the plain merkle object
       if (content === "input_notify") {
         return merkleizedHashAndContinuation;
@@ -269,8 +417,8 @@ async function getApplicableActionFromCase(
         // For IDeposit and IChoice is the InputContent + the merkle object
         return {
           ...merkleizedHashAndContinuation,
-          ...content
-        }
+          ...content,
+        };
       }
     } else {
       return content;
@@ -279,7 +427,7 @@ async function getApplicableActionFromCase(
 
   if (isDepositAction(cse.case)) {
     const deposit = cse.case;
-    return {
+    return accumulatorFromDeposit(env, state, {
       type: "Deposit",
       deposit,
       policyId,
@@ -291,7 +439,9 @@ async function getApplicableActionFromCase(
           into_account: deposit.into_account,
         });
         // TODO: Re-check if this env should be the same as the initial env or a new one.
-        const appliedInput = applyAllInputs(env, state, currentContract, [input]);
+        const appliedInput = applyAllInputs(env, state, currentContract, [
+          input,
+        ]);
 
         // TODO: Improve error handling
         if (typeof appliedInput === "string") throw new Error(appliedInput);
@@ -304,11 +454,11 @@ async function getApplicableActionFromCase(
           payments: [...previousPayments, ...appliedInput.payments],
         };
       },
-    };
+    });
   } else if (isChoice(cse.case)) {
     const choice = cse.case;
 
-    return {
+    return accumulatorFromChoice({
       type: "Choice",
       choice,
       policyId,
@@ -321,7 +471,9 @@ async function getApplicableActionFromCase(
           input_that_chooses_num: chosenNum,
         });
         // TODO: Re-check if this env should be the same as the initial env or a new one.
-        const appliedInput = applyAllInputs(env, state, currentContract, [input]);
+        const appliedInput = applyAllInputs(env, state, currentContract, [
+          input,
+        ]);
         // TODO: Improve error handling
         if (typeof appliedInput === "string") throw new Error(appliedInput);
         return {
@@ -333,20 +485,22 @@ async function getApplicableActionFromCase(
           payments: [...previousPayments, ...appliedInput.payments],
         };
       },
-    };
+    });
   } else {
     const notify = cse.case;
     if (!evalObservation(env, state, notify.notify_if)) {
-      return;
+      return mergeApplicableActionAccumulator.empty;
     }
 
-    return {
+    return accumulatorFromNotify({
       type: "Notify",
       policyId,
       applyAction() {
         const input = decorateInput("input_notify");
         // TODO: Re-check if this env should be the same as the initial env or a new one.
-        const appliedInput = applyAllInputs(env, state, currentContract, [input]);
+        const appliedInput = applyAllInputs(env, state, currentContract, [
+          input,
+        ]);
         // TODO: Improve error handling
         if (typeof appliedInput === "string") throw new Error(appliedInput);
         return {
@@ -358,6 +512,6 @@ async function getApplicableActionFromCase(
           payments: [...previousPayments, ...appliedInput.payments],
         };
       },
-    };
+    });
   }
 }

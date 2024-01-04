@@ -220,7 +220,6 @@ async function contractMenu(
     contractId
   );
 
-  // await debugGetNext(lifecycle, contractDetails, contractId);
 
   const applicableActions = await getApplicableActions(
     lifecycle.restClient,
@@ -228,6 +227,7 @@ async function contractMenu(
   );
   const myActionsFilter = await mkApplicableActionsFilter(lifecycle.wallet);
   const choices = applicableActions.filter(myActionsFilter)
+  await debugGetNext(lifecycle, contractDetails, contractId);
   debugApplicableActions(choices);
 
 
