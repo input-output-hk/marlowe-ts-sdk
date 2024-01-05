@@ -10,7 +10,8 @@ describe("contracts endpoints", () => {
   const restClient = mkRestClient(getMarloweRuntimeUrl());
 
   it(
-    "can navigate throught Marlowe Contracts pages" + "(GET:  /contracts/)",
+    "can navigate throught some Marlowe Contracts pages" +
+      "(GET:  /contracts/)",
     async () => {
       const firstPage = await restClient.getContracts({
         tags: [],
@@ -38,6 +39,26 @@ describe("contracts endpoints", () => {
       expect(thirdPage.page.total).toBeGreaterThan(100);
 
       expect(thirdPage.page.next).toBeDefined();
+    },
+    100_000
+  );
+  it(
+    "can retrieve some contract Details" + "(GET:  /contracts/{contractId})",
+    async () => {
+      const firstPage = await restClient.getContracts({
+        tags: [],
+        partyAddresses: [],
+        partyRoles: [],
+      });
+      expect(firstPage.contracts.length).toBe(100);
+      expect(firstPage.page.total).toBeGreaterThan(100);
+      expect(firstPage.page.next).toBeDefined();
+
+      await Promise.all(
+        firstPage.contracts.map((contract) =>
+          restClient.getContractById(contract.contractId)
+        )
+      );
     },
     100_000
   );
