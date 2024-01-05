@@ -970,6 +970,8 @@ a.tsd-index-link {
 
 .footer-links {
   padding: 0 calc(var(--content-spacing) + 0.4rem);
+  max-width: 1700px;
+  margin: 0 auto;
 }
 
 .footer-copyright {
