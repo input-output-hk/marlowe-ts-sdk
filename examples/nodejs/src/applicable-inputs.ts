@@ -44,7 +44,7 @@ import { Monoid } from "fp-ts/lib/Monoid.js";
 import * as R from "fp-ts/lib/Record.js";
 type ActionApplicant = Party | "anybody";
 
-interface AppliedActionResult {
+export interface AppliedActionResult {
   /**
    * What inputs needs to be provided to apply the action
    */
