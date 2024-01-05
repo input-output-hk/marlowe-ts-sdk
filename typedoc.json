@@ -9,6 +9,8 @@
   "out": "./docs",
   "readme": "./packages/api.md",
   "includeVersion": true,
+  "plugin": ["./doc/theme/dist/index.js"],
+  "theme": "marlowe-theme",
   "sidebarLinks": {
     "How to develop": "https://github.com/input-output-hk/marlowe-ts-sdk/blob/main/doc/howToDevelop.md",
     "Module system": "https://github.com/input-output-hk/marlowe-ts-sdk/blob/main/doc/modules-system.md",

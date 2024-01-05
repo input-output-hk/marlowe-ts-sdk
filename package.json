@@ -19,7 +19,7 @@
     "build": "tsc --version && tsc --build && shx mkdir -p dist && rollup --config rollup/config.mjs",
     "clean": "npm run clean --workspaces && shx rm -rf dist",
     "test": "NODE_OPTIONS='--experimental-vm-modules --no-warnings' jest",
-    "docs": "typedoc . --treatWarningsAsErrors",
+    "docs": "typedoc . --treatWarningsAsErrors --options ./typedoc.json",
     "serve": "ws --port 1337 --rewrite '/importmap -> https://cdn.jsdelivr.net/gh/input-output-hk/marlowe-ts-sdk@0.2.0-beta/jsdelivr-npm-importmap.js'",
     "serve-dev": "ws --port 1337 --rewrite '/importmap -> /dist/local-importmap.js'"
   },
