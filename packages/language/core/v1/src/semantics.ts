@@ -91,6 +91,7 @@ import { POSIXTime } from "@marlowe.io/adapter/time";
 export {
   Payment,
   Transaction,
+  SingleInputTx,
   NonPositiveDeposit,
   NonPositivePay,
   PartialPay,
@@ -382,6 +383,7 @@ function giveMoney(
   ];
 }
 
+// TODO: Move to adapter
 const minBigint = (a: bigint, b: bigint): bigint => (a < b ? a : b);
 const maxBigint = (a: bigint, b: bigint): bigint => (a > b ? a : b);
 

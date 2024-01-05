@@ -1,5 +1,6 @@
 import * as TE from "fp-ts/lib/TaskEither.js";
 import { pipe } from "fp-ts/lib/function.js";
+import { Option } from "fp-ts/lib/Option.js";
 import { Environment, Party } from "@marlowe.io/language-core-v1";
 import { tryCatchDefault, unsafeTaskEither } from "@marlowe.io/adapter/fp-ts";
 import {
@@ -18,6 +19,7 @@ import {
   AddressesAndCollaterals,
   HexTransactionWitnessSet,
   transactionWitnessSetTextEnvelope,
+  BlockHeader,
 } from "@marlowe.io/runtime-core";
 
 import {
@@ -32,6 +34,8 @@ import {
   BuildCreateContractTxResponse,
   TransactionTextEnvelope,
 } from "@marlowe.io/runtime-rest-client/contract";
+import { SingleInputTx } from "@marlowe.io/language-core-v1/transaction.js";
+import { iso8601ToPosixTime } from "@marlowe.io/adapter/time";
 
 export function mkContractLifecycle(
   wallet: WalletAPI,
@@ -44,8 +48,57 @@ export function mkContractLifecycle(
     applyInputs: applyInputsTx(di),
     getApplicableInputs: getApplicableInputs(di),
     getContractIds: getContractIds(di),
+    getInputHistory: getInputHistory(di),
   };
 }
+const getInputHistory =
+  ({ restClient }: ContractsDI) =>
+  async (contractId: ContractId): Promise<SingleInputTx[]> => {
+    const transactionHeaders = await restClient.getTransactionsForContract(
+      contractId
+    );
+    const transactions = await Promise.all(
+      transactionHeaders.transactions.map((txHeader) =>
+        restClient.getContractTransactionById(
+          contractId,
+          txHeader.transactionId
+        )
+      )
+    );
+    const sortOptionalBlock = (
+      a: Option<BlockHeader>,
+      b: Option<BlockHeader>
+    ) => {
+      if (a._tag === "None" || b._tag === "None") {
+      // TODO: to avoid this error we should provide a higer level function that gets the transactions as the different
+      //       status and with the appropiate values for each state.
+        throw new Error("A confirmed transaction should have a valid block");
+      } else {
+        if (a.value.blockNo < b.value.blockNo) {
+          return -1;
+        } else if (a.value.blockNo > b.value.blockNo) {
+          return 1;
+        } else {
+          return 0;
+        }
+      }
+    };
+    return transactions
+      .filter((tx) => tx.status === "confirmed")
+      .sort((a, b) => sortOptionalBlock(a.block, b.block))
+      .map((tx) => {
+        const interval = {
+          from: iso8601ToPosixTime(tx.invalidBefore),
+          to: iso8601ToPosixTime(tx.invalidHereafter),
+        };
+        if (tx.inputs.length === 0) {
+          return [{ interval }];
+        } else {
+          return tx.inputs.map((input) => ({ input, interval }));
+        }
+      })
+      .flat();
+  };
 
 const submitCreateTx =
   ({ wallet, restClient }: ContractsDI) =>

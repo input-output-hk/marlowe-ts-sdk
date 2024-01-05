@@ -17,7 +17,7 @@ export type ItemRange = t.TypeOf<typeof ItemRangeGuard>;
 export const itemRanged = (s: string) => unsafeEither(ItemRangeGuard.decode(s));
 
 export interface Page {
-  current: ItemRange;
+  current?: ItemRange;
   next?: ItemRange;
   /**
    * Total Contracts from the query.
@@ -34,9 +34,8 @@ export const PageGuard = assertGuardEqual(
   t.intersection([
     t.type({
       total: t.number,
-      current: ItemRangeGuard,
     }),
-    t.partial({ previous: ItemRangeGuard }),
+    t.partial({ current: ItemRangeGuard }),
     t.partial({ next: ItemRangeGuard }),
   ])
 );

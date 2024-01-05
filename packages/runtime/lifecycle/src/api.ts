@@ -20,6 +20,7 @@ import {
   RoleName,
 } from "@marlowe.io/language-core-v1";
 import { Next } from "@marlowe.io/language-core-v1/next";
+import { SingleInputTx } from "@marlowe.io/language-core-v1/transaction.js";
 
 export type RuntimeLifecycle = {
   wallet: WalletAPI;
@@ -264,6 +265,12 @@ export interface ContractsAPI {
    * @throws Error | DecodingError
    */
   getContractIds(): Promise<ContractId[]>;
+
+  /**
+   * Get a list of the applied inputs for a given contract
+   * @param contractId
+   */
+  getInputHistory(contractId: ContractId): Promise<SingleInputTx[]>;
 }
 export type PayoutsDI = WalletDI & RestDI;
 

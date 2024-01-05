@@ -14,7 +14,6 @@ import {
   Timeout,
 } from "@marlowe.io/language-core-v1";
 import {
-  addressBech32,
   contractId,
   ContractId,
   contractIdToTxId,
@@ -33,11 +32,13 @@ import {
   AppliedActionResult,
   getApplicableActions,
   mkApplicableActionsFilter,
-  mkPartyFilter,
-} from "./applicable-inputs.js";
+} from "./experimental-features/applicable-inputs.js";
 import arg from "arg";
-import { posixTimeToIso8601 } from "@marlowe.io/adapter/time";
-
+import { POSIXTime, posixTimeToIso8601 } from "@marlowe.io/adapter/time";
+import { splitAddress } from "./experimental-features/metadata.js";
+import { SingleInputTx } from "../../../packages/language/core/v1/dist/esm/transaction.js";
+import * as t from "io-ts/lib/index.js"
+import { deepEqual } from "@marlowe.io/adapter/deep-equal";
 const args = arg({
   "--help": Boolean,
   "--config": String,
@@ -148,98 +149,85 @@ async function createContractMenu(lifecycle: RuntimeLifecycle) {
     `The payment must be deposited by ${depositDeadline} and will be released to ${payee} by ${releaseDeadline}`
   );
 
-  const [contractId, txId] = await createContract(lifecycle, {
+  const scheme = {
     payFrom: { address: walletAddress },
     payTo: { address: payee },
     amount,
     depositDeadline,
     releaseDeadline,
-  });
+  };
+  const [contractId, txId] = await createContract(lifecycle, scheme);
 
   console.log(`Contract created with id ${contractId}`);
+
   await waitIndicator(lifecycle.wallet, txId);
 
-  // await contractMenu(lifecycle, contractId);
+  await contractMenu(lifecycle, scheme, contractId);
 }
 
 async function loadContractMenu(lifecycle: RuntimeLifecycle) {
-  const cid = await input({
+  const cidStr = await input({
     message: "Enter the contractId",
   });
-  await contractMenu(lifecycle, contractId(cid));
-}
+  const cid = contractId(cidStr);
 
-// TODO: Delete
-async function debugGetNext(
-  lifecycle: RuntimeLifecycle,
-  contractDetails: ContractDetails,
-  contractId: ContractId
-) {
-  const now = datetoTimeout(new Date());
-
-  if (contractDetails.currentContract._tag === "None") {
-    console.log("DEBUG: current contract none");
-  }
-
-  const currentContract =
-    contractDetails.currentContract._tag === "None"
-      ? contractDetails.initialContract
-      : contractDetails.currentContract.value;
-  const oneDayFrom = (time: Timeout) => time + 24n * 60n * 60n * 1000n; // in milliseconds
-  const nextTimeout = getNextTimeout(currentContract, now) ?? oneDayFrom(now);
-  const timeInterval = { from: now, to: nextTimeout - 1n };
-  console.log("time interval", timeInterval);
-  const applicableInputs = await lifecycle.contracts.getApplicableInputs(
-    contractId,
-    { timeInterval }
+  const contractDetails = await lifecycle.restClient.getContractById(
+    cid
   );
-  console.log("applicable inputs");
-  console.log(MarloweJSON.stringify(applicableInputs, null, 2));
+
+  const scheme = extractSchemeFromTags(contractDetails.tags);
+  console.log("Contract details:");
+  console.log(`  * Pay from: ${scheme.payFrom.address}`);
+  console.log(`  * Pay to: ${scheme.payTo.address}`);
+  console.log(`  * Amount: ${scheme.amount} lovelaces`);
+  console.log(`  * Deposit deadline: ${scheme.depositDeadline}`);
+  console.log(`  * Release deadline: ${scheme.releaseDeadline}`);
+
+  const contractBundle = mkDelayPayment(scheme);
+  const {contractSourceId} = await lifecycle.restClient.createContractSources(
+    contractBundle.main,
+    contractBundle.bundle
+  );
+  const initialContract = await lifecycle.restClient.getContractSourceById({ contractSourceId} );
+
+  if (!deepEqual(initialContract, contractDetails.initialContract)) {
+    throw new Error("The contract on chain does not match the expected contract for the scheme");
+  };
+
+  return contractMenu(lifecycle, scheme, cid);
 }
 
-// TODO: Delete
-function debugApplicableActions(applicableActions: ApplicableAction[]) {
-  applicableActions.forEach((action) => {
-    console.log("***");
-    console.log(MarloweJSON.stringify(action, null, 2));
-    let result;
-    if (action.type === "Choice") {
-      console.log(
-        "automatically choosing",
-        action.choice.choose_between[0].from
-      );
-      result = action.applyAction(action.choice.choose_between[0].from);
-    } else {
-      result = action.applyAction();
-    }
-    console.log("expected results", MarloweJSON.stringify(result, null, 2));
-  });
-}
 async function contractMenu(
   lifecycle: RuntimeLifecycle,
+  scheme: DelayPaymentScheme,
   contractId: ContractId
 ): Promise<void> {
-  console.log("TODO: print contract state");
-  const contractDetails = await lifecycle.restClient.getContractById(
-    contractId
-  );
+  const inputHistory = await lifecycle.contracts.getInputHistory(contractId);
+
+  const contractState = getState(scheme, new Date(), inputHistory);
+  printState(contractState, scheme);
+  if (contractState.type === "Closed") return;
 
   const applicableActions = await getApplicableActions(
     lifecycle.restClient,
     contractId
   );
+
   const myActionsFilter = await mkApplicableActionsFilter(lifecycle.wallet);
   const myActions = applicableActions.filter(myActionsFilter)
-  // await debugGetNext(lifecycle, contractDetails, contractId);
-  // debugApplicableActions(myActions);
 
   const choices: Array<{name: string, value: {actionType: string, results?: AppliedActionResult}}>  = [
     { name: "Re-check contract state", value: {actionType: "check-state", results: undefined} },
     ...myActions.map(action => {
       switch (action.type) {
         case "Advance":
-          // TODO: Disambiguate between timeout deposit and release
-          return { name: "Advance contract", value: {actionType: "advance", results: action.applyAction() }}
+
+          return {
+            name: "Close contract",
+            description: contractState.type == "PaymentMissed" ? "The payer will receive minUTXO" : "The payer will receive minUTXO and the payee will receive the payment",
+            value: {actionType: "advance", results: action.applyAction() }
+            }
+
         case "Deposit":
           return { name: `Deposit ${action.deposit.deposits} lovelaces`, value: {actionType: "deposit", results: action.applyAction()} }
         default:
@@ -256,22 +244,22 @@ async function contractMenu(
   let txId
   switch (action.actionType) {
     case "check-state":
-      return contractMenu(lifecycle, contractId)
+      return contractMenu(lifecycle, scheme, contractId)
     case "advance":
       if (!action.results) throw new Error("This should not happen")
       console.log("Advancing contract");
-      txId = await lifecycle.contracts.applyInputs(contractId, {inputs: action.results.inputs, invalidBefore: posixTimeToIso8601(action.results.environment.timeInterval.from), invalidHereafter: posixTimeToIso8601(action.results.environment.timeInterval.to)})
+      txId = await lifecycle.contracts.applyInputs(contractId, {inputs: action.results.inputs})
       console.log(`Input applied with txId ${txId}`)
       await waitIndicator(lifecycle.wallet, txId);
-      return contractMenu(lifecycle, contractId)
+      return contractMenu(lifecycle, scheme, contractId)
     case "deposit":
       // TODO: Remove duplication
       if (!action.results) throw new Error("This should not happen")
       console.log("Making deposit");
-      txId = await lifecycle.contracts.applyInputs(contractId, {inputs: action.results.inputs, invalidBefore: posixTimeToIso8601(action.results.environment.timeInterval.from), invalidHereafter: posixTimeToIso8601(action.results.environment.timeInterval.to)})
+      txId = await lifecycle.contracts.applyInputs(contractId, {inputs: action.results.inputs})
       console.log(`Input applied with txId ${txId}`)
       await waitIndicator(lifecycle.wallet, txId);
-      return contractMenu(lifecycle, contractId)
+      return contractMenu(lifecycle, scheme, contractId)
     case "return":
       return;
   }
@@ -309,28 +297,171 @@ async function mainLoop(lifecycle: RuntimeLifecycle) {
 }
 // #endregion
 
-// #region Marlowe specifics
-interface DelayPaymentSchema {
+// #region Delay Payment Contract
+/**
+ * These are the parameters of the contract
+ */
+interface DelayPaymentScheme {
+  /**
+   * Who is making the delayed payment
+   */
   payFrom: Address;
+  /**
+   * Who is receiving the payment
+   */
   payTo: Address;
+  /**
+   * The amount of lovelaces to be paid
+   */
   amount: bigint;
+  /**
+   * The deadline for the payment to be made. If the payment is not made by this date, the contract can be closed
+   */
   depositDeadline: Date;
+  /**
+   * A date after the payment can be released to the receiver.
+   * NOTE: An empty transaction must be done to close the contract
+   */
   releaseDeadline: Date;
 }
+
+function mkDelayPayment(scheme: DelayPaymentScheme): ContractBundle {
+  return {
+    main: "initial-deposit",
+    bundle: [
+      {
+        label: "release-funds",
+        type: "contract",
+        value: {
+          when: [],
+          timeout: datetoTimeout(scheme.releaseDeadline),
+          timeout_continuation: "close",
+        },
+      },
+      {
+        label: "initial-deposit",
+        type: "contract",
+        value: {
+          when: [
+            {
+              case: {
+                party: scheme.payFrom,
+                deposits: scheme.amount,
+                of_token: lovelace,
+                into_account: scheme.payTo,
+              },
+              then: {
+                ref: "release-funds",
+              },
+            },
+          ],
+          timeout: datetoTimeout(scheme.depositDeadline),
+          timeout_continuation: "close",
+        },
+      },
+    ],
+  };
+}
+// #endregion
+
+// #region Delay Payment State
+/**
+ * The delay payment contract can be in one of the following logical states:
+ */
+type DelayPaymentState =
+  | InitialState
+  | PaymentDeposited
+  | PaymentMissed
+  | PaymentReady
+  | Closed;
+/**
+ * In the initial state the contract is waiting for the payment to be deposited
+ */
+type InitialState = {
+  type: "InitialState";
+}
+
+/**
+ * After the payment is deposited, the contract is waiting for the payment to be released
+ */
+type PaymentDeposited = {
+  type: "PaymentDeposited";
+}
+
+/**
+ * If the payment is not deposited by the deadline, the contract can be closed.
+ * NOTE: It is not necesary to close the contract, as it will consume transaction fee (but it will release
+ *       the minUTXO)
+ */
+type PaymentMissed = {
+  type: "PaymentMissed";
+}
+
+/**
+ * After the release deadline, the payment is still in the contract, and it is ready to be released.
+ */
+type PaymentReady = {
+  type: "PaymentReady";
+}
+
+type Closed = {
+  type: "Closed";
+  result: "Missed deposit" | "Payment released";
+}
+
+function printState(state: DelayPaymentState, scheme: DelayPaymentScheme) {
+  switch (state.type) {
+    case "InitialState":
+      console.log(`Waiting ${scheme.payFrom.address} to deposit ${scheme.amount}`);
+      break;
+    case "PaymentDeposited":
+      console.log(`Payment deposited, waiting until ${scheme.releaseDeadline} to be able to release the payment`);
+      break;
+    case "PaymentMissed":
+      console.log(`Payment missed on ${scheme.depositDeadline}, contract can be closed to retrieve minUTXO`);
+      break;
+    case "PaymentReady":
+      console.log(`Payment ready to be released`);
+      break;
+    case "Closed":
+      console.log(`Contract closed: ${state.result}`);
+      break;
+  }
+}
+
+function getState(scheme: DelayPaymentScheme, currentTime: Date, history: SingleInputTx[]): DelayPaymentState {
+  if (history.length === 0) {
+    if (currentTime < scheme.depositDeadline) {
+      return { type: "InitialState" };
+    } else {
+      return { type: "PaymentMissed" };
+    }
+  } else if (history.length === 1) {
+    // If the first transaction doesn't have an input, it means it was used to advace a timeouted contract
+    if (!history[0].input) {
+      return { type: "Closed", result: "Missed deposit" };
+    }
+    if (currentTime < scheme.releaseDeadline) {
+      return { type: "PaymentDeposited" };
+    } else {
+      return { type: "PaymentReady" };
+    }
+  } else if (history.length === 2) {
+    return { type: "Closed", result: "Payment released" };
+  } else {
+    throw new Error("Wrong state/contract, too many transactions");
+  }
+}
+
+// #endregion
+
 // TODO: move to marlowe-object
 type ContractBundle = {
   main: Label;
   bundle: Bundle;
 };
 
-const splitAddress = ({ address }: Address) => {
-  const halfLength = Math.floor(address.length / 2);
-  const s1 = address.substring(0, halfLength);
-  const s2 = address.substring(halfLength);
-  return [s1, s2];
-};
-
-const mkDelayPaymentTags = (schema: DelayPaymentSchema) => {
+const mkDelayPaymentTags = (schema: DelayPaymentScheme) => {
   const tag = "DELAY_PYMNT-1";
   const tags = {} as Tags;
 
@@ -343,13 +474,38 @@ const mkDelayPaymentTags = (schema: DelayPaymentSchema) => {
   tags[`${tag}-release`] = schema.releaseDeadline;
   return tags;
 };
+
+const extractSchemeFromTags = (tags: unknown): DelayPaymentScheme => {
+  const tagsGuard = t.type({
+    "DELAY_PYMNT-1-from-0": t.string,
+    "DELAY_PYMNT-1-from-1": t.string,
+    "DELAY_PYMNT-1-to-0": t.string,
+    "DELAY_PYMNT-1-to-1": t.string,
+    "DELAY_PYMNT-1-amount": t.bigint,
+    "DELAY_PYMNT-1-deposit": t.string,
+    "DELAY_PYMNT-1-release": t.string,
+  });
+
+  if (!tagsGuard.is(tags)) {
+    throw new Error("The contract does not have the expected tags");
+  }
+
+  return {
+    payFrom: { address: `${tags["DELAY_PYMNT-1-from-0"]}${tags["DELAY_PYMNT-1-from-1"]}` },
+    payTo: { address: `${tags["DELAY_PYMNT-1-to-0"]}${tags["DELAY_PYMNT-1-to-1"]}` },
+    amount: tags["DELAY_PYMNT-1-amount"],
+    depositDeadline: new Date(tags["DELAY_PYMNT-1-deposit"]),
+    releaseDeadline: new Date(tags["DELAY_PYMNT-1-release"]),
+  };
+}
+
 async function createContract(
   lifecycle: RuntimeLifecycle,
-  schema: DelayPaymentSchema
+  schema: DelayPaymentScheme
 ): Promise<[ContractId, TxId]> {
   const contractBundle = mkDelayPayment(schema);
   const tags = mkDelayPaymentTags(schema);
-  // TODO: create a new function in lifecycle `createContractFromBundle`
+  // TODO: PLT-9089: Modify runtimeLifecycle.contracts.createContract to support bundle (calling createContractSources)
   const contractSources = await lifecycle.restClient.createContractSources(
     contractBundle.main,
     contractBundle.bundle
@@ -372,44 +528,6 @@ async function createContract(
   //----------------
 }
 
-function mkDelayPayment(schema: DelayPaymentSchema): ContractBundle {
-  return {
-    main: "initial-deposit",
-    bundle: [
-      {
-        label: "release-funds",
-        type: "contract",
-        value: {
-          when: [],
-          timeout: datetoTimeout(schema.releaseDeadline),
-          timeout_continuation: "close",
-        },
-      },
-      {
-        label: "initial-deposit",
-        type: "contract",
-        value: {
-          when: [
-            {
-              case: {
-                party: schema.payFrom,
-                deposits: schema.amount,
-                of_token: lovelace,
-                into_account: schema.payTo,
-              },
-              then: {
-                ref: "release-funds",
-              },
-            },
-          ],
-          timeout: datetoTimeout(schema.depositDeadline),
-          timeout_continuation: "close",
-        },
-      },
-    ],
-  };
-}
-
 async function main() {
   const config = await readConfig(args["--config"]);
   const lucid = await Lucid.new(
@@ -428,4 +546,4 @@ async function main() {
   });
   await mainLoop(lifecycle);
 }
-// #endregion
+

@@ -39,7 +39,7 @@ export const PaymentGuard: t.Type<Payment> = t.type({
 });
 
 /**
- * TODO: Comment
+ * A marlowe transaction can consist of multiple inputs applied in a time interval
  * @category Transaction
  */
 export interface Transaction {
@@ -55,6 +55,21 @@ export const TransactionGuard: t.Type<Transaction> = t.type({
   tx_interval: TimeIntervalGuard,
   tx_inputs: t.array(InputGuard),
 });
+
+/**
+ * In the marlowe specification we formally prove that computing a transaction of multiple inputs
+ * in a time interval has the same semantics as computing multiple transactions of a single input.
+ * Having an array of this data structure helps the developer to reason about what inputs were applied
+ * to a contract, without caring if they were applied in a single transaction or in multiple ones.
+ * @category Transaction
+ */
+export interface SingleInputTx {
+  interval: TimeInterval;
+  /** If the input is undefined, the transaction was used to reduce a non quiesent contract.
+      This can happen to advance a timeout or if the contract doesn't start with a When
+  */
+  input?: Input;
+}
 
 /**
  * TODO: Comment

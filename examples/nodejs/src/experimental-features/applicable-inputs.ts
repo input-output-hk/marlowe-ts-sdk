@@ -127,23 +127,23 @@ export async function getApplicableActions(
   const contractDetails = await restClient.getContractById(contractId);
 
   const currentContract =
-    contractDetails.currentContract._tag === "None"
-      ? contractDetails.initialContract
-      : contractDetails.currentContract.value;
+    contractDetails.currentContract
+      ? contractDetails.currentContract
+      : contractDetails.initialContract;
   const oneDayFrom = (time: Timeout) => time + 24n * 60n * 60n * 1000n; // in milliseconds
   const now = datetoTimeout(new Date());
   const nextTimeout = getNextTimeout(currentContract, now) ?? oneDayFrom(now);
   const timeInterval = { from: now, to: nextTimeout - 1n };
 
   const env = environment ?? { timeInterval };
-  if (contractDetails.state._tag == "None") {
+  if (typeof contractDetails.state === "undefined") {
     // TODO: Check, I believe this happens when a contract is in a closed state, but it would be nice
     //       if the API returned something more explicit.
     return [];
   }
   const initialReduce = reduceContractUntilQuiescent(
     env,
-    contractDetails.state.value,
+    contractDetails.state,
     currentContract
   );
   if (initialReduce == "TEAmbiguousTimeIntervalError")
