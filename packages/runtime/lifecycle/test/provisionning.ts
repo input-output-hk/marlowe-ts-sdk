@@ -4,7 +4,7 @@ import {
   mkFPTSRestClient,
   mkRestClient,
 } from "@marlowe.io/runtime-rest-client";
-import { Context, PrivateKeysAsHex } from "@marlowe.io/wallet/nodejs";
+
 import { Lucid, Blockfrost } from "lucid-cardano";
 import {
   mkLucidWalletTest,
@@ -16,17 +16,12 @@ import {
 import { RuntimeLifecycle } from "@marlowe.io/runtime-lifecycle/api.js";
 import { MarloweJSON } from "@marlowe.io/adapter/codec";
 import { Assets } from "@marlowe.io/runtime-core";
+import { SeedPhrase } from "@marlowe.io/testing-kit";
+import { TestConfiguration, logInfo } from "@marlowe.io/testing-kit";
 
-const log = (message: string) => console.log(`\t## - ${message}`);
 const formatADA = (lovelaces: bigint): String =>
   new Intl.NumberFormat().format(lovelaces / 1_000_000n).concat(" ₳");
 
-export type SetupContext = {
-  runtimeURL: string;
-  lucid: Context;
-  bankSeedPhrase: string[];
-};
-export type SeedPhrase = string[];
 export type SetUpRequest = {
   [participant: string]: [SeedPhrase, ProvisionScheme];
 };
@@ -34,29 +29,38 @@ export type Participants = {
   [participant: string]: { wallet: WalletTestAPI; assetsProvisionned: Assets };
 };
 
-export async function setUp(context: SetupContext, request: SetUpRequest) {
-  const { runtimeURL, lucid, bankSeedPhrase } = context;
-  const blockfrost = new Blockfrost(lucid.blockfrostUrl, lucid.projectId);
-  const deprecatedRestAPI = mkFPTSRestClient(runtimeURL);
-  const restClient = mkRestClient(runtimeURL);
-  const bankLucid = await Lucid.new(blockfrost, lucid.network);
+export async function setUp(
+  testConfiguration: TestConfiguration,
+  request: SetUpRequest
+) {
+  const deprecatedRestAPI = mkFPTSRestClient(
+    testConfiguration.runtime.url.toString()
+  );
 
-  bankLucid.selectWalletFromSeed(bankSeedPhrase.join(" "));
+  const bankLucid = await Lucid.new(
+    testConfiguration.lucid.blockfrost,
+    testConfiguration.lucid.node.network
+  );
+
+  bankLucid.selectWalletFromSeed(testConfiguration.bank.seedPhrase.join(" "));
 
   const bank = mkLucidWalletTest(bankLucid);
 
   const bankBalance = await bank.getLovelaces();
   const address = await bank.getChangeAddress();
   // Check Banks treasury
-  log(`Bank (${address})`);
-  log(`  - ${formatADA(bankBalance)}`);
+  logInfo(`Bank (${address})`);
+  logInfo(`  - ${formatADA(bankBalance)}`);
 
   expect(bankBalance).toBeGreaterThan(100_000_000);
 
   let provisionRequest: ProvisionRequest = {};
   await Promise.all(
     Object.entries(request).map(([participant, [seedPhrase, scheme]]) => {
-      return Lucid.new(blockfrost, lucid.network).then((newLucidInstance) => {
+      return Lucid.new(
+        testConfiguration.lucid.blockfrost,
+        testConfiguration.lucid.node.network
+      ).then((newLucidInstance) => {
         const wallet = mkLucidWalletTest(
           newLucidInstance.selectWalletFromSeed(seedPhrase.join(` `))
         );
@@ -65,16 +69,21 @@ export async function setUp(context: SetupContext, request: SetUpRequest) {
     })
   );
 
-  // Check Banks treasury
-  log(`Provisionning`);
-  log(MarloweJSON.stringify(provisionRequest));
+  logInfo(`Provisionning`);
+  logInfo(MarloweJSON.stringify(provisionRequest));
   const provisionResponse = await bank.provision(provisionRequest);
 
   return {
     bank,
-    restClient,
-    runtime: (wallet: WalletTestAPI) =>
-      mkRuntimeLifecycle(deprecatedRestAPI, restClient, wallet),
+    runtime: {
+      client: testConfiguration.runtime.client,
+      mkLifecycle: (wallet: WalletTestAPI) =>
+        mkRuntimeLifecycle(
+          deprecatedRestAPI,
+          testConfiguration.runtime.client,
+          wallet
+        ),
+    },
     provisionResponse,
   };
 }

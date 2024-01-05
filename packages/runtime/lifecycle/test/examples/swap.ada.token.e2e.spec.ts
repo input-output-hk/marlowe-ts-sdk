@@ -9,11 +9,7 @@ import {
   Input,
   MarloweState,
 } from "@marlowe.io/language-core-v1";
-import {
-  getBankSeedPhrase,
-  getBlockfrostContext,
-  getMarloweRuntimeUrl,
-} from "../context.js";
+
 import { setUp } from "../provisionning.js";
 import console from "console";
 import {
@@ -28,8 +24,14 @@ import {
 } from "@marlowe.io/runtime-rest-client/contract";
 import { AtomicSwap } from "@marlowe.io/language-examples";
 import { RestClient } from "@marlowe.io/runtime-rest-client";
-import { generateSeedPhrase } from "@marlowe.io/testing-kit";
+import {
+  generateSeedPhrase,
+  logInfo,
+  logWalletInfo,
+  readTestConfiguration,
+} from "@marlowe.io/testing-kit";
 import { AxiosError } from "axios";
+import { MarloweJSON } from "@marlowe.io/adapter/codec";
 
 global.console = console;
 
@@ -38,30 +40,31 @@ describe("swap", () => {
     "can execute the nominal case",
     async () => {
       try {
-        const { runtime, provisionResponse } = await setUp(
-          {
-            runtimeURL: getMarloweRuntimeUrl(),
-            lucid: getBlockfrostContext(),
-            bankSeedPhrase: getBankSeedPhrase(),
-          },
-          {
-            seller: [
-              generateSeedPhrase("24-words"),
-              {
-                lovelacesToTransfer: 15_000_000n,
-                assetsToMint: { tokenA: 15n },
-              },
-            ],
-            buyer: [
-              generateSeedPhrase("24-words"),
-              {
-                lovelacesToTransfer: 15_000_000n,
-                assetsToMint: { tokenB: 10n },
-              },
-            ],
-          }
-        );
+        const { bank, runtime, provisionResponse } =
+          await readTestConfiguration().then((config) =>
+            setUp(config, {
+              seller: [
+                generateSeedPhrase("24-words"),
+                {
+                  lovelacesToTransfer: 25_000_000n,
+                  assetsToMint: { tokenA: 15n },
+                },
+              ],
+              buyer: [
+                generateSeedPhrase("24-words"),
+                {
+                  lovelacesToTransfer: 25_000_000n,
+                  assetsToMint: { tokenB: 10n },
+                },
+              ],
+            })
+          );
+        await bank.waitRuntimeSyncingTillCurrentWalletTip(runtime.client);
+        logInfo("Set up Complete");
         const { seller, buyer } = provisionResponse;
+        await logWalletInfo("seller", seller.wallet);
+        await logWalletInfo("buyer", buyer.wallet);
+
         const sellerAddress = await seller.wallet.getChangeAddress();
         const scheme: AtomicSwap.Scheme = {
           offer: {
@@ -84,17 +87,20 @@ describe("swap", () => {
         };
 
         const swapContract = AtomicSwap.mkContract(scheme);
-
-        const [contractId, txCreatedContract] = await runtime(
-          seller.wallet
-        ).contracts.createContract({
-          contract: swapContract,
-          roles: {
-            [scheme.ask.buyer.role_token]: mintRole(sellerAddress),
-          },
-        });
-
-        await runtime(seller.wallet).wallet.waitConfirmation(txCreatedContract);
+        logInfo(`contract: ${MarloweJSON.stringify(swapContract)}`);
+        const [contractId, txCreatedContract] = await runtime
+          .mkLifecycle(seller.wallet)
+          .contracts.createContract({
+            contract: swapContract,
+            roles: {
+              [scheme.ask.buyer.role_token]: sellerAddress,
+            },
+          });
+        logInfo("Contract Created");
+        await seller.wallet.waitConfirmation(txCreatedContract);
+        await seller.wallet.waitRuntimeSyncingTillCurrentWalletTip(
+          runtime.client
+        );
       } catch (e) {
         const error = e as AxiosError;
         console.log(`catched : ${JSON.stringify(error.response?.data)}`);

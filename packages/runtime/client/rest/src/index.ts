@@ -51,6 +51,13 @@ export {
   PageGuard,
 } from "./pagination.js";
 
+export {
+  RuntimeStatus,
+  RuntimeVersion,
+  Tip,
+  CompatibleRuntimeVersion,
+} from "./runtime/index.js";
+
 /**
  * The RestClient offers a simple abstraction for the {@link https://docs.marlowe.iohk.io/api/ | Marlowe Runtime REST API}  endpoints.
  * You can create an instance of the RestClient using the {@link mkRestClient} function.

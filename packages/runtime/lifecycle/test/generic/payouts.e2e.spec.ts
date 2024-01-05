@@ -5,11 +5,6 @@ import { AtomicSwap } from "@marlowe.io/language-examples";
 import { datetoTimeout, adaValue } from "@marlowe.io/language-core-v1";
 import { Deposit } from "@marlowe.io/language-core-v1/next";
 
-import {
-  getBankPrivateKey,
-  getBlockfrostContext,
-  getMarloweRuntimeUrl,
-} from "../context.js";
 import {} from "../provisionning.js";
 import console from "console";
 import { runtimeTokenToMarloweTokenValue } from "@marlowe.io/runtime-core";

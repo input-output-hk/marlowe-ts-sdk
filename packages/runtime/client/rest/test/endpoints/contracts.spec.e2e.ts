@@ -1,19 +1,16 @@
-import { mkRestClient } from "@marlowe.io/runtime-rest-client";
-
-import { getMarloweRuntimeUrl } from "../context.js";
+import { readTestConfiguration } from "@marlowe.io/testing-kit";
 
 import console from "console";
 
 global.console = console;
 
 describe("contracts endpoints", () => {
-  const restClient = mkRestClient(getMarloweRuntimeUrl());
-
   it(
     "can navigate throught some Marlowe Contracts pages" +
       "(GET:  /contracts/)",
     async () => {
-      const firstPage = await restClient.getContracts({
+      const { runtime } = await readTestConfiguration();
+      const firstPage = await runtime.client.getContracts({
         tags: [],
         partyAddresses: [],
         partyRoles: [],
@@ -23,7 +20,7 @@ describe("contracts endpoints", () => {
 
       expect(firstPage.page.next).toBeDefined();
 
-      const secondPage = await restClient.getContracts({
+      const secondPage = await runtime.client.getContracts({
         range: firstPage.page.next,
       });
       expect(secondPage.contracts.length).toBe(100);
@@ -31,7 +28,7 @@ describe("contracts endpoints", () => {
 
       expect(secondPage.page.next).toBeDefined();
 
-      const thirdPage = await restClient.getContracts({
+      const thirdPage = await runtime.client.getContracts({
         range: secondPage.page.next,
       });
 
@@ -45,7 +42,8 @@ describe("contracts endpoints", () => {
   it(
     "can retrieve some contract Details" + "(GET:  /contracts/{contractId})",
     async () => {
-      const firstPage = await restClient.getContracts({
+      const { runtime } = await readTestConfiguration();
+      const firstPage = await runtime.client.getContracts({
         tags: [],
         partyAddresses: [],
         partyRoles: [],
@@ -56,7 +54,7 @@ describe("contracts endpoints", () => {
 
       await Promise.all(
         firstPage.contracts.map((contract) =>
-          restClient.getContractById(contract.contractId)
+          runtime.client.getContractById(contract.contractId)
         )
       );
     },

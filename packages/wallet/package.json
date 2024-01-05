@@ -44,11 +44,6 @@
       "import": "./dist/esm/lucid/index.js",
       "require": "./dist/bundled/cjs/lucid.cjs",
       "types": "./dist/esm/lucid/index.d.ts"
-    },
-    "./nodejs": {
-      "import": "./dist/esm/nodejs/index.js",
-      "require": "./dist/bundled/cjs/nodejs.cjs",
-      "types": "./dist/esm/nodejs/index.d.ts"
     }
   },
   "dependencies": {

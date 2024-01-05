@@ -28,7 +28,7 @@ import {
   Assets as LucidAssets,
 } from "lucid-cardano";
 import { addDays } from "date-fns";
-import { generateMnemonic } from "bip39";
+
 import { WalletAPI, mkLucidWallet } from "@marlowe.io/wallet";
 import { mergeAssets } from "@marlowe.io/adapter/lucid";
 
@@ -36,19 +36,23 @@ import * as RuntimeCore from "@marlowe.io/runtime-core";
 import { pipe } from "fp-ts/lib/function.js";
 import * as A from "fp-ts/lib/Array.js";
 import { RestClient } from "@marlowe.io/runtime-rest-client";
-import { MarloweJSON } from "@marlowe.io/adapter/codec";
+import { MarloweJSON, MarloweJSONCodec } from "@marlowe.io/adapter/codec";
+import { logError, logInfo, logWarning } from "./logging.js";
 
 type LucidExtendedDI = { lucid: Lucid; wallet: WalletAPI };
 export type TxHashSubmitted = string;
-export type SeedSize = "15-words" | "24-words";
 
-export const generateSeedPhrase = (strength: SeedSize): string[] => {
-  switch (strength) {
-    case "15-words":
-      return generateMnemonic(160).split(" ");
-    case "24-words":
-      return generateMnemonic(256).split(" ");
-  }
+export const logWalletInfo = async (
+  walletName: string,
+  wallet: WalletTestAPI
+) => {
+  const address = await wallet.getChangeAddress();
+  const lovelaces = await wallet.getLovelaces();
+  const tokens = await wallet.getTokens();
+  logInfo(`Wallet ${walletName}`);
+  logInfo(`\tAddress : ${address}`);
+  logInfo(`\tLovelaces : ${lovelaces}`);
+  logInfo(`\tTokens : ${MarloweJSON.stringify(tokens)}`);
 };
 
 const mkPolicyWithDeadlineAndOneAuthorizedSigner =
@@ -74,6 +78,7 @@ const mkPolicyWithDeadlineAndOneAuthorizedSigner =
 
 export interface WalletTestAPI extends WalletAPI {
   provision(request: ProvisionRequest): Promise<ProvisionResponse>;
+  waitRuntimeSyncingTillCurrentWalletTip(client: RestClient): Promise<void>;
 }
 
 const toAssetsToTransfer = (assets: RuntimeCore.Assets): LucidAssets => {
@@ -116,13 +121,54 @@ export type ProvisionResponse = {
   };
 };
 
-const waitRuntimeSynced =
+const isRuntimeChainMoreAdvancedThan =
+  (client: RestClient, aSlotNo: bigint) => () =>
+    client.getRuntimeStatus().then((status) => {
+      if (status.tips.runtimeChain.blockHeader.slotNo >= aSlotNo) {
+        return true;
+      } else {
+        logWarning(
+          `Waiting Runtime to be Synced (Delta ${
+            status.tips.runtimeChain.blockHeader.slotNo - aSlotNo
+          }) `
+        );
+        return false;
+      }
+    });
+
+const waitRuntimeSyncingTillCurrentWalletTip =
   (di: LucidExtendedDI) =>
-  async (restClient: RestClient): Promise<void> => {
-    const { lucid, wallet } = di;
-    const lucidSlot = lucid.currentSlot();
-    const s = await restClient.healthcheck();
+  async (client: RestClient): Promise<void> => {
+    const { lucid } = di;
+    const currentLucidSlot = BigInt(lucid.currentSlot());
+    await waitForPredicate(
+      isRuntimeChainMoreAdvancedThan(client, currentLucidSlot)
+    );
+    return sleep(5);
   };
+
+function sleep(secondes: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, secondes * 1_000));
+}
+
+async function waitForPredicate(
+  predicate: () => Promise<boolean>,
+  interval: number = 3_000
+): Promise<void> {
+  if (await predicate()) {
+    // Predicate is already true, no need to wait
+    return;
+  }
+  // Use a promise to wait for the specified interval
+  const wait = (ms: number) =>
+    new Promise((resolve) => setTimeout(resolve, ms));
+
+  // Wait for the specified interval
+  await wait(interval);
+
+  // Recursive call to continue checking the predicate
+  await waitForPredicate(predicate, interval);
+}
 
 const provision =
   (di: LucidExtendedDI) =>
@@ -212,5 +258,9 @@ export function mkLucidWalletTest(lucidWallet: Lucid): WalletTestAPI {
   return {
     ...di.wallet,
     ...{ provision: provision(di) },
+    ...{
+      waitRuntimeSyncingTillCurrentWalletTip:
+        waitRuntimeSyncingTillCurrentWalletTip(di),
+    },
   };
 }
