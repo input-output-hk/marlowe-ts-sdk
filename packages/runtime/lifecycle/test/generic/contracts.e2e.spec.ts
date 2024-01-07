@@ -10,69 +10,21 @@ import { oneNotifyTrue } from "@marlowe.io/language-examples";
 
 import console from "console";
 import { MINUTES } from "@marlowe.io/adapter/time";
-import { mkRuntimeLifecycle } from "@marlowe.io/runtime-lifecycle/generic";
 import {
-  TestConfiguration,
-  WalletTestAPI,
   logError,
   logInfo,
-  mkLucidWalletTest,
   readTestConfiguration,
 } from "@marlowe.io/testing-kit";
-import { mkFPTSRestClient } from "@marlowe.io/runtime-rest-client";
-import { Lucid } from "lucid-cardano";
+import { setUp } from "../setUp.js";
 
 global.console = console;
-
-const formatADA = (lovelaces: bigint): String =>
-  new Intl.NumberFormat().format(lovelaces / 1_000_000n).concat(" ₳");
-
-export async function setUp(testConfiguration: TestConfiguration) {
-  const deprecatedRestAPI = mkFPTSRestClient(
-    testConfiguration.runtime.url.toString()
-  );
-
-  const bankLucid = await Lucid.new(
-    testConfiguration.lucid.blockfrost,
-    testConfiguration.lucid.node.network
-  );
-
-  bankLucid.selectWalletFromSeed(testConfiguration.bank.seedPhrase.join(" "));
-
-  const bank = mkLucidWalletTest(bankLucid);
-
-  const bankBalance = await bank.getLovelaces();
-  const address = await bank.getChangeAddress();
-
-  logInfo(`Bank (${address})`);
-  logInfo(`${formatADA(bankBalance)}`);
-
-  expect(bankBalance).toBeGreaterThan(100_000_000);
-  await bank.waitRuntimeSyncingTillCurrentWalletTip(
-    testConfiguration.runtime.client
-  );
-  return {
-    bank,
-    runtime: {
-      client: testConfiguration.runtime.client,
-      mkLifecycle: (wallet: WalletTestAPI) =>
-        mkRuntimeLifecycle(
-          deprecatedRestAPI,
-          testConfiguration.runtime.client,
-          wallet
-        ),
-    },
-  };
-}
 
 describe.skip("Runtime Contract Lifecycle ", () => {
   it(
     "can create a Marlowe Contract ",
     async () => {
       try {
-        const { bank, runtime } = await readTestConfiguration().then((config) =>
-          setUp(config)
-        );
+        const { bank, runtime } = await readTestConfiguration().then(setUp({}));
         const runtimeLifecycle = runtime.mkLifecycle(bank);
         const [contractId, txIdContractCreated] =
           await runtimeLifecycle.contracts.createContract({
@@ -81,7 +33,6 @@ describe.skip("Runtime Contract Lifecycle ", () => {
           });
         await bank.waitConfirmation(txIdContractCreated);
         logInfo(`contractID created : ${contractId}`);
-        logInfo(`end :  ${formatADA(await bank.getLovelaces())}`);
       } catch (e) {
         const error = e as AxiosError;
         logError(JSON.stringify(error.response?.data));
@@ -96,7 +47,7 @@ describe.skip("Runtime Contract Lifecycle ", () => {
       async () => {
         try {
           const { bank, runtime } = await readTestConfiguration().then(
-            (config) => setUp(config)
+            setUp({})
           );
           const runtimeLifecycle = runtime.mkLifecycle(bank);
 

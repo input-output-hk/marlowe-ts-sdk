@@ -5,7 +5,7 @@ import { AtomicSwap } from "@marlowe.io/language-examples";
 import { datetoTimeout, adaValue } from "@marlowe.io/language-core-v1";
 import { Deposit } from "@marlowe.io/language-core-v1/next";
 
-import {} from "../provisionning.js";
+import {} from "../setUp.js";
 import console from "console";
 import { runtimeTokenToMarloweTokenValue } from "@marlowe.io/runtime-core";
 import { onlyByContractIds } from "@marlowe.io/runtime-lifecycle/api";

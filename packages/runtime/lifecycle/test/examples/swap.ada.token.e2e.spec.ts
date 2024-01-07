@@ -7,7 +7,7 @@ import {
   MarloweState,
 } from "@marlowe.io/language-core-v1";
 
-import { setUp } from "../provisionning.js";
+import { setUp } from "../setUp.js";
 import console from "console";
 import {
   ContractId,
@@ -32,28 +32,28 @@ describe("swap", () => {
     "can execute the nominal case",
     async () => {
       try {
-        const { bank, runtime, provisionResponse } =
-          await readTestConfiguration().then((config) =>
-            setUp(config, {
-              seller: [
-                generateSeedPhrase("24-words"),
-                {
+        const { bank, runtime, participants } =
+          await readTestConfiguration().then(
+            setUp({
+              seller: {
+                walletSeedPhrase: generateSeedPhrase("24-words"),
+                scheme: {
                   lovelacesToTransfer: 25_000_000n,
                   assetsToMint: { tokenA: 15n },
                 },
-              ],
-              buyer: [
-                generateSeedPhrase("24-words"),
-                {
+              },
+              buyer: {
+                walletSeedPhrase: generateSeedPhrase("24-words"),
+                scheme: {
                   lovelacesToTransfer: 25_000_000n,
                   assetsToMint: { tokenB: 10n },
                 },
-              ],
+              },
             })
           );
         await bank.waitRuntimeSyncingTillCurrentWalletTip(runtime.client);
         logInfo("Set up Complete");
-        const { seller, buyer } = provisionResponse;
+        const { seller, buyer } = participants;
         await logWalletInfo("seller", seller.wallet);
         await logWalletInfo("buyer", buyer.wallet);
 
