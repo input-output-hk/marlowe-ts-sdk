@@ -37,7 +37,8 @@ import { pipe } from "fp-ts/lib/function.js";
 import * as A from "fp-ts/lib/Array.js";
 import { RestClient } from "@marlowe.io/runtime-rest-client";
 import { MarloweJSON, MarloweJSONCodec } from "@marlowe.io/adapter/codec";
-import { logError, logInfo, logWarning } from "./logging.js";
+import { logError, logInfo, logWarning } from "../logging.js";
+import { SeedPhrase } from "../seedPhrase.js";
 
 type LucidExtendedDI = { lucid: Lucid; wallet: WalletAPI };
 export type TxHashSubmitted = string;
@@ -50,31 +51,30 @@ export const logWalletInfo = async (
   const lovelaces = await wallet.getLovelaces();
   const tokens = await wallet.getTokens();
   logInfo(`Wallet ${walletName}`);
-  logInfo(`\tAddress : ${address}`);
-  logInfo(`\tLovelaces : ${lovelaces}`);
-  logInfo(`\tTokens : ${MarloweJSON.stringify(tokens)}`);
+  logInfo(` - Address : ${address}`);
+  logInfo(` - Lovelaces : ${lovelaces}`);
+  logInfo(` - Tokens : ${MarloweJSON.stringify(tokens)}`);
 };
 
-const mkPolicyWithDeadlineAndOneAuthorizedSigner =
-  ({ lucid }: LucidExtendedDI) =>
-  async (deadline: Date): Promise<[Script, RuntimeCore.PolicyId]> => {
-    const { paymentCredential } = lucid.utils.getAddressDetails(
-      await lucid.wallet.address()
-    );
-    const json: NativeScript = {
-      type: "all",
-      scripts: [
-        {
-          type: "before",
-          slot: lucid.utils.unixTimeToSlot(deadline.valueOf()),
-        },
-        { type: "sig", keyHash: paymentCredential?.hash! },
-      ],
-    };
-    const script = lucid.utils.nativeScriptFromJson(json);
-    const policyId = lucid.utils.mintingPolicyToId(script);
-    return [script, RuntimeCore.policyId(policyId)];
+export type ProvisionRequest = {
+  [participant: string]: {
+    walletSeedPhrase: SeedPhrase;
+    scheme: ProvisionScheme;
   };
+};
+export type ProvisionResponse = {
+  [participant: string]: {
+    wallet: WalletTestAPI;
+    assetsProvisionned: RuntimeCore.Assets;
+  };
+};
+export type MintRequest = {
+  [assetName: RuntimeCore.AssetName]: RuntimeCore.AssetQuantity;
+};
+export type ProvisionScheme = {
+  lovelacesToTransfer: RuntimeCore.AssetQuantity;
+  assetsToMint: MintRequest;
+};
 
 export interface WalletTestAPI extends WalletAPI {
   provision(request: ProvisionRequest): Promise<ProvisionResponse>;
@@ -104,23 +104,6 @@ const toAssetsToMint = (assets: RuntimeCore.Assets): LucidAssets => {
   return lucidAssets;
 };
 
-export type MintRequest = {
-  [assetName: RuntimeCore.AssetName]: RuntimeCore.AssetQuantity;
-};
-export type ProvisionScheme = {
-  lovelacesToTransfer: RuntimeCore.AssetQuantity;
-  assetsToMint: MintRequest;
-};
-export type ProvisionRequest = {
-  [participant: string]: { wallet: WalletTestAPI; scheme: ProvisionScheme };
-};
-export type ProvisionResponse = {
-  [participant: string]: {
-    wallet: WalletTestAPI;
-    assetsProvisionned: RuntimeCore.Assets;
-  };
-};
-
 const isRuntimeChainMoreAdvancedThan =
   (client: RestClient, aSlotNo: bigint) => () =>
     client.getRuntimeStatus().then((status) => {
@@ -141,7 +124,7 @@ const waitRuntimeSyncingTillCurrentWalletTip =
   async (client: RestClient): Promise<void> => {
     const { lucid } = di;
     const currentLucidSlot = BigInt(lucid.currentSlot());
-    await waitForPredicate(
+    await waitForPredicatePromise(
       isRuntimeChainMoreAdvancedThan(client, currentLucidSlot)
     );
     return sleep(5);
@@ -151,7 +134,7 @@ function sleep(secondes: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, secondes * 1_000));
 }
 
-async function waitForPredicate(
+async function waitForPredicatePromise(
   predicate: () => Promise<boolean>,
   interval: number = 3_000
 ): Promise<void> {
@@ -167,7 +150,7 @@ async function waitForPredicate(
   await wait(interval);
 
   // Recursive call to continue checking the predicate
-  await waitForPredicate(predicate, interval);
+  await waitForPredicatePromise(predicate, interval);
 }
 
 const provision =
@@ -214,8 +197,9 @@ const provision =
       A.reduce(mergeAssets.empty, mergeAssets.concat)
     );
 
-    console.log("Distribution : ", MarloweJSON.stringify(distributions));
-    console.log("Assets to mint : ", MarloweJSON.stringify(assetsToMint));
+    // logInfo(`Distribution : ${MarloweJSON.stringify(distributions,null,4)}`);
+    // logInfo(`Assets to mint : ${MarloweJSON.stringify(assetsToMint,null,4)}`);
+
     const mintTx = lucid
       .newTx()
       .mintAssets(assetsToMint)
@@ -232,6 +216,8 @@ const provision =
               aDistribution[2],
               toAssetsToTransfer(aDistribution[3])
             )
+            .payToAddress(aDistribution[2], { lovelace: 5_000_000n })
+            .payToAddress(aDistribution[2], { lovelace: 5_000_000n })
             .payToAddress(aDistribution[2], { lovelace: 5_000_000n }) // add a Collateral
       )
     );
@@ -264,3 +250,24 @@ export function mkLucidWalletTest(lucidWallet: Lucid): WalletTestAPI {
     },
   };
 }
+
+const mkPolicyWithDeadlineAndOneAuthorizedSigner =
+  ({ lucid }: LucidExtendedDI) =>
+  async (deadline: Date): Promise<[Script, RuntimeCore.PolicyId]> => {
+    const { paymentCredential } = lucid.utils.getAddressDetails(
+      await lucid.wallet.address()
+    );
+    const json: NativeScript = {
+      type: "all",
+      scripts: [
+        {
+          type: "before",
+          slot: lucid.utils.unixTimeToSlot(deadline.valueOf()),
+        },
+        { type: "sig", keyHash: paymentCredential?.hash! },
+      ],
+    };
+    const script = lucid.utils.nativeScriptFromJson(json);
+    const policyId = lucid.utils.mintingPolicyToId(script);
+    return [script, RuntimeCore.policyId(policyId)];
+  };

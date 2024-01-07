@@ -1,11 +1,8 @@
 import { pipe } from "fp-ts/lib/function.js";
 import { addDays } from "date-fns";
 
-import { Deposit } from "@marlowe.io/language-core-v1/next";
-
 import {
   datetoTimeout,
-  adaValue,
   Input,
   MarloweState,
 } from "@marlowe.io/language-core-v1";
@@ -16,12 +13,7 @@ import {
   ContractId,
   runtimeTokenToMarloweTokenValue,
 } from "@marlowe.io/runtime-core";
-import { onlyByContractIds } from "@marlowe.io/runtime-lifecycle/api";
 import { MINUTES } from "@marlowe.io/adapter/time";
-import {
-  ContractDetails,
-  mintRole,
-} from "@marlowe.io/runtime-rest-client/contract";
 import { AtomicSwap } from "@marlowe.io/language-examples";
 import { RestClient } from "@marlowe.io/runtime-rest-client";
 import {
@@ -92,6 +84,7 @@ describe("swap", () => {
           .mkLifecycle(seller.wallet)
           .contracts.createContract({
             contract: swapContract,
+            minimumLovelaceUTxODeposit: 3_000_000,
             roles: {
               [scheme.ask.buyer.role_token]: sellerAddress,
             },
@@ -102,9 +95,9 @@ describe("swap", () => {
           runtime.client
         );
       } catch (e) {
+        console.log(`catched : ${JSON.stringify(e)}`);
         const error = e as AxiosError;
         console.log(`catched : ${JSON.stringify(error.response?.data)}`);
-        console.log(`catched : ${JSON.stringify(error)}`);
         expect(true).toBe(false);
       }
       // const inputHistory = await getInputHistory(restClient, contractId);

@@ -1,5 +1,5 @@
-export const logInfo = (message: string) => console.log(`\t## - ${message}`);
+export const logInfo = (message: string) => console.log(`## ${message}`);
 export const logWarning = (message: string) =>
-  console.log(`\t## << ${message} >>`);
+  console.log(`## << ${message} >>`);
 export const logError = (message: string) =>
-  console.log(`\t## !! [${message}] !!`);
+  console.log(`## !! [${message}] !!`);

@@ -7,6 +7,7 @@ import {
 
 import { Lucid, Blockfrost } from "lucid-cardano";
 import {
+  logWalletInfo,
   mkLucidWalletTest,
   ProvisionRequest,
   ProvisionResponse,
@@ -19,9 +20,6 @@ import { Assets } from "@marlowe.io/runtime-core";
 import { SeedPhrase } from "@marlowe.io/testing-kit";
 import { TestConfiguration, logInfo } from "@marlowe.io/testing-kit";
 
-const formatADA = (lovelaces: bigint): String =>
-  new Intl.NumberFormat().format(lovelaces / 1_000_000n).concat(" ₳");
-
 export type SetUpRequest = {
   [participant: string]: [SeedPhrase, ProvisionScheme];
 };
@@ -31,7 +29,7 @@ export type Participants = {
 
 export async function setUp(
   testConfiguration: TestConfiguration,
-  request: SetUpRequest
+  request: ProvisionRequest
 ) {
   const deprecatedRestAPI = mkFPTSRestClient(
     testConfiguration.runtime.url.toString()
@@ -46,12 +44,9 @@ export async function setUp(
 
   const bank = mkLucidWalletTest(bankLucid);
 
-  const bankBalance = await bank.getLovelaces();
-  const address = await bank.getChangeAddress();
-  // Check Banks treasury
-  logInfo(`Bank (${address})`);
-  logInfo(`  - ${formatADA(bankBalance)}`);
+  await logWalletInfo("bank", bank);
 
+  const bankBalance = await bank.getLovelaces();
   expect(bankBalance).toBeGreaterThan(100_000_000);
 
   let provisionRequest: ProvisionRequest = {};
@@ -69,10 +64,14 @@ export async function setUp(
     })
   );
 
-  logInfo(`Provisionning`);
-  logInfo(MarloweJSON.stringify(provisionRequest));
+  logInfo(
+    `Provisionning Request : ${MarloweJSON.stringify(
+      provisionRequest,
+      null,
+      4
+    )}`
+  );
   const provisionResponse = await bank.provision(provisionRequest);
-
   return {
     bank,
     runtime: {
