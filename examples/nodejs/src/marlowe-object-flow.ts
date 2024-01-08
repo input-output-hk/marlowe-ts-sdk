@@ -36,34 +36,46 @@ import { SingleInputTx } from "../../../packages/language/core/v1/dist/esm/trans
 import * as t from "io-ts/lib/index.js"
 import { deepEqual } from "@marlowe.io/adapter/deep-equal";
 
-const args = arg({
-  "--help": Boolean,
-  "--config": String,
-  "-c": "--config",
-});
-
-if (args["--help"]) {
-  printHelp(0);
-}
+// When this script is called, start with main.
 main();
 
-// #region Interactive menu
-function printHelp(exitStatus: number): never {
-  console.log(
-    "Usage: npm run marlowe-object-flow -- --config <config-file>"
-  );
-  console.log("");
-  console.log("Example:");
-  console.log(
-    "  npm run marlowe-object-flow -- --config alice.config"
-  );
-  console.log("Options:");
-  console.log("  --help: Print this message");
-  console.log("  --config | -c: The path to the config file [default .config.json]");
-  process.exit(exitStatus);
+// #region Command line arguments
+function parseCli() {
+  const args = arg({
+    "--help": Boolean,
+    "--config": String,
+    "-c": "--config",
+  });
+
+  if (args["--help"]) {
+    printHelp(0);
+  }
+  function printHelp(exitStatus: number): never {
+    console.log(
+      "Usage: npm run marlowe-object-flow -- --config <config-file>"
+    );
+    console.log("");
+    console.log("Example:");
+    console.log(
+      "  npm run marlowe-object-flow -- --config alice.config"
+    );
+    console.log("Options:");
+    console.log("  --help: Print this message");
+    console.log("  --config | -c: The path to the config file [default .config.json]");
+    process.exit(exitStatus);
+  }
+  return args;
 }
 
+// #endregion
 
+
+// #region Interactive menu
+
+/**
+ * Small command line utility that prints a confirmation message and writes dots until the transaction is confirmed
+ * NOTE: If we make more node.js cli tools, we should move this to a common place
+ */
 async function waitIndicator(wallet: WalletAPI, txId: TxId) {
   process.stdout.write("Waiting for the transaction to be confirmed...");
   let done = false;
@@ -83,6 +95,10 @@ async function waitIndicator(wallet: WalletAPI, txId: TxId) {
   process.stdout.write("\n");
 }
 
+/**
+ * This is an Inquirer.js validator for bech32 addresses
+ * @returns true if the address is valid, or a string with the error message otherwise
+ */
 function bech32Validator(value: string) {
   try {
     C.Address.from_bech32(value);
@@ -92,6 +108,10 @@ function bech32Validator(value: string) {
   }
 }
 
+/**
+ * This is an Inquirer.js validator for positive bigints
+ * @returns true if the value is a positive bigint, or a string with the error message otherwise
+ */
 function positiveBigIntValidator(value: string) {
   try {
     if (BigInt(value) > 0) {
@@ -104,6 +124,10 @@ function positiveBigIntValidator(value: string) {
   }
 }
 
+/**
+ * This is an Inquirer.js validator for dates in the future
+ * @returns true if the value is a date in the future, or a string with the error message otherwise
+ */
 function dateInFutureValidator(value: string) {
   const d = new Date(value);
   if (isNaN(d.getTime())) {
@@ -115,6 +139,11 @@ function dateInFutureValidator(value: string) {
   return true;
 }
 
+/**
+ * This is an Inquirer.js flow to create a contract
+ * @param lifecycle An instance of the RuntimeLifecycle
+ * @param rewardAddress An optional reward address to stake the contract rewards
+ */
 async function createContractMenu(lifecycle: RuntimeLifecycle, rewardAddress?: StakeAddressBech32) {
   const payee = await input({
     message: "Enter the payee address",
@@ -163,20 +192,33 @@ async function createContractMenu(lifecycle: RuntimeLifecycle, rewardAddress?: S
 
   await waitIndicator(lifecycle.wallet, txId);
 
-  await contractMenu(lifecycle, scheme, contractId);
+  return contractMenu(lifecycle, scheme, contractId);
 }
 
+/**
+ * This is an Inquirer.js flow to load an existing contract
+ * @param lifecycle
+ * @returns
+ */
 async function loadContractMenu(lifecycle: RuntimeLifecycle) {
+  // First we ask the user for a contract id
   const cidStr = await input({
     message: "Enter the contractId",
   });
   const cid = contractId(cidStr);
 
-  const contractDetails = await lifecycle.restClient.getContractById(
-    cid
-  );
+  // Then we make sure that contract id is an instance of our delayed payment contract
+  const scheme = await validateExistingContract(lifecycle, cid);
+  if (scheme === "InvalidTags") {
+    console.log("Invalid contract, it does not have the expected tags");
+    return;
+  }
+  if (scheme === "InvalidContract") {
+    console.log("Invalid contract, it does not have the expected contract source");
+    return;
+  }
 
-  const scheme = extractSchemeFromTags(contractDetails.tags);
+  // If it is, we print the contract details and go to the contract menu
   console.log("Contract details:");
   console.log(`  * Pay from: ${scheme.payFrom.address}`);
   console.log(`  * Pay to: ${scheme.payTo.address}`);
@@ -184,36 +226,29 @@ async function loadContractMenu(lifecycle: RuntimeLifecycle) {
   console.log(`  * Deposit deadline: ${scheme.depositDeadline}`);
   console.log(`  * Release deadline: ${scheme.releaseDeadline}`);
 
-  const contractBundle = mkDelayPayment(scheme);
-  const {contractSourceId} = await lifecycle.restClient.createContractSources(
-    contractBundle.main,
-    contractBundle.bundle
-  );
-  const initialContract = await lifecycle.restClient.getContractSourceById({ contractSourceId} );
-
-  if (!deepEqual(initialContract, contractDetails.initialContract)) {
-    throw new Error("The contract on chain does not match the expected contract for the scheme");
-  };
-
   return contractMenu(lifecycle, scheme, cid);
 }
 
+/**
+ * This is an Inquirer.js flow to interact with a contract
+ */
 async function contractMenu(
   lifecycle: RuntimeLifecycle,
   scheme: DelayPaymentScheme,
   contractId: ContractId
 ): Promise<void> {
+  // Get and print the contract logical state.
   const inputHistory = await lifecycle.contracts.getInputHistory(contractId);
-
   const contractState = getState(scheme, new Date(), inputHistory);
   printState(contractState, scheme);
+
   if (contractState.type === "Closed") return;
 
+  // See what actions are applicable to the current contract state
   const applicableActions = await getApplicableActions(
     lifecycle.restClient,
     contractId
   );
-
   const myActionsFilter = await mkApplicableActionsFilter(lifecycle.wallet);
   const myActions = applicableActions.filter(myActionsFilter)
 
@@ -242,22 +277,14 @@ async function contractMenu(
     message: "Contract menu",
     choices,
   });
-  let txId
   switch (action.actionType) {
     case "check-state":
       return contractMenu(lifecycle, scheme, contractId)
     case "advance":
-      if (!action.results) throw new Error("This should not happen")
-      console.log("Advancing contract");
-      txId = await lifecycle.contracts.applyInputs(contractId, {inputs: action.results.inputs})
-      console.log(`Input applied with txId ${txId}`)
-      await waitIndicator(lifecycle.wallet, txId);
-      return contractMenu(lifecycle, scheme, contractId)
     case "deposit":
-      // TODO: Remove duplication
       if (!action.results) throw new Error("This should not happen")
-      console.log("Making deposit");
-      txId = await lifecycle.contracts.applyInputs(contractId, {inputs: action.results.inputs})
+      console.log("Applying input");
+      const txId = await lifecycle.contracts.applyInputs(contractId, {inputs: action.results.inputs})
       console.log(`Input applied with txId ${txId}`)
       await waitIndicator(lifecycle.wallet, txId);
       return contractMenu(lifecycle, scheme, contractId)
@@ -478,7 +505,7 @@ const mkDelayPaymentTags = (schema: DelayPaymentScheme) => {
   return tags;
 };
 
-const extractSchemeFromTags = (tags: unknown): DelayPaymentScheme => {
+const extractSchemeFromTags = (tags: unknown): DelayPaymentScheme | undefined => {
   const tagsGuard = t.type({
     "DELAY_PYMNT-1-from-0": t.string,
     "DELAY_PYMNT-1-from-1": t.string,
@@ -490,7 +517,7 @@ const extractSchemeFromTags = (tags: unknown): DelayPaymentScheme => {
   });
 
   if (!tagsGuard.is(tags)) {
-    throw new Error("The contract does not have the expected tags");
+    return;
   }
 
   return {
@@ -534,7 +561,55 @@ async function createContract(
   //----------------
 }
 
+type ValidationResults = 'InvalidTags' | 'InvalidContract' | DelayPaymentScheme
+
+/**
+ * This function checks if the contract with the given id is an instance of the delay payment contract
+ * @param lifecycle
+ * @param contractId
+ * @returns
+ */
+async function validateExistingContract(
+  lifecycle: RuntimeLifecycle,
+  contractId: ContractId,
+): Promise<ValidationResults> {
+  // First we try to fetch the contract details and the required tags
+  const contractDetails = await lifecycle.restClient.getContractById(
+    contractId
+  );
+
+  const scheme = extractSchemeFromTags(contractDetails.tags);
+
+  if (!scheme) {
+    return 'InvalidTags';
+  }
+
+  // If the contract seems to be an instance of the contract we want (meanin, we were able
+  // to retrieve the contract scheme) we check that the actual initial contract has the same
+  // sources.
+  // This has 2 purposes:
+  //   1. Make sure we are interacting with the expected contract
+  //   2. Share the same sources between different Runtimes.
+  //      When a contract source is uploaded to the runtime, it merkleizes the source code,
+  //      but it doesn't share those sources with other runtime instances. One option would be
+  //      to download the sources from the initial runtime and share those with another runtime.
+  //      Or this option which doesn't require runtime to runtime communication, and just requires
+  //      the dapp to be able to recreate the same sources.
+  const contractBundle = mkDelayPayment(scheme);
+  const {contractSourceId} = await lifecycle.restClient.createContractSources(
+    contractBundle.main,
+    contractBundle.bundle
+  );
+  const initialContract = await lifecycle.restClient.getContractSourceById({ contractSourceId} );
+
+  if (!deepEqual(initialContract, contractDetails.initialContract)) {
+    return "InvalidContract";
+  };
+  return scheme;
+}
+
 async function main() {
+  const args = parseCli();
   const config = await readConfig(args["--config"]);
   const lucid = await Lucid.new(
     new Blockfrost(config.blockfrostUrl, config.blockfrostProjectId),
