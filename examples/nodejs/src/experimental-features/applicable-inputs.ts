@@ -318,7 +318,6 @@ const accumulatorFromNotify = (action: CanNotify) => {
     notifies: action,
   };
 };
-// TODO: Move to adapter
 
 function mergeBounds(bounds: Bound[]): Bound[] {
   const mergedBounds: Bound[] = [];

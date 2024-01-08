@@ -13,7 +13,7 @@ import { Action, ActionGuard } from "./actions.js";
 import { pipe } from "fp-ts/lib/function.js";
 import getUnixTime from "date-fns/getUnixTime/index.js";
 import { BuiltinByteString } from "./inputs.js";
-
+import * as Big from "@marlowe.io/adapter/bigint"
 /**
  * Search [[lower-name-builders]]
  * @hidden
@@ -331,8 +331,6 @@ export function matchContract<T>(matcher: Partial<ContractMatcher<T>>) {
     }
   };
 }
-// Copied from semantic module, maybe we want to move this to a common place? An adaptor bigint maybe?
-const minBigint = (a: bigint, b: bigint): bigint => (a < b ? a : b);
 
 /**
  * This function calculates the next timeout of a contract after a given minTime.
@@ -349,7 +347,7 @@ export function getNextTimeout(contract: Contract, minTime: Timeout): Timeout | 
       const thenTimeout = getNextTimeout(ifContract.then, minTime);
       const elseTimeout = getNextTimeout(ifContract.else, minTime);
       return thenTimeout && elseTimeout
-        ? minBigint(thenTimeout, elseTimeout)
+        ? Big.min(thenTimeout, elseTimeout)
         : thenTimeout || elseTimeout;
     },
     when: (whenContract) => {
