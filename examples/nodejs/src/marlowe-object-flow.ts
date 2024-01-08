@@ -10,13 +10,13 @@ import { Lucid, Blockfrost, C } from "lucid-cardano";
 import { readConfig } from "./config.js";
 import {
   datetoTimeout,
-  getNextTimeout,
-  Timeout,
 } from "@marlowe.io/language-core-v1";
 import {
   contractId,
   ContractId,
   contractIdToTxId,
+  stakeAddressBech32,
+  StakeAddressBech32,
   Tags,
   transactionWitnessSetTextEnvelope,
   TxId,
@@ -25,20 +25,17 @@ import { Address } from "@marlowe.io/language-core-v1";
 import { Bundle, Label, lovelace } from "@marlowe.io/marlowe-object";
 import { input, select } from "@inquirer/prompts";
 import { RuntimeLifecycle } from "@marlowe.io/runtime-lifecycle/api";
-import { MarloweJSON } from "@marlowe.io/adapter/codec";
-import { ContractDetails } from "@marlowe.io/runtime-rest-client/contract";
 import {
-  ApplicableAction,
   AppliedActionResult,
   getApplicableActions,
   mkApplicableActionsFilter,
 } from "./experimental-features/applicable-inputs.js";
 import arg from "arg";
-import { POSIXTime, posixTimeToIso8601 } from "@marlowe.io/adapter/time";
 import { splitAddress } from "./experimental-features/metadata.js";
 import { SingleInputTx } from "../../../packages/language/core/v1/dist/esm/transaction.js";
 import * as t from "io-ts/lib/index.js"
 import { deepEqual } from "@marlowe.io/adapter/deep-equal";
+
 const args = arg({
   "--help": Boolean,
   "--config": String,
@@ -94,6 +91,7 @@ function bech32Validator(value: string) {
     return "Invalid address";
   }
 }
+
 function positiveBigIntValidator(value: string) {
   try {
     if (BigInt(value) > 0) {
@@ -117,7 +115,7 @@ function dateInFutureValidator(value: string) {
   return true;
 }
 
-async function createContractMenu(lifecycle: RuntimeLifecycle) {
+async function createContractMenu(lifecycle: RuntimeLifecycle, rewardAddress?: StakeAddressBech32) {
   const payee = await input({
     message: "Enter the payee address",
     validate: bech32Validator,
@@ -143,11 +141,14 @@ async function createContractMenu(lifecycle: RuntimeLifecycle) {
 
   const walletAddress = await lifecycle.wallet.getChangeAddress();
   console.log(
-    `Making a delayed payment from  ${walletAddress} to ${payee} for ${amount} lovelaces`
+    `Making a delayed payment:\n * from  ${walletAddress}\n * to ${payee}\n * for ${amount} lovelaces\n`
   );
   console.log(
-    `The payment must be deposited by ${depositDeadline} and will be released to ${payee} by ${releaseDeadline}`
+    `The payment must be deposited before ${depositDeadline} and can be released to the payee after ${releaseDeadline}`
   );
+  if (rewardAddress) {
+    console.log(`In the meantime, the contract will stake rewards to ${rewardAddress}`);
+  }
 
   const scheme = {
     payFrom: { address: walletAddress },
@@ -156,7 +157,7 @@ async function createContractMenu(lifecycle: RuntimeLifecycle) {
     depositDeadline,
     releaseDeadline,
   };
-  const [contractId, txId] = await createContract(lifecycle, scheme);
+  const [contractId, txId] = await createContract(lifecycle, scheme, rewardAddress);
 
   console.log(`Contract created with id ${contractId}`);
 
@@ -265,9 +266,11 @@ async function contractMenu(
   }
 }
 
-async function mainLoop(lifecycle: RuntimeLifecycle) {
+async function mainLoop(lifecycle: RuntimeLifecycle, rewardAddress?: StakeAddressBech32) {
   try {
     while (true) {
+      const address = await lifecycle.wallet.getChangeAddress();
+      console.log("Wallet address:", address);
       const action = await select({
         message: "Main menu",
         choices: [
@@ -278,7 +281,7 @@ async function mainLoop(lifecycle: RuntimeLifecycle) {
       });
       switch (action) {
         case "create":
-          await createContractMenu(lifecycle);
+          await createContractMenu(lifecycle, rewardAddress);
           break;
         case "load":
           await loadContractMenu(lifecycle);
@@ -501,7 +504,9 @@ const extractSchemeFromTags = (tags: unknown): DelayPaymentScheme => {
 
 async function createContract(
   lifecycle: RuntimeLifecycle,
-  schema: DelayPaymentScheme
+  schema: DelayPaymentScheme,
+  rewardAddress?: StakeAddressBech32
+
 ): Promise<[ContractId, TxId]> {
   const contractBundle = mkDelayPayment(schema);
   const tags = mkDelayPaymentTags(schema);
@@ -515,6 +520,7 @@ async function createContract(
     sourceId: contractSources.contractSourceId,
     tags,
     changeAddress: walletAddress,
+    stakeAddress: rewardAddress,
     minimumLovelaceUTxODeposit: 3_000_000,
     version: "v1",
   });
@@ -535,7 +541,8 @@ async function main() {
     config.network
   );
   lucid.selectWalletFromSeed(config.seedPhrase);
-
+  const rewardAddressStr = await lucid.wallet.rewardAddress();
+  const rewardAddress = rewardAddressStr ? stakeAddressBech32(rewardAddressStr) : undefined;
   const runtimeURL = config.runtimeURL;
 
   const wallet = mkLucidWallet(lucid);
@@ -544,6 +551,6 @@ async function main() {
     runtimeURL,
     wallet,
   });
-  await mainLoop(lifecycle);
+  await mainLoop(lifecycle, rewardAddress);
 }
 
