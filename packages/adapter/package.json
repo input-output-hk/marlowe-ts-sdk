@@ -66,7 +66,13 @@
       "import": "./dist/esm/deep-equal.js",
       "require": "./dist/bundled/cjs/deep-equal.cjs",
       "types": "./dist/esm/deep-equal.d.ts"
+    },
+    "./bigint": {
+      "import": "./dist/esm/bigint.js",
+      "require": "./dist/bundled/cjs/bigint.cjs",
+      "types": "./dist/esm/bigint.d.ts"
     }
+
   },
   "dependencies": {
     "date-fns": "2.29.3",

@@ -4,6 +4,8 @@ const importMap = {
       "https://cdn.jsdelivr.net/npm/@marlowe.io/adapter@0.3.0-beta-rc1/dist/bundled/esm/adapter.js",
     "@marlowe.io/adapter/assoc-map":
       "https://cdn.jsdelivr.net/npm/@marlowe.io/adapter@0.3.0-beta-rc1/dist/bundled/esm/assoc-map.js",
+    "@marlowe.io/adapter/bigint":
+      "https://cdn.jsdelivr.net/npm/@marlowe.io/adapter@0.3.0-beta-rc1/dist/bundled/esm/bigint.js",
     "@marlowe.io/adapter/codec":
       "https://cdn.jsdelivr.net/npm/@marlowe.io/adapter@0.3.0-beta-rc1/dist/bundled/esm/codec.js",
     "@marlowe.io/adapter/deep-equal":

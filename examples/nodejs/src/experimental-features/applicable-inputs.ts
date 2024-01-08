@@ -40,6 +40,7 @@ import {
 import { AddressBech32, ContractId, PolicyId } from "@marlowe.io/runtime-core";
 import { RestClient } from "@marlowe.io/runtime-rest-client";
 import { WalletAPI } from "@marlowe.io/wallet";
+import * as Big from "@marlowe.io/adapter/bigint";
 import { Monoid } from "fp-ts/lib/Monoid.js";
 import * as R from "fp-ts/lib/Record.js";
 type ActionApplicant = Party | "anybody";
@@ -318,8 +319,6 @@ const accumulatorFromNotify = (action: CanNotify) => {
   };
 };
 // TODO: Move to adapter
-const minBigint = (a: bigint, b: bigint): bigint => (a < b ? a : b);
-const maxBigint = (a: bigint, b: bigint): bigint => (a > b ? a : b);
 
 function mergeBounds(bounds: Bound[]): Bound[] {
   const mergedBounds: Bound[] = [];
@@ -333,7 +332,7 @@ function mergeBounds(bounds: Bound[]): Bound[] {
       currentBound = {...bound};
     } else {
       if (bound.from <= currentBound.to) {
-        currentBound.to = maxBigint(currentBound.to, bound.to);
+        currentBound.to = Big.max(currentBound.to, bound.to);
       } else {
         mergedBounds.push(currentBound);
         currentBound = {...bound};

@@ -87,6 +87,7 @@ import {
 } from "./value-and-observation.js";
 import * as G from "./guards.js";
 import { POSIXTime } from "@marlowe.io/adapter/time";
+import * as Big from "@marlowe.io/adapter/bigint";
 
 export {
   Payment,
@@ -383,10 +384,6 @@ function giveMoney(
   ];
 }
 
-// TODO: Move to adapter
-const minBigint = (a: bigint, b: bigint): bigint => (a < b ? a : b);
-const maxBigint = (a: bigint, b: bigint): bigint => (a > b ? a : b);
-
 /**
  * @hidden
  */
@@ -433,7 +430,7 @@ function reduceContractStep(
         });
       }
       const balance = moneyInAccount(from_account, token, state.accounts);
-      const paidAmount = minBigint(amountToPay, balance);
+      const paidAmount = Big.min(amountToPay, balance);
       const newBalance = balance - paidAmount;
       const newAccs = updateMoneyInAccount(
         from_account,
@@ -929,7 +926,7 @@ function fixInterval(
     return invalidInterval(interval.from, interval.to);
   if (interval.to < state.minTime)
     return intervalInPastError(interval.from, interval.to, state.minTime);
-  const newFrom = maxBigint(interval.from, state.minTime);
+  const newFrom = Big.max(interval.from, state.minTime);
   const environment = { timeInterval: { from: newFrom, to: interval.to } };
   return intervalTrimmed({
     environment,
