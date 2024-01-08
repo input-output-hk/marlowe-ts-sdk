@@ -50,6 +50,7 @@ export {
 } from "./contract.js";
 export {
   ObjectType,
+  ContractBundle,
   Bundle,
   ObjectParty,
   ObjectValue,

@@ -84,6 +84,7 @@ export {
 } from "./contract.js";
 export {
   BundleGuard as Bundle,
+  ContractBundleGuard as ContractBundle,
   ObjectPartyGuard as ObjectParty,
   ObjectValueGuard as ObjectValue,
   ObjectObservationGuard as ObjectObservation,

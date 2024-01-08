@@ -167,3 +167,20 @@ export type Bundle = ObjectType[];
  * @category Object
  */
 export const BundleGuard = t.array(ObjectTypeGuard);
+
+/**
+ * A contract bundle is just a {@link Bundle} with a main entrypoint.
+ * @category Object
+ */
+export interface ContractBundle {
+  main: Label;
+  bundle: Bundle;
+}
+
+/**
+ * {@link !io-ts-usage | Dynamic type guard} for the {@link ContractBundle | contract bundle type}.
+ */
+export const ContractBundleGuard: t.Type<ContractBundle> = t.type({
+  main: LabelGuard,
+  bundle: BundleGuard,
+});

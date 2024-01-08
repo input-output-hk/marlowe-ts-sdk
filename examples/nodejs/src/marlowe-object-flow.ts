@@ -8,9 +8,7 @@ import { mkLucidWallet, WalletAPI } from "@marlowe.io/wallet";
 import { mkRuntimeLifecycle } from "@marlowe.io/runtime-lifecycle";
 import { Lucid, Blockfrost, C } from "lucid-cardano";
 import { readConfig } from "./config.js";
-import {
-  datetoTimeout,
-} from "@marlowe.io/language-core-v1";
+import { datetoTimeout } from "@marlowe.io/language-core-v1";
 import {
   contractId,
   ContractId,
@@ -22,7 +20,7 @@ import {
   TxId,
 } from "@marlowe.io/runtime-core";
 import { Address } from "@marlowe.io/language-core-v1";
-import { Bundle, Label, lovelace } from "@marlowe.io/marlowe-object";
+import { ContractBundle, lovelace } from "@marlowe.io/marlowe-object";
 import { input, select } from "@inquirer/prompts";
 import { RuntimeLifecycle } from "@marlowe.io/runtime-lifecycle/api";
 import {
@@ -33,7 +31,7 @@ import {
 import arg from "arg";
 import { splitAddress } from "./experimental-features/metadata.js";
 import { SingleInputTx } from "../../../packages/language/core/v1/dist/esm/transaction.js";
-import * as t from "io-ts/lib/index.js"
+import * as t from "io-ts/lib/index.js";
 import { deepEqual } from "@marlowe.io/adapter/deep-equal";
 
 // When this script is called, start with main.
@@ -51,24 +49,21 @@ function parseCli() {
     printHelp(0);
   }
   function printHelp(exitStatus: number): never {
-    console.log(
-      "Usage: npm run marlowe-object-flow -- --config <config-file>"
-    );
+    console.log("Usage: npm run marlowe-object-flow -- --config <config-file>");
     console.log("");
     console.log("Example:");
-    console.log(
-      "  npm run marlowe-object-flow -- --config alice.config"
-    );
+    console.log("  npm run marlowe-object-flow -- --config alice.config");
     console.log("Options:");
     console.log("  --help: Print this message");
-    console.log("  --config | -c: The path to the config file [default .config.json]");
+    console.log(
+      "  --config | -c: The path to the config file [default .config.json]"
+    );
     process.exit(exitStatus);
   }
   return args;
 }
 
 // #endregion
-
 
 // #region Interactive menu
 
@@ -144,7 +139,10 @@ function dateInFutureValidator(value: string) {
  * @param lifecycle An instance of the RuntimeLifecycle
  * @param rewardAddress An optional reward address to stake the contract rewards
  */
-async function createContractMenu(lifecycle: RuntimeLifecycle, rewardAddress?: StakeAddressBech32) {
+async function createContractMenu(
+  lifecycle: RuntimeLifecycle,
+  rewardAddress?: StakeAddressBech32
+) {
   const payee = await input({
     message: "Enter the payee address",
     validate: bech32Validator,
@@ -176,7 +174,9 @@ async function createContractMenu(lifecycle: RuntimeLifecycle, rewardAddress?: S
     `The payment must be deposited before ${depositDeadline} and can be released to the payee after ${releaseDeadline}`
   );
   if (rewardAddress) {
-    console.log(`In the meantime, the contract will stake rewards to ${rewardAddress}`);
+    console.log(
+      `In the meantime, the contract will stake rewards to ${rewardAddress}`
+    );
   }
 
   const scheme = {
@@ -186,7 +186,11 @@ async function createContractMenu(lifecycle: RuntimeLifecycle, rewardAddress?: S
     depositDeadline,
     releaseDeadline,
   };
-  const [contractId, txId] = await createContract(lifecycle, scheme, rewardAddress);
+  const [contractId, txId] = await createContract(
+    lifecycle,
+    scheme,
+    rewardAddress
+  );
 
   console.log(`Contract created with id ${contractId}`);
 
@@ -214,7 +218,9 @@ async function loadContractMenu(lifecycle: RuntimeLifecycle) {
     return;
   }
   if (scheme === "InvalidContract") {
-    console.log("Invalid contract, it does not have the expected contract source");
+    console.log(
+      "Invalid contract, it does not have the expected contract source"
+    );
     return;
   }
 
@@ -250,28 +256,42 @@ async function contractMenu(
     contractId
   );
   const myActionsFilter = await mkApplicableActionsFilter(lifecycle.wallet);
-  const myActions = applicableActions.filter(myActionsFilter)
+  const myActions = applicableActions.filter(myActionsFilter);
 
-  const choices: Array<{name: string, value: {actionType: string, results?: AppliedActionResult}}>  = [
-    { name: "Re-check contract state", value: {actionType: "check-state", results: undefined} },
-    ...myActions.map(action => {
+  const choices: Array<{
+    name: string;
+    value: { actionType: string; results?: AppliedActionResult };
+  }> = [
+    {
+      name: "Re-check contract state",
+      value: { actionType: "check-state", results: undefined },
+    },
+    ...myActions.map((action) => {
       switch (action.type) {
         case "Advance":
-
           return {
             name: "Close contract",
-            description: contractState.type == "PaymentMissed" ? "The payer will receive minUTXO" : "The payer will receive minUTXO and the payee will receive the payment",
-            value: {actionType: "advance", results: action.applyAction() }
-            }
+            description:
+              contractState.type == "PaymentMissed"
+                ? "The payer will receive minUTXO"
+                : "The payer will receive minUTXO and the payee will receive the payment",
+            value: { actionType: "advance", results: action.applyAction() },
+          };
 
         case "Deposit":
-          return { name: `Deposit ${action.deposit.deposits} lovelaces`, value: {actionType: "deposit", results: action.applyAction()} }
+          return {
+            name: `Deposit ${action.deposit.deposits} lovelaces`,
+            value: { actionType: "deposit", results: action.applyAction() },
+          };
         default:
-          throw new Error("Unexpected action type")
+          throw new Error("Unexpected action type");
       }
     }),
-    { name: "Return to main menu", value: {actionType: "return", results: undefined} },
-  ]
+    {
+      name: "Return to main menu",
+      value: { actionType: "return", results: undefined },
+    },
+  ];
 
   const action = await select({
     message: "Contract menu",
@@ -279,21 +299,26 @@ async function contractMenu(
   });
   switch (action.actionType) {
     case "check-state":
-      return contractMenu(lifecycle, scheme, contractId)
+      return contractMenu(lifecycle, scheme, contractId);
     case "advance":
     case "deposit":
-      if (!action.results) throw new Error("This should not happen")
+      if (!action.results) throw new Error("This should not happen");
       console.log("Applying input");
-      const txId = await lifecycle.contracts.applyInputs(contractId, {inputs: action.results.inputs})
-      console.log(`Input applied with txId ${txId}`)
+      const txId = await lifecycle.contracts.applyInputs(contractId, {
+        inputs: action.results.inputs,
+      });
+      console.log(`Input applied with txId ${txId}`);
       await waitIndicator(lifecycle.wallet, txId);
-      return contractMenu(lifecycle, scheme, contractId)
+      return contractMenu(lifecycle, scheme, contractId);
     case "return":
       return;
   }
 }
 
-async function mainLoop(lifecycle: RuntimeLifecycle, rewardAddress?: StakeAddressBech32) {
+async function mainLoop(
+  lifecycle: RuntimeLifecycle,
+  rewardAddress?: StakeAddressBech32
+) {
   try {
     while (true) {
       const address = await lifecycle.wallet.getChangeAddress();
@@ -409,14 +434,14 @@ type DelayPaymentState =
  */
 type InitialState = {
   type: "InitialState";
-}
+};
 
 /**
  * After the payment is deposited, the contract is waiting for the payment to be released
  */
 type PaymentDeposited = {
   type: "PaymentDeposited";
-}
+};
 
 /**
  * If the payment is not deposited by the deadline, the contract can be closed.
@@ -425,30 +450,36 @@ type PaymentDeposited = {
  */
 type PaymentMissed = {
   type: "PaymentMissed";
-}
+};
 
 /**
  * After the release deadline, the payment is still in the contract, and it is ready to be released.
  */
 type PaymentReady = {
   type: "PaymentReady";
-}
+};
 
 type Closed = {
   type: "Closed";
   result: "Missed deposit" | "Payment released";
-}
+};
 
 function printState(state: DelayPaymentState, scheme: DelayPaymentScheme) {
   switch (state.type) {
     case "InitialState":
-      console.log(`Waiting ${scheme.payFrom.address} to deposit ${scheme.amount}`);
+      console.log(
+        `Waiting ${scheme.payFrom.address} to deposit ${scheme.amount}`
+      );
       break;
     case "PaymentDeposited":
-      console.log(`Payment deposited, waiting until ${scheme.releaseDeadline} to be able to release the payment`);
+      console.log(
+        `Payment deposited, waiting until ${scheme.releaseDeadline} to be able to release the payment`
+      );
       break;
     case "PaymentMissed":
-      console.log(`Payment missed on ${scheme.depositDeadline}, contract can be closed to retrieve minUTXO`);
+      console.log(
+        `Payment missed on ${scheme.depositDeadline}, contract can be closed to retrieve minUTXO`
+      );
       break;
     case "PaymentReady":
       console.log(`Payment ready to be released`);
@@ -459,7 +490,11 @@ function printState(state: DelayPaymentState, scheme: DelayPaymentScheme) {
   }
 }
 
-function getState(scheme: DelayPaymentScheme, currentTime: Date, history: SingleInputTx[]): DelayPaymentState {
+function getState(
+  scheme: DelayPaymentScheme,
+  currentTime: Date,
+  history: SingleInputTx[]
+): DelayPaymentState {
   if (history.length === 0) {
     if (currentTime < scheme.depositDeadline) {
       return { type: "InitialState" };
@@ -485,12 +520,6 @@ function getState(scheme: DelayPaymentScheme, currentTime: Date, history: Single
 
 // #endregion
 
-// TODO: move to marlowe-object
-type ContractBundle = {
-  main: Label;
-  bundle: Bundle;
-};
-
 const mkDelayPaymentTags = (schema: DelayPaymentScheme) => {
   const tag = "DELAY_PYMNT-1";
   const tags = {} as Tags;
@@ -505,7 +534,9 @@ const mkDelayPaymentTags = (schema: DelayPaymentScheme) => {
   return tags;
 };
 
-const extractSchemeFromTags = (tags: unknown): DelayPaymentScheme | undefined => {
+const extractSchemeFromTags = (
+  tags: unknown
+): DelayPaymentScheme | undefined => {
   const tagsGuard = t.type({
     "DELAY_PYMNT-1-from-0": t.string,
     "DELAY_PYMNT-1-from-1": t.string,
@@ -521,26 +552,28 @@ const extractSchemeFromTags = (tags: unknown): DelayPaymentScheme | undefined =>
   }
 
   return {
-    payFrom: { address: `${tags["DELAY_PYMNT-1-from-0"]}${tags["DELAY_PYMNT-1-from-1"]}` },
-    payTo: { address: `${tags["DELAY_PYMNT-1-to-0"]}${tags["DELAY_PYMNT-1-to-1"]}` },
+    payFrom: {
+      address: `${tags["DELAY_PYMNT-1-from-0"]}${tags["DELAY_PYMNT-1-from-1"]}`,
+    },
+    payTo: {
+      address: `${tags["DELAY_PYMNT-1-to-0"]}${tags["DELAY_PYMNT-1-to-1"]}`,
+    },
     amount: tags["DELAY_PYMNT-1-amount"],
     depositDeadline: new Date(tags["DELAY_PYMNT-1-deposit"]),
     releaseDeadline: new Date(tags["DELAY_PYMNT-1-release"]),
   };
-}
+};
 
 async function createContract(
   lifecycle: RuntimeLifecycle,
   schema: DelayPaymentScheme,
   rewardAddress?: StakeAddressBech32
-
 ): Promise<[ContractId, TxId]> {
   const contractBundle = mkDelayPayment(schema);
   const tags = mkDelayPaymentTags(schema);
   // TODO: PLT-9089: Modify runtimeLifecycle.contracts.createContract to support bundle (calling createContractSources)
   const contractSources = await lifecycle.restClient.createContractSources(
-    contractBundle.main,
-    contractBundle.bundle
+    contractBundle
   );
   const walletAddress = await lifecycle.wallet.getChangeAddress();
   const unsignedTx = await lifecycle.restClient.buildCreateContractTx({
@@ -561,7 +594,7 @@ async function createContract(
   //----------------
 }
 
-type ValidationResults = 'InvalidTags' | 'InvalidContract' | DelayPaymentScheme
+type ValidationResults = "InvalidTags" | "InvalidContract" | DelayPaymentScheme;
 
 /**
  * This function checks if the contract with the given id is an instance of the delay payment contract
@@ -571,7 +604,7 @@ type ValidationResults = 'InvalidTags' | 'InvalidContract' | DelayPaymentScheme
  */
 async function validateExistingContract(
   lifecycle: RuntimeLifecycle,
-  contractId: ContractId,
+  contractId: ContractId
 ): Promise<ValidationResults> {
   // First we try to fetch the contract details and the required tags
   const contractDetails = await lifecycle.restClient.getContractById(
@@ -581,7 +614,7 @@ async function validateExistingContract(
   const scheme = extractSchemeFromTags(contractDetails.tags);
 
   if (!scheme) {
-    return 'InvalidTags';
+    return "InvalidTags";
   }
 
   // If the contract seems to be an instance of the contract we want (meanin, we were able
@@ -596,15 +629,16 @@ async function validateExistingContract(
   //      Or this option which doesn't require runtime to runtime communication, and just requires
   //      the dapp to be able to recreate the same sources.
   const contractBundle = mkDelayPayment(scheme);
-  const {contractSourceId} = await lifecycle.restClient.createContractSources(
-    contractBundle.main,
-    contractBundle.bundle
+  const { contractSourceId } = await lifecycle.restClient.createContractSources(
+    contractBundle
   );
-  const initialContract = await lifecycle.restClient.getContractSourceById({ contractSourceId} );
+  const initialContract = await lifecycle.restClient.getContractSourceById({
+    contractSourceId,
+  });
 
   if (!deepEqual(initialContract, contractDetails.initialContract)) {
     return "InvalidContract";
-  };
+  }
   return scheme;
 }
 
@@ -617,7 +651,9 @@ async function main() {
   );
   lucid.selectWalletFromSeed(config.seedPhrase);
   const rewardAddressStr = await lucid.wallet.rewardAddress();
-  const rewardAddress = rewardAddressStr ? stakeAddressBech32(rewardAddressStr) : undefined;
+  const rewardAddress = rewardAddressStr
+    ? stakeAddressBech32(rewardAddressStr)
+    : undefined;
   const runtimeURL = config.runtimeURL;
 
   const wallet = mkLucidWallet(lucid);
@@ -628,4 +664,3 @@ async function main() {
   });
   await mainLoop(lifecycle, rewardAddress);
 }
-
