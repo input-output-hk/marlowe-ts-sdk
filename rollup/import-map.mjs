@@ -1,10 +1,8 @@
-import { buildRollupInput, getAllPackageInfo } from "./package-helper.mjs";
+import * as prettier from "prettier";
 import * as A from "fp-ts/lib/Array.js";
 import * as R from "fp-ts/lib/Record.js";
-import * as O from "fp-ts/lib/Option.js";
 import { pipe } from "fp-ts/lib/function.js";
 import path from "path";
-import { fileURLToPath } from "url";
 import { promises as fs } from "fs";
 
 /**
@@ -78,5 +76,7 @@ export async function buildImportMapScript (packagesInfo, importFrom, distFolder
     importMapObject = buildImportMapObject(packagesInfo, importUrlBuilder);
   }
 
-  fs.writeFile(outputFile, `const importMap = ${JSON.stringify({imports: importMapObject}, "", 2)};\nconst im = document.createElement('script');\nim.type = 'importmap';\nim.textContent = JSON.stringify(importMap);\ndocument.currentScript.after(im);`);
+  const unformatted = `const importMap = ${JSON.stringify({imports: importMapObject}, "", 2)};\nconst im = document.createElement("script");\nim.type = "importmap";\nim.textContent = JSON.stringify(importMap);\ndocument.currentScript.after(im);\n`;
+  const formatted = await prettier.format(unformatted, { parser: "typescript"});
+  fs.writeFile(outputFile, formatted);
 }
