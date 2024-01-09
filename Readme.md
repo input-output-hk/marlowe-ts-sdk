@@ -5,12 +5,16 @@
   <br>
   Lightweight and typesafe SDK for writing Marlowe Contracts
 </h2>
-
+  <p align="center">
+    <a href="https://github.com/input-output-hk/marlowe-ts-sdk/releases"><img src="https://img.shields.io/github/release-pre/input-output-hk/marlowe-ts-sdk.svg?style=for-the-badge" /></a>
+  </p>
 <div align="center">
   <a href=""><img src="https://img.shields.io/badge/stability-beta-33bbff.svg" alt="Beta"></a>
   <a href="./LICENSE"><img src="https://img.shields.io/badge/License-Apache_2.0-blue.svg"></a>
   <a href="https://discord.com/invite/cmveaxuzBn"><img src="https://img.shields.io/discord/826816523368005654?label=Chat%20on%20Discord"></a>
   <a href="https://iohk.zendesk.com/hc/en-us/requests/new"><img src="https://img.shields.io/badge/Support-orange"></a>
+ 
+
 </div>
 
 The **Marlowe TS-SDK** is a suite of _TypeScript/JavaScript_ libraries for developing Web-Dapp in the Cardano Blockchain using Marlowe Technologies.
