@@ -22,7 +22,7 @@ export const bigintGuard = new Type<bigint, bigint, unknown>(
   "bigint",
   isBigInt,
   (i, c) => (isBigIntOrNumber(i) ? success(BigInt(i)) : failure(i, c)),
-  (number) => number,
+  (number) => number
 );
 
 /**

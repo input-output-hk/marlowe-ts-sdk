@@ -296,7 +296,7 @@ export const onlyByContractIds = (contractIds: ContractId[]) =>
   ({
     byContractIds: contractIds,
     byMyRoleTokens: (myRoles) => myRoles,
-  } as Filters);
+  }) as Filters;
 
 /**
  * Provide filtering capabilities on the payouts returned
