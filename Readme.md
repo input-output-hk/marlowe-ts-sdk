@@ -20,13 +20,26 @@ The **Marlowe TS-SDK** is a suite of _TypeScript/JavaScript_ libraries for devel
 
 It is composed of several npm packages documented in the [API reference](https://input-output-hk.github.io/marlowe-ts-sdk/) page.
 
-## Prerequisites
+## Runtime
 
-In order to start working with the Marlowe SDK you need to have a URL to a running instance of the Marlowe Runtime and one of the supported wallet extensions installed in your browser.
+The **Marlowe TS-SDK** provides a `@marlowe.io/runtime-rest-client` package and some asbtraction layers built on top of it (e.g : `@marlowe.io/runtime-lifecycle`).
+
+In order to start working with these packages, you will need to have an URL to a running instance of the Marlowe Runtime : 
+
+| ts-sdk  | runtime v0.0.5 | runtimev0.0.6 |
+| ------- | :--------: | :------------: | 
+| [0.2.0-beta](https://github.com/input-output-hk/marlowe-ts-sdk/releases/tag/0.2.0-beta)    |     ✓      |    x            |            |
+
 
 To get a running instance of the Runtime, it is recommended to check out the instructions on the [Marlowe Starter Kit](https://github.com/input-output-hk/marlowe-starter-kit)
 
-## Wallet Extensions
+## Wallets 
+
+### CIP-30 and Browser
+
+The **Marlowe TS-SDK** extends the [CIP-30](https://github.com/cardano-foundation/CIPs/blob/master/CIP-0030/README.md) Interface into a dedicated Marlowe environment.  
+
+It provides an API to Cardano Wallets Browser Extensions, giving you Marlowe programming capabilities in a Browser Environment : 
 
 | Wallets | Compatible | Not Compatible | Not Tested |
 | ------- | :--------: | :------------: | :--------: |
@@ -35,6 +48,12 @@ To get a running instance of the Runtime, it is recommended to check out the ins
 | Lace    |     ✓      |                |            |
 | Yoroi   |            |                |     ?      |
 | Typhon  |            |                |     ?      |
+
+### Lucid and NodeJS
+
+The **Marlowe TS-SDK** extends also capabilities on the [Lucid](https://github.com/spacebudz/lucid) Library. 
+
+In addition to the benefits provided by this library, it allows you to develop Marlowe Contracts in a NodeJS environment.  
 
 ## Examples & Contract Use Cases
 
