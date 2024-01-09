@@ -19,9 +19,6 @@ import {
   Case,
   Action,
   Notify,
-  IDeposit,
-  IChoice,
-  INotify,
   InputContent,
   RoleName,
   Token,
@@ -43,6 +40,7 @@ import { WalletAPI } from "@marlowe.io/wallet";
 import * as Big from "@marlowe.io/adapter/bigint";
 import { Monoid } from "fp-ts/lib/Monoid.js";
 import * as R from "fp-ts/lib/Record.js";
+
 type ActionApplicant = Party | "anybody";
 
 export interface AppliedActionResult {

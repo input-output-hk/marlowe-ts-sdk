@@ -78,6 +78,7 @@ import {
   Transaction,
   TransactionError,
   TransactionOutput,
+  TransactionWarning,
 } from "./transaction.js";
 import {
   matchObservation,
@@ -292,9 +293,10 @@ const shadowing = (warn: Shadowing): Shadowing => warn;
 const assertionFailed = "assertion_failed" as const;
 
 /**
- * @hidden
+ * TODO: Comment
+ * @category Transaction Warning
  */
-type NoWarning = "NoWarning";
+export type NoWarning = "NoWarning";
 
 /**
  * @hidden
@@ -302,9 +304,10 @@ type NoWarning = "NoWarning";
 const noWarning = "NoWarning" as const;
 
 /**
- * @hidden
+ * TODO: Comment
+ * @category Transaction Warning
  */
-type ReduceWarning =
+export type ReduceWarning =
   | NoWarning
   | NonPositivePay
   | PartialPay
@@ -776,14 +779,6 @@ function applyInput(
     })(cont) ?? noMatchError
   );
 }
-
-// TODO: I think we have to move this to transaction.ts and make sure JSON serialization aligns.
-type TransactionWarning =
-  | NonPositiveDeposit
-  | NonPositivePay
-  | PartialPay
-  | Shadowing
-  | AssertionFailed;
 
 export function convertReduceWarning(
   warnings: ReduceWarning[]

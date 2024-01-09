@@ -77,6 +77,10 @@ export {
   InputContent,
   NormalInput,
   MerkleizedInput,
+  MerkleizedDeposit,
+  MerkleizedChoice,
+  MerkleizedHashAndContinuation,
+  MerkleizedNotify,
 } from "./inputs.js";
 
 export { role, Party, Address, Role, RoleName } from "./participants.js";
