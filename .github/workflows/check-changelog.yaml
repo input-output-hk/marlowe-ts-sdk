@@ -26,7 +26,7 @@ jobs:
         # Don't require changelogs for draft PRs:
         if: github.event.pull_request.draft == false
         with:
-          script: | 
+          script: |
             function shouldCheckChangelog() {
               return !${{ contains(github.event.pull_request.labels.*.name, 'No Changelog Required') }}
             }

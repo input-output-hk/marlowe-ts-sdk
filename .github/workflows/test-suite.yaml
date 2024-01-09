@@ -15,6 +15,7 @@ jobs:
     steps:
       - name: 📥 Checkout repository
         uses: actions/checkout@v3.3.0
+
       - name: 🐣 Install Nix
         uses: cachix/install-nix-action@v22
         with:
@@ -25,17 +26,23 @@ jobs:
             trusted-public-keys = ${{ env.TRUSTED_PUBLIC_KEYS }}
             substituters = ${{ env.SUBSTITUTERS }}
             experimental-features = nix-command flakes
+
       - name: 🔨 Build project
         run: |
-          nix develop --show-trace --command bash -c "npm i && npm run build && treefmt jsdelivr-npm-importmap.js"
+          nix develop --show-trace --command bash -c "npm i && npm run build"
 
-      - name: 🧪 Run tests
+      - name: 🧪 Run npm tests
         run: |
           nix develop --show-trace --command bash -c "npm test"
+
+      - name: 🧪 Run nix test-spec
+        run: |
+          nix develop --show-trace --command bash -c "test-spec"
 
       - name: 🏥 Check docs generation
         run: |
           nix develop --show-trace --command bash -c "npm --prefix ./doc/theme/ run build && npm run docs"
+
       - name: 📝 Check formatting
         run: |
-          nix develop --show-trace --command bash -c "treefmt --fail-on-change"
+          nix develop --show-trace --command bash -c "pre-commit run --all-files"

@@ -2,21 +2,21 @@
  * Compatibility module with the Playground's internal `marlowe-js` library. To migrate existing projects follow
  * the instructions in the [playground compatibility guide](https://github.com/input-output-hk/marlowe-ts-sdk/blob/main/doc/playground-compatibility.md)
  *
- ```
- import {
-    Contract, Address, Role, Account, Party, ada, lovelace, AvailableMoney, Constant,
-    NegValue, AddValue, SubValue, MulValue, DivValue, ChoiceValue, TimeIntervalStart,
-    TimeIntervalEnd, UseValue, Cond, AndObs, OrObs, NotObs, ChoseSomething,
-    ValueGE, ValueGT, ValueLT, ValueLE, ValueEQ, TrueObs, FalseObs, Deposit,
-    Choice, Notify, Close, Pay, If, When, Let, Assert, SomeNumber, AccountId,
-    ChoiceId, Token, ValueId, Value, EValue, Observation, Bound, Action, Payee,
-    Case, Timeout, ETimeout
-  } from "@marlowe.io/language-core-v1/playground-v1";
+  ```
+  import {
+      Contract, Address, Role, Account, Party, ada, lovelace, AvailableMoney, Constant,
+      NegValue, AddValue, SubValue, MulValue, DivValue, ChoiceValue, TimeIntervalStart,
+      TimeIntervalEnd, UseValue, Cond, AndObs, OrObs, NotObs, ChoseSomething,
+      ValueGE, ValueGT, ValueLT, ValueLE, ValueEQ, TrueObs, FalseObs, Deposit,
+      Choice, Notify, Close, Pay, If, When, Let, Assert, SomeNumber, AccountId,
+      ChoiceId, Token, ValueId, Value, EValue, Observation, Bound, Action, Payee,
+      Case, Timeout, ETimeout
+    } from "@marlowe.io/language-core-v1/playground-v1";
 
-  function myContract(): Contract {
-    return Close;
-  }
- ```
+    function myContract(): Contract {
+      return Close;
+    }
+  ```
  * @packageDocumentation
  */
 import * as C from "./index.js";

@@ -1,33 +1,25 @@
-# flake.nix template from the STD Library
 {
   description = "Marlowe ts-sdk";
 
   inputs = {
-    std.url = "github:divnix/std";
-    nixpkgs.follows = "std/nixpkgs";
-    std.inputs.devshell.url = "github:numtide/devshell";
-    std.inputs.nixago.url = "github:nix-community/nixago";
-    marloweSpec = {
-      url = "github:input-output-hk/marlowe";
-    };
+    iogx.url = "github:input-output-hk/iogx";
+    marlowe-spec.url = "github:input-output-hk/marlowe";
   };
 
-  outputs = {
-    std,
-    self,
-    ...
-  } @ inputs:
-    std.growOn {
-      inherit inputs;
-      cellsFrom = ./nix;
-      cellBlocks = with std.blockTypes; [
-        (runnables "scripts")
-        (nixago "configs")
-        (devshells "shells" {ci.build = true;})
-      ];
-    }
-    {
-      devShells = std.harvest self ["ts-sdk" "shells"];
-      packages = std.harvest self ["ts-sdk" "packages"];
-    };
+  outputs = inputs: inputs.iogx.lib.mkFlake {
+    inherit inputs;
+    repoRoot = ./.;
+    outputs = import ./nix/outputs.nix;
+    systems = [ "x86_64-linux" "x86_64-darwin" ];
+  };
+
+  nixConfig = {
+    extra-substituters = [
+      "https://cache.iog.io"
+    ];
+    extra-trusted-public-keys = [
+      "hydra.iohk.io:f/Ea+s+dFdN+3Y/G+FDgSq+a5NEWhJGzdjvKNGv0/EQ="
+    ];
+    allow-import-from-derivation = true;
+  };
 }

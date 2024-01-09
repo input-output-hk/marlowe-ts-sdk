@@ -22,8 +22,4 @@ test-dist
 .local
 yarn.lock
 
-
-# nixago: ignore-linked-files
-/lefthook.yml
-/.editorconfig
-/treefmt.toml
+.pre-commit-config.yaml
