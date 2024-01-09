@@ -69,7 +69,7 @@ export function remove<K, V>(
     case "GreaterThan":
       return [head, ...remove(cmp, key, tail)];
     case "LowerThan":
-      return [head, ...list];
+      return [head, ...tail];
   }
 }
 

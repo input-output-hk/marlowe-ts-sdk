@@ -27,6 +27,10 @@ jobs:
             substituters = ${{ env.SUBSTITUTERS }}
             experimental-features = nix-command flakes
 
+      - name: 📝 Check formatting
+        run: |
+          nix develop --show-trace --command bash -c "pre-commit run --all-files"
+
       - name: 🔨 Build project
         run: |
           nix develop --show-trace --command bash -c "npm i && npm run build"
@@ -43,6 +47,3 @@ jobs:
         run: |
           nix develop --show-trace --command bash -c "npm --prefix ./doc/theme/ run build && npm run docs"
 
-      - name: 📝 Check formatting
-        run: |
-          nix develop --show-trace --command bash -c "pre-commit run --all-files"
