@@ -9,6 +9,9 @@
   "publishConfig": {
     "access": "public"
   },
+  "prettier": {
+    "trailingComma": "es5"
+  },
   "contributors": [
     "Nicolas Henin <nicolas.henin@iohk.io> (https://iohk.io)",
     "Hernan Rajchert <hernan.rajchert@iohk.io> (https://iohk.io)",

@@ -1,5 +1,5 @@
 /**
-  * This module offers {@link !io-ts-usage | dynamic type guards} for JSON schemas as specified in Runtime Rest API  
+  * This module offers {@link !io-ts-usage | dynamic type guards} for JSON schemas as specified in Runtime Rest API
   ```
   import * as G from "@marlowe/language-core-v1/guards"
   const jsonObject = JSON.parse(fileContents)

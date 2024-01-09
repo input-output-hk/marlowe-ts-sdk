@@ -31,7 +31,7 @@ function buildImportMapObject(packagesInfo, importUrlBuilder ) {
         A.map(([exportKey, exportMap]) => {
           // Keys in the export definition are either "." or "./<module-name>"
           const flatImportName =
-             exportKey === "." ? pkg.name : exportKey.replace(/^\.\//, "");
+            exportKey === "." ? pkg.name : exportKey.replace(/^\.\//, "");
 
           const importMapKey = `@marlowe.io/${path.join(pkg.name, exportKey)}`;
           const importMapValue = importUrlBuilder(pkg, flatImportName)

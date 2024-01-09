@@ -78,7 +78,7 @@ export function escrow({
   arbitrageTimeout,
 }: EscrowParams): Contract {
   /* We can set explicitRefunds true to run Close refund analysis
-       but we get a shorter contract if we set it to false */
+   * but we get a shorter contract if we set it to false */
   const explicitRefunds: Boolean = false;
 
   const buyer: Party = Role("Buyer");

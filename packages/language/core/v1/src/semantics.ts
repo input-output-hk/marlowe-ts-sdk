@@ -1,7 +1,7 @@
 /**
  * This module exposes the semantic functions of the Marlowe language. They can be used
  * to simulate/test a contract.
- ```
+```
 import * as G from "@marlowe.io/language-core-v1/guards";
 import { datetoTimeout } from "@marlowe.io/language-core-v1";
 import { playTrace } from "@marlowe.io/language-core-v1/semantics";
@@ -50,7 +50,7 @@ if (G.TransactionSuccess.is(txOut)) {
   const { state, contract, warnings, payments} = txOut;
   console.log(state, contract, warnings, payments);
 }
- ```
+```
  * @packageDocumentation
  */
 import * as AssocMap from "@marlowe.io/adapter/assoc-map";

@@ -1,17 +1,18 @@
 /**
- * ```
-   import { mkBrowserWallet, getInstalledWalletExtensions } from "@marlowe.io/wallet";
-   import { mkRuntimeLifecycle } from "@marlowe.io/runtime-lifecycle";
+ *
+  ```
+  import { mkBrowserWallet, getInstalledWalletExtensions } from "@marlowe.io/wallet";
+  import { mkRuntimeLifecycle } from "@marlowe.io/runtime-lifecycle";
 
-   const runtimeURL = "<url of the Marlowe runtime>";
-   const installedWalletExtensions = getInstalledWalletExtensions();
+  const runtimeURL = "<url of the Marlowe runtime>";
+  const installedWalletExtensions = getInstalledWalletExtensions();
 
-   const wallet = await mkBrowserWallet(installedWalletExtensions[0].name);
-   const runtime = mkRuntimeLifecycle({
-      runtimeURL,
-      wallet,
-   });
- ```
+  const wallet = await mkBrowserWallet(installedWalletExtensions[0].name);
+  const runtime = mkRuntimeLifecycle({
+    runtimeURL,
+    wallet,
+  });
+  ```
  * @packageDocumentation
  */
 

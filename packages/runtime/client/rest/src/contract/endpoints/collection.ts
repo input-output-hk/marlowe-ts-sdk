@@ -389,7 +389,7 @@ export interface BuildCreateContractTxRequestOptions {
    *
    * <h4>Configuration Options</h4>
    * <p>
-   *  
+   *
    * - **When to create (mint)**
    *   - **Within the Runtime** : At the contrat creation, these defined Roles Tokens will be minted "on the fly" by the runtime.
    *   - **Without the Runtime** : before the creation, these Role Tokens are already defined (via an NFT platform, `cardano-cli`, another Marlowe Contract Created, etc.. )
@@ -398,11 +398,11 @@ export interface BuildCreateContractTxRequestOptions {
    *   - **Openly** (Open Roles) : Whoever applies an input (IDeposit or IChoice) on the contract `contractOrSourceId` first will be identified as a participant by receiving the Role Token in their wallet. In that case, participants are unknown at the creation and the participation is open to any meeting the criteria.
    * - **With or without Metadata**
    * - **Quantities to create(Mint)** : When asking to mint the tokens within the Runtime, quantities can defined as well.
-   * 
-   * Smart Constructors are available to ease these configuration: 
+   *
+   * Smart Constructors are available to ease these configuration:
    *    - {@link @marlowe.io/runtime-rest-client!contract.useMintedRoles}
    *    - {@link @marlowe.io/runtime-rest-client!contract.mintRole}
-   * 
+   *
    * @remarks
    *  - The Distribution can be a mix of Closed and Open Role Tokens configuration. See examples below.
    * </p>
@@ -410,9 +410,9 @@ export interface BuildCreateContractTxRequestOptions {
    * @example
    *
    * ```ts
-   *  ////////////// 
+   *  //////////////
    *  // #1 - Mint Role Tokens
-   *  ////////////// 
+   *  //////////////
    * const anAddressBech32 = "addr_test1qqe342swyfn75mp2anj45f8ythjyxg6m7pu0pznptl6f2d84kwuzrh8c83gzhrq5zcw7ytmqc863z5rhhwst3w4x87eq0td9ja"
    * const aMintingConfiguration =
    *   { "closed_Role_A_NFT" : mintRole(anAddressBech32)
@@ -450,8 +450,8 @@ export interface BuildCreateContractTxRequestOptions {
    *          })
    * }
    *
-   *  ////////////// 
-   *  // #2 Use Minted Roles Tokens 
+   *  //////////////
+   *  // #2 Use Minted Roles Tokens
    *  const aUseMintedRoleTokensConfiguration =
    *      useMintedRoles(
    *        "e68f1cea19752d1292b4be71b7f5d2b3219a15859c028f7454f66cdf",

@@ -4,7 +4,7 @@
  * The static types can only be used with TypeScript, but we offer the {@link @marlowe.io/language-core-v1!guards} module to check
  * at runtime if an object has the expected shape (which is useful for both JavaScript and TypeScript).
 
-   ```
+```
   import { Contract, Party, Value, lovelace, datetoTimeout } from "@marlowe.io/language-core-v1"
 
   // 1 Ada is equal to 1 Million lovelaces. The `n` at the end of the number is JavaScript way of
@@ -42,7 +42,7 @@
     "timeout_continuation": "close",
     "timeout": datetoTimeout(new Date("2024-05-22"))
   }
-  ```
+```
  * @packageDocumentation
  */
 

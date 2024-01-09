@@ -62,15 +62,15 @@ export type CreateContractRequest = {
      * <h4>Participants</h4>
      * <p>
      * Participants ({@link @marlowe.io/language-core-v1!index.Party | Party}) in a Marlowe Contract can be expressed in 2 ways:
-     * 
+     *
      *  1. **By Adressses** : When an address is fixed in the contract we don't need to provide further configuration.
      *  2. **By Roles** : When the participation is done through a Role Token, we need to define if that token is minted as part of the contract creation transaction or if it was minted beforehand.
-     * 
+     *
      * </p>
      *
      * <h4>Configuration Options</h4>
      * <p>
-     *  
+     *
      * - **When to create (mint)**
      *   - **Within the Runtime** : At the contrat creation, these defined Roles Tokens will be minted "on the fly" by the runtime.
      *   - **Without the Runtime** : before the creation, these Role Tokens are already defined (via an NFT platform, `cardano-cli`, another Marlowe Contract Created, etc.. )
@@ -79,11 +79,11 @@ export type CreateContractRequest = {
      *   - **Openly** (Open Roles) : Whoever applies an input (IDeposit or IChoice) on the contract `contract` first will be identified as a participant by receiving the Role Token in their wallet. In that case, participants are unknown at the creation and the participation is open to any meeting the criteria.
      * - **With or without Metadata**
      * - **Quantities to create(Mint)** : When asking to mint the tokens within the Runtime, quantities can defined as well.
-     * 
-     * Smart Constructors are available to ease these configuration: 
+     *
+     * Smart Constructors are available to ease these configuration:
      *    - {@link @marlowe.io/runtime-rest-client!contract.useMintedRoles}
      *    - {@link @marlowe.io/runtime-rest-client!contract.mintRole}
-     * 
+     *
      * @remarks
      *  - The Distribution can be a mix of Closed and Open Role Tokens configuration. See examples below.
      * </p>
@@ -91,9 +91,9 @@ export type CreateContractRequest = {
      * @example
      *
      * ```ts
-     *  ////////////// 
+     *  //////////////
      *  // #1 - Mint Role Tokens
-     *  ////////////// 
+     *  //////////////
      * const anAddressBech32 = "addr_test1qqe342swyfn75mp2anj45f8ythjyxg6m7pu0pznptl6f2d84kwuzrh8c83gzhrq5zcw7ytmqc863z5rhhwst3w4x87eq0td9ja"
      * const aMintingConfiguration =
      *   { "closed_Role_A_NFT" : mintRole(anAddressBech32)
@@ -130,8 +130,8 @@ export type CreateContractRequest = {
       *          })
       * }
       *
-      *  ////////////// 
-      *  // #2 Use Minted Roles Tokens 
+      *  //////////////
+      *  // #2 Use Minted Roles Tokens
       *  const aUseMintedRoleTokensConfiguration =
       *      useMintedRoles(
       *        "e68f1cea19752d1292b4be71b7f5d2b3219a15859c028f7454f66cdf",

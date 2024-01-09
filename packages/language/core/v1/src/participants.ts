@@ -14,9 +14,9 @@ import { Sort, strCmp } from "@marlowe.io/adapter/assoc-map";
  *
  * An address party is defined by a blockchain specific Address and it cannot be traded
  * (it is fixed for the lifetime of a contract).
- ```
- const addressExample: Address = {"address" : "addr_test1qpcucug827nlrmsv7n66hwdfpemwqtv8nxnjc4azacuu807w6l6hgelwsph7clqmauq7h3y9qhhgs0rwu3mu8uf7m4kqckxkry"}
- ```
+  ```
+  const addressExample: Address = {"address" : "addr_test1qpcucug827nlrmsv7n66hwdfpemwqtv8nxnjc4azacuu807w6l6hgelwsph7clqmauq7h3y9qhhgs0rwu3mu8uf7m4kqckxkry"}
+  ```
  * @see Section 2.1.1 and appendix E.1 of the {@link https://github.com/input-output-hk/marlowe/releases/download/v3/Marlowe.pdf | Marlowe specification}
  * @category Party
  */
@@ -52,9 +52,9 @@ export const role = (roleToken: RoleName) => ({ role_token: roleToken });
  * {@link  @marlowe.io/language-core-v1!index.Action | actions} assigned, and redeem the {@link  @marlowe.io/language-core-v1!semantics.Payment | payments} issued to that role.
  * The roles are implemented as tokens that can be traded, this allows for more complex use cases.
  *
- ```
- const roleExample: Role = {"role_token" : "Buyer"}
- ```
+  ```
+  const roleExample: Role = {"role_token" : "Buyer"}
+  ```
  * @category Party
  */
 export interface Role {
