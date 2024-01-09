@@ -20,13 +20,24 @@ The **Marlowe TS-SDK** is a suite of _TypeScript/JavaScript_ libraries for devel
 
 It is composed of several npm packages documented in the [API reference](https://input-output-hk.github.io/marlowe-ts-sdk/) page.
 
-## Prerequisites
+## Runtime
 
-In order to start working with the Marlowe SDK you need to have a URL to a running instance of the Marlowe Runtime and one of the supported wallet extensions installed in your browser.
+In order to interact with Marlowe contracts, the **TS-SDK** needs a Runtime instance. The following table shows the compatibility between the SDK and the Runtime versions:
+
+
+|         | runtime v0.0.5 | runtimev 0.0.6 |
+| ------- | :--------:     | :------------: |
+| [SDK 0.2.0-beta](https://github.com/input-output-hk/marlowe-ts-sdk/releases/tag/0.2.0-beta)    |     ✓      |    x            |
+
 
 To get a running instance of the Runtime, it is recommended to check out the instructions on the [Marlowe Starter Kit](https://github.com/input-output-hk/marlowe-starter-kit)
 
-## Wallet Extensions
+## Wallets
+
+### CIP-30 and Browser
+
+The **TS-SDK** has a [CIP-30](https://github.com/cardano-foundation/CIPs/blob/master/CIP-0030/README.md) abstraction that works with
+the following wallets:
 
 | Wallets | Compatible | Not Compatible | Not Tested |
 | ------- | :--------: | :------------: | :--------: |
@@ -35,6 +46,10 @@ To get a running instance of the Runtime, it is recommended to check out the ins
 | Lace    |     ✓      |                |            |
 | Yoroi   |            |                |     ?      |
 | Typhon  |            |                |     ?      |
+
+### Lucid and NodeJS
+
+The **SDK** also provides a wrapper around the [Lucid](https://github.com/spacebudz/lucid) Library. This allows you to use the SDK in a NodeJS environment.
 
 ## Examples & Contract Use Cases
 
