@@ -22,24 +22,22 @@ It is composed of several npm packages documented in the [API reference](https:/
 
 ## Runtime
 
-The **Marlowe TS-SDK** provides a `@marlowe.io/runtime-rest-client` package and some asbtraction layers built on top of it (e.g : `@marlowe.io/runtime-lifecycle`).
+In order to interact with Marlowe contracts, the **TS-SDK** needs a Runtime instance. The following table shows the compatibility between the SDK and the Runtime versions:
 
-In order to start working with these packages, you will need to have an URL to a running instance of the Marlowe Runtime : 
 
-| ts-sdk  | runtime v0.0.5 | runtimev0.0.6 |
-| ------- | :--------: | :------------: | 
-| [0.2.0-beta](https://github.com/input-output-hk/marlowe-ts-sdk/releases/tag/0.2.0-beta)    |     ✓      |    x            |            |
+|         | runtime v0.0.5 | runtimev 0.0.6 |
+| ------- | :--------:     | :------------: |
+| [SDK 0.2.0-beta](https://github.com/input-output-hk/marlowe-ts-sdk/releases/tag/0.2.0-beta)    |     ✓      |    x            |
 
 
 To get a running instance of the Runtime, it is recommended to check out the instructions on the [Marlowe Starter Kit](https://github.com/input-output-hk/marlowe-starter-kit)
 
-## Wallets 
+## Wallets
 
 ### CIP-30 and Browser
 
-The **Marlowe TS-SDK** extends the [CIP-30](https://github.com/cardano-foundation/CIPs/blob/master/CIP-0030/README.md) Interface into a dedicated Marlowe environment.  
-
-It provides an API to Cardano Wallets Browser Extensions, giving you Marlowe programming capabilities in a Browser Environment : 
+The **TS-SDK** has a [CIP-30](https://github.com/cardano-foundation/CIPs/blob/master/CIP-0030/README.md) abstraction that works with
+the following wallets:
 
 | Wallets | Compatible | Not Compatible | Not Tested |
 | ------- | :--------: | :------------: | :--------: |
@@ -51,9 +49,7 @@ It provides an API to Cardano Wallets Browser Extensions, giving you Marlowe pro
 
 ### Lucid and NodeJS
 
-The **Marlowe TS-SDK** extends also capabilities on the [Lucid](https://github.com/spacebudz/lucid) Library. 
-
-In addition to the benefits provided by this library, it allows you to develop Marlowe Contracts in a NodeJS environment.  
+The **SDK** also provides a wrapper around the [Lucid](https://github.com/spacebudz/lucid) Library. This allows you to use the SDK in a NodeJS environment.
 
 ## Examples & Contract Use Cases
 
