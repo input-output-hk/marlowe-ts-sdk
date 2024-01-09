@@ -1,8 +1,13 @@
 /**
- * This example shows how to work with the marlowe-object package, which is needed when we
- * want to create large contracts through the use of Merkleization.
+ * This is an interactive Node.js script that uses the inquirer.js to create and interact
+ * with a Delayed Payment contract.
  *
- * The script is a command line tool that makes a delay payment to a given address.
+ * This example features:
+ * - The use of inquirer.js to create an interactive command line tool
+ * - The use of the marlowe-object package to create a contract bundle
+ * - How to stake the assets of a contract to a given stake address
+ * - How to validate that a Merkleized contract is an instance of a given contract
+ * - How to share contract sources between different runtimes
  */
 import { mkLucidWallet, WalletAPI } from "@marlowe.io/wallet";
 import { mkRuntimeLifecycle } from "@marlowe.io/runtime-lifecycle";
@@ -73,20 +78,11 @@ function parseCli() {
  */
 async function waitIndicator(wallet: WalletAPI, txId: TxId) {
   process.stdout.write("Waiting for the transaction to be confirmed...");
-  let done = false;
-  function writeDot(): Promise<void> {
+  const intervalId = setInterval(() => {
     process.stdout.write(".");
-    return new Promise((resolve) => setTimeout(resolve, 1000)).then(() => {
-      if (!done) {
-        return writeDot();
-      }
-    });
-  }
-
-  await Promise.all([
-    wallet.waitConfirmation(txId).then(() => (done = true)),
-    writeDot(),
-  ]);
+  }, 1000);
+  await wallet.waitConfirmation(txId);
+  clearInterval(intervalId);
   process.stdout.write("\n");
 }
 

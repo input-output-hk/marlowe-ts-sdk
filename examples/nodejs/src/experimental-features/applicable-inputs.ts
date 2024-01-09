@@ -124,9 +124,7 @@ export async function getApplicableActions(
   contractId: ContractId,
   environment?: Environment
 ): Promise<ApplicableAction[]> {
-  let applicableActions = [] as ApplicableAction[];
   const contractDetails = await restClient.getContractById(contractId);
-
   const currentContract = contractDetails.currentContract
     ? contractDetails.currentContract
     : contractDetails.initialContract;
@@ -134,7 +132,6 @@ export async function getApplicableActions(
   const now = datetoTimeout(new Date());
   const nextTimeout = getNextTimeout(currentContract, now) ?? oneDayFrom(now);
   const timeInterval = { from: now, to: nextTimeout - 1n };
-
   const env = environment ?? { timeInterval };
   if (typeof contractDetails.state === "undefined") {
     // TODO: Check, I believe this happens when a contract is in a closed state, but it would be nice
@@ -148,22 +145,24 @@ export async function getApplicableActions(
   );
   if (initialReduce == "TEAmbiguousTimeIntervalError")
     throw new Error("AmbiguousTimeIntervalError");
-  if (initialReduce.reduced) {
-    applicableActions.push({
-      type: "Advance",
-      policyId: contractDetails.roleTokenMintingPolicyId,
-      applyAction() {
-        return {
-          inputs: [],
-          environment: env,
-          reducedState: initialReduce.state,
-          reducedContract: initialReduce.continuation,
-          warnings: convertReduceWarning(initialReduce.warnings),
-          payments: initialReduce.payments,
-        };
-      },
-    });
-  }
+  const applicableActions: ApplicableAction[] = initialReduce.reduced
+    ? [
+        {
+          type: "Advance",
+          policyId: contractDetails.roleTokenMintingPolicyId,
+          applyAction() {
+            return {
+              inputs: [],
+              environment: env,
+              reducedState: initialReduce.state,
+              reducedContract: initialReduce.continuation,
+              warnings: convertReduceWarning(initialReduce.warnings),
+              payments: initialReduce.payments,
+            };
+          },
+        },
+      ]
+    : [];
   const cont = initialReduce.continuation;
   if (cont === "close") return applicableActions;
   if ("when" in cont) {
@@ -181,7 +180,7 @@ export async function getApplicableActions(
         )
       )
     );
-    applicableActions = applicableActions.concat(
+    return applicableActions.concat(
       toApplicableActions(
         applicableActionsFromCases.reduce(
           mergeApplicableActionAccumulator.concat,
@@ -190,7 +189,6 @@ export async function getApplicableActions(
       )
     );
   }
-
   return applicableActions;
 }
 
