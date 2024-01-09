@@ -54,9 +54,8 @@ export function mkContractLifecycle(
 const getInputHistory =
   ({ restClient }: ContractsDI) =>
   async (contractId: ContractId): Promise<SingleInputTx[]> => {
-    const transactionHeaders = await restClient.getTransactionsForContract(
-      contractId
-    );
+    const transactionHeaders =
+      await restClient.getTransactionsForContract(contractId);
     const transactions = await Promise.all(
       transactionHeaders.transactions.map((txHeader) =>
         restClient.getContractTransactionById(
@@ -70,8 +69,8 @@ const getInputHistory =
       b: Option<BlockHeader>
     ) => {
       if (a._tag === "None" || b._tag === "None") {
-      // TODO: to avoid this error we should provide a higer level function that gets the transactions as the different
-      //       status and with the appropiate values for each state.
+        // TODO: to avoid this error we should provide a higer level function that gets the transactions as the different
+        //       status and with the appropiate values for each state.
         throw new Error("A confirmed transaction should have a valid block");
       } else {
         if (a.value.blockNo < b.value.blockNo) {

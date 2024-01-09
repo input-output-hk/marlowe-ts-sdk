@@ -313,7 +313,7 @@ export function mkRestClient(baseURL: string): RestClient {
         )
       );
     },
-    createContractSources({main, bundle}) {
+    createContractSources({ main, bundle }) {
       return Sources.createContractSources(axiosInstance)(main, bundle);
     },
     getContractSourceById(request) {

@@ -13,7 +13,7 @@ import { Action, ActionGuard } from "./actions.js";
 import { pipe } from "fp-ts/lib/function.js";
 import getUnixTime from "date-fns/getUnixTime/index.js";
 import { BuiltinByteString } from "./inputs.js";
-import * as Big from "@marlowe.io/adapter/bigint"
+import * as Big from "@marlowe.io/adapter/bigint";
 /**
  * Search [[lower-name-builders]]
  * @hidden
@@ -339,7 +339,10 @@ export function matchContract<T>(matcher: Partial<ContractMatcher<T>>) {
  * @returns The next timeout after minTime, or undefined if there is no timeout after minTime.
  * @category Introspection
  */
-export function getNextTimeout(contract: Contract, minTime: Timeout): Timeout | undefined {
+export function getNextTimeout(
+  contract: Contract,
+  minTime: Timeout
+): Timeout | undefined {
   return matchContract<Timeout | undefined>({
     close: () => undefined,
     pay: (pay) => getNextTimeout(pay.then, minTime),
@@ -358,6 +361,6 @@ export function getNextTimeout(contract: Contract, minTime: Timeout): Timeout | 
       }
     },
     let: (letContract) => getNextTimeout(letContract.then, minTime),
-    assert: (assertContract) => getNextTimeout(assertContract.then, minTime)
-  })(contract)
+    assert: (assertContract) => getNextTimeout(assertContract.then, minTime),
+  })(contract);
 }

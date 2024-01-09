@@ -49,6 +49,6 @@ async function main() {
   log("Wallet flow done 🎉");
 }
 
-main().catch(error => {
+main().catch((error) => {
   console.error("Error during main execution:", error);
 });

@@ -121,17 +121,17 @@ export interface MerkleizedHashAndContinuation {
   merkleized_continuation: Contract;
 }
 
-export const MerkleizedHashAndContinuationGuard: t.Type<MerkleizedHashAndContinuation> = t.type({
-  continuation_hash: BuiltinByteStringGuard,
-  merkleized_continuation: ContractGuard,
-});
+export const MerkleizedHashAndContinuationGuard: t.Type<MerkleizedHashAndContinuation> =
+  t.type({
+    continuation_hash: BuiltinByteStringGuard,
+    merkleized_continuation: ContractGuard,
+  });
 
 export type MerkleizedDeposit = IDeposit & MerkleizedHashAndContinuation;
 
-export const MerkleizedDepositGuard: t.Type<MerkleizedDeposit> = t.intersection([
-  IDepositGuard,
-  MerkleizedHashAndContinuationGuard,
-]);
+export const MerkleizedDepositGuard: t.Type<MerkleizedDeposit> = t.intersection(
+  [IDepositGuard, MerkleizedHashAndContinuationGuard]
+);
 
 export type MerkleizedChoice = IChoice & MerkleizedHashAndContinuation;
 
@@ -149,12 +149,15 @@ export const MerkleizedNotifyGuard = MerkleizedHashAndContinuationGuard;
  * TODO: Revisit
  * @category Input
  */
-export type MerkleizedInput = MerkleizedDeposit | MerkleizedChoice | MerkleizedNotify;
+export type MerkleizedInput =
+  | MerkleizedDeposit
+  | MerkleizedChoice
+  | MerkleizedNotify;
 /**
  * TODO: Revisit
  * @category Input
  */
-export const MerkleizedInputGuard =t.union([
+export const MerkleizedInputGuard = t.union([
   MerkleizedDepositGuard,
   MerkleizedChoiceGuard,
   MerkleizedNotifyGuard,

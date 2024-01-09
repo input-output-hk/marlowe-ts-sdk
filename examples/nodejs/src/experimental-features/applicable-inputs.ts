@@ -127,10 +127,9 @@ export async function getApplicableActions(
   let applicableActions = [] as ApplicableAction[];
   const contractDetails = await restClient.getContractById(contractId);
 
-  const currentContract =
-    contractDetails.currentContract
-      ? contractDetails.currentContract
-      : contractDetails.initialContract;
+  const currentContract = contractDetails.currentContract
+    ? contractDetails.currentContract
+    : contractDetails.initialContract;
   const oneDayFrom = (time: Timeout) => time + 24n * 60n * 60n * 1000n; // in milliseconds
   const now = datetoTimeout(new Date());
   const nextTimeout = getNextTimeout(currentContract, now) ?? oneDayFrom(now);
@@ -322,19 +321,21 @@ const accumulatorFromNotify = (action: CanNotify) => {
 function mergeBounds(bounds: Bound[]): Bound[] {
   const mergedBounds: Bound[] = [];
 
-  const sortedBounds = [...bounds].sort((a, b) => (a.from > b.from ? 1 : a.from < b.from ? -1 : 0));
+  const sortedBounds = [...bounds].sort((a, b) =>
+    a.from > b.from ? 1 : a.from < b.from ? -1 : 0
+  );
 
   let currentBound: Bound | null = null;
 
   for (const bound of sortedBounds) {
     if (currentBound === null) {
-      currentBound = {...bound};
+      currentBound = { ...bound };
     } else {
       if (bound.from <= currentBound.to) {
         currentBound.to = Big.max(currentBound.to, bound.to);
       } else {
         mergedBounds.push(currentBound);
-        currentBound = {...bound};
+        currentBound = { ...bound };
       }
     }
   }

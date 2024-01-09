@@ -111,7 +111,7 @@ export {
   TransactionSuccess,
   TransactionOutput,
 } from "./transaction.js";
-export {inBounds};
+export { inBounds };
 /**
  * The function moneyInAccount returns the number of tokens a particular AccountId has in their account.
  * @hidden
@@ -532,19 +532,18 @@ function reduceContractStep(
 /**
  * @hidden
  */
-export type ContractQuiescentReduceResult =
-  {
-      type: "ContractQuiescent";
-      reduced: boolean;
-      state: MarloweState;
-      warnings: ReduceWarning[];
-      payments: Payment[];
-      continuation: Contract;
-  }
+export type ContractQuiescentReduceResult = {
+  type: "ContractQuiescent";
+  reduced: boolean;
+  state: MarloweState;
+  warnings: ReduceWarning[];
+  payments: Payment[];
+  continuation: Contract;
+};
 /**
  * @hidden
  */
-type ReduceResult = ContractQuiescentReduceResult| AmbiguousTimeIntervalError;
+type ReduceResult = ContractQuiescentReduceResult | AmbiguousTimeIntervalError;
 
 /**
  * @hidden
@@ -717,20 +716,19 @@ const hashMismatchError = "TEHashMismatch" as const;
 
 type ApplyResult = AppliedResult | ApplyNoMatchError | HashMismatchError;
 
-
-function inputToInputContent (input: Input): InputContent {
+function inputToInputContent(input: Input): InputContent {
   if (input === "input_notify") {
     return "input_notify";
   }
   if ("that_deposits" in input) {
-    input
-    return input as IDeposit
+    input;
+    return input as IDeposit;
   }
   if ("input_that_chooses_num" in input) {
-    input
+    input;
     return input as IChoice;
   }
-  return "input_notify"
+  return "input_notify";
 }
 /**
  * @hidden
@@ -787,7 +785,9 @@ type TransactionWarning =
   | Shadowing
   | AssertionFailed;
 
-export function convertReduceWarning(warnings: ReduceWarning[]): TransactionWarning[] {
+export function convertReduceWarning(
+  warnings: ReduceWarning[]
+): TransactionWarning[] {
   return warnings.filter((w) => w !== "NoWarning") as TransactionWarning[];
 }
 

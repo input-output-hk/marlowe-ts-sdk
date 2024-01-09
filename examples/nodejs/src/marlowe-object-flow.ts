@@ -572,9 +572,8 @@ async function createContract(
   const contractBundle = mkDelayPayment(schema);
   const tags = mkDelayPaymentTags(schema);
   // TODO: PLT-9089: Modify runtimeLifecycle.contracts.createContract to support bundle (calling createContractSources)
-  const contractSources = await lifecycle.restClient.createContractSources(
-    contractBundle
-  );
+  const contractSources =
+    await lifecycle.restClient.createContractSources(contractBundle);
   const walletAddress = await lifecycle.wallet.getChangeAddress();
   const unsignedTx = await lifecycle.restClient.buildCreateContractTx({
     sourceId: contractSources.contractSourceId,
@@ -607,9 +606,8 @@ async function validateExistingContract(
   contractId: ContractId
 ): Promise<ValidationResults> {
   // First we try to fetch the contract details and the required tags
-  const contractDetails = await lifecycle.restClient.getContractById(
-    contractId
-  );
+  const contractDetails =
+    await lifecycle.restClient.getContractById(contractId);
 
   const scheme = extractSchemeFromTags(contractDetails.tags);
 
@@ -629,9 +627,8 @@ async function validateExistingContract(
   //      Or this option which doesn't require runtime to runtime communication, and just requires
   //      the dapp to be able to recreate the same sources.
   const contractBundle = mkDelayPayment(scheme);
-  const { contractSourceId } = await lifecycle.restClient.createContractSources(
-    contractBundle
-  );
+  const { contractSourceId } =
+    await lifecycle.restClient.createContractSources(contractBundle);
   const initialContract = await lifecycle.restClient.getContractSourceById({
     contractSourceId,
   });
