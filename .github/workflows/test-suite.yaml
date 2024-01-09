@@ -46,4 +46,3 @@ jobs:
       - name: 🏥 Check docs generation
         run: |
           nix develop --show-trace --command bash -c "npm --prefix ./doc/theme/ run build && npm run docs"
-

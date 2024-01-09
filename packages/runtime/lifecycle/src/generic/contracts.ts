@@ -102,9 +102,8 @@ const getContractIds =
       acc: ContractId[],
       range?: ItemRange
     ): Promise<ContractId[]> => {
-      const result = await deprecatedRestAPI.contracts.getHeadersByRange(range)(
-        kwargs
-      )();
+      const result =
+        await deprecatedRestAPI.contracts.getHeadersByRange(range)(kwargs)();
       if (result._tag === "Left") throw result.left;
       const response = result.right;
       const contractIds = [

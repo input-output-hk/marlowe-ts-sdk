@@ -60,9 +60,8 @@ describe.skip("Payouts", () => {
     await runtime(adaProvider).wallet.waitConfirmation(txCreatedContract);
 
     // Applying the first Deposit
-    let next = await runtime(adaProvider).contracts.getApplicableInputs(
-      contractId
-    );
+    let next =
+      await runtime(adaProvider).contracts.getApplicableInputs(contractId);
     const txFirstTokensDeposited = await runtime(
       adaProvider
     ).contracts.applyInputs(contractId, {
@@ -71,9 +70,8 @@ describe.skip("Payouts", () => {
     await runtime(adaProvider).wallet.waitConfirmation(txFirstTokensDeposited);
 
     // Applying the second Deposit
-    next = await runtime(tokenProvider).contracts.getApplicableInputs(
-      contractId
-    );
+    next =
+      await runtime(tokenProvider).contracts.getApplicableInputs(contractId);
     await runtime(tokenProvider).contracts.applyInputs(contractId, {
       inputs: [pipe(next.applicable_inputs.deposits[0], Deposit.toInput)],
     });
