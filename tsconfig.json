@@ -11,6 +11,7 @@
     { "path": "./packages/runtime/lifecycle/src" },
     { "path": "./packages/token-metadata-client/src" },
     { "path": "./packages/marlowe-object/src" },
-    { "path": "./examples/nodejs/src" }
+    { "path": "./examples/nodejs/src" },
+    { "path": "./packages/testing-kit/src" }
   ]
 }

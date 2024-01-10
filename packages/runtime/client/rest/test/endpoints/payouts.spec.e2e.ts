@@ -1,17 +1,15 @@
 import { mkRestClient } from "@marlowe.io/runtime-rest-client";
-
-import { getMarloweRuntimeUrl } from "../context.js";
+import { readEnvConfigurationFile } from "@marlowe.io/testing-kit";
 
 import console from "console";
 global.console = console;
 
 describe("payouts endpoints", () => {
-  const restClient = mkRestClient(getMarloweRuntimeUrl());
-
   it(
     "can navigate throught payout headers" + "(GET:  /payouts)",
     async () => {
-      const firstPage = await restClient.getPayouts({
+      const { runtime } = await readEnvConfigurationFile();
+      const firstPage = await runtime.client.getPayouts({
         contractIds: [],
         roleTokens: [],
       });
@@ -20,7 +18,7 @@ describe("payouts endpoints", () => {
 
       expect(firstPage.page.next).toBeDefined();
 
-      const secondPage = await restClient.getPayouts({
+      const secondPage = await runtime.client.getPayouts({
         contractIds: [],
         roleTokens: [],
         range: firstPage.page.next,
@@ -30,7 +28,7 @@ describe("payouts endpoints", () => {
 
       expect(secondPage.page.next).toBeDefined();
 
-      const thirdPage = await restClient.getPayouts({
+      const thirdPage = await runtime.client.getPayouts({
         contractIds: [],
         roleTokens: [],
         range: secondPage.page.next,

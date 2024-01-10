@@ -40,6 +40,7 @@ import { submitContractViaAxios } from "./contract/endpoints/singleton.js";
 import { ContractDetails } from "./contract/details.js";
 import { TransactionDetails } from "./contract/transaction/details.js";
 import { ItemRange } from "./pagination.js";
+import { RuntimeStatus, healthcheck } from "./runtime/status.js";
 // import curlirize from 'axios-curlirize';
 
 export {
@@ -49,6 +50,13 @@ export {
   ItemRangeBrand,
   PageGuard,
 } from "./pagination.js";
+
+export {
+  RuntimeStatus,
+  RuntimeVersion,
+  Tip,
+  CompatibleRuntimeVersion,
+} from "./runtime/index.js";
 
 /**
  * The RestClient offers a simple abstraction for the {@link https://docs.marlowe.iohk.io/api/ | Marlowe Runtime REST API}  endpoints.
@@ -63,6 +71,13 @@ export {
  * This version of the RestClient targets version `0.0.5` of the Marlowe Runtime.
  */
 export interface RestClient {
+  /**
+   * Runtime Healthcheck checks if the Marlowe API is up and running.
+   * It also provides a Set of Runtime Environment information (Tips, NetworkId and Runtime Version Deployed)
+   * @see {@link https://docs.marlowe.iohk.io/api/health-check-endpoint | The backend documentation}
+   */
+  healthcheck(): Promise<RuntimeStatus>;
+
   /**
    * Gets a paginated list of contracts {@link contract.ContractHeader }
    * @param request Optional filtering and pagination options.
@@ -230,13 +245,6 @@ export interface RestClient {
     withdrawalId: WithdrawalId,
     hexTransactionWitnessSet: HexTransactionWitnessSet
   ): Promise<void>;
-  // TODO: PLT-7719 we should also export the return headers information (Node-Tip Runtime-Chain-Tip Runtime-Tip Runtime-Version Network-Id)
-  /**
-   * Checks if the Marlowe API is up and running.
-   *
-   * @see {@link https://docs.marlowe.iohk.io/api/health-check-endpoint | The backend documentation}
-   */
-  healthcheck(): Promise<Boolean>;
 
   /**
    * Get payouts to parties from role-based contracts.
@@ -268,6 +276,9 @@ export function mkRestClient(baseURL: string): RestClient {
   });
 
   return {
+    healthcheck() {
+      return healthcheck(axiosInstance);
+    },
     getContracts(request) {
       const range = request?.range;
       const tags = request?.tags ?? [];
@@ -409,14 +420,6 @@ export function mkRestClient(baseURL: string): RestClient {
         )
       );
     },
-    healthcheck: () =>
-      pipe(
-        HTTP.Get(axiosInstance)("/healthcheck"),
-        TE.match(
-          () => false,
-          () => true
-        )
-      )(),
     async getPayouts({ contractIds, roleTokens, range, status }) {
       return await unsafeTaskEither(
         Payouts.getHeadersByRangeViaAxios(axiosInstance)(range)(contractIds)(
@@ -543,7 +546,7 @@ export interface FPTSRestAPI {
   /**
    * @see {@link }
    */
-  healthcheck: () => TE.TaskEither<Error, Boolean>;
+  healthcheck: () => TE.TaskEither<Error, RuntimeStatus>;
   payouts: PayoutsAPI;
   withdrawals: WithdrawalsAPI;
   contracts: ContractsAPI;
@@ -562,10 +565,7 @@ export function mkFPTSRestClient(baseURL: string): FPTSRestAPI {
 
   return {
     healthcheck: () =>
-      pipe(
-        HTTP.Get(axiosInstance)("/healthcheck"),
-        TE.map(() => true)
-      ),
+      TE.fromTask<RuntimeStatus, Error>(() => healthcheck(axiosInstance)),
     payouts: {
       getHeadersByRange: Payouts.getHeadersByRangeViaAxios(axiosInstance),
       get: Payout.getViaAxios(axiosInstance),

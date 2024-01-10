@@ -26,3 +26,10 @@ export {
 } from "./contract/rolesConfigurations.js";
 
 export { ContractDetailsGuard as ContractDetails } from "./contract/details.js";
+
+export { TipGuard as Tip } from "./runtime/status.js";
+
+export {
+  RuntimeVersionGuard as RuntimeVersion,
+  CompatibleRuntimeVersionGuard as CompatibleRuntimeVersion,
+} from "./runtime/version.js";

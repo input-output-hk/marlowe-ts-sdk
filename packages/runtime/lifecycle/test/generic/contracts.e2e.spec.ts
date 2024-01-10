@@ -1,6 +1,6 @@
 import { pipe } from "fp-ts/lib/function.js";
 import { addDays } from "date-fns";
-
+import { AxiosError } from "axios";
 import {
   datetoTimeout,
   inputNotify,
@@ -8,14 +8,14 @@ import {
 } from "@marlowe.io/language-core-v1";
 import { oneNotifyTrue } from "@marlowe.io/language-examples";
 
-import {
-  getBankPrivateKey,
-  getBlockfrostContext,
-  getMarloweRuntimeUrl,
-} from "../context.js";
-import { initialiseBankAndverifyProvisionning } from "../provisionning.js";
 import console from "console";
 import { MINUTES } from "@marlowe.io/adapter/time";
+import {
+  logError,
+  logInfo,
+  mkTestEnvironment,
+  readEnvConfigurationFile,
+} from "@marlowe.io/testing-kit";
 
 global.console = console;
 
@@ -23,41 +23,63 @@ describe.skip("Runtime Contract Lifecycle ", () => {
   it(
     "can create a Marlowe Contract ",
     async () => {
-      const { runtime } = await initialiseBankAndverifyProvisionning(
-        getMarloweRuntimeUrl(),
-        getBlockfrostContext(),
-        getBankPrivateKey()
-      );
-      const [contractId, txIdContractCreated] =
-        await runtime.contracts.createContract({ contract: close });
-      await runtime.wallet.waitConfirmation(txIdContractCreated);
-      console.log("contractID created", contractId);
+      try {
+        const { bank, runtime } = await readEnvConfigurationFile().then(
+          mkTestEnvironment({})
+        );
+        const runtimeLifecycle = runtime.mkLifecycle(bank);
+        const [contractId, txIdContractCreated] =
+          await runtimeLifecycle.contracts.createContract({
+            contract: close,
+            minimumLovelaceUTxODeposit: 3_000_000,
+          });
+        await bank.waitConfirmation(txIdContractCreated);
+        logInfo(`contractID created : ${contractId}`);
+      } catch (e) {
+        const error = e as AxiosError;
+        logError(JSON.stringify(error.response?.data));
+        logError(JSON.stringify(error));
+        expect(true).toBe(false);
+      }
     },
     10 * MINUTES
   ),
     it(
       "can Apply Inputs to a Contract",
       async () => {
-        const { runtime } = await initialiseBankAndverifyProvisionning(
-          getMarloweRuntimeUrl(),
-          getBlockfrostContext(),
-          getBankPrivateKey()
-        );
-        const notifyTimeout = pipe(addDays(Date.now(), 1), datetoTimeout);
-        const [contractId, txIdContractCreated] =
-          await runtime.contracts.createContract({
-            contract: oneNotifyTrue(notifyTimeout),
-          });
-        await runtime.wallet.waitConfirmation(txIdContractCreated);
+        try {
+          const { bank, runtime } = await readEnvConfigurationFile().then(
+            mkTestEnvironment({})
+          );
 
-        const txIdInputsApplied = await runtime.contracts.applyInputs(
-          contractId,
-          {
-            inputs: [inputNotify],
-          }
-        );
-        const result = await runtime.wallet.waitConfirmation(txIdInputsApplied);
-        expect(result).toBe(true);
+          const runtimeLifecycle = runtime.mkLifecycle(bank);
+
+          const notifyTimeout = pipe(addDays(Date.now(), 1), datetoTimeout);
+          const [contractId, txIdContractCreated] =
+            await runtimeLifecycle.contracts.createContract({
+              contract: oneNotifyTrue(notifyTimeout),
+              minimumLovelaceUTxODeposit: 3_000_000,
+            });
+          await bank.waitConfirmation(txIdContractCreated);
+          logInfo(
+            `contractID status : ${contractId} -> ${
+              (await runtime.client.getContractById(contractId)).status
+            }`
+          );
+          await bank.waitRuntimeSyncingTillCurrentWalletTip(runtime.client);
+          const txIdInputsApplied =
+            await runtimeLifecycle.contracts.applyInputs(contractId, {
+              inputs: [inputNotify],
+            });
+          const result = await bank.waitConfirmation(txIdInputsApplied);
+          expect(result).toBe(true);
+        } catch (e) {
+          const error = e as AxiosError;
+          logError(error.message);
+          logError(JSON.stringify(error.response?.data));
+          logError(JSON.stringify(error));
+          expect(true).toBe(false);
+        }
       },
       10 * MINUTES
     );

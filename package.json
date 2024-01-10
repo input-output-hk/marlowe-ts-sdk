@@ -21,7 +21,8 @@
   "scripts": {
     "build": "tsc --version && tsc --build && shx mkdir -p dist && rollup --config rollup/config.mjs",
     "clean": "npm run clean --workspaces && shx rm -rf dist",
-    "test": "NODE_OPTIONS='--experimental-vm-modules --no-warnings' jest",
+    "test": "NODE_OPTIONS='--experimental-vm-modules --no-warnings' jest --config ./jest.unit.config.js --verbose",
+    "test:e2e": "NODE_OPTIONS='--experimental-vm-modules --no-warnings' jest --runInBand --config ./jest.e2e.config.js --verbose",
     "docs": "typedoc . --treatWarningsAsErrors --options ./typedoc.json",
     "serve": "ws --port 1337 --rewrite '/importmap -> https://cdn.jsdelivr.net/gh/input-output-hk/marlowe-ts-sdk@0.2.0-beta/jsdelivr-npm-importmap.js'",
     "serve-dev": "ws --port 1337 --rewrite '/importmap -> /dist/local-importmap.js'",
@@ -37,7 +38,8 @@
     "packages/runtime/client/rest",
     "packages/runtime/core",
     "packages/runtime/lifecycle",
-    "packages/marlowe-object"
+    "packages/marlowe-object",
+    "packages/testing-kit"
   ],
   "devDependencies": {
     "@blockfrost/blockfrost-js": "5.2.0",

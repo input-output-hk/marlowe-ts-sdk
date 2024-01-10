@@ -1,17 +1,17 @@
 # Development
 
-## Build
+# Build
 
 In order to start develop the SDK you need to install the dependencies and build the packages.
 
-```
+```bash
 $ npm i
 $ npm run build
 ```
 
 If you want to build a single package you can use the `-w` flag or execute the build command from the package folder.
 
-```
+```bash
 # From the root folder
 $ npm run build -w @marlowe.io/language-core-v1
 # Or you can enter the package and build
@@ -19,35 +19,137 @@ $ cd packages/language/core/v1
 $ npm run build
 ```
 
+# Clean
+
 In order to clean the build artifacts you can use the `clean` command.
 
-```
+```bash
 $ npm run clean
 ```
 
-To run the unit test you can execute the `test` command.
+# Tests 
 
+N.B : It is recommended to clean and build the packages before you run the tests to be sure you are playing with the most up to date version of the codebase.
+
+```bash
+$ npm run clean && npm run build
 ```
-$ npm run test
+
+## Unit Tests
+
+To run the unit tests for all the packages, from the root folder you can execute the `test` command : 
+
+```bash
+$ npm test
 ```
 
-## E2E tests
+If you want to run tests for a single package you can use the `-w` flag or execute the build command from the package folder.
 
-In order to run the E2E tests you need to create a `./env/.env.test` file that points to a working version of the Marlowe runtime and a working Blockfrost instance and a faucet PK.
-
-If you haven't done it before, go to https://blockfrost.io/ and create a free-tier account. Then, create a project and copy the project ID. Blockfrost is a Lucid dependency, eventually when
-we migrate to a different library this wont be necessary.
-
-To create an instance of a local Marlowe runtime, follow the instructions in the [Marlowe starter kit](https://github.com/input-output-hk/marlowe-starter-kit/blob/main/docs/preliminaries.md)
-
-TODO: explain how to get the Faucet PK
-
+```bash
+# From the root folder
+$ npm run clean && npm run build && npm test -w @marlowe.io/language-core-v1
+# Or you can enter the package folder and test. You will have to clean and build properly the local package 
+# dependencies of this current package if you modify one of them
+# e.g : `packages/language/core/v1` depends on `packages/adapter`. Be sure you have build correctly this package before runnning your test that way.
+$ cd packages/language/core/v1
+$ npm test
 ```
-MARLOWE_WEB_SERVER_URL="http://<path-to-runtime>:33294/"
-BLOCKFROST_PROJECT_ID="<blockfrost-id>"
-BLOCKFROST_URL="https://cardano-preprod.blockfrost.io/api/v0"
-NETWORK_ID=Preprod
-BANK_PK_HEX='<pk>'
+
+## Integration/E2E Tests
+
+### Setting up the env Configuration File
+
+1. Create a `./env/.env.test` at the root of the project
+2. Copy/Paste the following, and provide the necessary parameter 
+
+```bash
+####################################################
+## Provide a Runtime Instance URL (>= v0.0.5)      #
+####################################################
+## to create an instance of a local Marlowe runtime, follow the instructions in 
+## the Marlowe starter kit : https://github.com/input-output-hk/ marlowe-starter-kit/blob/main/docs/preliminaries.md
+MARLOWE_WEB_SERVER_URL="http://<path-to-a-runtime-instance>:<a-port>"
+####################################################
+
+#####################################################
+## Provide Wallet Dependencies (Necessary for Lucid Library)
+#####################################################
+## Blockfrost Account :  If you haven't done it before, go to https://blockfrost.io/ and create a free-tier account. 
+## Then, create a project and copy the project ID
+BLOCKFROST_PROJECT_ID="<your-blockfrost-project-id>"
+BLOCKFROST_URL="<your-blockfrost-id>"
+## Network used by Blockfrost : private | preview | preprod | mainnet
+NETWORK_NAME=preprod
+## Bank Seed Phrase : The bank is a wallet where you provision enough tAda (>= 100 tAda) to run all 
+## the e2e tests without running out of money. This is your responsability to create this wallet and
+## add tAda using a Faucet.  
+BANK_SEED_PHRASE='[
+    "deal",
+    "place",
+    "depart",
+    "sound",
+    "kick",
+    "daughter",
+    "diamond",
+    "rebel",
+    "update",
+    "shoe",
+    "benefit",
+    "useful",
+    "travel",
+    "fringe",
+    "culture",
+    "dog",
+    "lawsuit",
+    "combine",
+    "run",
+    "vanish",
+    "warm",
+    "rubber",
+    "quit",
+    "system"
+]'
+#####################################################
+
+#####################################################
+## Logging
+#####################################################
+## set to true or false if you want to log Debug Info
+LOG_DEBUG_LEVEL=false 
+```
+#### How to Generate a new Seed Phrase for a Bank Wallet ?
+
+1. At the root of the project : 
+```bash
+npm run -w @marlowe.io/testing-kit genSeedPhrase
+```
+2. Copy/paste the words within quotes in the env file.
+3. Go to one of your favorite Wallet Extension and restore a wallet with this seedphrase
+4. Get a Payment Address from these Browser extensions to provision your Bank with the faucet.
+
+#### How to add tAda to the Bank Wallet via a faucet ? 
+
+1. Retrieve your Bank Wallet payment address
+2. Go to https://docs.cardano.org/cardano-testnet/tools/faucet ask for test Ada on this address.
+3. Wait a moment till the transaction is confirmed and you should be able to run the tests.
+
+### Running the E2E Tests 
+
+To run the e2e tests for all the packages, from the root folder you can execute the `test:e2e` command : 
+
+```bash
+$ npm run test:e2e
+```
+
+If you want to run tests for a single package you can use the `-w` flag or execute the build command from the package folder.
+
+```bash
+# From the root folder
+$ npm run clean && npm run build && npm run test:e2e -w @marlowe.io/runtime-lifecycle
+# Or you can enter the package folder and test. You will have to clean and build properly the local package 
+# dependencies of this current package if you modify one of them
+$ cd packages/runtime/client/rest
+$ npm run test:e2e
 ```
 
 ## Documentation
@@ -56,7 +158,7 @@ BANK_PK_HEX='<pk>'
 
 To compile all documentation
 
-```
+```bash
 $ npm run docs
 ```
 
@@ -89,7 +191,7 @@ This project manages its changelog with [scriv](https://github.com/nedbat/scriv)
 
 Create a new changelog entry template with
 
-```
+```bash
 $ scriv create
 ```
 
