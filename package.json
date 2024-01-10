@@ -1,6 +1,6 @@
 {
   "name": "marlowe-ts-sdk",
-  "version": "0.3.0-beta-rc1",
+  "version": "0.3.0-beta-rc2",
   "description": "Marlowe Runtime SDK for building and managing Marlowe Contracts",
   "engines": {
     "node": ">=14.20.1"
@@ -24,7 +24,7 @@
     "test": "NODE_OPTIONS='--experimental-vm-modules --no-warnings' jest --config ./jest.unit.config.js --verbose",
     "test:e2e": "NODE_OPTIONS='--experimental-vm-modules --no-warnings' jest --runInBand --config ./jest.e2e.config.js --verbose",
     "docs": "typedoc . --treatWarningsAsErrors --options ./typedoc.json",
-    "serve": "ws --port 1337 --rewrite '/importmap -> https://cdn.jsdelivr.net/gh/input-output-hk/marlowe-ts-sdk@0.2.0-beta/jsdelivr-npm-importmap.js'",
+    "serve": "ws --port 1337 --rewrite '/importmap -> https://cdn.jsdelivr.net/gh/input-output-hk/marlowe-ts-sdk@0.3.0-beta-rc2/jsdelivr-npm-importmap.js'",
     "serve-dev": "ws --port 1337 --rewrite '/importmap -> /dist/local-importmap.js'",
     "postinstall": "cd examples/nodejs && npm install"
   },

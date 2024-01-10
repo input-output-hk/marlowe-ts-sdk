@@ -27,7 +27,7 @@ In order to clean the build artifacts you can use the `clean` command.
 $ npm run clean
 ```
 
-# Tests 
+# Tests
 
 N.B : It is recommended to clean and build the packages before you run the tests to be sure you are playing with the most up to date version of the codebase.
 
@@ -37,7 +37,7 @@ $ npm run clean && npm run build
 
 ## Unit Tests
 
-To run the unit tests for all the packages, from the root folder you can execute the `test` command : 
+To run the unit tests for all the packages, from the root folder you can execute the `test` command :
 
 ```bash
 $ npm test
@@ -48,7 +48,7 @@ If you want to run tests for a single package you can use the `-w` flag or execu
 ```bash
 # From the root folder
 $ npm run clean && npm run build && npm test -w @marlowe.io/language-core-v1
-# Or you can enter the package folder and test. You will have to clean and build properly the local package 
+# Or you can enter the package folder and test. You will have to clean and build properly the local package
 # dependencies of this current package if you modify one of them
 # e.g : `packages/language/core/v1` depends on `packages/adapter`. Be sure you have build correctly this package before runnning your test that way.
 $ cd packages/language/core/v1
@@ -60,13 +60,13 @@ $ npm test
 ### Setting up the env Configuration File
 
 1. Create a `./env/.env.test` at the root of the project
-2. Copy/Paste the following, and provide the necessary parameter 
+2. Copy/Paste the following, and provide the necessary parameter
 
 ```bash
 ####################################################
 ## Provide a Runtime Instance URL (>= v0.0.5)      #
 ####################################################
-## to create an instance of a local Marlowe runtime, follow the instructions in 
+## to create an instance of a local Marlowe runtime, follow the instructions in
 ## the Marlowe starter kit : https://github.com/input-output-hk/ marlowe-starter-kit/blob/main/docs/preliminaries.md
 MARLOWE_WEB_SERVER_URL="http://<path-to-a-runtime-instance>:<a-port>"
 ####################################################
@@ -74,15 +74,15 @@ MARLOWE_WEB_SERVER_URL="http://<path-to-a-runtime-instance>:<a-port>"
 #####################################################
 ## Provide Wallet Dependencies (Necessary for Lucid Library)
 #####################################################
-## Blockfrost Account :  If you haven't done it before, go to https://blockfrost.io/ and create a free-tier account. 
+## Blockfrost Account :  If you haven't done it before, go to https://blockfrost.io/ and create a free-tier account.
 ## Then, create a project and copy the project ID
 BLOCKFROST_PROJECT_ID="<your-blockfrost-project-id>"
 BLOCKFROST_URL="<your-blockfrost-id>"
 ## Network used by Blockfrost : private | preview | preprod | mainnet
 NETWORK_NAME=preprod
-## Bank Seed Phrase : The bank is a wallet where you provision enough tAda (>= 100 tAda) to run all 
+## Bank Seed Phrase : The bank is a wallet where you provision enough tAda (>= 100 tAda) to run all
 ## the e2e tests without running out of money. This is your responsability to create this wallet and
-## add tAda using a Faucet.  
+## add tAda using a Faucet.
 BANK_SEED_PHRASE='[
     "deal",
     "place",
@@ -115,11 +115,11 @@ BANK_SEED_PHRASE='[
 ## Logging
 #####################################################
 ## set to true or false if you want to log Debug Info
-LOG_DEBUG_LEVEL=false 
+LOG_DEBUG_LEVEL=false
 ```
 #### How to Generate a new Seed Phrase for a Bank Wallet ?
 
-1. At the root of the project : 
+1. At the root of the project :
 ```bash
 npm run -w @marlowe.io/testing-kit genSeedPhrase
 ```
@@ -127,15 +127,15 @@ npm run -w @marlowe.io/testing-kit genSeedPhrase
 3. Go to one of your favorite Wallet Extension and restore a wallet with this seedphrase
 4. Get a Payment Address from these Browser extensions to provision your Bank with the faucet.
 
-#### How to add tAda to the Bank Wallet via a faucet ? 
+#### How to add tAda to the Bank Wallet via a faucet ?
 
 1. Retrieve your Bank Wallet payment address
 2. Go to https://docs.cardano.org/cardano-testnet/tools/faucet ask for test Ada on this address.
 3. Wait a moment till the transaction is confirmed and you should be able to run the tests.
 
-### Running the E2E Tests 
+### Running the E2E Tests
 
-To run the e2e tests for all the packages, from the root folder you can execute the `test:e2e` command : 
+To run the e2e tests for all the packages, from the root folder you can execute the `test:e2e` command :
 
 ```bash
 $ npm run test:e2e
@@ -146,7 +146,7 @@ If you want to run tests for a single package you can use the `-w` flag or execu
 ```bash
 # From the root folder
 $ npm run clean && npm run build && npm run test:e2e -w @marlowe.io/runtime-lifecycle
-# Or you can enter the package folder and test. You will have to clean and build properly the local package 
+# Or you can enter the package folder and test. You will have to clean and build properly the local package
 # dependencies of this current package if you modify one of them
 $ cd packages/runtime/client/rest
 $ npm run test:e2e
@@ -229,13 +229,13 @@ And in a separate project you can install the tarballs using a file url when dec
 ```json
 {
   "dependencies": {
-    "@marlowe.io/runtime-lifecycle": "file:<path-to-dist>/marlowe.io-runtime-lifecycle-0.2.0-beta.tgz",
-    "@marlowe.io/runtime-rest-client": "file:<path-to-dist>/marlowe.io-runtime-rest-client-0.2.0-beta.tgz",
-    "@marlowe.io/adapter": "file:<path-to-dist>/marlowe.io-adapter-0.2.0-beta.tgz",
-    "@marlowe.io/runtime-core": "file:<path-to-dist>/marlowe.io-runtime-core-0.2.0-beta.tgz",
-    "@marlowe.io/language-core-v1": "file:<path-to-dist>/marlowe.io-language-core-v1-0.2.0-beta.tgz",
-    "@marlowe.io/language-examples": "file:<path-to-dist>/marlowe.io-language-examples-0.2.0-beta.tgz",
-    "@marlowe.io/wallet": "file:<path-to-dist>/marlowe.io-wallet-0.2.0-beta.tgz"
+    "@marlowe.io/runtime-lifecycle": "file:<path-to-dist>/marlowe.io-runtime-lifecycle-0.3.0-beta-rc2.tgz",
+    "@marlowe.io/runtime-rest-client": "file:<path-to-dist>/marlowe.io-runtime-rest-client-0.3.0-beta-rc2.tgz",
+    "@marlowe.io/adapter": "file:<path-to-dist>/marlowe.io-adapter-0.3.0-beta-rc2.tgz",
+    "@marlowe.io/runtime-core": "file:<path-to-dist>/marlowe.io-runtime-core-0.3.0-beta-rc2.tgz",
+    "@marlowe.io/language-core-v1": "file:<path-to-dist>/marlowe.io-language-core-v1-0.3.0-beta-rc2.tgz",
+    "@marlowe.io/language-examples": "file:<path-to-dist>/marlowe.io-language-examples-0.3.0-beta-rc2.tgz",
+    "@marlowe.io/wallet": "file:<path-to-dist>/marlowe.io-wallet-0.3.0-beta-rc2.tgz"
   }
 }
 ```

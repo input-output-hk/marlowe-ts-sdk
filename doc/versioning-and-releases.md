@@ -10,7 +10,7 @@ The TS-SDK follows a versioning system where, after version 1, it aligns with se
 
 Before version 1, the TS-SDK adheres to beta rules:
 
-- **Beta Versions:** While in the 0.x.x versions, if a breaking change is introduced, the Major version is not incremented; instead, the Minor version is increased. Additionally, these versions will end with the `-beta` suffix, for example `0.2.0-beta`.
+- **Beta Versions:** While in the 0.x.x versions, if a breaking change is introduced, the Major version is not incremented; instead, the Minor version is increased. Additionally, these versions will end with the `-beta` suffix, for example `0.3.0-beta`.
 
 ## Release Checklist
 
@@ -29,7 +29,7 @@ Before version 1, the TS-SDK adheres to beta rules:
     - Update version numbers in project metadata.
 
 4. **QA Approval:**
-    
+
     - Obtain approval from the Quality Assurance (QA) team.
 
 ### Release Checklist:
@@ -59,7 +59,7 @@ Before version 1, the TS-SDK adheres to beta rules:
     - Manually trigger the `deploy docs` github action
 
 6. **Announcement:**
-    
+
     - Contact the marketing and devrel team to announce the release.
 
 ## Note:

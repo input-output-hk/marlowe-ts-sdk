@@ -28,6 +28,7 @@ In order to interact with Marlowe contracts, the **TS-SDK** needs a Runtime inst
 |         | runtime v0.0.5 | runtimev 0.0.6 |
 | ------- | :--------:     | :------------: |
 | [SDK 0.2.0-beta](https://github.com/input-output-hk/marlowe-ts-sdk/releases/tag/0.2.0-beta)    |     ✓      |    x            |
+| [SDK 0.3.0-beta-rc2](https://github.com/input-output-hk/marlowe-ts-sdk/releases/tag/0.3.0-beta-rc2)    |     ✓      |    ✓            |
 
 
 To get a running instance of the Runtime, it is recommended to check out the instructions on the [Marlowe Starter Kit](https://github.com/input-output-hk/marlowe-starter-kit)

@@ -1,6 +1,6 @@
 {
   "name": "@marlowe.io/testing-kit",
-  "version": "0.3.0-beta-rc1",
+  "version": "0.3.0-beta-rc2",
   "description": "Testing libraries to Support Marlowe Development",
   "repository": "https://github.com/input-output-hk/marlowe-ts-sdk",
   "publishConfig": {
@@ -33,11 +33,11 @@
     }
   },
   "dependencies": {
-    "@marlowe.io/wallet": "0.3.0-beta-rc1",
-    "@marlowe.io/runtime-core": "0.3.0-beta-rc1",
-    "@marlowe.io/runtime-rest-client": "0.3.0-beta-rc1",
-    "@marlowe.io/adapter": "0.3.0-beta-rc1",
-    "@marlowe.io/language-core-v1": "0.3.0-beta-rc1",
+    "@marlowe.io/wallet": "0.3.0-beta-rc2",
+    "@marlowe.io/runtime-core": "0.3.0-beta-rc2",
+    "@marlowe.io/runtime-rest-client": "0.3.0-beta-rc2",
+    "@marlowe.io/adapter": "0.3.0-beta-rc2",
+    "@marlowe.io/language-core-v1": "0.3.0-beta-rc2",
     "bip39": "3.1.0",
     "fp-ts": "2.16.1"
   }
