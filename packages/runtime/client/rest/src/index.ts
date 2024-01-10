@@ -15,7 +15,7 @@ import { pipe } from "fp-ts/lib/function.js";
 
 import { MarloweJSONCodec } from "@marlowe.io/adapter/codec";
 import * as HTTP from "@marlowe.io/adapter/http";
-import { Bundle, Label } from "@marlowe.io/marlowe-object";
+import { ContractBundle } from "@marlowe.io/marlowe-object";
 
 import * as Payouts from "./payout/endpoints/collection.js";
 import * as Payout from "./payout/endpoints/singleton.js";
@@ -87,12 +87,10 @@ export interface RestClient {
 
   /**
    * Uploads a marlowe-object bundle to the runtime, giving back the hash of the main contract and the hashes of the intermediate objects.
-   * @param mainId A label that corresponds to the main entrypoint of the contract
-   * @param bundle A list of object types that are referenced by the main contract
+   * @param bundle Contains a list of object types and a main contract reference
    */
   createContractSources(
-    mainId: Label,
-    bundle: Bundle
+    bundle: ContractBundle
   ): Promise<Sources.CreateContractSourcesResponse>;
 
   /**
@@ -315,8 +313,8 @@ export function mkRestClient(baseURL: string): RestClient {
         )
       );
     },
-    createContractSources(mainId, bundle) {
-      return Sources.createContractSources(axiosInstance)(mainId, bundle);
+    createContractSources({ main, bundle }) {
+      return Sources.createContractSources(axiosInstance)(main, bundle);
     },
     getContractSourceById(request) {
       return Sources.getContractSourceById(axiosInstance)(request);

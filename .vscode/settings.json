@@ -1,3 +1,18 @@
 {
-  "typescript.tsdk": "node_modules/typescript/lib"
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "debug.javascript.terminalOptions": {
+    "outFiles": [
+      "${workspaceFolder}/examples/nodejs/dist/**/*.js",
+      "${workspaceFolder}/packages/adapter/dist/esm/**/*.js",
+      "${workspaceFolder}/packages/language/core/v1/dist/esm/**/*.js",
+      "${workspaceFolder}/packages/language/examples/dist/esm/**/*.js",
+      "${workspaceFolder}/packages/language/specification-client/dist/esm/**/*.js",
+      "${workspaceFolder}/packages/token-metadata-client/dist/esm/**/*.js",
+      "${workspaceFolder}/packages/wallet/dist/esm/**/*.js",
+      "${workspaceFolder}/packages/runtime/client/rest/dist/esm/**/*.js",
+      "${workspaceFolder}/packages/runtime/core/dist/esm/**/*.js",
+      "${workspaceFolder}/packages/runtime/lifecycle/dist/esm/**/*.js",
+      "${workspaceFolder}/packages/marlowe-object/dist/esm/**/*.js"
+    ]
+  }
 }

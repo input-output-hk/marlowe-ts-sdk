@@ -59,7 +59,7 @@ import { Action } from "./actions.js";
 import { choiceIdCmp, inBounds } from "./choices.js";
 import { Case, Contract, matchContract } from "./contract.js";
 import { Environment, TimeInterval } from "./environment.js";
-import { Input, InputContent } from "./inputs.js";
+import { IChoice, IDeposit, Input, InputContent } from "./inputs.js";
 import { Party } from "./participants.js";
 import { AccountId, matchPayee, Payee } from "./payee.js";
 import { Accounts, accountsCmp, MarloweState } from "./state.js";
@@ -78,6 +78,7 @@ import {
   Transaction,
   TransactionError,
   TransactionOutput,
+  TransactionWarning,
 } from "./transaction.js";
 import {
   matchObservation,
@@ -87,10 +88,12 @@ import {
 } from "./value-and-observation.js";
 import * as G from "./guards.js";
 import { POSIXTime } from "@marlowe.io/adapter/time";
+import * as Big from "@marlowe.io/adapter/bigint";
 
 export {
   Payment,
   Transaction,
+  SingleInputTx,
   NonPositiveDeposit,
   NonPositivePay,
   PartialPay,
@@ -109,7 +112,7 @@ export {
   TransactionSuccess,
   TransactionOutput,
 } from "./transaction.js";
-
+export { inBounds };
 /**
  * The function moneyInAccount returns the number of tokens a particular AccountId has in their account.
  * @hidden
@@ -290,9 +293,10 @@ const shadowing = (warn: Shadowing): Shadowing => warn;
 const assertionFailed = "assertion_failed" as const;
 
 /**
- * @hidden
+ * TODO: Comment
+ * @category Transaction Warning
  */
-type NoWarning = "NoWarning";
+export type NoWarning = "NoWarning";
 
 /**
  * @hidden
@@ -300,9 +304,10 @@ type NoWarning = "NoWarning";
 const noWarning = "NoWarning" as const;
 
 /**
- * @hidden
+ * TODO: Comment
+ * @category Transaction Warning
  */
-type ReduceWarning =
+export type ReduceWarning =
   | NoWarning
   | NonPositivePay
   | PartialPay
@@ -382,9 +387,6 @@ function giveMoney(
   ];
 }
 
-const minBigint = (a: bigint, b: bigint): bigint => (a < b ? a : b);
-const maxBigint = (a: bigint, b: bigint): bigint => (a > b ? a : b);
-
 /**
  * @hidden
  */
@@ -431,7 +433,7 @@ function reduceContractStep(
         });
       }
       const balance = moneyInAccount(from_account, token, state.accounts);
-      const paidAmount = minBigint(amountToPay, balance);
+      const paidAmount = Big.min(amountToPay, balance);
       const newBalance = balance - paidAmount;
       const newAccs = updateMoneyInAccount(
         from_account,
@@ -533,21 +535,23 @@ function reduceContractStep(
 /**
  * @hidden
  */
-type ReduceResult =
-  | {
-      type: "ContractQuiescent";
-      reduced: boolean;
-      state: MarloweState;
-      warnings: ReduceWarning[];
-      payments: Payment[];
-      continuation: Contract;
-    }
-  | AmbiguousTimeIntervalError;
+export type ContractQuiescentReduceResult = {
+  type: "ContractQuiescent";
+  reduced: boolean;
+  state: MarloweState;
+  warnings: ReduceWarning[];
+  payments: Payment[];
+  continuation: Contract;
+};
+/**
+ * @hidden
+ */
+type ReduceResult = ContractQuiescentReduceResult | AmbiguousTimeIntervalError;
 
 /**
  * @hidden
  */
-function reduceContractUntilQuiescent(
+export function reduceContractUntilQuiescent(
   env: Environment,
   state: MarloweState,
   cont: Contract
@@ -715,6 +719,20 @@ const hashMismatchError = "TEHashMismatch" as const;
 
 type ApplyResult = AppliedResult | ApplyNoMatchError | HashMismatchError;
 
+function inputToInputContent(input: Input): InputContent {
+  if (input === "input_notify") {
+    return "input_notify";
+  }
+  if ("that_deposits" in input) {
+    input;
+    return input as IDeposit;
+  }
+  if ("input_that_chooses_num" in input) {
+    input;
+    return input as IChoice;
+  }
+  return "input_notify";
+}
 /**
  * @hidden
  */
@@ -728,7 +746,7 @@ function applyCases(
   const [headCase, ...tailCases] = cases;
   const action = headCase.case;
   const cont = getContinuation(input, headCase);
-  const result = applyAction(env, state, input, action);
+  const result = applyAction(env, state, inputToInputContent(input), action);
   switch (result.type) {
     case "AppliedAction":
       if (typeof cont === "undefined") {
@@ -762,15 +780,9 @@ function applyInput(
   );
 }
 
-// TODO: I think we have to move this to transaction.ts and make sure JSON serialization aligns.
-type TransactionWarning =
-  | NonPositiveDeposit
-  | NonPositivePay
-  | PartialPay
-  | Shadowing
-  | AssertionFailed;
-
-function convertReduceWarning(warnings: ReduceWarning[]): TransactionWarning[] {
+export function convertReduceWarning(
+  warnings: ReduceWarning[]
+): TransactionWarning[] {
   return warnings.filter((w) => w !== "NoWarning") as TransactionWarning[];
 }
 
@@ -821,7 +833,7 @@ type ApplyAllResult =
 /**
  * @hidden
  */
-function applyAllInputs(
+export function applyAllInputs(
   env: Environment,
   state: MarloweState,
   cont: Contract,
@@ -909,7 +921,7 @@ function fixInterval(
     return invalidInterval(interval.from, interval.to);
   if (interval.to < state.minTime)
     return intervalInPastError(interval.from, interval.to, state.minTime);
-  const newFrom = maxBigint(interval.from, state.minTime);
+  const newFrom = Big.max(interval.from, state.minTime);
   const environment = { timeInterval: { from: newFrom, to: interval.to } };
   return intervalTrimmed({
     environment,

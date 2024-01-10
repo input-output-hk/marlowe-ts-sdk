@@ -3,16 +3,19 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "build": "tsc",
-    "wallet-flow": "node dist/wallet-flow.js",
-    "escrow": "node dist/escrow-flow.js"
+    "build": "tsc --build src",
+    "clean": "tsc --build --clean && shx rm -rf dist",
+    "wallet-flow": "ts-node-esm src/wallet-flow.ts",
+    "escrow": "ts-node-esm src/escrow-flow.ts",
+    "marlowe-object-flow": "ts-node-esm src/marlowe-object-flow.ts"
   },
   "type": "module",
   "devDependencies": {
+    "ts-node": "^10.9.2",
     "typescript": "^4.9.5"
   },
   "dependencies": {
-    "@marlowe.io/language-core-v1": "^0.2.0-alpha-22",
+    "@inquirer/prompts": "^3.3.0",
     "arg": "^5.0.2"
   }
 }

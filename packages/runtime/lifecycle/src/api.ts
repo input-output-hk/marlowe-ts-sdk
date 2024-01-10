@@ -10,7 +10,7 @@ import {
   Tags,
   TxId,
 } from "@marlowe.io/runtime-core";
-import { RestDI } from "@marlowe.io/runtime-rest-client";
+import { RestClient, RestDI } from "@marlowe.io/runtime-rest-client";
 import { RolesConfiguration } from "@marlowe.io/runtime-rest-client/contract";
 import { ISO8601 } from "@marlowe.io/adapter/time";
 import {
@@ -20,9 +20,11 @@ import {
   RoleName,
 } from "@marlowe.io/language-core-v1";
 import { Next } from "@marlowe.io/language-core-v1/next";
+import { SingleInputTx } from "@marlowe.io/language-core-v1/transaction.js";
 
 export type RuntimeLifecycle = {
   wallet: WalletAPI;
+  restClient: RestClient;
   contracts: ContractsAPI;
   payouts: PayoutsAPI;
 };
@@ -263,6 +265,12 @@ export interface ContractsAPI {
    * @throws Error | DecodingError
    */
   getContractIds(): Promise<ContractId[]>;
+
+  /**
+   * Get a list of the applied inputs for a given contract
+   * @param contractId
+   */
+  getInputHistory(contractId: ContractId): Promise<SingleInputTx[]>;
 }
 export type PayoutsDI = WalletDI & RestDI;
 

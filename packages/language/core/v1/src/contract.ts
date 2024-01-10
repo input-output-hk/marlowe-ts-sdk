@@ -13,7 +13,7 @@ import { Action, ActionGuard } from "./actions.js";
 import { pipe } from "fp-ts/lib/function.js";
 import getUnixTime from "date-fns/getUnixTime/index.js";
 import { BuiltinByteString } from "./inputs.js";
-
+import * as Big from "@marlowe.io/adapter/bigint";
 /**
  * Search [[lower-name-builders]]
  * @hidden
@@ -330,4 +330,37 @@ export function matchContract<T>(matcher: Partial<ContractMatcher<T>>) {
       return matcher.assert(contract);
     }
   };
+}
+
+/**
+ * This function calculates the next timeout of a contract after a given minTime.
+ * @param minTime Normally the current time, but it represents any time for which you want to see what is the next timeout after that.
+ * @param contract The contract to analyze
+ * @returns The next timeout after minTime, or undefined if there is no timeout after minTime.
+ * @category Introspection
+ */
+export function getNextTimeout(
+  contract: Contract,
+  minTime: Timeout
+): Timeout | undefined {
+  return matchContract<Timeout | undefined>({
+    close: () => undefined,
+    pay: (pay) => getNextTimeout(pay.then, minTime),
+    if: (ifContract) => {
+      const thenTimeout = getNextTimeout(ifContract.then, minTime);
+      const elseTimeout = getNextTimeout(ifContract.else, minTime);
+      return thenTimeout && elseTimeout
+        ? Big.min(thenTimeout, elseTimeout)
+        : thenTimeout || elseTimeout;
+    },
+    when: (whenContract) => {
+      if (minTime > whenContract.timeout) {
+        return getNextTimeout(whenContract.timeout_continuation, minTime);
+      } else {
+        return whenContract.timeout;
+      }
+    },
+    let: (letContract) => getNextTimeout(letContract.then, minTime),
+    assert: (assertContract) => getNextTimeout(assertContract.then, minTime),
+  })(contract);
 }

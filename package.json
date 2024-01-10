@@ -24,7 +24,8 @@
     "test": "NODE_OPTIONS='--experimental-vm-modules --no-warnings' jest",
     "docs": "typedoc . --treatWarningsAsErrors --options ./typedoc.json",
     "serve": "ws --port 1337 --rewrite '/importmap -> https://cdn.jsdelivr.net/gh/input-output-hk/marlowe-ts-sdk@0.2.0-beta/jsdelivr-npm-importmap.js'",
-    "serve-dev": "ws --port 1337 --rewrite '/importmap -> /dist/local-importmap.js'"
+    "serve-dev": "ws --port 1337 --rewrite '/importmap -> /dist/local-importmap.js'",
+    "postinstall": "cd examples/nodejs && npm install"
   },
   "workspaces": [
     "packages/adapter",

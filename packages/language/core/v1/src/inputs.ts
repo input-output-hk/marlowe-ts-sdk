@@ -1,5 +1,5 @@
 import * as t from "io-ts/lib/index.js";
-import { ContractGuard } from "./contract.js";
+import { Contract, ContractGuard } from "./contract.js";
 import {
   ChoiceId,
   ChoiceIdGuard,
@@ -9,6 +9,7 @@ import {
 import { Party, PartyGuard } from "./participants.js";
 import { AccountId, AccountIdGuard } from "./payee.js";
 import { Token, TokenGuard } from "./token.js";
+import { Deposit } from "./next/index.js";
 
 /**
  * TODO: Comment
@@ -115,23 +116,52 @@ export type NormalInput = InputContent;
  */
 export const NormalInputGuard = InputContentGuard;
 
-/**
- * TODO: Revisit
- * @category Input
- */
-export type MerkleizedInput = t.TypeOf<typeof MerkleizedInputGuard>;
-/**
- * TODO: Revisit
- * @category Input
- */
-export const MerkleizedInputGuard = t.intersection([
-  InputContentGuard,
+export interface MerkleizedHashAndContinuation {
+  continuation_hash: BuiltinByteString;
+  merkleized_continuation: Contract;
+}
+
+export const MerkleizedHashAndContinuationGuard: t.Type<MerkleizedHashAndContinuation> =
   t.type({
     continuation_hash: BuiltinByteStringGuard,
     merkleized_continuation: ContractGuard,
-  }),
+  });
+
+export type MerkleizedDeposit = IDeposit & MerkleizedHashAndContinuation;
+
+export const MerkleizedDepositGuard: t.Type<MerkleizedDeposit> = t.intersection(
+  [IDepositGuard, MerkleizedHashAndContinuationGuard]
+);
+
+export type MerkleizedChoice = IChoice & MerkleizedHashAndContinuation;
+
+export const MerkleizedChoiceGuard: t.Type<MerkleizedChoice> = t.intersection([
+  IChoiceGuard,
+  MerkleizedHashAndContinuationGuard,
 ]);
 
+// NOTE: Because INotify is serialized as a string, it is invalid to do the &.
+//       the type in marlowe-cardano is serialized just as the hash and continuation.
+export type MerkleizedNotify = MerkleizedHashAndContinuation;
+export const MerkleizedNotifyGuard = MerkleizedHashAndContinuationGuard;
+
+/**
+ * TODO: Revisit
+ * @category Input
+ */
+export type MerkleizedInput =
+  | MerkleizedDeposit
+  | MerkleizedChoice
+  | MerkleizedNotify;
+/**
+ * TODO: Revisit
+ * @category Input
+ */
+export const MerkleizedInputGuard = t.union([
+  MerkleizedDepositGuard,
+  MerkleizedChoiceGuard,
+  MerkleizedNotifyGuard,
+]);
 /**
  * TODO: Revisit
  * @category Input
