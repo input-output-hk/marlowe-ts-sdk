@@ -95,7 +95,7 @@ interface CanChoose {
 
 /**
  * This Applicable action is intended to be used when the contract is not in a quiescent state.
- * This means that the contract is either timeouted, or it was just created and it doesn't starts with a `When`
+ * This means that the contract is either timed out, or it was just created and it doesn't starts with a `When`
  */
 interface CanAdvance {
   type: "Advance";
@@ -165,7 +165,7 @@ export async function getApplicableActions(
   if (cont === "close") return applicableActions;
   if ("when" in cont) {
     const applicableActionsFromCases = await Promise.all(
-      cont.when.map((cse) =>
+      cont.when.map((aCase) =>
         getApplicableActionFromCase(
           restClient,
           env,
@@ -173,7 +173,7 @@ export async function getApplicableActions(
           initialReduce.state,
           initialReduce.payments,
           convertReduceWarning(initialReduce.warnings),
-          cse,
+          aCase,
           contractDetails.roleTokenMintingPolicyId
         )
       )
@@ -388,22 +388,22 @@ async function getApplicableActionFromCase(
   state: MarloweState,
   previousPayments: Payment[],
   previousWarnings: TransactionWarning[],
-  cse: Case,
+  aCase: Case,
   policyId: PolicyId
 ): Promise<ApplicableActionAccumulator> {
-  let cseContinuation: Contract;
-  if ("merkleized_then" in cse) {
-    cseContinuation = await restClient.getContractSourceById({
-      contractSourceId: cse.merkleized_then,
+  let aCaseContinuation: Contract;
+  if ("merkleized_then" in aCase) {
+    aCaseContinuation = await restClient.getContractSourceById({
+      contractSourceId: aCase.merkleized_then,
     });
   } else {
-    cseContinuation = cse.then;
+    aCaseContinuation = aCase.then;
   }
   function decorateInput(content: InputContent): Input {
-    if ("merkleized_then" in cse) {
+    if ("merkleized_then" in aCase) {
       const merkleizedHashAndContinuation = {
-        continuation_hash: cse.merkleized_then,
-        merkleized_continuation: cseContinuation,
+        continuation_hash: aCase.merkleized_then,
+        merkleized_continuation: aCaseContinuation,
       };
       // MerkleizedNotify are serialized as the plain merkle object
       if (content === "input_notify") {
@@ -420,8 +420,8 @@ async function getApplicableActionFromCase(
     }
   }
 
-  if (isDepositAction(cse.case)) {
-    const deposit = cse.case;
+  if (isDepositAction(aCase.case)) {
+    const deposit = aCase.case;
     return accumulatorFromDeposit(env, state, {
       type: "Deposit",
       deposit,
@@ -450,8 +450,8 @@ async function getApplicableActionFromCase(
         };
       },
     });
-  } else if (isChoice(cse.case)) {
-    const choice = cse.case;
+  } else if (isChoice(aCase.case)) {
+    const choice = aCase.case;
 
     return accumulatorFromChoice({
       type: "Choice",
@@ -482,7 +482,7 @@ async function getApplicableActionFromCase(
       },
     });
   } else {
-    const notify = cse.case;
+    const notify = aCase.case;
     if (!evalObservation(env, state, notify.notify_if)) {
       return mergeApplicableActionAccumulator.empty;
     }

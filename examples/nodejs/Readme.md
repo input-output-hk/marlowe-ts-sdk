@@ -15,7 +15,7 @@ Then you need to create a `.config.json` file with the following content
   // https://blockfrost.io/
   "blockfrostProjectId": "YOUR_PROJECT_ID",
   "blockfrostUrl": "https://cardano-preprod.blockfrost.io/api/v0",
-  "blockfrostNetwork": "Preprod",
+  "network": "Preprod",
   // You can create this seed phrase from any wallet. Do not reuse a real wallet phrase
   // for a test example.
   "seedPhrase": "alpha beta delta...",

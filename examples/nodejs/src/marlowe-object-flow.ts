@@ -655,5 +655,9 @@ async function main() {
     runtimeURL,
     wallet,
   });
-  await mainLoop(lifecycle, rewardAddress);
+  try {
+    await mainLoop(lifecycle, rewardAddress);
+  } catch (e) {
+    console.log(`Error : ${JSON.stringify(e, null, 4)}`);
+  }
 }
