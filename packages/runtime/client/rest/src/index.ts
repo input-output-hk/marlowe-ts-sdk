@@ -245,7 +245,7 @@ export interface RestClient {
     withdrawalId: WithdrawalId,
     hexTransactionWitnessSet: HexTransactionWitnessSet
   ): Promise<void>;
-  
+
   /**
    * Get payouts to parties from role-based contracts.
    * @see {@link https://docs.marlowe.iohk.io/api/get-role-payouts | The backend documentation}
@@ -564,7 +564,8 @@ export function mkFPTSRestClient(baseURL: string): FPTSRestAPI {
   });
 
   return {
-    healthcheck: () => TE.fromTask<RuntimeStatus,Error>(() => healthcheck(axiosInstance)),
+    healthcheck: () =>
+      TE.fromTask<RuntimeStatus, Error>(() => healthcheck(axiosInstance)),
     payouts: {
       getHeadersByRange: Payouts.getHeadersByRangeViaAxios(axiosInstance),
       get: Payout.getViaAxios(axiosInstance),

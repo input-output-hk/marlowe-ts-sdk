@@ -1,6 +1,6 @@
 /**
  * This module provides {@link @marlowe.io/wallet!api.WalletAPI} extended capabilities for
- * testing purposes. It is used for E2E testing in 2 paricular `@marlowe.io` packages : 
+ * testing purposes. It is used for E2E testing in 2 paricular `@marlowe.io` packages :
  *   - {@link @marlowe.io/runtime-rest-client}
  *   - {@link @marlowe.io/runtime-lifecycle}
  * @packageDocumentation
@@ -43,13 +43,13 @@ export function mkLucidWalletTest(lucidWallet: Lucid): WalletTestAPI {
 /**
  * `waitRuntimeSyncingTillCurrentWalletTip` implementation using a Lucid Wallet
  * @remarks
- * This implementation is approximative because we are waiting for the runtime chain to sync and 
- * not the runtime itself. The Runtime doesn't provide a tip representing the last slot read but 
+ * This implementation is approximative because we are waiting for the runtime chain to sync and
+ * not the runtime itself. The Runtime doesn't provide a tip representing the last slot read but
  * it provides the last slot where a contract Tx activity has been read.
- * We are adding a sleep at the end, to artificially wait the runtime to sync on a synced Runtime Chain. 
- * @param client 
- * @param aSlotNo 
- * @returns 
+ * We are adding a sleep at the end, to artificially wait the runtime to sync on a synced Runtime Chain.
+ * @param client
+ * @param aSlotNo
+ * @returns
  * @hidden
  */
 const waitRuntimeSyncingTillCurrentWalletTip =
@@ -65,9 +65,9 @@ const waitRuntimeSyncingTillCurrentWalletTip =
 
 /**
  * Predicate that verify is the Runtime Chain Tip >= to a givent slot
- * @param client 
- * @param aSlotNo 
- * @returns 
+ * @param client
+ * @param aSlotNo
+ * @returns
  */
 export const isRuntimeChainMoreAdvancedThan =
   (client: RestClient, aSlotNo: bigint) => () =>

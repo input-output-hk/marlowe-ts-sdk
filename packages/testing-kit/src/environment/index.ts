@@ -5,9 +5,13 @@ import { Lucid } from "lucid-cardano";
 
 import { RuntimeLifecycle } from "@marlowe.io/runtime-lifecycle/api";
 import { Assets } from "@marlowe.io/runtime-core";
-import { TestConfiguration, logInfo, logWalletInfo, mkLucidWalletTest } from "@marlowe.io/testing-kit";
+import {
+  TestConfiguration,
+  logInfo,
+  logWalletInfo,
+  mkLucidWalletTest,
+} from "@marlowe.io/testing-kit";
 import { ProvisionRequest, WalletTestAPI } from "../wallet/api.js";
-
 
 /**
  * List of Participants available for a test
@@ -19,7 +23,7 @@ export type TestEnvironment = {
   bank: WalletTestAPI;
   /**
    * List of Participants available for the test
-  */
+   */
   participants: Participants;
   /**
    * Access to runtime client and the runtime lifecycle api
@@ -34,23 +38,23 @@ export type TestEnvironment = {
  * List of Participants available for a test
  */
 export type Participants = {
-  [participant: string]: 
-     
-    { /**
-       * Wallet Test instance 
-       */
-      wallet: WalletTestAPI,
-      /**
-       * List of Assets provisionned By the Bank Wallet
-       */ 
-      assetsProvisionned: Assets };
+  [participant: string]: {
+    /**
+     * Wallet Test instance
+     */
+    wallet: WalletTestAPI;
+    /**
+     * List of Assets provisionned By the Bank Wallet
+     */
+    assetsProvisionned: Assets;
+  };
 };
 
 /**
- * Provide a Test Environment to execute E2E tests over a Lucid Wallet and an instance of a 
+ * Provide a Test Environment to execute E2E tests over a Lucid Wallet and an instance of a
  * Marlowe Runtime.
- * @param provisionRequest 
- * @returns 
+ * @param provisionRequest
+ * @returns
  */
 export const mkTestEnvironment =
   (provisionRequest: ProvisionRequest) =>
@@ -73,8 +77,8 @@ export const mkTestEnvironment =
     await logWalletInfo("bank", bank);
 
     const bankBalance = await bank.getLovelaces();
-    if(bankBalance <= 100_000_000n) {
-      throw { message: "Bank is not sufficiently provisionned (< 100 Ada)"}
+    if (bankBalance <= 100_000_000n) {
+      throw { message: "Bank is not sufficiently provisionned (< 100 Ada)" };
     }
     logInfo("Bank is provisionned enough");
     const participants = await bank.provision(provisionRequest);

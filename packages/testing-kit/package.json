@@ -15,7 +15,7 @@
   "scripts": {
     "build": "tsc --build src",
     "clean": "shx rm -rf dist",
-    "genSeedPhrase" : "npm run build && node ./dist/esm/executable/generateSeedPhrase.js",
+    "genSeedPhrase": "npm run build && node ./dist/esm/executable/generateSeedPhrase.js",
     "test": "echo 'testing-kit doesnt have tests for the moment'"
   },
   "type": "module",

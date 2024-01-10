@@ -20,11 +20,11 @@ import {
   logDebug,
   logInfo,
   logWalletInfo,
-  readEnvConfigurationFile,mkTestEnvironment
+  readEnvConfigurationFile,
+  mkTestEnvironment,
 } from "@marlowe.io/testing-kit";
 import { AxiosError } from "axios";
 import { MarloweJSON } from "@marlowe.io/adapter/codec";
-
 
 global.console = console;
 
@@ -34,8 +34,8 @@ describe("swap", () => {
     async () => {
       try {
         const { bank, runtime, participants } =
-          await readEnvConfigurationFile().then(mkTestEnvironment(
-            {
+          await readEnvConfigurationFile().then(
+            mkTestEnvironment({
               seller: {
                 walletSeedPhrase: generateSeedPhrase("24-words"),
                 scheme: {
@@ -50,8 +50,8 @@ describe("swap", () => {
                   assetsToMint: { tokenB: 10n },
                 },
               },
-            }
-          ));
+            })
+          );
 
         const { seller, buyer } = participants;
 
@@ -80,7 +80,7 @@ describe("swap", () => {
         };
 
         const swapContract = AtomicSwap.mkContract(scheme);
-        logDebug(`contract: ${MarloweJSON.stringify(swapContract,null,4)}`);
+        logDebug(`contract: ${MarloweJSON.stringify(swapContract, null, 4)}`);
 
         const [contractId, txCreatedContract] = await runtime
           .mkLifecycle(seller.wallet)
@@ -96,78 +96,78 @@ describe("swap", () => {
         await seller.wallet.waitRuntimeSyncingTillCurrentWalletTip(
           runtime.client
         );
-      // TODO : Completing the Test
-      //   const inputHistory = await getInputHistory(runtime.client, contractId);
-      //   const marloweState = await getMarloweStatefromAnActiveContract(
-      //     runtime.client,
-      //     contractId
-      //   );
-      //   const contractState = AtomicSwap.getActiveState(
-      //     scheme,
-      //     inputHistory,
-      //     marloweState
-      //   );
-      //   const availableActions = AtomicSwap.getAvailableActions(
-      //     scheme,
-      //     contractState
-      //   );
-      //   expect(contractState.typeName).toBe("WaitingSellerOffer");
-      //   expect(availableActions.length).toBe(1);
+        // TODO : Completing the Test
+        //   const inputHistory = await getInputHistory(runtime.client, contractId);
+        //   const marloweState = await getMarloweStatefromAnActiveContract(
+        //     runtime.client,
+        //     contractId
+        //   );
+        //   const contractState = AtomicSwap.getActiveState(
+        //     scheme,
+        //     inputHistory,
+        //     marloweState
+        //   );
+        //   const availableActions = AtomicSwap.getAvailableActions(
+        //     scheme,
+        //     contractState
+        //   );
+        //   expect(contractState.typeName).toBe("WaitingSellerOffer");
+        //   expect(availableActions.length).toBe(1);
 
-      // // // Applying the first Deposit
-      // let next = await runtime(adaProvider).contracts.getApplicableInputs(
-      //   contractId
-      // );
-      // const txFirstTokensDeposited = await runtime(
-      //   adaProvider
-      // ).contracts.applyInputs(contractId, {
-      //   inputs: [pipe(next.applicable_inputs.deposits[0], Deposit.toInput)],
-      // });
-      // await runtime(adaProvider).wallet.waitConfirmation(
-      //   txFirstTokensDeposited
-      // );
+        // // // Applying the first Deposit
+        // let next = await runtime(adaProvider).contracts.getApplicableInputs(
+        //   contractId
+        // );
+        // const txFirstTokensDeposited = await runtime(
+        //   adaProvider
+        // ).contracts.applyInputs(contractId, {
+        //   inputs: [pipe(next.applicable_inputs.deposits[0], Deposit.toInput)],
+        // });
+        // await runtime(adaProvider).wallet.waitConfirmation(
+        //   txFirstTokensDeposited
+        // );
 
-      // // Applying the second Deposit
-      // next = await runtime(tokenProvider).contracts.getApplicableInputs(
-      //   contractId
-      // );
-      // await runtime(tokenProvider).contracts.applyInputs(contractId, {
-      //   inputs: [pipe(next.applicable_inputs.deposits[0], Deposit.toInput)],
-      // });
-      // await runtime(tokenProvider).wallet.waitConfirmation(
-      //   txFirstTokensDeposited
-      // );
+        // // Applying the second Deposit
+        // next = await runtime(tokenProvider).contracts.getApplicableInputs(
+        //   contractId
+        // );
+        // await runtime(tokenProvider).contracts.applyInputs(contractId, {
+        //   inputs: [pipe(next.applicable_inputs.deposits[0], Deposit.toInput)],
+        // });
+        // await runtime(tokenProvider).wallet.waitConfirmation(
+        //   txFirstTokensDeposited
+        // );
 
-      // // Retrieving Payouts
-      // const adaProviderAvalaiblePayouts = await runtime(
-      //   adaProvider
-      // ).payouts.available(onlyByContractIds([contractId]));
-      // expect(adaProviderAvalaiblePayouts.length).toBe(1);
-      // await runtime(adaProvider).payouts.withdraw([
-      //   adaProviderAvalaiblePayouts[0].payoutId,
-      // ]);
-      // const adaProviderWithdrawn = await runtime(adaProvider).payouts.withdrawn(
-      //   onlyByContractIds([contractId])
-      // );
-      // expect(adaProviderWithdrawn.length).toBe(1);
+        // // Retrieving Payouts
+        // const adaProviderAvalaiblePayouts = await runtime(
+        //   adaProvider
+        // ).payouts.available(onlyByContractIds([contractId]));
+        // expect(adaProviderAvalaiblePayouts.length).toBe(1);
+        // await runtime(adaProvider).payouts.withdraw([
+        //   adaProviderAvalaiblePayouts[0].payoutId,
+        // ]);
+        // const adaProviderWithdrawn = await runtime(adaProvider).payouts.withdrawn(
+        //   onlyByContractIds([contractId])
+        // );
+        // expect(adaProviderWithdrawn.length).toBe(1);
 
-      // const tokenProviderAvalaiblePayouts = await runtime(
-      //   tokenProvider
-      // ).payouts.available(onlyByContractIds([contractId]));
-      // expect(tokenProviderAvalaiblePayouts.length).toBe(1);
-      // await runtime(tokenProvider).payouts.withdraw([
-      //   tokenProviderAvalaiblePayouts[0].payoutId,
-      // ]);
-      // const tokenProviderWithdrawn = await runtime(
-      //   tokenProvider
-      // ).payouts.withdrawn(onlyByContractIds([contractId]));
-      // expect(tokenProviderWithdrawn.length).toBe(1);
-    } catch (e) {
-      console.log(`catched : ${JSON.stringify(e)}`);
-      const error = e as AxiosError;
-      console.log(`catched : ${JSON.stringify(error.response?.data)}`);
-      expect(true).toBe(false);
-    }
+        // const tokenProviderAvalaiblePayouts = await runtime(
+        //   tokenProvider
+        // ).payouts.available(onlyByContractIds([contractId]));
+        // expect(tokenProviderAvalaiblePayouts.length).toBe(1);
+        // await runtime(tokenProvider).payouts.withdraw([
+        //   tokenProviderAvalaiblePayouts[0].payoutId,
+        // ]);
+        // const tokenProviderWithdrawn = await runtime(
+        //   tokenProvider
+        // ).payouts.withdrawn(onlyByContractIds([contractId]));
+        // expect(tokenProviderWithdrawn.length).toBe(1);
+      } catch (e) {
+        console.log(`catched : ${JSON.stringify(e)}`);
+        const error = e as AxiosError;
+        console.log(`catched : ${JSON.stringify(error.response?.data)}`);
+        expect(true).toBe(false);
+      }
     },
     10 * MINUTES
   );

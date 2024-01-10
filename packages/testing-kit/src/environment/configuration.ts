@@ -30,38 +30,39 @@ export type TestConfiguration = {
 };
 
 /**
- * Read Test Configurations from an env file 
- * @returns 
+ * Read Test Configurations from an env file
+ * @returns
  */
-export const readEnvConfigurationFile = async (): Promise<TestConfiguration> => {
-  const runtimeURL = readEnvRuntimeURL();
-  const lucidNetwork = readEnvLucidNodeNetwork();
-  const runtimeClient = mkRestClient(runtimeURL.toString());
-  const status = await runtimeClient.healthcheck();
-  const runtimeNodeNetwork = getNetwork(status.networkId);
+export const readEnvConfigurationFile =
+  async (): Promise<TestConfiguration> => {
+    const runtimeURL = readEnvRuntimeURL();
+    const lucidNetwork = readEnvLucidNodeNetwork();
+    const runtimeClient = mkRestClient(runtimeURL.toString());
+    const status = await runtimeClient.healthcheck();
+    const runtimeNodeNetwork = getNetwork(status.networkId);
 
-  if (!G.CompatibleRuntimeVersion.is(status.version)) {
-    throw {
-      message: "Runtime Version is not Compatible with the ts-sdk",
-      details: MarloweJSON.stringify(status),
+    if (!G.CompatibleRuntimeVersion.is(status.version)) {
+      throw {
+        message: "Runtime Version is not Compatible with the ts-sdk",
+        details: MarloweJSON.stringify(status),
+      };
+    }
+
+    const configuration = {
+      bank: { seedPhrase: readEnvBankSeedPhrase() },
+      lucid: {
+        blockfrost: readEnvBlockfrost(),
+        node: { network: toLucidNetwork(lucidNetwork) },
+      },
+      runtime: {
+        version: status.version,
+        url: runtimeURL,
+        client: mkRestClient(runtimeURL.toString()),
+        node: { network: runtimeNodeNetwork },
+      },
     };
-  }
-
-  const configuration = {
-    bank: { seedPhrase: readEnvBankSeedPhrase() },
-    lucid: {
-      blockfrost: readEnvBlockfrost(),
-      node: { network: toLucidNetwork(lucidNetwork) },
-    },
-    runtime: {
-      version: status.version,
-      url: runtimeURL,
-      client: mkRestClient(runtimeURL.toString()),
-      node: { network: runtimeNodeNetwork },
-    },
+    return configuration;
   };
-  return configuration;
-};
 
 const readEnvBlockfrost = (): Blockfrost => {
   const { BLOCKFROST_URL, BLOCKFROST_PROJECT_ID } = process.env;
@@ -99,8 +100,8 @@ const readEnvRuntimeURL = () => {
 
 /**
  * Convert a Marlowe Network Model to a Lucid one.
- * @param network 
- * @returns 
+ * @param network
+ * @returns
  */
 const toLucidNetwork = (network: Network): Lucid.Network => {
   switch (network) {

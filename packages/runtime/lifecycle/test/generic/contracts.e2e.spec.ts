@@ -17,7 +17,6 @@ import {
   readEnvConfigurationFile,
 } from "@marlowe.io/testing-kit";
 
-
 global.console = console;
 
 describe.skip("Runtime Contract Lifecycle ", () => {
@@ -25,7 +24,9 @@ describe.skip("Runtime Contract Lifecycle ", () => {
     "can create a Marlowe Contract ",
     async () => {
       try {
-        const { bank, runtime } = await readEnvConfigurationFile().then(mkTestEnvironment({}))
+        const { bank, runtime } = await readEnvConfigurationFile().then(
+          mkTestEnvironment({})
+        );
         const runtimeLifecycle = runtime.mkLifecycle(bank);
         const [contractId, txIdContractCreated] =
           await runtimeLifecycle.contracts.createContract({
@@ -47,7 +48,9 @@ describe.skip("Runtime Contract Lifecycle ", () => {
       "can Apply Inputs to a Contract",
       async () => {
         try {
-          const { bank, runtime } = await readEnvConfigurationFile().then(mkTestEnvironment({}))
+          const { bank, runtime } = await readEnvConfigurationFile().then(
+            mkTestEnvironment({})
+          );
 
           const runtimeLifecycle = runtime.mkLifecycle(bank);
 

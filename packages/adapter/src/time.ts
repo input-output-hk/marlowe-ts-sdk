@@ -19,9 +19,9 @@ export const MINUTES = 1000 * 60;
 
 /**
  * Block the execution flow till a promise Predicate becomes true.
- * @param predicate 
+ * @param predicate
  * @param interval at which the predicate is re-evaluated
- * @returns 
+ * @returns
  */
 export const waitForPredicatePromise = async (
   predicate: () => Promise<boolean>,
@@ -40,13 +40,13 @@ export const waitForPredicatePromise = async (
 
   // Recursive call to continue checking the predicate
   await waitForPredicatePromise(predicate, interval);
-}
+};
 
 /**
  * Block the execution flow for a given number of seconds
- * @param secondes 
- * @returns 
+ * @param secondes
+ * @returns
  */
 export const sleep = (secondes: number): Promise<void> => {
   return new Promise((resolve) => setTimeout(resolve, secondes * 1_000));
-}
+};

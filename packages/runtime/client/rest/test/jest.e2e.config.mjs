@@ -26,7 +26,7 @@ const rootDir = findRootDir(process.cwd());
 
 if (!rootDir) {
   console.log(`Unable to find the root directory of the TypeScript project`);
-} 
+}
 
 const packageDir = `${rootDir}/packages/runtime/client/rest`
 
