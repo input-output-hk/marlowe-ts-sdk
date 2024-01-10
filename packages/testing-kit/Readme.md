@@ -1,3 +1,3 @@
 # Description
 
-A Set of functionalities that supports @marlowe.io libraries for testing purposes.
+A Set of utilities to help with the test of the @marlowe.io packages.

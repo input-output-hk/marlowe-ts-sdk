@@ -46,7 +46,7 @@ export type Participants = {
     /**
      * List of Assets provisionned By the Bank Wallet
      */
-    assetsProvisionned: Assets;
+    assetsProvisioned: Assets;
   };
 };
 

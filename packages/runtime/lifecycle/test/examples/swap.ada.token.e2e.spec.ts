@@ -64,14 +64,14 @@ describe("swap", () => {
             seller: { address: sellerAddress },
             deadline: pipe(addDays(Date.now(), 1), datetoTimeout),
             asset: runtimeTokenToMarloweTokenValue(
-              seller.assetsProvisionned.tokens[0]
+              seller.assetsProvisioned.tokens[0]
             ),
           },
           ask: {
             buyer: { role_token: "buyer" },
             deadline: pipe(addDays(Date.now(), 1), datetoTimeout),
             asset: runtimeTokenToMarloweTokenValue(
-              buyer.assetsProvisionned.tokens[0]
+              buyer.assetsProvisioned.tokens[0]
             ),
           },
           swapConfirmation: {
@@ -163,9 +163,9 @@ describe("swap", () => {
         // ).payouts.withdrawn(onlyByContractIds([contractId]));
         // expect(tokenProviderWithdrawn.length).toBe(1);
       } catch (e) {
-        console.log(`catched : ${JSON.stringify(e)}`);
+        console.log(`caught : ${JSON.stringify(e)}`);
         const error = e as AxiosError;
-        console.log(`catched : ${JSON.stringify(error.response?.data)}`);
+        console.log(`caught : ${JSON.stringify(error.response?.data)}`);
         expect(true).toBe(false);
       }
     },

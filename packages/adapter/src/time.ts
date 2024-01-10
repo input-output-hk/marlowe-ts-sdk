@@ -25,7 +25,7 @@ export const MINUTES = 1000 * 60;
  */
 export const waitForPredicatePromise = async (
   predicate: () => Promise<boolean>,
-  interval: number = 3_000
+  seconds: number = 3
 ): Promise<void> => {
   if (await predicate()) {
     // Predicate is already true, no need to wait
@@ -36,10 +36,10 @@ export const waitForPredicatePromise = async (
     new Promise((resolve) => setTimeout(resolve, ms));
 
   // Wait for the specified interval
-  await wait(interval);
+  await sleep(seconds);
 
   // Recursive call to continue checking the predicate
-  await waitForPredicatePromise(predicate, interval);
+  await waitForPredicatePromise(predicate, seconds);
 };
 
 /**
@@ -47,6 +47,6 @@ export const waitForPredicatePromise = async (
  * @param secondes
  * @returns
  */
-export const sleep = (secondes: number): Promise<void> => {
-  return new Promise((resolve) => setTimeout(resolve, secondes * 1_000));
+export const sleep = (seconds: number): Promise<void> => {
+  return new Promise((resolve) => setTimeout(resolve, seconds * 1_000));
 };

@@ -11,7 +11,7 @@ import { Lucid } from "lucid-cardano";
 import { WalletAPI, mkLucidWallet } from "@marlowe.io/wallet";
 
 import { RestClient } from "@marlowe.io/runtime-rest-client";
-import { logWarning } from "../../logging.js";
+import { logInfo, logWarning } from "../../logging.js";
 
 export * as Provision from "./provisionning.js";
 import * as Provision from "./provisionning.js";
@@ -57,6 +57,9 @@ const waitRuntimeSyncingTillCurrentWalletTip =
   async (client: RestClient): Promise<void> => {
     const { lucid } = di;
     const currentLucidSlot = BigInt(lucid.currentSlot());
+    logInfo(
+      `Setting up a synchronization point with Runtime at SlotNo ${currentLucidSlot}`
+    );
     await waitForPredicatePromise(
       isRuntimeChainMoreAdvancedThan(client, currentLucidSlot)
     );
@@ -75,10 +78,9 @@ export const isRuntimeChainMoreAdvancedThan =
       if (status.tips.runtimeChain.blockHeader.slotNo >= aSlotNo) {
         return true;
       } else {
+        const delta = aSlotNo - status.tips.runtimeChain.blockHeader.slotNo;
         logWarning(
-          `Waiting Runtime to be Synced (Delta ${
-            status.tips.runtimeChain.blockHeader.slotNo - aSlotNo
-          }) `
+          `Waiting Runtime to reach that point (${delta} slots behind (~${delta}s)) `
         );
         return false;
       }

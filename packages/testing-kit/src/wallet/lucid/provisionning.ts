@@ -135,14 +135,13 @@ export const provision =
             .payToAddress(aDistribution[2], { lovelace: 5_000_000n }) // add a Collateral
       )
     );
+    const result: ProvisionResponse = Object.fromEntries(
+      distributions.map(([participant, wallet, , assetsProvisioned]) => [
+        participant,
+        { wallet, assetsProvisioned },
+      ])
+    );
 
-    var result: ProvisionResponse = {};
-    distributions.map(([participant, wallet, , assetsProvisionned]) => {
-      result[participant] = {
-        wallet: wallet,
-        assetsProvisionned: assetsProvisionned,
-      };
-    });
     logDebug(`result : ${MarloweJSON.stringify(result, null, 4)}`);
     const provisionTx = await mintTx.compose(transferTx).complete();
 

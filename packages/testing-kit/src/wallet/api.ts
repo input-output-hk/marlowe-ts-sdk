@@ -57,7 +57,7 @@ export type ProvisionRequest = {
 export type ProvisionResponse = {
   [participant: string]: {
     wallet: WalletTestAPI;
-    assetsProvisionned: RuntimeCore.Assets;
+    assetsProvisioned: RuntimeCore.Assets;
   };
 };
 

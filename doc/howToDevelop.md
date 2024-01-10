@@ -32,7 +32,7 @@ $ npm run clean
 N.B : It is recommended to clean and build the packages before you run the tests to be sure you are playing with the most up to date version of the codebase.
 
 ```bash
-$ npm run clean && npm
+$ npm run clean && npm run build
 ```
 
 ## Unit Tests
@@ -40,19 +40,19 @@ $ npm run clean && npm
 To run the unit tests for all the packages, from the root folder you can execute the `test` command : 
 
 ```bash
-$ npm run test
+$ npm test
 ```
 
 If you want to run tests for a single package you can use the `-w` flag or execute the build command from the package folder.
 
 ```bash
 # From the root folder
-$ npm run clean && npm run build && npm run test -w @marlowe.io/language-core-v1
+$ npm run clean && npm run build && npm test -w @marlowe.io/language-core-v1
 # Or you can enter the package folder and test. You will have to clean and build properly the local package 
 # dependencies of this current package if you modify one of them
 # e.g : `packages/language/core/v1` depends on `packages/adapter`. Be sure you have build correctly this package before runnning your test that way.
 $ cd packages/language/core/v1
-$ npm run test
+$ npm test
 ```
 
 ## Integration/E2E Tests
@@ -124,6 +124,8 @@ LOG_DEBUG_LEVEL=false
 npm run -w @marlowe.io/testing-kit genSeedPhrase
 ```
 2. Copy/paste the words within quotes in the env file.
+3. Go to one of your favorite Wallet Extension and restore a wallet with this seedphrase
+4. Get a Payment Address from these Browser extensions to provision your Bank with the faucet.
 
 #### How to add tAda to the Bank Wallet via a faucet ? 
 
@@ -189,7 +191,7 @@ This project manages its changelog with [scriv](https://github.com/nedbat/scriv)
 
 Create a new changelog entry template with
 
-```s
+```bash
 $ scriv create
 ```
 
