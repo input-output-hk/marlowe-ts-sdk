@@ -49,6 +49,7 @@ Before version 1, the TS-SDK adheres to beta rules:
 
     - Build and publish packages from the release tag.
     - `npm publish --workspaces` (for the moment @hrajchert and @nhenin have publish access)
+      - If this is a release candidate (e.g. `0.3.0-beta-rc`), then we need to add a `--tag` to avoid overriding `latest` (`npm publish --workspaces --tag rc`).
 
 4. **GitHub Release:**
 
