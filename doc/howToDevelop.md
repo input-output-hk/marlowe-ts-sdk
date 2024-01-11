@@ -59,64 +59,23 @@ $ npm test
 
 ### Setting up the env Configuration File
 
-1. Create a `./env/.env.test` at the root of the project
+1. Create a `./env/.test-env.json` at the root of the project
 2. Copy/Paste the following, and provide the necessary parameter
 
-```bash
-####################################################
-## Provide a Runtime Instance URL (>= v0.0.5)      #
-####################################################
-## to create an instance of a local Marlowe runtime, follow the instructions in
-## the Marlowe starter kit : https://github.com/input-output-hk/ marlowe-starter-kit/blob/main/docs/preliminaries.md
-MARLOWE_WEB_SERVER_URL="http://<path-to-a-runtime-instance>:<a-port>"
-####################################################
-
-#####################################################
-## Provide Wallet Dependencies (Necessary for Lucid Library)
-#####################################################
-## Blockfrost Account :  If you haven't done it before, go to https://blockfrost.io/ and create a free-tier account.
-## Then, create a project and copy the project ID
-BLOCKFROST_PROJECT_ID="<your-blockfrost-project-id>"
-BLOCKFROST_URL="<your-blockfrost-id>"
-## Network used by Blockfrost : private | preview | preprod | mainnet
-NETWORK_NAME=preprod
-## Bank Seed Phrase : The bank is a wallet where you provision enough tAda (>= 100 tAda) to run all
-## the e2e tests without running out of money. This is your responsability to create this wallet and
-## add tAda using a Faucet.
-BANK_SEED_PHRASE='[
-    "deal",
-    "place",
-    "depart",
-    "sound",
-    "kick",
-    "daughter",
-    "diamond",
-    "rebel",
-    "update",
-    "shoe",
-    "benefit",
-    "useful",
-    "travel",
-    "fringe",
-    "culture",
-    "dog",
-    "lawsuit",
-    "combine",
-    "run",
-    "vanish",
-    "warm",
-    "rubber",
-    "quit",
-    "system"
-]'
-#####################################################
-
-#####################################################
-## Logging
-#####################################################
-## set to true or false if you want to log Debug Info
-LOG_DEBUG_LEVEL=false
+```json
+{
+  "bank": {
+    "seedPhrase": "<seed phrase separated by spaces>"
+  },
+  "lucid": {
+    "blockfrostProjectId": "<your-blockfrost-project-id>",
+    "blockfrostUrl": "<your-blockfrost-url>"
+  },
+  "network": "Preprod",
+  "runtimeURL": "http://<path-to-a-runtime-instance>:<a-port>"
+}
 ```
+
 #### How to Generate a new Seed Phrase for a Bank Wallet ?
 
 1. At the root of the project :

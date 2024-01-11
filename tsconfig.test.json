@@ -1,0 +1,23 @@
+{
+  "files": [],
+  "references": [
+    { "path": "./packages/adapter/src" },
+    { "path": "./packages/language/core/v1/src" },
+    { "path": "./packages/language/examples/src" },
+    { "path": "./packages/language/specification-client/src" },
+    { "path": "./packages/wallet/src" },
+    { "path": "./packages/runtime/client/rest/src" },
+    { "path": "./packages/runtime/core/src" },
+    { "path": "./packages/runtime/lifecycle/src" },
+    { "path": "./packages/token-metadata-client/src" },
+    { "path": "./packages/marlowe-object/src" },
+    { "path": "./examples/nodejs/src" },
+    { "path": "./packages/testing-kit/src" },
+
+    { "path": "./packages/runtime/lifecycle/test" },
+    { "path": "./packages/runtime/client/rest/test" },
+    { "path": "./packages/language/core/v1/test" },
+    { "path": "./packages/language/examples/test" },
+    { "path": "./packages/wallet/test" }
+  ]
+}

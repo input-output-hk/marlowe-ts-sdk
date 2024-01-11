@@ -12,7 +12,12 @@
       "${workspaceFolder}/packages/runtime/client/rest/dist/esm/**/*.js",
       "${workspaceFolder}/packages/runtime/core/dist/esm/**/*.js",
       "${workspaceFolder}/packages/runtime/lifecycle/dist/esm/**/*.js",
-      "${workspaceFolder}/packages/marlowe-object/dist/esm/**/*.js"
+      "${workspaceFolder}/packages/marlowe-object/dist/esm/**/*.js",
+      "${workspaceFolder}/packages/runtime/lifecycle/test-dist/**/*.js",
+      "${workspaceFolder}/packages/runtime/client/rest/test-dist/**/*.js",
+      "${workspaceFolder}/packages/language/core/v1/test-dist/**/*.js",
+      "${workspaceFolder}/packages/language/examples/test-dist/**/*.js",
+      "${workspaceFolder}/packages/wallet/test-dist/**/*.js"
     ]
   }
 }
