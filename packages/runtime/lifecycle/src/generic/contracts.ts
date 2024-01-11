@@ -30,10 +30,7 @@ import {
 import { DecodingError } from "@marlowe.io/adapter/codec";
 
 import { Next, noNext } from "@marlowe.io/language-core-v1/next";
-import {
-  BuildCreateContractTxResponse,
-  TransactionTextEnvelope,
-} from "@marlowe.io/runtime-rest-client/contract";
+import { TransactionTextEnvelope } from "@marlowe.io/runtime-rest-client/contract";
 import { SingleInputTx } from "@marlowe.io/language-core-v1/transaction.js";
 import { iso8601ToPosixTime } from "@marlowe.io/adapter/time";
 
@@ -44,7 +41,7 @@ export function mkContractLifecycle(
 ): ContractsAPI {
   const di = { wallet, deprecatedRestAPI, restClient };
   return {
-    createContract: submitCreateTx(di),
+    createContract: createContract(di),
     applyInputs: applyInputsTx(di),
     getApplicableInputs: getApplicableInputs(di),
     getContractIds: getContractIds(di),
@@ -99,14 +96,42 @@ const getInputHistory =
       .flat();
   };
 
-const submitCreateTx =
+const createContract =
   ({ wallet, restClient }: ContractsDI) =>
-  (
+  async (
     createContractRequest: CreateContractRequest
   ): Promise<[ContractId, TxId]> => {
-    return unsafeTaskEither(
-      submitCreateTxFpTs(restClient)(wallet)(createContractRequest)
+    const addressesAndCollaterals = await getAddressesAndCollaterals(wallet);
+
+    const buildCreateContractTxResponse =
+      await restClient.buildCreateContractTx({
+        version: "v1",
+
+        changeAddress: addressesAndCollaterals.changeAddress,
+        usedAddresses: addressesAndCollaterals.usedAddresses,
+        collateralUTxOs: addressesAndCollaterals.collateralUTxOs,
+        stakeAddress: createContractRequest.stakeAddress,
+
+        contract: createContractRequest.contract,
+        threadRoleName: createContractRequest.threadRoleName,
+        roles: createContractRequest.roles,
+
+        tags: createContractRequest.tags,
+        metadata: createContractRequest.metadata,
+        minimumLovelaceUTxODeposit:
+          createContractRequest.minimumLovelaceUTxODeposit,
+      });
+    const contractId = buildCreateContractTxResponse.contractId;
+
+    const hexTransactionWitnessSet = await wallet.signTx(
+      buildCreateContractTxResponse.tx.cborHex
     );
+
+    await restClient.submitContract(
+      contractId,
+      transactionWitnessSetTextEnvelope(hexTransactionWitnessSet)
+    );
+    return [contractId, contractIdToTxId(contractId)];
   };
 
 const applyInputsTx =
@@ -188,74 +213,6 @@ const getParties: (
       .map((token) => ({ role_token: token.assetId.policyId }));
     return roles.concat([changeAddress]).concat(usedAddresses);
   };
-
-export const submitCreateTxFpTs: (
-  client: RestClient
-) => (
-  wallet: WalletAPI
-) => (
-  createContractRequest: CreateContractRequest
-) => TE.TaskEither<Error | DecodingError, [ContractId, TxId]> =
-  (client) => (wallet) => (createContractRequest) =>
-    pipe(
-      tryCatchDefault(() => getAddressesAndCollaterals(wallet)),
-      TE.chain((addressesAndCollaterals) =>
-        tryCatchDefault(() =>
-          client.buildCreateContractTx({
-            version: "v1",
-
-            changeAddress: addressesAndCollaterals.changeAddress,
-            usedAddresses: addressesAndCollaterals.usedAddresses,
-            collateralUTxOs: addressesAndCollaterals.collateralUTxOs,
-            stakeAddress: createContractRequest.stakeAddress,
-
-            contract: createContractRequest.contract,
-            threadRoleName: createContractRequest.threadRoleName,
-            roles: createContractRequest.roles,
-
-            tags: createContractRequest.tags,
-            metadata: createContractRequest.metadata,
-            minimumLovelaceUTxODeposit:
-              createContractRequest.minimumLovelaceUTxODeposit,
-          })
-        )
-      ),
-      TE.chainW(
-        (buildCreateContractTxResponse: BuildCreateContractTxResponse) =>
-          pipe(
-            tryCatchDefault(() =>
-              wallet.signTx(buildCreateContractTxResponse.tx.cborHex)
-            ),
-            TE.chain((hexTransactionWitnessSet) =>
-              tryCatchDefault(() =>
-                client.submitContract(
-                  buildCreateContractTxResponse.contractId,
-                  transactionWitnessSetTextEnvelope(hexTransactionWitnessSet)
-                )
-              )
-            ),
-            TE.map(() => buildCreateContractTxResponse.contractId)
-          )
-      ),
-      TE.map((contractId) => [contractId, contractIdToTxId(contractId)])
-    );
-
-export const createContractFpTs: (
-  client: RestClient
-) => (
-  wallet: WalletAPI
-) => (
-  createContractRequest: CreateContractRequest
-) => TE.TaskEither<Error | DecodingError, ContractId> =
-  (client) => (wallet) => (createContractRequest) =>
-    pipe(
-      submitCreateTxFpTs(client)(wallet)(createContractRequest),
-      TE.chainW(([contractId, txId]) =>
-        tryCatchDefault(() =>
-          wallet.waitConfirmation(txId).then((_) => contractId)
-        )
-      )
-    );
 
 export const applyInputsTxFpTs: (
   client: FPTSRestAPI
