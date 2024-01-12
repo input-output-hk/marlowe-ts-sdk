@@ -9,7 +9,7 @@ const lucidNetworkGuard = t.union([
   t.literal("Custom"),
 ]);
 
-const testConfigurationGuard = t.type({
+export const testConfigurationGuard = t.type({
   bank: t.type({ seedPhrase: t.string }),
   lucid: t.type({
     blockfrostProjectId: t.string,

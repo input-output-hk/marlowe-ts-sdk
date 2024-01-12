@@ -8,6 +8,7 @@ import {
   ContractsAPI,
   ContractsDI,
   CreateContractRequest,
+  CreateContractRequestBase,
 } from "../api.js";
 
 import { getAddressesAndCollaterals, WalletAPI } from "@marlowe.io/wallet/api";
@@ -30,7 +31,11 @@ import {
 import { DecodingError } from "@marlowe.io/adapter/codec";
 
 import { Next, noNext } from "@marlowe.io/language-core-v1/next";
-import { TransactionTextEnvelope } from "@marlowe.io/runtime-rest-client/contract";
+import {
+  BuildCreateContractTxRequest,
+  BuildCreateContractTxRequestOptions,
+  TransactionTextEnvelope,
+} from "@marlowe.io/runtime-rest-client/contract";
 import { SingleInputTx } from "@marlowe.io/language-core-v1/transaction.js";
 import { iso8601ToPosixTime } from "@marlowe.io/adapter/time";
 
@@ -103,24 +108,41 @@ const createContract =
   ): Promise<[ContractId, TxId]> => {
     const addressesAndCollaterals = await getAddressesAndCollaterals(wallet);
 
-    const buildCreateContractTxResponse =
-      await restClient.buildCreateContractTx({
-        version: "v1",
+    const baseRequest: BuildCreateContractTxRequestOptions = {
+      version: "v1",
 
-        changeAddress: addressesAndCollaterals.changeAddress,
-        usedAddresses: addressesAndCollaterals.usedAddresses,
-        collateralUTxOs: addressesAndCollaterals.collateralUTxOs,
-        stakeAddress: createContractRequest.stakeAddress,
+      changeAddress: addressesAndCollaterals.changeAddress,
+      usedAddresses: addressesAndCollaterals.usedAddresses,
+      collateralUTxOs: addressesAndCollaterals.collateralUTxOs,
+      stakeAddress: createContractRequest.stakeAddress,
+
+      threadRoleName: createContractRequest.threadRoleName,
+      roles: createContractRequest.roles,
+
+      tags: createContractRequest.tags,
+      metadata: createContractRequest.metadata,
+      minimumLovelaceUTxODeposit:
+        createContractRequest.minimumLovelaceUTxODeposit,
+    };
+
+    let restClientRequest: BuildCreateContractTxRequest;
+    if ("contract" in createContractRequest) {
+      restClientRequest = {
+        ...baseRequest,
 
         contract: createContractRequest.contract,
-        threadRoleName: createContractRequest.threadRoleName,
-        roles: createContractRequest.roles,
-
-        tags: createContractRequest.tags,
-        metadata: createContractRequest.metadata,
-        minimumLovelaceUTxODeposit:
-          createContractRequest.minimumLovelaceUTxODeposit,
-      });
+      };
+    } else {
+      const contractSources = await restClient.createContractSources(
+        createContractRequest.bundle
+      );
+      restClientRequest = {
+        ...baseRequest,
+        sourceId: contractSources.contractSourceId,
+      };
+    }
+    const buildCreateContractTxResponse =
+      await restClient.buildCreateContractTx(restClientRequest);
     const contractId = buildCreateContractTxResponse.contractId;
 
     const hexTransactionWitnessSet = await wallet.signTx(

@@ -567,26 +567,12 @@ async function createContract(
 ): Promise<[ContractId, TxId]> {
   const contractBundle = mkDelayPayment(schema);
   const tags = mkDelayPaymentTags(schema);
-  // TODO: PLT-9089: Modify runtimeLifecycle.contracts.createContract to support bundle (calling createContractSources)
-  const contractSources =
-    await lifecycle.restClient.createContractSources(contractBundle);
-  const walletAddress = await lifecycle.wallet.getChangeAddress();
-  const unsignedTx = await lifecycle.restClient.buildCreateContractTx({
-    sourceId: contractSources.contractSourceId,
-    tags,
-    changeAddress: walletAddress,
+  return lifecycle.contracts.createContract({
     stakeAddress: rewardAddress,
+    bundle: contractBundle,
+    tags,
     minimumLovelaceUTxODeposit: 3_000_000,
-    version: "v1",
   });
-  const signedCborHex = await lifecycle.wallet.signTx(unsignedTx.tx.cborHex);
-  await lifecycle.restClient.submitContract(
-    unsignedTx.contractId,
-    transactionWitnessSetTextEnvelope(signedCborHex)
-  );
-  const txId = contractIdToTxId(unsignedTx.contractId);
-  return [unsignedTx.contractId, txId];
-  //----------------
 }
 
 type ValidationResults = "InvalidTags" | "InvalidContract" | DelayPaymentScheme;
