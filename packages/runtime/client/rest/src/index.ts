@@ -11,10 +11,8 @@
 import axios from "axios";
 import * as TE from "fp-ts/lib/TaskEither.js";
 import * as O from "fp-ts/lib/Option.js";
-import { pipe } from "fp-ts/lib/function.js";
 
 import { MarloweJSONCodec } from "@marlowe.io/adapter/codec";
-import * as HTTP from "@marlowe.io/adapter/http";
 import { ContractBundle } from "@marlowe.io/marlowe-object";
 
 import * as Payouts from "./payout/endpoints/collection.js";
@@ -41,7 +39,7 @@ import { ContractDetails } from "./contract/details.js";
 import { TransactionDetails } from "./contract/transaction/details.js";
 import { ItemRange } from "./pagination.js";
 import { RuntimeStatus, healthcheck } from "./runtime/status.js";
-// import curlirize from 'axios-curlirize';
+import { RuntimeVersion } from "./runtime/version.js";
 
 export {
   Page,
@@ -77,6 +75,11 @@ export interface RestClient {
    * @see {@link https://docs.marlowe.iohk.io/api/health-check-endpoint | The backend documentation}
    */
   healthcheck(): Promise<RuntimeStatus>;
+
+  /**
+   * Returns the version of the connected runtime.
+   */
+  version(): Promise<RuntimeVersion>;
 
   /**
    * Gets a paginated list of contracts {@link contract.ContractHeader }
@@ -275,9 +278,17 @@ export function mkRestClient(baseURL: string): RestClient {
     transformResponse: MarloweJSONCodec.decode,
   });
 
+  // The runtime version is "cached" here as it is not expected to change during the lifetime of the rest client.
+  const runtimeVersion = healthcheck(axiosInstance).then(
+    (status) => status.version
+  );
+
   return {
     healthcheck() {
       return healthcheck(axiosInstance);
+    },
+    version() {
+      return runtimeVersion;
     },
     getContracts(request) {
       const range = request?.range;
@@ -295,21 +306,22 @@ export function mkRestClient(baseURL: string): RestClient {
     getContractById(contractId) {
       return Contract.getContractById(axiosInstance, contractId);
     },
-    buildCreateContractTx(request) {
+    async buildCreateContractTx(request) {
+      const version = await runtimeVersion;
+      // NOTE: Runtime 0.0.5 requires an explicit minUTxODeposit, but 0.0.6 and forward allows that field as optional
+      //       and it will calculate the actual minimum required. We use the version of the runtime to determine
+      //       if we use a "safe" default that is bigger than needed.
+      const minUTxODeposit =
+        request.minimumLovelaceUTxODeposit ??
+        (version === "0.0.5" ? 3000000 : undefined);
       const postContractsRequest = {
         contract: "contract" in request ? request.contract : request.sourceId,
         version: request.version,
         metadata: request.metadata ?? {},
         tags: request.tags ?? {},
-        ...(request.minimumLovelaceUTxODeposit && {
-          minUTxODeposit: request.minimumLovelaceUTxODeposit,
-        }),
-        ...(request.roles && {
-          roles: request.roles,
-        }),
-        ...(request.threadRoleName && {
-          threadTokenName: request.threadRoleName,
-        }),
+        minUTxODeposit,
+        roles: request.roles,
+        threadRoleName: request.threadRoleName,
       };
       const addressesAndCollaterals = {
         changeAddress: request.changeAddress,
