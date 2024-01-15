@@ -10,6 +10,7 @@ import {
 import console from "console";
 import {
   ContractId,
+  payoutId,
   runtimeTokenToMarloweTokenValue,
 } from "@marlowe.io/runtime-core";
 import { MINUTES } from "@marlowe.io/adapter/time";
@@ -22,9 +23,16 @@ import {
   logWalletInfo,
   readEnvConfigurationFile,
   mkTestEnvironment,
+  logError,
 } from "@marlowe.io/testing-kit";
 import { AxiosError } from "axios";
 import { MarloweJSON } from "@marlowe.io/adapter/codec";
+import {
+  onlyByContractIds,
+  RuntimeLifecycle,
+} from "@marlowe.io/runtime-lifecycle/api";
+
+import { mintRole } from "@marlowe.io/runtime-rest-client/contract";
 
 global.console = console;
 
@@ -58,10 +66,9 @@ describe("swap", () => {
         await logWalletInfo("seller", seller.wallet);
         await logWalletInfo("buyer", buyer.wallet);
 
-        const sellerAddress = await seller.wallet.getChangeAddress();
         const scheme: AtomicSwap.Scheme = {
           offer: {
-            seller: { address: sellerAddress },
+            seller: { address: await seller.wallet.getChangeAddress() },
             deadline: pipe(addDays(Date.now(), 1), datetoTimeout),
             asset: runtimeTokenToMarloweTokenValue(
               seller.assetsProvisioned.tokens[0]
@@ -82,13 +89,16 @@ describe("swap", () => {
         const swapContract = AtomicSwap.mkContract(scheme);
         logDebug(`contract: ${MarloweJSON.stringify(swapContract, null, 4)}`);
 
+        logInfo("Contract Creation");
+        const openroleCOnfig = mintRole("OpenRole");
+        logInfo(`Config ${MarloweJSON.stringify(openroleCOnfig, null, 4)}`);
         const [contractId, txCreatedContract] = await runtime
           .mkLifecycle(seller.wallet)
           .contracts.createContract({
             contract: swapContract,
             minimumLovelaceUTxODeposit: 3_000_000,
             roles: {
-              [scheme.ask.buyer.role_token]: sellerAddress,
+              [scheme.ask.buyer.role_token]: openroleCOnfig,
             },
           });
         logInfo("Contract Created");
@@ -96,82 +106,159 @@ describe("swap", () => {
         await seller.wallet.waitRuntimeSyncingTillCurrentWalletTip(
           runtime.client
         );
-        // TODO : Completing the Test
-        //   const inputHistory = await getInputHistory(runtime.client, contractId);
-        //   const marloweState = await getMarloweStatefromAnActiveContract(
-        //     runtime.client,
-        //     contractId
-        //   );
-        //   const contractState = AtomicSwap.getActiveState(
-        //     scheme,
-        //     inputHistory,
-        //     marloweState
-        //   );
-        //   const availableActions = AtomicSwap.getAvailableActions(
-        //     scheme,
-        //     contractState
-        //   );
-        //   expect(contractState.typeName).toBe("WaitingSellerOffer");
-        //   expect(availableActions.length).toBe(1);
 
-        // // // Applying the first Deposit
-        // let next = await runtime(adaProvider).contracts.getApplicableInputs(
-        //   contractId
-        // );
-        // const txFirstTokensDeposited = await runtime(
-        //   adaProvider
-        // ).contracts.applyInputs(contractId, {
-        //   inputs: [pipe(next.applicable_inputs.deposits[0], Deposit.toInput)],
-        // });
-        // await runtime(adaProvider).wallet.waitConfirmation(
-        //   txFirstTokensDeposited
-        // );
+        logInfo(`Seller > Provision Offer`);
 
-        // // Applying the second Deposit
-        // next = await runtime(tokenProvider).contracts.getApplicableInputs(
-        //   contractId
-        // );
-        // await runtime(tokenProvider).contracts.applyInputs(contractId, {
-        //   inputs: [pipe(next.applicable_inputs.deposits[0], Deposit.toInput)],
-        // });
-        // await runtime(tokenProvider).wallet.waitConfirmation(
-        //   txFirstTokensDeposited
-        // );
+        let actions = await getAvailableActions(
+          runtime.client,
+          runtime.mkLifecycle(seller.wallet),
+          scheme,
+          contractId
+        );
 
-        // // Retrieving Payouts
-        // const adaProviderAvalaiblePayouts = await runtime(
-        //   adaProvider
-        // ).payouts.available(onlyByContractIds([contractId]));
-        // expect(adaProviderAvalaiblePayouts.length).toBe(1);
-        // await runtime(adaProvider).payouts.withdraw([
-        //   adaProviderAvalaiblePayouts[0].payoutId,
-        // ]);
-        // const adaProviderWithdrawn = await runtime(adaProvider).payouts.withdrawn(
-        //   onlyByContractIds([contractId])
-        // );
-        // expect(adaProviderWithdrawn.length).toBe(1);
+        expect(actions.length).toBe(1);
+        expect(actions[0].typeName).toBe("ProvisionOffer");
+        const provisionOffer = actions[0] as AtomicSwap.ProvisionOffer;
+        const offerProvisionedTx = await runtime
+          .mkLifecycle(seller.wallet)
+          .contracts.applyInputs(contractId, {
+            inputs: [provisionOffer.input],
+          });
 
-        // const tokenProviderAvalaiblePayouts = await runtime(
-        //   tokenProvider
-        // ).payouts.available(onlyByContractIds([contractId]));
-        // expect(tokenProviderAvalaiblePayouts.length).toBe(1);
-        // await runtime(tokenProvider).payouts.withdraw([
-        //   tokenProviderAvalaiblePayouts[0].payoutId,
-        // ]);
-        // const tokenProviderWithdrawn = await runtime(
-        //   tokenProvider
-        // ).payouts.withdrawn(onlyByContractIds([contractId]));
-        // expect(tokenProviderWithdrawn.length).toBe(1);
+        await seller.wallet.waitConfirmation(offerProvisionedTx);
+        await seller.wallet.waitRuntimeSyncingTillCurrentWalletTip(
+          runtime.client
+        );
+
+        logInfo(`Buyer > Swap`);
+
+        actions = await getAvailableActions(
+          runtime.client,
+          runtime.mkLifecycle(seller.wallet),
+          scheme,
+          contractId
+        );
+
+        expect(actions.length).toBe(2);
+        expect(actions[0].typeName).toBe("Swap");
+        expect(actions[1].typeName).toBe("Retract");
+        const swap = actions[0] as AtomicSwap.Swap;
+        const swappedTx = await runtime
+          .mkLifecycle(buyer.wallet)
+          .contracts.applyInputs(contractId, { inputs: [swap.input] });
+
+        await buyer.wallet.waitConfirmation(swappedTx);
+        await buyer.wallet.waitRuntimeSyncingTillCurrentWalletTip(
+          runtime.client
+        );
+
+        logInfo(`Anyone > Confirm Swap`);
+
+        actions = await getAvailableActions(
+          runtime.client,
+          runtime.mkLifecycle(bank),
+          scheme,
+          contractId
+        );
+
+        expect(actions.length).toBe(1);
+        expect(actions[0].typeName).toBe("ConfirmSwap");
+        const confirmSwap = actions[0] as AtomicSwap.ConfirmSwap;
+        const swapConfirmedTx = await runtime
+          .mkLifecycle(bank)
+          .contracts.applyInputs(contractId, { inputs: [confirmSwap.input] });
+
+        await bank.waitConfirmation(swapConfirmedTx);
+        await bank.waitRuntimeSyncingTillCurrentWalletTip(runtime.client);
+
+        const closedState = await getClosedState(
+          runtime.client,
+          runtime.mkLifecycle(bank),
+          scheme,
+          contractId
+        );
+
+        expect(closedState.reason.typeName).toBe("Swapped");
+
+        logInfo(`Buyer > Retrieve Payout`);
+
+        const buyerPayouts = await runtime
+          .mkLifecycle(buyer.wallet)
+          .payouts.available(onlyByContractIds([contractId]));
+        expect(buyerPayouts.length).toBe(1);
+        await runtime
+          .mkLifecycle(buyer.wallet)
+          .payouts.withdraw([buyerPayouts[0].payoutId]);
+
+        await logWalletInfo("seller", seller.wallet);
+        await logWalletInfo("buyer", buyer.wallet);
       } catch (e) {
-        console.log(`caught : ${JSON.stringify(e)}`);
+        logError(
+          `Error occured while Executing the Tests : ${MarloweJSON.stringify(
+            e,
+            null,
+            4
+          )}`
+        );
         const error = e as AxiosError;
-        console.log(`caught : ${JSON.stringify(error.response?.data)}`);
+        logError(
+          `Details : ${MarloweJSON.stringify(error.response?.data, null, 4)}`
+        );
         expect(true).toBe(false);
       }
     },
     10 * MINUTES
   );
 });
+
+const getClosedState = async (
+  runtimeClient: RestClient,
+  runtimeLifecycle: RuntimeLifecycle,
+  scheme: AtomicSwap.Scheme,
+  contractId: ContractId
+): Promise<AtomicSwap.Closed> => {
+  const inputHistory =
+    await runtimeLifecycle.contracts.getInputHistory(contractId);
+
+  await shouldBeAClosedContract(runtimeClient, contractId);
+
+  return AtomicSwap.getClosedState(scheme, inputHistory);
+};
+
+const getAvailableActions = async (
+  runtimeClient: RestClient,
+  runtimeLifecycle: RuntimeLifecycle,
+  scheme: AtomicSwap.Scheme,
+  contractId: ContractId
+): Promise<AtomicSwap.Action[]> => {
+  const inputHistory =
+    await runtimeLifecycle.contracts.getInputHistory(contractId);
+
+  const marloweState = await getMarloweStatefromAnActiveContract(
+    runtimeClient,
+    contractId
+  );
+  const contractState = AtomicSwap.getActiveState(
+    scheme,
+    inputHistory,
+    marloweState
+  );
+  return AtomicSwap.getAvailableActions(scheme, contractState);
+};
+
+const shouldBeAClosedContract = async (
+  restClient: RestClient,
+  contractId: ContractId
+): Promise<void> => {
+  const state = await restClient
+    .getContractById(contractId)
+    .then((contractDetails) => contractDetails.state);
+  if (state) {
+    throw new Error("Contract retrieved is not Closed");
+  } else {
+    return;
+  }
+};
 
 const shouldBeAnActiveContract = (state?: MarloweState): MarloweState => {
   if (state) return state;
@@ -185,25 +272,3 @@ const getMarloweStatefromAnActiveContract = (
   restClient
     .getContractById(contractId)
     .then((contractDetails) => shouldBeAnActiveContract(contractDetails.state));
-
-// new data type that timeInterval + single input
-// > array[SingleInputTx]
-const getInputHistory = (
-  restClient: RestClient,
-  contractId: ContractId
-): Promise<Input[]> =>
-  restClient
-    .getTransactionsForContract(contractId)
-    .then((result) =>
-      Promise.all(
-        result.transactions.map((transaction) =>
-          restClient.getContractTransactionById(
-            contractId,
-            transaction.transactionId
-          )
-        )
-      )
-    )
-    .then((txsDetails) =>
-      txsDetails.map((txDetails) => txDetails.inputs).flat()
-    );

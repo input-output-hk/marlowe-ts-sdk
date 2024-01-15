@@ -209,7 +209,7 @@ export const useMintedRoles = (
     : (policyId as UsePolicyWithClosedRoleTokens);
 
 /**
- *  Configure the minting of a Closed Role Token.
+ *  Configure the minting of a Role Token.
  *  @param openness where to distribute the token (Either openly or closedly)
  *  @param quantity Quantity of the Closed Role Token (by Default an NFT (==1))
  *  @param metadata Token Metadata of the Token

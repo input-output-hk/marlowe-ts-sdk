@@ -63,7 +63,8 @@ const waitRuntimeSyncingTillCurrentWalletTip =
     await waitForPredicatePromise(
       isRuntimeChainMoreAdvancedThan(client, currentLucidSlot)
     );
-    return sleep(5);
+    process.stdout.write("\n");
+    return sleep(15);
   };
 
 /**
@@ -79,7 +80,7 @@ export const isRuntimeChainMoreAdvancedThan =
         return true;
       } else {
         const delta = aSlotNo - status.tips.runtimeChain.blockHeader.slotNo;
-        logWarning(
+        process.stdout.write(
           `Waiting Runtime to reach that point (${delta} slots behind (~${delta}s)) `
         );
         return false;
