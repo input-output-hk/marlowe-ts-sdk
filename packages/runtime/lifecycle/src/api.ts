@@ -282,6 +282,7 @@ export interface PayoutsAPI {
    */
   available(filters?: Filters): Promise<PayoutAvailable[]>;
 
+  // TODO : Withdraw should not `waitConfirmation` behind the scene and it should return a `TxId` (https://github.com/input-output-hk/marlowe-ts-sdk/issues/170)
   /**
    * TODO: comment
    * @throws DecodingError

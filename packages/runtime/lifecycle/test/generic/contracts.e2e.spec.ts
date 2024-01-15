@@ -19,7 +19,7 @@ import {
 
 global.console = console;
 
-describe.skip("Runtime Contract Lifecycle ", () => {
+describe("Runtime Contract Lifecycle ", () => {
   it(
     "can create a Marlowe Contract ",
     async () => {

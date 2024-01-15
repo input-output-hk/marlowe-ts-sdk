@@ -69,9 +69,7 @@ import {
   datetoTimeout,
 } from "@marlowe.io/language-core-v1";
 import * as G from "@marlowe.io/language-core-v1/guards";
-
-export type IReduce = void;
-const iReduce: void = undefined;
+import { SingleInputTx } from "@marlowe.io/language-core-v1/transaction.js";
 
 /**
  * Atomic Swap Scheme, canonical information to define the contract.
@@ -160,7 +158,6 @@ export type ActionParticipant = "buyer" | "seller" | "anybody";
 export type RetrieveMinimumLovelaceAdded = {
   typeName: "RetrieveMinimumLovelaceAdded";
   owner: ActionParticipant;
-  input: IReduce;
 };
 
 export type ProvisionOffer = {
@@ -207,14 +204,31 @@ export type Swapped = { typeName: "Swapped" };
 
 /* #endregion */
 
-export class UnexpectedSwapContractState extends Error {
-  public type = "UnexpectedSwapContractState" as const;
+export class UnexpectedActiveSwapContractState extends Error {
+  public type = "UnexpectedActiveSwapContractState" as const;
   public scheme: Scheme;
-  public state?: MarloweState;
-  constructor(scheme: Scheme, state?: MarloweState) {
-    super("Swap Contract / Unexpected State");
+  public state: MarloweState;
+  public inputHistory: SingleInputTx[];
+  constructor(
+    scheme: Scheme,
+    inputHistory: SingleInputTx[],
+    state: MarloweState
+  ) {
+    super("Swap Contract / Unexpected Active State");
     this.scheme = scheme;
     this.state = state;
+    this.inputHistory = inputHistory;
+  }
+}
+
+export class UnexpectedClosedSwapContractState extends Error {
+  public type = "UnexpectedClosedSwapContractState" as const;
+  public scheme: Scheme;
+  public inputHistory: SingleInputTx[];
+  constructor(scheme: Scheme, inputHistory: SingleInputTx[]) {
+    super("Swap Contract / Unexpected closed State");
+    this.scheme = scheme;
+    this.inputHistory = inputHistory;
   }
 }
 
@@ -241,7 +255,6 @@ export const getAvailableActions = (
         {
           typeName: "RetrieveMinimumLovelaceAdded",
           owner: "anybody",
-          input: iReduce,
         },
       ];
     case "WaitingForAnswer":
@@ -281,7 +294,7 @@ export const getAvailableActions = (
 
 export const getState = (
   scheme: Scheme,
-  inputHistory: Input[],
+  inputHistory: SingleInputTx[],
   state?: MarloweState
 ): State => {
   return state
@@ -291,7 +304,7 @@ export const getState = (
 
 export const getClosedState = (
   scheme: Scheme,
-  inputHistory: Input[]
+  inputHistory: SingleInputTx[]
 ): Closed => {
   switch (inputHistory.length) {
     // Offer Provision Deadline has passed and there is one reduced applied to close the contract
@@ -307,10 +320,10 @@ export const getClosedState = (
       };
     case 2: {
       const isRetracted =
-        G.IChoice.is(inputHistory[1]) &&
-        inputHistory[1].for_choice_id.choice_name == "retract";
-      const nbDeposits = inputHistory.filter((input) =>
-        G.IDeposit.is(input)
+        G.IChoice.is(inputHistory[1].input) &&
+        inputHistory[1].input.for_choice_id.choice_name == "retract";
+      const nbDeposits = inputHistory.filter((singleInputTx) =>
+        G.IDeposit.is(singleInputTx.input)
       ).length;
       if (isRetracted && nbDeposits === 1) {
         return {
@@ -327,11 +340,11 @@ export const getClosedState = (
       break;
     }
     case 3: {
-      const nbDeposits = inputHistory.filter((input) =>
-        G.IDeposit.is(input)
+      const nbDeposits = inputHistory.filter((singleInputTx) =>
+        G.IDeposit.is(singleInputTx.input)
       ).length;
-      const nbNotify = inputHistory.filter((input) =>
-        G.INotify.is(input)
+      const nbNotify = inputHistory.filter((singleInputTx) =>
+        G.INotify.is(singleInputTx.input)
       ).length;
       if (nbDeposits === 2 && nbNotify === 1) {
         return {
@@ -341,12 +354,12 @@ export const getClosedState = (
       }
     }
   }
-  throw new UnexpectedSwapContractState(scheme);
+  throw new UnexpectedClosedSwapContractState(scheme, inputHistory);
 };
 
 export const getActiveState = (
   scheme: Scheme,
-  inputHistory: Input[],
+  inputHistory: SingleInputTx[],
   state: MarloweState
 ): ActiveState => {
   const now: Timeout = datetoTimeout(new Date());
@@ -361,8 +374,8 @@ export const getActiveState = (
       }
       break;
     case 2: {
-      const nbDeposits = inputHistory.filter((input) =>
-        G.IDeposit.is(input)
+      const nbDeposits = inputHistory.filter((singleInputTx) =>
+        G.IDeposit.is(singleInputTx.input)
       ).length;
       if (nbDeposits === 2 && now < scheme.swapConfirmation.deadline) {
         return { typeName: "WaitingForSwapConfirmation" };
@@ -371,7 +384,7 @@ export const getActiveState = (
     }
   }
 
-  throw new UnexpectedSwapContractState(scheme, state);
+  throw new UnexpectedActiveSwapContractState(scheme, inputHistory, state);
 };
 
 export function mkContract(scheme: Scheme): Contract {
@@ -408,12 +421,12 @@ export function mkContract(scheme: Scheme): Contract {
       pay: scheme.offer.asset.amount,
       token: scheme.offer.asset.token,
       from_account: scheme.offer.seller,
-      to: { party: scheme.ask.buyer },
+      to: { account: scheme.ask.buyer },
       then: {
         pay: scheme.ask.asset.amount,
         token: scheme.ask.asset.token,
         from_account: scheme.ask.buyer,
-        to: { party: scheme.offer.seller },
+        to: { account: scheme.offer.seller },
         then: confirmSwap,
       },
     };
