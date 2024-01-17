@@ -128,7 +128,7 @@ const getApplicableInputs =
     const contractDetails = await unsafeTaskEither(
       deprecatedRestAPI.contracts.contract.get(contractId)
     );
-    if (contractDetails.state) {
+    if (!contractDetails.state) {
       return noNext;
     } else {
       const parties = await getParties(wallet)(
