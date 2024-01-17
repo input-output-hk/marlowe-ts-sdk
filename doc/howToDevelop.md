@@ -156,11 +156,27 @@ $ npm run test:e2e
 
 > ⚠ You need to [build the packages](#build) before you can compile the documentation!
 
+If this is your first time serving the docs, you will need to build the theme first.
+
+```bash
+$ cd doc/theme
+$ npm run build
+$ cd ../../
+```
+
 To compile all documentation
 
 ```bash
 $ npm run docs
 ```
+
+Serve the documentation.
+
+```bash
+$ npm run serve
+```
+
+You should now be able to view the docs locally at `localhost:1337`.
 
 Documentation is built with [TypeDoc](https://typedoc.org), published through [GitHub Pages](https://pages.github.com), and hosted at https://input-output-hk.github.io/marlowe-ts-sdk
 
