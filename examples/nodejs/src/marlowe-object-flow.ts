@@ -38,6 +38,10 @@ import { splitAddress } from "./experimental-features/metadata.js";
 import { SingleInputTx } from "../../../packages/language/core/v1/dist/esm/transaction.js";
 import * as t from "io-ts/lib/index.js";
 import { deepEqual } from "@marlowe.io/adapter/deep-equal";
+import {
+  AnnotatedBundle,
+  mkAnnotatedContract,
+} from "./experimental-features/annotated-object.js";
 
 // When this script is called, start with main.
 main();
@@ -376,42 +380,42 @@ interface DelayPaymentScheme {
   releaseDeadline: Date;
 }
 
-function mkDelayPayment(scheme: DelayPaymentScheme): ContractBundle {
-  return {
-    main: "initial-deposit",
-    bundle: [
-      {
-        label: "release-funds",
-        type: "contract",
-        value: {
-          when: [],
-          timeout: datetoTimeout(scheme.releaseDeadline),
-          timeout_continuation: "close",
-        },
-      },
-      {
-        label: "initial-deposit",
-        type: "contract",
-        value: {
-          when: [
+type DelayPaymentAnnotations =
+  | "initialDeposit"
+  | "WaitForRelease"
+  | "PaymentMissedClose"
+  | "PaymentReleasedClose";
+
+function mkDelayPayment(
+  input: DelayPaymentScheme
+): AnnotatedBundle<DelayPaymentAnnotations> {
+  return mkAnnotatedContract<DelayPaymentAnnotations>(({ when, close }) => {
+    const initialDeposit = (cont: AnnotatedBundle<DelayPaymentAnnotations>) =>
+      when({
+        annotation: "initialDeposit",
+        on: [
+          [
             {
-              case: {
-                party: scheme.payFrom,
-                deposits: scheme.amount,
-                of_token: lovelace,
-                into_account: scheme.payTo,
-              },
-              then: {
-                ref: "release-funds",
-              },
+              party: input.payFrom,
+              deposits: input.amount,
+              of_token: lovelace,
+              into_account: input.payTo,
             },
+            cont,
           ],
-          timeout: datetoTimeout(scheme.depositDeadline),
-          timeout_continuation: "close",
-        },
-      },
-    ],
-  };
+        ],
+        timeout: datetoTimeout(input.depositDeadline),
+        onTimeout: close("PaymentMissedClose"),
+      });
+    const waitForRelease = when({
+      annotation: "WaitForRelease",
+      on: [],
+      timeout: datetoTimeout(input.releaseDeadline),
+      onTimeout: close("PaymentReleasedClose"),
+    });
+
+    return initialDeposit(waitForRelease);
+  });
 }
 // #endregion
 
@@ -565,7 +569,7 @@ async function createContract(
   schema: DelayPaymentScheme,
   rewardAddress?: StakeAddressBech32
 ): Promise<[ContractId, TxId]> {
-  const contractBundle = mkDelayPayment(schema);
+  const contractBundle = mkDelayPayment(schema).bundle;
   const tags = mkDelayPaymentTags(schema);
   return lifecycle.contracts.createContract({
     stakeAddress: rewardAddress,
@@ -608,7 +612,7 @@ async function validateExistingContract(
   //      to download the sources from the initial runtime and share those with another runtime.
   //      Or this option which doesn't require runtime to runtime communication, and just requires
   //      the dapp to be able to recreate the same sources.
-  const contractBundle = mkDelayPayment(scheme);
+  const contractBundle = mkDelayPayment(scheme).bundle;
   const { contractSourceId } =
     await lifecycle.restClient.createContractSources(contractBundle);
   const initialContract = await lifecycle.restClient.getContractSourceById({
