@@ -238,8 +238,10 @@ const getAvailableActions = async (
     runtimeClient,
     contractId
   );
+  const now = datetoTimeout(new Date());
   const contractState = AtomicSwap.getActiveState(
     scheme,
+    now,
     inputHistory,
     marloweState
   );
