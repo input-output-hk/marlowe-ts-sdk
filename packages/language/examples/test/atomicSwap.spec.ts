@@ -1,6 +1,6 @@
 import { AtomicSwap } from "@marlowe.io/language-examples";
 import * as G from "@marlowe.io/language-core-v1/guards";
-import { MarloweJSON } from "@marlowe.io/adapter/codec";
+import { expectType } from "@marlowe.io/adapter/io-ts";
 
 import {
   datetoTimeout,
@@ -71,7 +71,7 @@ describe("Atomic Swap", () => {
       // Execute
 
       const contract = AtomicSwap.mkContract(scheme);
-      const state = emptyState(3_000_000n);
+      const state = emptyState(aDeadlineInThePast);
 
       // Verify
 
@@ -105,7 +105,7 @@ describe("Atomic Swap", () => {
       // Execute
 
       const contract = AtomicSwap.mkContract(scheme);
-      const state = emptyState(3_000_000n);
+      const state = emptyState(aDeadlineInThePast);
 
       // Verify
 
@@ -538,16 +538,6 @@ describe("Atomic Swap", () => {
     });
   });
 });
-
-function expectType<T>(guard: t.Type<T>, aValue: unknown): T {
-  if (guard.is(aValue)) {
-    return aValue;
-  } else {
-    throw `Expected value from type ${
-      guard.name
-    } but got ${MarloweJSON.stringify(aValue, null, 4)} `;
-  }
-}
 
 const payeeAccount = (party: Party): Payee => ({ account: party });
 const payeeParty = (party: Party): Payee => ({ party: party });
