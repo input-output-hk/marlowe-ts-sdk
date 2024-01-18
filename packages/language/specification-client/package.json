@@ -1,6 +1,6 @@
 {
   "name": "@marlowe.io/language-specification-client",
-  "version": "0.3.0-beta-rc3",
+  "version": "0.3.0-beta",
   "description": "Client for the Marlowe Specification compliance test",
   "repository": "https://github.com/input-output-hk/marlowe-ts-sdk",
   "publishConfig": {
@@ -32,7 +32,7 @@
     }
   },
   "dependencies": {
-    "@marlowe.io/language-core-v1": "0.3.0-beta-rc3",
+    "@marlowe.io/language-core-v1": "0.3.0-beta",
     "fp-ts": "^2.16.1"
   }
 }
