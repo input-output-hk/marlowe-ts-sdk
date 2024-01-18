@@ -2,7 +2,7 @@
   description = "Marlowe ts-sdk";
 
   inputs = {
-    iogx.url = "github:input-output-hk/iogx?ref=custom-precommit-hooks";
+    iogx.url = "github:input-output-hk/iogx";
     marlowe-spec.url = "github:input-output-hk/marlowe";
   };
 
