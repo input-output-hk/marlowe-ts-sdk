@@ -69,7 +69,7 @@ import {
   datetoTimeout,
 } from "@marlowe.io/language-core-v1";
 import * as G from "@marlowe.io/language-core-v1/guards";
-import { SingleInputTx } from "@marlowe.io/language-core-v1/transaction.js";
+import { SingleInputTx } from "@marlowe.io/language-core-v1/semantics";
 
 /**
  * Atomic Swap Scheme, canonical information to define the contract.
@@ -106,12 +106,23 @@ export type WaitingSellerOffer = {
   typeName: "WaitingSellerOffer";
 };
 
+export const waitingSellerOffer: WaitingSellerOffer = {
+  typeName: "WaitingSellerOffer",
+};
+
 export type NoSellerOfferInTime = {
   typeName: "NoSellerOfferInTime";
+};
+export const noSellerOfferInTime: NoSellerOfferInTime = {
+  typeName: "NoSellerOfferInTime",
 };
 
 export type WaitingForAnswer = {
   typeName: "WaitingForAnswer";
+};
+
+export const waitingForAnswer: WaitingForAnswer = {
+  typeName: "WaitingForAnswer",
 };
 
 /*
@@ -128,6 +139,10 @@ export type WaitingForAnswer = {
  */
 export type WaitingForSwapConfirmation = {
   typeName: "WaitingForSwapConfirmation";
+};
+
+export const waitingForSwapConfirmation: WaitingForSwapConfirmation = {
+  typeName: "WaitingForSwapConfirmation",
 };
 
 /**
@@ -147,10 +162,10 @@ export type Action =
   | ProvisionOffer // > OfferProvisionned
   /* When NoOfferProvisionnedOnTime (timed out > no timeout (need to be reduced to be closed))*/
   | RetrieveMinimumLovelaceAdded // > closed
-  /* When OfferProvisionned (timed out > NotNotifiedOnTime) */
+  /* When OfferProvisionned (timed out > NotConfirmedOnTime) */
   | Retract // > closed
   | Swap // > Swapped
-  /* When Swapped  (timed out > NotNotifiedOnTime) */
+  /* When Swapped  (timed out > NotConfirmedOnTime) */
   | ConfirmSwap; // > closed
 
 export type ActionParticipant = "buyer" | "seller" | "anybody";
@@ -192,14 +207,16 @@ export type CloseReason =
   | SellerRetracted
   | NotAnsweredOnTime
   | Swapped
-  | NotNotifiedOnTime;
+  | SwappedButNotNotifiedOnTime;
 
 export type NoOfferProvisionnedOnTime = {
   typeName: "NoOfferProvisionnedOnTime";
 };
 export type SellerRetracted = { typeName: "SellerRetracted" };
 export type NotAnsweredOnTime = { typeName: "NotAnsweredOnTime" };
-export type NotNotifiedOnTime = { typeName: "NotNotifiedOnTime" };
+export type SwappedButNotNotifiedOnTime = {
+  typeName: "SwappedButNotNotifiedOnTime";
+};
 export type Swapped = { typeName: "Swapped" };
 
 /* #endregion */
@@ -294,11 +311,12 @@ export const getAvailableActions = (
 
 export const getState = (
   scheme: Scheme,
+  now: Timeout,
   inputHistory: SingleInputTx[],
   state?: MarloweState
 ): State => {
   return state
-    ? getActiveState(scheme, inputHistory, state)
+    ? getActiveState(scheme, now, inputHistory, state)
     : getClosedState(scheme, inputHistory);
 };
 
@@ -334,7 +352,7 @@ export const getClosedState = (
       if (nbDeposits === 2) {
         return {
           typeName: "Closed",
-          reason: { typeName: "NotNotifiedOnTime" },
+          reason: { typeName: "SwappedButNotNotifiedOnTime" },
         };
       }
       break;
@@ -359,10 +377,10 @@ export const getClosedState = (
 
 export const getActiveState = (
   scheme: Scheme,
+  now: Timeout,
   inputHistory: SingleInputTx[],
   state: MarloweState
 ): ActiveState => {
-  const now: Timeout = datetoTimeout(new Date());
   switch (inputHistory.length) {
     case 0:
       return now < scheme.offer.deadline

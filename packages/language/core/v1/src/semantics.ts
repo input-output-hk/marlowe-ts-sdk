@@ -5,7 +5,7 @@
 import * as G from "@marlowe.io/language-core-v1/guards";
 import { datetoTimeout } from "@marlowe.io/language-core-v1";
 import { playTrace } from "@marlowe.io/language-core-v1/semantics";
-import { Role, lovelace } from "@marlowe.io/language-core-v1/playground-v1";
+import { role, lovelace } from "@marlowe.io/language-core-v1/playground-v1";
 import { escrow } from "@marlowe.io/language-examples";
 
 const contract = escrow({
@@ -24,15 +24,15 @@ const txs = [
     },
     tx_inputs: [
       {
-        input_from_party: Role("Buyer"),
+        input_from_party: role("Buyer"),
         that_deposits: 100n,
         of_token: lovelace,
-        into_account: Role("Seller"),
+        into_account: role("Seller"),
       },
       {
         for_choice_id: {
           choice_name: "Everything is alright",
-          choice_owner: Role("Buyer"),
+          choice_owner: role("Buyer"),
         },
         input_that_chooses_num: 0n,
       },

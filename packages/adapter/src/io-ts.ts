@@ -1,5 +1,6 @@
 import * as t from "io-ts/lib/index.js";
 import { withValidate } from "io-ts-types";
+import { MarloweJSON } from "./codec.js";
 /**
  * In the TS-SDK we duplicate the type and guard definition for each type as the
  * inferred type from io-ts does not produce a good type export when used with
@@ -74,4 +75,19 @@ export function convertNullableToUndefined<C extends t.Mixed>(
     (u, c) => (u == null ? t.success(undefined) : codec.validate(u, c)),
     name
   );
+}
+/**
+ * Convert an unknown value to `T` if the guard provided is validating the unknown value.
+ * @param guard
+ * @param aValue
+ * @returns
+ */
+export function expectType<T>(guard: t.Type<T>, aValue: unknown): T {
+  if (guard.is(aValue)) {
+    return aValue;
+  } else {
+    throw `Expected value from type ${
+      guard.name
+    } but got ${MarloweJSON.stringify(aValue, null, 4)} `;
+  }
 }
