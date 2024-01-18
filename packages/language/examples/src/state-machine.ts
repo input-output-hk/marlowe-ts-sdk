@@ -1,6 +1,7 @@
 import { Bundle, Case, Reference } from "@marlowe.io/marlowe-object";
 import {
   Action,
+  Address,
   Choice,
   datetoTimeout,
   Deposit,
@@ -10,6 +11,7 @@ import {
   Timeout,
 } from "@marlowe.io/language-core-v1";
 import { MarloweJSON } from "@marlowe.io/adapter/codec";
+import { SingleInputTx } from "@marlowe.io/language-core-v1/semantics";
 
 type ContractBundle = {
   contract: Reference;
@@ -42,18 +44,132 @@ type StateMachine<T> = {
   // transition:  (event: Event) => (state: T, machine: StateMachine<T>) => StateMachine<T>
 };
 
+// #region Delay Payment State
+/**
+ * The delay payment contract can be in one of the following logical states:
+ */
 type DelayPaymentState =
-  | { type: "before-deposit" }
-  | { type: "waiting-for-release"; amount: bigint }
-  | { type: "closed"; reason: string };
-
-type DelayPaymentParameters = {
-  payer: Party;
-  payee: Party;
-  amount: bigint;
-  deposit_timeout: Timeout;
-  release_timeout: Timeout;
+  | InitialState
+  | PaymentDeposited
+  | PaymentMissed
+  | PaymentReady
+  | Closed;
+/**
+ * In the initial state the contract is waiting for the payment to be deposited
+ */
+type InitialState = {
+  type: "InitialState";
 };
+
+/**
+ * After the payment is deposited, the contract is waiting for the payment to be released
+ */
+type PaymentDeposited = {
+  type: "PaymentDeposited";
+};
+
+/**
+ * If the payment is not deposited by the deadline, the contract can be closed.
+ * NOTE: It is not necesary to close the contract, as it will consume transaction fee (but it will release
+ *       the minUTXO)
+ */
+type PaymentMissed = {
+  type: "PaymentMissed";
+};
+
+/**
+ * After the release deadline, the payment is still in the contract, and it is ready to be released.
+ */
+type PaymentReady = {
+  type: "PaymentReady";
+};
+
+type Closed = {
+  type: "Closed";
+  result: "Missed deposit" | "Payment released";
+};
+
+function printState(state: DelayPaymentState, scheme: DelayPaymentScheme) {
+  switch (state.type) {
+    case "InitialState":
+      console.log(
+        `Waiting ${scheme.payFrom.address} to deposit ${scheme.amount}`
+      );
+      break;
+    case "PaymentDeposited":
+      console.log(
+        `Payment deposited, waiting until ${scheme.releaseDeadline} to be able to release the payment`
+      );
+      break;
+    case "PaymentMissed":
+      console.log(
+        `Payment missed on ${scheme.depositDeadline}, contract can be closed to retrieve minUTXO`
+      );
+      break;
+    case "PaymentReady":
+      console.log(`Payment ready to be released`);
+      break;
+    case "Closed":
+      console.log(`Contract closed: ${state.result}`);
+      break;
+  }
+}
+
+function getState(
+  scheme: DelayPaymentScheme,
+  currentTime: Date,
+  history: SingleInputTx[]
+): DelayPaymentState {
+  if (history.length === 0) {
+    if (currentTime < scheme.depositDeadline) {
+      return { type: "InitialState" };
+    } else {
+      return { type: "PaymentMissed" };
+    }
+  } else if (history.length === 1) {
+    // If the first transaction doesn't have an input, it means it was used to advace a timeouted contract
+    if (!history[0].input) {
+      return { type: "Closed", result: "Missed deposit" };
+    }
+    if (currentTime < scheme.releaseDeadline) {
+      return { type: "PaymentDeposited" };
+    } else {
+      return { type: "PaymentReady" };
+    }
+  } else if (history.length === 2) {
+    return { type: "Closed", result: "Payment released" };
+  } else {
+    throw new Error("Wrong state/contract, too many transactions");
+  }
+}
+
+// #endregion
+/**
+ * These are the parameters of the contract
+ */
+interface DelayPaymentScheme {
+  /**
+   * Who is making the delayed payment
+   */
+  payFrom: Address;
+  /**
+   * Who is receiving the payment
+   */
+  payTo: Address;
+  /**
+   * The amount of lovelaces to be paid
+   */
+  amount: bigint;
+  /**
+   * The deadline for the payment to be made. If the payment is not made by this date, the contract can be closed
+   */
+  depositDeadline: Date;
+  /**
+   * A date after the payment can be released to the receiver.
+   * NOTE: An empty transaction must be done to close the contract
+   */
+  releaseDeadline: Date;
+}
 
 type DelayPaymentSM = StateMachine<DelayPaymentState>;
 
@@ -93,7 +209,7 @@ function whenSM<T>(params: WhenSMParams<T>): StateMachine<T> {
     } as Case;
   });
   const bundles = params.on.flatMap(
-    ([_, cont]) => cont.continuationBundle.bundle,
+    ([_, cont]) => cont.continuationBundle.bundle
   );
 
   const whenBundle: Bundle = [
@@ -109,7 +225,7 @@ function whenSM<T>(params: WhenSMParams<T>): StateMachine<T> {
   ];
 
   const bundle = timeoutStateMachine.continuationBundle.bundle.concat(
-    bundles.concat(whenBundle),
+    bundles.concat(whenBundle)
   );
 
   return {
@@ -127,7 +243,7 @@ type SMConstructors<T> = {
 };
 
 function mkSMContract<T>(
-  creator: (constructors: SMConstructors<T>) => StateMachine<T>,
+  creator: (constructors: SMConstructors<T>) => StateMachine<T>
 ): StateMachine<T> {
   return creator({
     when: whenSM,
@@ -135,35 +251,35 @@ function mkSMContract<T>(
   });
 }
 
-function delayPayment2(input: DelayPaymentParameters): DelayPaymentSM {
+function delayPayment(input: DelayPaymentScheme): DelayPaymentSM {
   return mkSMContract<DelayPaymentState>(({ when, close }) => {
     const initialDeposit = (cont: DelayPaymentSM) =>
       when({
-        state: { type: "before-deposit" },
+        state: { type: "InitialState" },
         on: [
           [
             {
-              party: input.payer,
+              party: input.payFrom,
               deposits: input.amount,
               of_token: lovelace,
-              into_account: input.payee,
+              into_account: input.payTo,
             },
             cont,
           ],
         ],
-        timeout: input.deposit_timeout,
+        timeout: datetoTimeout(input.depositDeadline),
         onTimeout: close({
-          type: "closed",
-          reason: "initial deposit timeout",
+          type: "Closed",
+          result: "Missed deposit",
         }),
       });
     const waitForRelease = when({
-      state: { type: "waiting-for-release", amount: input.amount },
+      state: { type: "PaymentDeposited" },
       on: [],
-      timeout: input.release_timeout,
+      timeout: datetoTimeout(input.releaseDeadline),
       onTimeout: close({
-        type: "closed",
-        reason: "deposit succesfully payed",
+        type: "Closed",
+        result: "Payment released",
       }),
     });
 
@@ -171,47 +287,20 @@ function delayPayment2(input: DelayPaymentParameters): DelayPaymentSM {
   });
 }
 
-function delayPayment(input: DelayPaymentParameters): DelayPaymentSM {
-  const initialDeposit = (cont: DelayPaymentSM) =>
-    whenSM<DelayPaymentState>({
-      state: { type: "before-deposit" },
-      on: [
-        [
-          {
-            party: input.payer,
-            deposits: input.amount,
-            of_token: lovelace,
-            into_account: input.payee,
-          },
-          cont,
-        ],
-      ],
-      timeout: input.deposit_timeout,
-      onTimeout: closeSM({ type: "closed", reason: "initial deposit timeout" }),
-    });
-  const waitForRelease = whenSM<DelayPaymentState>({
-    state: { type: "waiting-for-release", amount: input.amount },
-    on: [],
-    timeout: input.release_timeout,
-    onTimeout: closeSM({ type: "closed", reason: "deposit succesfully payed" }),
-  });
-
-  return initialDeposit(waitForRelease);
-}
-
 const example = delayPayment({
-  payer: {
+  payFrom: {
     address:
       "addr_test1qqzejnp7fn6vqs7qnfany8fmpnd7e6eeexfrclun3n7amcwgqvtgteuax0yajw3ljzmu4dtprgr2uvd8xmfaqzx8dvdsmffljy",
   },
-  payee: {
+  payTo: {
     address:
       "addr_test1qqzejnp7fn6vqs7qnfany8fmpnd7e6eeexfrclun3n7amcwgqvtgteuax0yajw3ljzmu4dtprgr2uvd8xmfaqzx8dvdsmffljy",
   },
   amount: 100_000_000n,
-  deposit_timeout: datetoTimeout(new Date("2024-01-01")),
-  release_timeout: datetoTimeout(new Date("2024-01-02")),
+  depositDeadline: new Date("2024-01-01"),
+  releaseDeadline: new Date("2024-01-02"),
 });
+
 console.log(
   MarloweJSON.stringify(
     [
@@ -219,6 +308,6 @@ console.log(
       example.continuationBundle.bundle,
     ],
     null,
-    2,
-  ),
+    2
+  )
 );
