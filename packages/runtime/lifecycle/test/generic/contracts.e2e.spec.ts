@@ -14,7 +14,7 @@ import {
   logError,
   logInfo,
   mkTestEnvironment,
-  readEnvConfigurationFile,
+  readTestConfiguration,
 } from "@marlowe.io/testing-kit";
 
 global.console = console;
@@ -24,10 +24,10 @@ describe("Runtime Contract Lifecycle ", () => {
     "can create a Marlowe Contract ",
     async () => {
       try {
-        const { bank, runtime } = await readEnvConfigurationFile().then(
+        const { bank, mkLifecycle } = await readTestConfiguration().then(
           mkTestEnvironment({})
         );
-        const runtimeLifecycle = runtime.mkLifecycle(bank);
+        const runtimeLifecycle = mkLifecycle(bank);
         const [contractId, txIdContractCreated] =
           await runtimeLifecycle.contracts.createContract({
             contract: close,
@@ -48,29 +48,31 @@ describe("Runtime Contract Lifecycle ", () => {
       "can Apply Inputs to a Contract",
       async () => {
         try {
-          const { bank, runtime } = await readEnvConfigurationFile().then(
+          const { bank, mkLifecycle } = await readTestConfiguration().then(
             mkTestEnvironment({})
           );
 
-          const runtimeLifecycle = runtime.mkLifecycle(bank);
+          const runtime = mkLifecycle(bank);
 
           const notifyTimeout = pipe(addDays(Date.now(), 1), datetoTimeout);
           const [contractId, txIdContractCreated] =
-            await runtimeLifecycle.contracts.createContract({
+            await runtime.contracts.createContract({
               contract: oneNotifyTrue(notifyTimeout),
               minimumLovelaceUTxODeposit: 3_000_000,
             });
           await bank.waitConfirmation(txIdContractCreated);
           logInfo(
             `contractID status : ${contractId} -> ${
-              (await runtime.client.getContractById(contractId)).status
+              (await runtime.restClient.getContractById(contractId)).status
             }`
           );
-          await bank.waitRuntimeSyncingTillCurrentWalletTip(runtime.client);
-          const txIdInputsApplied =
-            await runtimeLifecycle.contracts.applyInputs(contractId, {
+          await bank.waitRuntimeSyncingTillCurrentWalletTip(runtime.restClient);
+          const txIdInputsApplied = await runtime.contracts.applyInputs(
+            contractId,
+            {
               inputs: [inputNotify],
-            });
+            }
+          );
           const result = await bank.waitConfirmation(txIdInputsApplied);
           expect(result).toBe(true);
         } catch (e) {

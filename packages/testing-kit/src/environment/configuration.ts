@@ -1,117 +1,61 @@
-import { Network, NetworkGuard, getNetwork } from "@marlowe.io/runtime-core";
-import { formatValidationErrors } from "jsonbigint-io-ts-reporters";
-import { unsafeEither } from "@marlowe.io/adapter/fp-ts";
-import * as E from "fp-ts/lib/Either.js";
-import { Blockfrost } from "lucid-cardano";
-import { SeedPhrase, seedPhrase } from "../wallet/seedPhrase.js";
-import {
-  RestClient,
-  mkRestClient,
-  RuntimeVersion,
-} from "@marlowe.io/runtime-rest-client";
-import * as Lucid from "lucid-cardano";
-import * as G from "@marlowe.io/runtime-rest-client/guards";
-import { MarloweJSON } from "@marlowe.io/adapter/codec";
+import * as t from "io-ts/lib/index.js";
+import { readFile } from "fs/promises";
+import * as fs from "fs";
+import * as path from "path";
+const lucidNetworkGuard = t.union([
+  t.literal("Mainnet"),
+  t.literal("Preview"),
+  t.literal("Preprod"),
+  t.literal("Custom"),
+]);
 
-/**
- * Test Configuration : Read from an env file, it contains :
- * 1. The necessary configuration to run e2e tests over a Lucid Wallet and a Runtime.
- * 2. A Bank Wallet Seed Phrase to provision ephemeral Test Wallets
- */
-export type TestConfiguration = {
-  bank: { seedPhrase: SeedPhrase };
-  lucid: { blockfrost: Blockfrost; node: { network: Lucid.Network } };
-  runtime: {
-    version: RuntimeVersion;
-    url: URL;
-    client: RestClient;
-    node: { network: Network };
-  };
-};
+export const testConfigurationGuard = t.type({
+  bank: t.type({ seedPhrase: t.string }),
+  lucid: t.type({
+    blockfrostProjectId: t.string,
+    blockfrostUrl: t.string,
+  }),
+  network: lucidNetworkGuard,
+  runtimeURL: t.string,
+});
 
+export type TestConfiguration = t.TypeOf<typeof testConfigurationGuard>;
+
+function findRootDir(currentDir: string): string | null {
+  // Check if a tsconfig.json file exists in the current directory
+  const tsconfigPath = path.join(currentDir, "tsconfig-base.json");
+  if (fs.existsSync(tsconfigPath)) {
+    return currentDir;
+  }
+
+  // If not, go up one level
+  const parentDir = path.dirname(currentDir);
+
+  // Check if we have reached the root directory
+  if (parentDir === currentDir) {
+    return null; // Root not found
+  }
+
+  // Recursive call to find root directory in the parent directory
+  return findRootDir(parentDir);
+}
+
+// Get the root directory of the TypeScript project
+const rootDir = findRootDir(process.cwd());
 /**
  * Read Test Configurations from an env file
  * @returns
  */
-export const readEnvConfigurationFile =
-  async (): Promise<TestConfiguration> => {
-    const runtimeURL = readEnvRuntimeURL();
-    const lucidNetwork = readEnvLucidNodeNetwork();
-    const runtimeClient = mkRestClient(runtimeURL.toString());
-    const status = await runtimeClient.healthcheck();
-    const runtimeNodeNetwork = getNetwork(status.networkId);
-
-    if (!G.CompatibleRuntimeVersion.is(status.version)) {
-      throw {
-        message: "Runtime Version is not Compatible with the ts-sdk",
-        details: MarloweJSON.stringify(status),
-      };
-    }
-
-    const configuration = {
-      bank: { seedPhrase: readEnvBankSeedPhrase() },
-      lucid: {
-        blockfrost: readEnvBlockfrost(),
-        node: { network: toLucidNetwork(lucidNetwork) },
-      },
-      runtime: {
-        version: status.version,
-        url: runtimeURL,
-        client: mkRestClient(runtimeURL.toString()),
-        node: { network: runtimeNodeNetwork },
-      },
-    };
-    return configuration;
-  };
-
-const readEnvBlockfrost = (): Blockfrost => {
-  const { BLOCKFROST_URL, BLOCKFROST_PROJECT_ID } = process.env;
-  if (BLOCKFROST_URL == undefined)
-    throw "Test environment variable not defined (BLOCKFROST_URL)";
-  if (BLOCKFROST_PROJECT_ID == undefined)
-    throw "Test environment variable not defined (BLOCKFROST_PROJECT_ID)";
-  return new Blockfrost(BLOCKFROST_URL, BLOCKFROST_PROJECT_ID);
-};
-
-const readEnvLucidNodeNetwork = (): Network => {
-  const { NETWORK_NAME } = process.env;
-  if (NETWORK_NAME == undefined)
-    throw "Test environment variable not defined (NETWORK_NAME) ";
-  return unsafeEither(
-    E.mapLeft(formatValidationErrors)(NetworkGuard.decode(NETWORK_NAME))
-  );
-};
-
-const readEnvBankSeedPhrase = (): SeedPhrase => {
-  const { BANK_SEED_PHRASE } = process.env;
-  if (BANK_SEED_PHRASE !== undefined) {
-    return seedPhrase(JSON.parse(BANK_SEED_PHRASE));
-  } else {
-    throw "environment configurations not available (BANK_PK_HEX)";
+export async function readTestConfiguration(
+  filepath?: string
+): Promise<TestConfiguration> {
+  if (!filepath) {
+    filepath = `${rootDir}/env/.test-env.json`;
   }
-};
-
-const readEnvRuntimeURL = () => {
-  const { MARLOWE_WEB_SERVER_URL } = process.env;
-  if (MARLOWE_WEB_SERVER_URL == undefined)
-    throw "environment configurations not available(MARLOWE_WEB_SERVER_URL)";
-  return new URL(MARLOWE_WEB_SERVER_URL);
-};
-
-/**
- * Convert a Marlowe Network Model to a Lucid one.
- * @param network
- * @returns
- */
-const toLucidNetwork = (network: Network): Lucid.Network => {
-  switch (network) {
-    case "private":
-      return "Custom";
-    case "preview":
-      return "Preview";
-    case "preprod":
-      return "Preprod";
-    case "mainnet":
-      return "Mainnet";
+  const configStr = await readFile(filepath, { encoding: "utf-8" });
+  const result = testConfigurationGuard.decode(JSON.parse(configStr));
+  if (result._tag === "Left") {
+    throw new Error("Invalid configuration");
   }
-};
+  return result.right;
+}

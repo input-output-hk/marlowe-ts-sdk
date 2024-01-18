@@ -1,4 +1,5 @@
-import { readEnvConfigurationFile } from "@marlowe.io/testing-kit";
+import { mkRestClient } from "@marlowe.io/runtime-rest-client";
+import { readTestConfiguration } from "@marlowe.io/testing-kit";
 
 import console from "console";
 
@@ -9,8 +10,9 @@ describe("contracts endpoints", () => {
     "can navigate throught some Marlowe Contracts pages" +
       "(GET:  /contracts/)",
     async () => {
-      const { runtime } = await readEnvConfigurationFile();
-      const firstPage = await runtime.client.getContracts({
+      const config = await readTestConfiguration();
+      const restClient = mkRestClient(config.runtimeURL);
+      const firstPage = await restClient.getContracts({
         tags: [],
         partyAddresses: [],
         partyRoles: [],
@@ -20,7 +22,7 @@ describe("contracts endpoints", () => {
 
       expect(firstPage.page.next).toBeDefined();
 
-      const secondPage = await runtime.client.getContracts({
+      const secondPage = await restClient.getContracts({
         range: firstPage.page.next,
       });
       expect(secondPage.contracts.length).toBe(100);
@@ -28,7 +30,7 @@ describe("contracts endpoints", () => {
 
       expect(secondPage.page.next).toBeDefined();
 
-      const thirdPage = await runtime.client.getContracts({
+      const thirdPage = await restClient.getContracts({
         range: secondPage.page.next,
       });
 
@@ -42,8 +44,10 @@ describe("contracts endpoints", () => {
   it(
     "can retrieve some contract Details" + "(GET:  /contracts/{contractId})",
     async () => {
-      const { runtime } = await readEnvConfigurationFile();
-      const firstPage = await runtime.client.getContracts({
+      const config = await readTestConfiguration();
+      const restClient = mkRestClient(config.runtimeURL);
+
+      const firstPage = await restClient.getContracts({
         tags: [],
         partyAddresses: [],
         partyRoles: [],
@@ -54,7 +58,7 @@ describe("contracts endpoints", () => {
 
       await Promise.all(
         firstPage.contracts.map((contract) =>
-          runtime.client.getContractById(contract.contractId)
+          restClient.getContractById(contract.contractId)
         )
       );
     },
