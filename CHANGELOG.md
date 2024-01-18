@@ -1,5 +1,5 @@
 
-# 0.3.0-beta-rc2 - 10 Jan 2024
+# 0.3.0-beta - 18 Jan 2024
 The Marlowe team is happy to announce the 0.3.0 release with the following Milestones completed:
 - Add Node.js/Deno support
 - Completed 1-1 feature parity between the TS-SDK and Runtime 0.0.6
