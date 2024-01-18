@@ -141,16 +141,15 @@ describe("Atomic Swap", () => {
 
       // Execute
 
-      const { contract, state, payments, warnings } =
-        expectType<TransactionSuccess>(
-          G.TransactionSuccess,
-          playTrace(contractStart, AtomicSwap.mkContract(scheme), [
-            {
-              tx_interval: aTxInterval,
-              tx_inputs: inputFlow,
-            },
-          ])
-        );
+      const { contract, state, payments, warnings } = expectType(
+        G.TransactionSuccess,
+        playTrace(contractStart, AtomicSwap.mkContract(scheme), [
+          {
+            tx_interval: aTxInterval,
+            tx_inputs: inputFlow,
+          },
+        ])
+      );
 
       // Verify
 
@@ -191,16 +190,15 @@ describe("Atomic Swap", () => {
 
       // Execute
 
-      const { contract, state, payments, warnings } =
-        expectType<TransactionSuccess>(
-          G.TransactionSuccess,
-          playTrace(contractStart, AtomicSwap.mkContract(scheme), [
-            {
-              tx_interval: aTxInterval,
-              tx_inputs: inputFlow,
-            },
-          ])
-        );
+      const { contract, state, payments, warnings } = expectType(
+        G.TransactionSuccess,
+        playTrace(contractStart, AtomicSwap.mkContract(scheme), [
+          {
+            tx_interval: aTxInterval,
+            tx_inputs: inputFlow,
+          },
+        ])
+      );
 
       // Verify
       const expectedPayments = [
@@ -262,7 +260,7 @@ describe("Atomic Swap", () => {
 
       // Execute
 
-      const { contract, payments, warnings } = expectType<TransactionSuccess>(
+      const { contract, payments, warnings } = expectType(
         G.TransactionSuccess,
         playTrace(contractStart, AtomicSwap.mkContract(scheme), [
           {
@@ -335,7 +333,7 @@ describe("Atomic Swap", () => {
 
       // Execute
 
-      const { contract, payments, warnings } = expectType<TransactionSuccess>(
+      const { contract, payments, warnings } = expectType(
         G.TransactionSuccess,
         playTrace(contractStart, AtomicSwap.mkContract(scheme), [
           {
@@ -408,7 +406,7 @@ describe("Atomic Swap", () => {
 
       // Execute
 
-      const { contract, payments, warnings } = expectType<TransactionSuccess>(
+      const { contract, payments, warnings } = expectType(
         G.TransactionSuccess,
         playTrace(contractStart, AtomicSwap.mkContract(scheme), [
           {
@@ -463,7 +461,7 @@ describe("Atomic Swap", () => {
 
       // Execute
 
-      const { contract, payments, warnings } = expectType<TransactionSuccess>(
+      const { contract, payments, warnings } = expectType(
         G.TransactionSuccess,
         playTrace(contractStart, AtomicSwap.mkContract(scheme), [
           {
@@ -514,7 +512,7 @@ describe("Atomic Swap", () => {
 
       // Execute
 
-      const { contract, payments, warnings } = expectType<TransactionSuccess>(
+      const { contract, payments, warnings } = expectType(
         G.TransactionSuccess,
         playTrace(contractStart, AtomicSwap.mkContract(scheme), [
           {
