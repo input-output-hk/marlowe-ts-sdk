@@ -78,9 +78,9 @@ export function convertNullableToUndefined<C extends t.Mixed>(
 }
 /**
  * Convert an unknown value to `T` if the guard provided is validating the unknown value.
- * @param guard 
- * @param aValue 
- * @returns 
+ * @param guard
+ * @param aValue
+ * @returns
  */
 export function expectType<T>(guard: t.Type<T>, aValue: unknown): T {
   if (guard.is(aValue)) {
