@@ -4,7 +4,6 @@ import {
   Choice,
   datetoTimeout,
   Deposit,
-  InputContent,
   lovelace,
   Notify,
   Party,
@@ -94,7 +93,7 @@ function whenSM<T>(params: WhenSMParams<T>): StateMachine<T> {
     } as Case;
   });
   const bundles = params.on.flatMap(
-    ([_, cont]) => cont.continuationBundle.bundle
+    ([_, cont]) => cont.continuationBundle.bundle,
   );
 
   const whenBundle: Bundle = [
@@ -110,7 +109,7 @@ function whenSM<T>(params: WhenSMParams<T>): StateMachine<T> {
   ];
 
   const bundle = timeoutStateMachine.continuationBundle.bundle.concat(
-    bundles.concat(whenBundle)
+    bundles.concat(whenBundle),
   );
 
   return {
@@ -120,6 +119,56 @@ function whenSM<T>(params: WhenSMParams<T>): StateMachine<T> {
       bundle,
     },
   };
+}
+
+type SMConstructors<T> = {
+  when: (params: WhenSMParams<T>) => StateMachine<T>;
+  close: (state: T) => StateMachine<T>;
+};
+
+function mkSMContract<T>(
+  creator: (constructors: SMConstructors<T>) => StateMachine<T>,
+): StateMachine<T> {
+  return creator({
+    when: whenSM,
+    close: closeSM,
+  });
+}
+
+function delayPayment2(input: DelayPaymentParameters): DelayPaymentSM {
+  return mkSMContract<DelayPaymentState>(({ when, close }) => {
+    const initialDeposit = (cont: DelayPaymentSM) =>
+      when({
+        state: { type: "before-deposit" },
+        on: [
+          [
+            {
+              party: input.payer,
+              deposits: input.amount,
+              of_token: lovelace,
+              into_account: input.payee,
+            },
+            cont,
+          ],
+        ],
+        timeout: input.deposit_timeout,
+        onTimeout: close({
+          type: "closed",
+          reason: "initial deposit timeout",
+        }),
+      });
+    const waitForRelease = when({
+      state: { type: "waiting-for-release", amount: input.amount },
+      on: [],
+      timeout: input.release_timeout,
+      onTimeout: close({
+        type: "closed",
+        reason: "deposit succesfully payed",
+      }),
+    });
+
+    return initialDeposit(waitForRelease);
+  });
 }
 
 function delayPayment(input: DelayPaymentParameters): DelayPaymentSM {
@@ -165,8 +214,11 @@ const example = delayPayment({
 });
 console.log(
   MarloweJSON.stringify(
-    [example.continuationBundle.contract.ref, example.continuationBundle.bundle],
+    [
+      example.continuationBundle.contract.ref,
+      example.continuationBundle.bundle,
+    ],
     null,
-    2
-  )
+    2,
+  ),
 );
