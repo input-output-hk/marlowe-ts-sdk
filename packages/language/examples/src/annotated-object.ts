@@ -1,4 +1,9 @@
-import { Bundle, Case, Reference } from "@marlowe.io/marlowe-object";
+import {
+  Bundle,
+  Case,
+  ContractBundle,
+  Reference,
+} from "@marlowe.io/marlowe-object";
 import {
   Action,
   Address,
@@ -12,11 +17,6 @@ import {
 } from "@marlowe.io/language-core-v1";
 import { MarloweJSON } from "@marlowe.io/adapter/codec";
 import { SingleInputTx } from "@marlowe.io/language-core-v1/semantics";
-
-type ContractBundle = {
-  contract: Reference;
-  bundle: Bundle;
-};
 
 type NotifyEvent = {
   type: "notify";
@@ -38,11 +38,91 @@ type TimeoutEvent = {
 };
 type Event = NotifyEvent | ChoiceEvent | DepositEvent | TimeoutEvent;
 
-type StateMachine<T> = {
-  continuationBundle: ContractBundle;
-  state: T;
-  // transition:  (event: Event) => (state: T, machine: StateMachine<T>) => StateMachine<T>
+type AnnotatedBundle<T> = {
+  bundle: ContractBundle;
+  annotation?: T;
 };
+
+let globalCounter = 0;
+function fixmeCounter() {
+  return globalCounter++;
+}
+
+function closeA<T>(annotation?: T): AnnotatedBundle<T> {
+  const ref = `close-${fixmeCounter()}`;
+  return {
+    annotation,
+    bundle: {
+      main: ref,
+      bundle: [{ label: ref, type: "contract", value: "close" }],
+    },
+  };
+}
+
+type WhenAParams<T> = {
+  annotation: T;
+  on: [Action, AnnotatedBundle<T>][];
+  timeout: Timeout;
+  onTimeout: AnnotatedBundle<T>;
+};
+
+function whenA<T>(params: WhenAParams<T>): AnnotatedBundle<T> {
+  const timeoutBundle = params.onTimeout;
+  const timeoutRef = { ref: timeoutBundle.bundle.main };
+
+  const whenLabel = `when-${fixmeCounter()}`; // FIXME
+
+  const cases = params.on.map(([action, cont]) => {
+    return {
+      case: action,
+      then: { ref: cont.bundle.main },
+    } as Case;
+  });
+  const bundles = params.on.flatMap(([_, cont]) => cont.bundle.bundle);
+
+  const whenBundle: Bundle = [
+    {
+      label: whenLabel,
+      type: "contract",
+      value: {
+        when: cases,
+        timeout: params.timeout,
+        timeout_continuation: timeoutRef,
+      },
+    },
+  ];
+
+  const bundle = timeoutBundle.bundle.bundle.concat(bundles.concat(whenBundle));
+
+  return {
+    annotation: params.annotation,
+    bundle: {
+      main: whenLabel,
+      bundle,
+    },
+  };
+}
+
+type AnnotatedConstructors<T> = {
+  when: (params: WhenAParams<T>) => AnnotatedBundle<T>;
+  close: (state: T) => AnnotatedBundle<T>;
+};
+
+function mkAnnotatedContract<T>(
+  creator: (constructors: AnnotatedConstructors<T>) => AnnotatedBundle<T>
+): AnnotatedBundle<T> {
+  return creator({
+    when: whenA,
+    close: closeA,
+  });
+}
+
+//********************************************************************************
+//********************************************************************************
+//********************************************************************************
+//********************************************************************************
+//********************************************************************************
+//********************************************************************************
 
 // #region Delay Payment State
 /**
@@ -88,6 +168,12 @@ type Closed = {
   type: "Closed";
   result: "Missed deposit" | "Payment released";
 };
+
+type DelayPaymentAnnotations =
+  | "initialDeposit"
+  | "WaitForRelease"
+  | "PaymentMissedClose"
+  | "PaymentReleasedClose";
 
 function printState(state: DelayPaymentState, scheme: DelayPaymentScheme) {
   switch (state.type) {
@@ -171,91 +257,13 @@ interface DelayPaymentScheme {
   releaseDeadline: Date;
 }
 
-type DelayPaymentSM = StateMachine<DelayPaymentState>;
-
-let globalCounter = 0;
-function fixmeCounter() {
-  return globalCounter++;
-}
-
-function closeSM<T>(state: T): StateMachine<T> {
-  const ref = `close-${fixmeCounter()}`;
-  return {
-    state,
-    continuationBundle: {
-      contract: { ref },
-      bundle: [{ label: ref, type: "contract", value: "close" }],
-    },
-  };
-}
-
-type WhenSMParams<T> = {
-  state: T;
-  on: [Action, StateMachine<T>][];
-  timeout: Timeout;
-  onTimeout: StateMachine<T>;
-};
-
-function whenSM<T>(params: WhenSMParams<T>): StateMachine<T> {
-  const timeoutStateMachine = params.onTimeout;
-  const timeoutRef = timeoutStateMachine.continuationBundle.contract;
-
-  const whenLabel = `when-${fixmeCounter()}`; // FIXME
-
-  const cases = params.on.map(([action, cont]) => {
-    return {
-      case: action,
-      then: cont.continuationBundle.contract,
-    } as Case;
-  });
-  const bundles = params.on.flatMap(
-    ([_, cont]) => cont.continuationBundle.bundle
-  );
-
-  const whenBundle: Bundle = [
-    {
-      label: whenLabel,
-      type: "contract",
-      value: {
-        when: cases,
-        timeout: params.timeout,
-        timeout_continuation: timeoutRef,
-      },
-    },
-  ];
-
-  const bundle = timeoutStateMachine.continuationBundle.bundle.concat(
-    bundles.concat(whenBundle)
-  );
-
-  return {
-    state: params.state,
-    continuationBundle: {
-      contract: { ref: whenLabel },
-      bundle,
-    },
-  };
-}
-
-type SMConstructors<T> = {
-  when: (params: WhenSMParams<T>) => StateMachine<T>;
-  close: (state: T) => StateMachine<T>;
-};
-
-function mkSMContract<T>(
-  creator: (constructors: SMConstructors<T>) => StateMachine<T>
-): StateMachine<T> {
-  return creator({
-    when: whenSM,
-    close: closeSM,
-  });
-}
-
-function delayPayment(input: DelayPaymentScheme): DelayPaymentSM {
-  return mkSMContract<DelayPaymentState>(({ when, close }) => {
-    const initialDeposit = (cont: DelayPaymentSM) =>
+function delayPayment(
+  input: DelayPaymentScheme
+): AnnotatedBundle<DelayPaymentAnnotations> {
+  return mkAnnotatedContract<DelayPaymentAnnotations>(({ when, close }) => {
+    const initialDeposit = (cont: AnnotatedBundle<DelayPaymentAnnotations>) =>
       when({
-        state: { type: "InitialState" },
+        annotation: "initialDeposit",
         on: [
           [
             {
@@ -268,19 +276,13 @@ function delayPayment(input: DelayPaymentScheme): DelayPaymentSM {
           ],
         ],
         timeout: datetoTimeout(input.depositDeadline),
-        onTimeout: close({
-          type: "Closed",
-          result: "Missed deposit",
-        }),
+        onTimeout: close("PaymentMissedClose"),
       });
     const waitForRelease = when({
-      state: { type: "PaymentDeposited" },
+      annotation: "WaitForRelease",
       on: [],
       timeout: datetoTimeout(input.releaseDeadline),
-      onTimeout: close({
-        type: "Closed",
-        result: "Payment released",
-      }),
+      onTimeout: close("PaymentReleasedClose"),
     });
 
     return initialDeposit(waitForRelease);
@@ -302,12 +304,5 @@ const example = delayPayment({
 });
 
 console.log(
-  MarloweJSON.stringify(
-    [
-      example.continuationBundle.contract.ref,
-      example.continuationBundle.bundle,
-    ],
-    null,
-    2
-  )
+  MarloweJSON.stringify([example.bundle.main, example.bundle.bundle], null, 2)
 );
