@@ -6,7 +6,7 @@
   Lightweight and typesafe SDK for writing Marlowe Contracts
 </h2>
   <p align="center">
-    <a href="https://github.com/input-output-hk/marlowe-ts-sdk/releases"><img src="https://img.shields.io/github/release-pre/input-output-hk/marlowe-ts-sdk.svg?style=for-the-badge" /></a>
+    <a href="https://github.com/input-output-hk/marlowe-ts-sdk/releases"><img src="https://img.shields.io/github/v/release/input-output-hk/marlowe-ts-sdk?style=for-the-badge" /></a>
   </p>
 <div align="center">
   <a href=""><img src="https://img.shields.io/badge/stability-beta-33bbff.svg" alt="Beta"></a>
@@ -25,7 +25,7 @@ It is composed of several npm packages documented in the [API reference](https:/
 In order to interact with Marlowe contracts, the **TS-SDK** needs a Runtime instance. The following table shows the compatibility between the SDK and the Runtime versions:
 
 
-|         | runtime v0.0.5 | runtimev 0.0.6 |
+|         | runtime v0.0.5 | runtime v0.0.6 |
 | ------- | :--------:     | :------------: |
 | [SDK 0.2.0-beta](https://github.com/input-output-hk/marlowe-ts-sdk/releases/tag/0.2.0-beta)    |     ✓      |    x            |
 | [SDK 0.3.0-beta](https://github.com/input-output-hk/marlowe-ts-sdk/releases/tag/0.3.0-beta)    |     ✓      |    ✓            |
