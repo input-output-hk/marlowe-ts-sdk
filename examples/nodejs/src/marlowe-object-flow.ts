@@ -575,7 +575,6 @@ async function createContract(
     stakeAddress: rewardAddress,
     bundle: contractBundle,
     tags,
-    minimumLovelaceUTxODeposit: 3_000_000,
   });
 }
 
