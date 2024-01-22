@@ -1,6 +1,6 @@
 # CIP-45 flow
 
-This example is a Work In Progress. It shows how to use the `@marlowe.io/wallet/peer-connect` module together with the [https://github.com/fabianbormann/cardano-peer-connect](cardano-peer-connect) library.
+This example is a Work In Progress. It shows how to use the `@marlowe.io/wallet/peer-connect` module together with the [cardano-peer-connect](https://github.com/fabianbormann/cardano-peer-connect) library.
 
 ## How to run
 
