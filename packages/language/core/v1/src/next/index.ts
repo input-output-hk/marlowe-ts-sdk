@@ -8,6 +8,7 @@ export * as Notify from "./applicables/canNotify.js";
 /**
  * Provides reducibility and input applicability information for a contract
  */
+export { ApplicableInputs };
 export type Next = t.TypeOf<typeof Next>;
 export const Next = t.type({
   can_reduce: t.boolean,
