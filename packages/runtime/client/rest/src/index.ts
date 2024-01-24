@@ -266,12 +266,45 @@ export interface RestClient {
   ): Promise<Payout.GetPayoutByIdResponse>;
 }
 
+function mkRestClientArgumentGuard(
+  baseURL: unknown,
+  strict: boolean
+): baseURL is string {
+  return strict ? typeof baseURL === "string" : true;
+}
+
+function strictGuard(strict: unknown): strict is boolean {
+  return typeof strict === "boolean";
+}
+
 /**
  * Instantiates a REST client for the Marlowe API.
  * @param baseURL An http url pointing to the Marlowe API.
  * @see {@link https://github.com/input-output-hk/marlowe-starter-kit#quick-overview} To get a Marlowe runtime instance up and running.
  */
-export function mkRestClient(baseURL: string): RestClient {
+export function mkRestClient(baseURL: string): RestClient;
+/**
+ * Instantiates a REST client for the Marlowe API.
+ * @param baseURL An http url pointing to the Marlowe API.
+ * @param strict Whether to perform runtime checking to provide helpful error messages. May have a slight negative performance impact. Default value is `true`.
+ * @see {@link https://github.com/input-output-hk/marlowe-starter-kit#quick-overview} To get a Marlowe runtime instance up and running.
+ */
+export function mkRestClient(baseURL: string, strict: boolean): RestClient;
+export function mkRestClient(
+  baseURL: unknown,
+  strict: unknown = true
+): RestClient {
+  if (!strictGuard(strict)) {
+    throw new Error(
+      `Invalid type for argument 'strict', expected boolean but got ${strict}`
+    );
+  }
+  if (!mkRestClientArgumentGuard(baseURL, strict)) {
+    throw new Error(
+      `Invalid type for argument 'baseURL', expected string but got ${baseURL}`
+    );
+  }
+
   const axiosInstance = axios.create({
     baseURL: baseURL,
     transformRequest: MarloweJSONCodec.encode,
