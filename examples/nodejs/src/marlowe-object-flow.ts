@@ -25,7 +25,13 @@ import {
   TxId,
 } from "@marlowe.io/runtime-core";
 import { Address } from "@marlowe.io/language-core-v1";
-import { ContractBundle, lovelace } from "@marlowe.io/marlowe-object";
+import {
+  ContractBundle,
+  ContractObjectMap,
+  ContractSourceId,
+  lovelace,
+  mapToContractBundle,
+} from "@marlowe.io/marlowe-object";
 import { input, select } from "@inquirer/prompts";
 import { RuntimeLifecycle } from "@marlowe.io/runtime-lifecycle/api";
 import {
@@ -41,7 +47,7 @@ import { deepEqual } from "@marlowe.io/adapter/deep-equal";
 import {
   AnnotatedBundle,
   mkAnnotatedContract,
-} from "./experimental-features/annotated-object.js";
+} from "./experimental-features/annotated-bundle-map.js";
 
 // When this script is called, start with main.
 main();
@@ -393,7 +399,7 @@ function mkDelayPayment(
     const initialDeposit = (cont: AnnotatedBundle<DelayPaymentAnnotations>) =>
       when({
         annotation: "initialDeposit",
-        on: [
+        when: [
           [
             {
               party: input.payFrom,
@@ -405,13 +411,13 @@ function mkDelayPayment(
           ],
         ],
         timeout: datetoTimeout(input.depositDeadline),
-        onTimeout: close("PaymentMissedClose"),
+        timeout_continuation: close("PaymentMissedClose"),
       });
     const waitForRelease = when({
       annotation: "WaitForRelease",
-      on: [],
+      when: [],
       timeout: datetoTimeout(input.releaseDeadline),
-      onTimeout: close("PaymentReleasedClose"),
+      timeout_continuation: close("PaymentReleasedClose"),
     });
 
     return initialDeposit(waitForRelease);
@@ -488,6 +494,27 @@ function printState(state: DelayPaymentState, scheme: DelayPaymentScheme) {
       console.log(`Contract closed: ${state.result}`);
       break;
   }
+}
+
+// TODO: Candidate for runtime lifecycle helper
+async function getMerkleizedObjectMap(
+  contractSourceId: ContractSourceId,
+  lifecycle: RuntimeLifecycle
+): Promise<ContractObjectMap> {
+  const ids = await lifecycle.restClient.getContractSourceClosure({
+    contractSourceId,
+  });
+  const objectEntries = await Promise.all(
+    ids.results.map((id) =>
+      lifecycle.restClient
+        .getContractSourceById({ contractSourceId: id })
+        .then((c) => [id, { type: "contract", value: c }] as const)
+    )
+  );
+  return {
+    main: contractSourceId,
+    objects: new Map(objectEntries),
+  };
 }
 
 function getState(
@@ -569,7 +596,7 @@ async function createContract(
   schema: DelayPaymentScheme,
   rewardAddress?: StakeAddressBech32
 ): Promise<[ContractId, TxId]> {
-  const contractBundle = mkDelayPayment(schema).bundle;
+  const contractBundle = mapToContractBundle(mkDelayPayment(schema).objectMap);
   const tags = mkDelayPaymentTags(schema);
   return lifecycle.contracts.createContract({
     stakeAddress: rewardAddress,
@@ -611,7 +638,7 @@ async function validateExistingContract(
   //      to download the sources from the initial runtime and share those with another runtime.
   //      Or this option which doesn't require runtime to runtime communication, and just requires
   //      the dapp to be able to recreate the same sources.
-  const contractBundle = mkDelayPayment(scheme).bundle;
+  const contractBundle = mapToContractBundle(mkDelayPayment(scheme).objectMap);
   const { contractSourceId } =
     await lifecycle.restClient.createContractSources(contractBundle);
   const initialContract = await lifecycle.restClient.getContractSourceById({

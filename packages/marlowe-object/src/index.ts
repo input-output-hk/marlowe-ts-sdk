@@ -51,6 +51,8 @@ export {
 export {
   ObjectType,
   ContractBundle,
+  ContractObjectMap,
+  mapToContractBundle,
   Bundle,
   ObjectParty,
   ObjectValue,

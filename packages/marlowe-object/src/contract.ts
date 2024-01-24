@@ -199,3 +199,49 @@ export const ContractGuard: t.Type<Contract> = t.recursion("Contract", () =>
     ReferenceGuard,
   ])
 );
+
+/**
+ * Pattern match object on the Contract type
+ * @category Contract
+ * @hidden
+ */
+export type ContractMatcher<T> = {
+  close: () => T;
+  pay: (pay: Pay) => T;
+  if: (contract: If) => T;
+  when: (contract: When) => T;
+  let: (contract: Let) => T;
+  assert: (contract: Assert) => T;
+  reference: (contract: Reference) => T;
+};
+
+/**
+ * Pattern matching on the Contract type
+ * @hidden
+ * @category Contract
+ */
+export function matchContract<T>(
+  matcher: ContractMatcher<T>
+): (contract: Contract) => T;
+export function matchContract<T>(
+  matcher: Partial<ContractMatcher<T>>
+): (contract: Contract) => T | undefined;
+export function matchContract<T>(matcher: Partial<ContractMatcher<T>>) {
+  return (contract: Contract) => {
+    if (G.Close.is(contract) && matcher.close) {
+      return matcher.close();
+    } else if (PayGuard.is(contract) && matcher.pay) {
+      return matcher.pay(contract);
+    } else if (IfGuard.is(contract) && matcher.if) {
+      return matcher.if(contract);
+    } else if (WhenGuard.is(contract) && matcher.when) {
+      return matcher.when(contract);
+    } else if (LetGuard.is(contract) && matcher.let) {
+      return matcher.let(contract);
+    } else if (AssertGuard.is(contract) && matcher.assert) {
+      return matcher.assert(contract);
+    } else if (ReferenceGuard.is(contract) && matcher.reference) {
+      return matcher.reference(contract);
+    }
+  };
+}
