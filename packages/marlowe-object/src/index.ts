@@ -53,6 +53,7 @@ export {
   ContractBundle,
   ContractObjectMap,
   mapToContractBundle,
+  stripContractBundleAnnotations,
   Bundle,
   ObjectParty,
   ObjectValue,

@@ -61,7 +61,7 @@ export interface CreateContractRequestFromBundle
   /**
    * The Marlowe Object bundle to create
    */
-  bundle: ContractBundle;
+  bundle: ContractBundle<undefined>;
 }
 
 export interface CreateContractRequestBase {

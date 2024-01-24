@@ -1,6 +1,11 @@
 import * as t from "io-ts/lib/index.js";
 import { Action, ActionGuard, matchAction } from "./actions.js";
-import { Contract, ContractGuard, matchContract } from "./contract.js";
+import {
+  Contract,
+  ContractGuard,
+  matchContract,
+  stripContractAnnotations,
+} from "./contract.js";
 import { Party, PartyGuard, matchParty } from "./participants.js";
 import { Label, LabelGuard } from "./reference.js";
 import { Token, TokenGuard } from "./token.js";
@@ -98,17 +103,17 @@ export const ObjectTokenGuard: t.Type<ObjectToken> = t.type({
  * Bundle of a {@link Label} that references a {@link Contract}.
  * @category Object
  */
-export interface ObjectContract {
+export interface ObjectContract<A> {
   label: Label;
   type: "contract";
-  value: Contract;
+  value: Contract<A>;
 }
 
 /**
  * {@link !io-ts-usage | Dynamic type guard} for the {@link ObjectContract | object contract type}.
  * @category Object
  */
-export const ObjectContractGuard: t.Type<ObjectContract> = t.type({
+export const ObjectContractGuard: t.Type<ObjectContract<unknown>> = t.type({
   label: LabelGuard,
   type: t.literal("contract"),
   value: ContractGuard,
@@ -138,12 +143,12 @@ export const ObjectActionGuard: t.Type<ObjectAction> = t.type({
  * A bundle of a {@link Label} that references a {@link Party}, {@link Value}, {@link Observation}, {@link Token}, {@link Contract}, or {@link Action}.
  * @category Object
  */
-export type ObjectType =
+export type ObjectType<A> =
   | ObjectParty
   | ObjectValue
   | ObjectObservation
   | ObjectToken
-  | ObjectContract
+  | ObjectContract<A>
   | ObjectAction;
 
 /**
@@ -159,11 +164,23 @@ export const ObjectTypeGuard = t.union([
   ObjectActionGuard,
 ]);
 
+function stripObjectTypeAnnotations<A>(
+  obj: ObjectType<A>
+): ObjectType<undefined> {
+  if (obj.type === "contract") {
+    return {
+      type: obj.type,
+      label: obj.label,
+      value: stripContractAnnotations(obj.value),
+    };
+  }
+  return obj;
+}
 /**
  * A bundle of {@link ObjectType}s.
  * @category Object
  */
-export type Bundle = ObjectType[];
+export type Bundle<A> = ObjectType<A>[];
 
 /**
  * {@link !io-ts-usage | Dynamic type guard} for the {@link Bundle | bundle type}.
@@ -171,26 +188,40 @@ export type Bundle = ObjectType[];
  */
 export const BundleGuard = t.array(ObjectTypeGuard);
 
+function stripBundleAnnotations<A>(bundle: Bundle<A>): Bundle<undefined> {
+  return bundle.map(stripObjectTypeAnnotations);
+}
+
 /**
  * A contract bundle is just a {@link Bundle} with a main entrypoint.
  * @category Object
  */
-export interface ContractBundle {
+export interface ContractBundle<A> {
   main: Label;
-  bundle: Bundle;
+  bundle: Bundle<A>;
 }
 
 /**
  * {@link !io-ts-usage | Dynamic type guard} for the {@link ContractBundle | contract bundle type}.
  */
-export const ContractBundleGuard: t.Type<ContractBundle> = t.type({
+export const ContractBundleGuard: t.Type<ContractBundle<unknown>> = t.type({
   main: LabelGuard,
   bundle: BundleGuard,
 });
 
-export interface ContractObjectMap {
+export function stripContractBundleAnnotations<A>(
+  bundle: ContractBundle<A>
+): ContractBundle<undefined> {
+  return {
+    main: bundle.main,
+    bundle: stripBundleAnnotations(bundle.bundle),
+  };
+}
+
+// TODO: Move into its own module
+export interface ContractObjectMap<A> {
   main: Label;
-  objects: Map<Label, Omit<ObjectType, "label">>;
+  objects: Map<Label, Omit<ObjectType<A>, "label">>;
 }
 
 export class CircularDependencyError extends Error {
@@ -205,7 +236,7 @@ export class MissingLabelError extends Error {
   }
 }
 
-type ObjectTypes = ObjectType["type"];
+type ObjectTypes = ObjectType<unknown>["type"];
 
 export class ObjectTypeMismatchError extends Error {
   constructor(label: Label, expected: ObjectTypes, got: ObjectTypes) {
@@ -217,9 +248,9 @@ export class ObjectTypeMismatchError extends Error {
  * Converts a {@link ContractObjectMap} to a {@link ContractBundle} while checking
  * that all references are valid and there are no circular dependencies.
  */
-export function mapToContractBundle(
-  contractBundleMap: ContractObjectMap
-): ContractBundle {
+export function mapToContractBundle<A>(
+  contractBundleMap: ContractObjectMap<A>
+): ContractBundle<A> {
   const goValue = matchValue({
     availableMoney: (v) => {
       goToken(v.amount_of_token);
@@ -359,7 +390,7 @@ export function mapToContractBundle(
     });
 
   // Global variables between the inner recursions
-  const bundle: Bundle = [];
+  const bundle: Bundle<A> = [];
   const visited = new Set<Label>();
 
   function goRef(label: Label, type: ObjectTypes, parents: Label[] = []) {
@@ -383,7 +414,7 @@ export function mapToContractBundle(
         if (parents.includes(label)) {
           throw new CircularDependencyError(label);
         }
-        goContract([...parents, label])(obj.value as Contract);
+        goContract([...parents, label])(obj.value as Contract<A>);
         break;
       case "value":
         goValue(obj.value as Value);
@@ -401,7 +432,7 @@ export function mapToContractBundle(
         goAction(obj.value as Action);
         break;
     }
-    bundle.push({ label, type, value: obj.value } as ObjectType);
+    bundle.push({ label, type, value: obj.value } as ObjectType<A>);
   }
   goRef(contractBundleMap.main, "contract");
   return { main: contractBundleMap.main, bundle };

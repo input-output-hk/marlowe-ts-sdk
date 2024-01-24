@@ -31,6 +31,7 @@ import {
   ContractSourceId,
   lovelace,
   mapToContractBundle,
+  stripContractBundleAnnotations,
 } from "@marlowe.io/marlowe-object";
 import { input, select } from "@inquirer/prompts";
 import { RuntimeLifecycle } from "@marlowe.io/runtime-lifecycle/api";
@@ -500,7 +501,7 @@ function printState(state: DelayPaymentState, scheme: DelayPaymentScheme) {
 async function getMerkleizedObjectMap(
   contractSourceId: ContractSourceId,
   lifecycle: RuntimeLifecycle
-): Promise<ContractObjectMap> {
+): Promise<ContractObjectMap<undefined>> {
   const ids = await lifecycle.restClient.getContractSourceClosure({
     contractSourceId,
   });
@@ -596,7 +597,9 @@ async function createContract(
   schema: DelayPaymentScheme,
   rewardAddress?: StakeAddressBech32
 ): Promise<[ContractId, TxId]> {
-  const contractBundle = mapToContractBundle(mkDelayPayment(schema).objectMap);
+  const contractBundle = stripContractBundleAnnotations(
+    mapToContractBundle(mkDelayPayment(schema).objectMap)
+  );
   const tags = mkDelayPaymentTags(schema);
   return lifecycle.contracts.createContract({
     stakeAddress: rewardAddress,
@@ -638,7 +641,9 @@ async function validateExistingContract(
   //      to download the sources from the initial runtime and share those with another runtime.
   //      Or this option which doesn't require runtime to runtime communication, and just requires
   //      the dapp to be able to recreate the same sources.
-  const contractBundle = mapToContractBundle(mkDelayPayment(scheme).objectMap);
+  const contractBundle = stripContractBundleAnnotations(
+    mapToContractBundle(mkDelayPayment(scheme).objectMap)
+  );
   const { contractSourceId } =
     await lifecycle.restClient.createContractSources(contractBundle);
   const initialContract = await lifecycle.restClient.getContractSourceById({

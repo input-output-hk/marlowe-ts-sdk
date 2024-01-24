@@ -108,7 +108,7 @@ export interface RestClient {
    * @param bundle Contains a list of object types and a main contract reference
    */
   createContractSources(
-    bundle: ContractBundle
+    bundle: ContractBundle<undefined>
   ): Promise<Sources.CreateContractSourcesResponse>;
 
   /**

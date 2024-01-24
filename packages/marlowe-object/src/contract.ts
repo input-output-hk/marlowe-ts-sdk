@@ -18,8 +18,6 @@ import { PayeeGuard } from "./payee.js";
 import { Token, TokenGuard } from "./token.js";
 import { ValueGuard } from "./value-and-observation.js";
 import { Action, ActionGuard } from "./actions.js";
-import { pipe } from "fp-ts/lib/function.js";
-import getUnixTime from "date-fns/getUnixTime/index.js";
 import { Reference, ReferenceGuard } from "./reference.js";
 
 export { close, Close, Timeout, BuiltinByteString };
@@ -28,19 +26,20 @@ export { close, Close, Timeout, BuiltinByteString };
  * Marlowe Object version of {@link @marlowe.io/language-core-v1!index.Pay | Core Pay}.
  * @category Contract
  */
-export interface Pay {
+export interface Pay<A> {
+  annotation?: A;
   pay: Value;
   token: Token;
   from_account: AccountId;
   to: Payee;
-  then: Contract;
+  then: Contract<A>;
 }
 
 /**
  * {@link !io-ts-usage | Dynamic type guard} for the {@link Pay | pay type}.
  * @category Contract
  */
-export const PayGuard = t.recursion<Pay>("Pay", () =>
+export const PayGuard = t.recursion<Pay<unknown>>("Pay", () =>
   t.type({
     pay: ValueGuard,
     token: TokenGuard,
@@ -54,17 +53,18 @@ export const PayGuard = t.recursion<Pay>("Pay", () =>
  * Marlowe Object version of {@link @marlowe.io/language-core-v1!index.If | Core If}.
  * @category Contract
  */
-export interface If {
+export interface If<A> {
+  annotation?: A;
   if: Observation;
-  then: Contract;
-  else: Contract;
+  then: Contract<A>;
+  else: Contract<A>;
 }
 
 /**
  * {@link !io-ts-usage | Dynamic type guard} for the {@link If | if type}.
  * @category Contract
  */
-export const IfGuard: t.Type<If> = t.recursion("If", () =>
+export const IfGuard: t.Type<If<unknown>> = t.recursion("If", () =>
   t.type({ if: ObservationGuard, then: ContractGuard, else: ContractGuard })
 );
 
@@ -72,17 +72,18 @@ export const IfGuard: t.Type<If> = t.recursion("If", () =>
  * Marlowe Object version of {@link @marlowe.io/language-core-v1!index.Let | Core Let}.
  * @category Contract
  */
-export interface Let {
+export interface Let<A> {
+  annotation?: A;
   let: ValueId;
   be: Value;
-  then: Contract;
+  then: Contract<A>;
 }
 
 /**
  * {@link !io-ts-usage | Dynamic type guard} for the {@link Let | let type}.
  * @category Contract
  */
-export const LetGuard: t.Type<Let> = t.recursion("Let", () =>
+export const LetGuard: t.Type<Let<unknown>> = t.recursion("Let", () =>
   t.type({ let: G.ValueId, be: ValueGuard, then: ContractGuard })
 );
 
@@ -90,16 +91,17 @@ export const LetGuard: t.Type<Let> = t.recursion("Let", () =>
  * Marlowe Object version of {@link @marlowe.io/language-core-v1!index.Assert | Core Assert}.
  * @category Contract
  */
-export interface Assert {
+export interface Assert<A> {
+  annotation?: A;
   assert: Observation;
-  then: Contract;
+  then: Contract<A>;
 }
 
 /**
  * {@link !io-ts-usage | Dynamic type guard} for the {@link Assert | assert type}.
  * @category Contract
  */
-export const AssertGuard: t.Type<Assert> = t.recursion("Assert", () =>
+export const AssertGuard: t.Type<Assert<unknown>> = t.recursion("Assert", () =>
   t.type({ assert: ObservationGuard, then: ContractGuard })
 );
 
@@ -107,16 +109,17 @@ export const AssertGuard: t.Type<Assert> = t.recursion("Assert", () =>
  * Marlowe Object version of {@link @marlowe.io/language-core-v1!index.When | Core When}.
  * @category Contract
  */
-export interface When {
-  when: Case[];
+export interface When<A> {
+  annotation?: A;
+  when: Case<A>[];
   timeout: Timeout;
-  timeout_continuation: Contract;
+  timeout_continuation: Contract<A>;
 }
 /**
  * {@link !io-ts-usage | Dynamic type guard} for the {@link when | when type}.
  * @category Contract
  */
-export const WhenGuard: t.Type<When> = t.recursion("When", () =>
+export const WhenGuard: t.Type<When<unknown>> = t.recursion("When", () =>
   t.type({
     when: t.array(CaseGuard),
     timeout: G.Timeout,
@@ -128,17 +131,18 @@ export const WhenGuard: t.Type<When> = t.recursion("When", () =>
  * Marlowe Object version of {@link @marlowe.io/language-core-v1!index.NormalCase | Core NormalCase}.
  * @category Contract
  */
-export interface NormalCase {
+export interface NormalCase<A> {
   case: Action;
-  then: Contract;
+  then: Contract<A>;
 }
 
 /**
  * {@link !io-ts-usage | Dynamic type guard} for the {@link NormalCase | normal case type}.
  * @category Contract
  */
-export const NormalCaseGuard: t.Type<NormalCase> = t.recursion("Case", () =>
-  t.type({ case: ActionGuard, then: ContractGuard })
+export const NormalCaseGuard: t.Type<NormalCase<unknown>> = t.recursion(
+  "Case",
+  () => t.type({ case: ActionGuard, then: ContractGuard })
 );
 
 /**
@@ -167,13 +171,13 @@ export const MerkleizedCaseGuard: t.Type<MerkleizedCase> = t.type({
 /**
  * @category Contract
  */
-export type Case = NormalCase | MerkleizedCase;
+export type Case<A> = NormalCase<A> | MerkleizedCase;
 
 /**
  * {@link !io-ts-usage | Dynamic type guard} for the {@link Case | case type}.
  * @category Contract
  */
-export const CaseGuard: t.Type<Case> = t.recursion("Case", () =>
+export const CaseGuard: t.Type<Case<unknown>> = t.recursion("Case", () =>
   t.union([NormalCaseGuard, MerkleizedCaseGuard])
 );
 
@@ -182,22 +186,31 @@ export const CaseGuard: t.Type<Case> = t.recursion("Case", () =>
  * the ability to reference other contracts.
  * @category Contract
  */
-export type Contract = Close | Pay | If | When | Let | Assert | Reference;
+export type Contract<A> =
+  | Close
+  | Pay<A>
+  | If<A>
+  | When<A>
+  | Let<A>
+  | Assert<A>
+  | Reference;
 
 /**
  * {@link !io-ts-usage | Dynamic type guard} for the {@link Contract | contract type}.
  * @category Contract
  */
-export const ContractGuard: t.Type<Contract> = t.recursion("Contract", () =>
-  t.union([
-    G.Close,
-    PayGuard,
-    IfGuard,
-    WhenGuard,
-    LetGuard,
-    AssertGuard,
-    ReferenceGuard,
-  ])
+export const ContractGuard: t.Type<Contract<unknown>> = t.recursion(
+  "Contract",
+  () =>
+    t.union([
+      G.Close,
+      PayGuard,
+      IfGuard,
+      WhenGuard,
+      LetGuard,
+      AssertGuard,
+      ReferenceGuard,
+    ])
 );
 
 /**
@@ -207,11 +220,11 @@ export const ContractGuard: t.Type<Contract> = t.recursion("Contract", () =>
  */
 export type ContractMatcher<T> = {
   close: () => T;
-  pay: (pay: Pay) => T;
-  if: (contract: If) => T;
-  when: (contract: When) => T;
-  let: (contract: Let) => T;
-  assert: (contract: Assert) => T;
+  pay: (pay: Pay<unknown>) => T;
+  if: (contract: If<unknown>) => T;
+  when: (contract: When<unknown>) => T;
+  let: (contract: Let<unknown>) => T;
+  assert: (contract: Assert<unknown>) => T;
   reference: (contract: Reference) => T;
 };
 
@@ -222,12 +235,12 @@ export type ContractMatcher<T> = {
  */
 export function matchContract<T>(
   matcher: ContractMatcher<T>
-): (contract: Contract) => T;
+): (contract: Contract<unknown>) => T;
 export function matchContract<T>(
   matcher: Partial<ContractMatcher<T>>
-): (contract: Contract) => T | undefined;
+): (contract: Contract<unknown>) => T | undefined;
 export function matchContract<T>(matcher: Partial<ContractMatcher<T>>) {
-  return (contract: Contract) => {
+  return (contract: Contract<unknown>) => {
     if (G.Close.is(contract) && matcher.close) {
       return matcher.close();
     } else if (PayGuard.is(contract) && matcher.pay) {
@@ -244,4 +257,48 @@ export function matchContract<T>(matcher: Partial<ContractMatcher<T>>) {
       return matcher.reference(contract);
     }
   };
+}
+
+function stripCaseAnnotations<A>(c: Case<A>): Case<undefined> {
+  if ("then" in c) {
+    return { ...c, then: stripContractAnnotations(c.then) };
+  } else {
+    return c;
+  }
+}
+
+export function stripContractAnnotations<A>(
+  contract: Contract<A>
+): Contract<undefined> {
+  return matchContract({
+    close: () => "close" as Contract<undefined>,
+    pay: (p) => ({
+      ...p,
+      then: stripContractAnnotations(p.then),
+      annotation: undefined,
+    }),
+    if: (i) => ({
+      ...i,
+      then: stripContractAnnotations(i.then),
+      else: stripContractAnnotations(i.else),
+      annotation: undefined,
+    }),
+    when: (w) => ({
+      ...w,
+      when: w.when.map(stripCaseAnnotations),
+      timeout_continuation: stripContractAnnotations(w.timeout_continuation),
+      annotation: undefined,
+    }),
+    let: (l) => ({
+      ...l,
+      then: stripContractAnnotations(l.then),
+      annotation: undefined,
+    }),
+    assert: (a) => ({
+      ...a,
+      then: stripContractAnnotations(a.then),
+      annotation: undefined,
+    }),
+    reference: (r) => ({ ...r, annotation: undefined }),
+  })(contract);
 }

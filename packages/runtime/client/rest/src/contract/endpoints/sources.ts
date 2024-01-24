@@ -29,7 +29,7 @@ const CreateContractSourcesResponseGuard: t.Type<CreateContractSourcesResponse> 
 export const createContractSources = (axiosInstance: AxiosInstance) => {
   return async (
     main: Label,
-    bundle: Bundle
+    bundle: Bundle<undefined>
   ): Promise<CreateContractSourcesResponse> => {
     const response = await axiosInstance.post("/contracts/sources", bundle, {
       params: { main },

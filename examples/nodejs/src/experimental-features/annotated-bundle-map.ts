@@ -10,7 +10,8 @@ import * as M from "fp-ts/lib/Map.js";
 import { deepEqual } from "@marlowe.io/adapter/deep-equal";
 
 export type AnnotatedBundle<T> = {
-  objectMap: ContractObjectMap;
+  // TODO: remove extra annotation, use objectMap instead.
+  objectMap: ContractObjectMap<T>;
   annotation?: T;
 };
 
@@ -40,8 +41,11 @@ type WhenAParams<T> = {
   timeout_continuation: AnnotatedBundle<T>;
 };
 
+type FIXMEMAP<T> = Map<Label, Omit<ObjectType<T>, "label">>;
+
 function whenA<T>(params: WhenAParams<T>): AnnotatedBundle<T> {
   const timeoutBundle = params.timeout_continuation;
+
   const timeoutRef = { ref: timeoutBundle.objectMap.main };
 
   const whenLabel = `when-${fixmeCounter()}`; // FIXME
@@ -50,10 +54,10 @@ function whenA<T>(params: WhenAParams<T>): AnnotatedBundle<T> {
     return {
       case: action,
       then: { ref: cont.objectMap.main },
-    } as Case;
+    } as Case<T>;
   });
   const casesObjects = params.when.flatMap(
-    ([_, cont]) => cont.objectMap.objects
+    ([_, cont]) => cont.objectMap.objects as FIXMEMAP<T>
   );
 
   const labelEqual = {
@@ -61,7 +65,10 @@ function whenA<T>(params: WhenAParams<T>): AnnotatedBundle<T> {
   };
   const mergeSameObject = {
     // TODO: Give name to the Omit.
-    concat: (a: Omit<ObjectType, "label">, b: Omit<ObjectType, "label">) => {
+    concat: (
+      a: Omit<ObjectType<T>, "label">,
+      b: Omit<ObjectType<T>, "label">
+    ) => {
       if (deepEqual(a, b)) return a;
       throw new Error("Can't merge two objecs with different values");
     },
@@ -80,7 +87,7 @@ function whenA<T>(params: WhenAParams<T>): AnnotatedBundle<T> {
           },
         },
       ],
-    ]) as ContractObjectMap["objects"]
+    ]) as FIXMEMAP<T>
   );
 
   return {
