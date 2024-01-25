@@ -39,7 +39,10 @@ import { ContractDetails } from "./contract/details.js";
 import { TransactionDetails } from "./contract/transaction/details.js";
 import { ItemRange } from "./pagination.js";
 import { RuntimeStatus, healthcheck } from "./runtime/status.js";
-import { RuntimeVersion } from "./runtime/version.js";
+import {
+  CompatibleRuntimeVersionGuard,
+  RuntimeVersion,
+} from "./runtime/version.js";
 
 export {
   Page,
@@ -315,6 +318,11 @@ export function mkRestClient(
   const runtimeVersion = healthcheck(axiosInstance).then(
     (status) => status.version
   );
+
+  runtimeVersion.then((x) => {
+    if (CompatibleRuntimeVersionGuard.decode(x)._tag === "Left")
+      throw new Error(`Invalid runtime version ${x}`);
+  });
 
   return {
     healthcheck() {
