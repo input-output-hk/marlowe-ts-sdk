@@ -321,7 +321,7 @@ export function mkRestClient(
       return healthcheck(axiosInstance);
     },
     version() {
-      return runtimeVersion;
+      return healthcheck(axiosInstance).then((status) => status.version);
     },
     getContracts(request) {
       const range = request?.range;
