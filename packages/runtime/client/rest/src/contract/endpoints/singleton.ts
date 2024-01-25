@@ -11,6 +11,7 @@ import * as HTTP from "@marlowe.io/adapter/http";
 import { DecodingError } from "@marlowe.io/adapter/codec";
 
 import {
+  ContractIdGuard,
   HexTransactionWitnessSet,
   TextEnvelope,
   transactionWitnessSetTextEnvelope,
@@ -28,6 +29,11 @@ type GETPayload = t.TypeOf<typeof GETPayload>;
 const GETPayload = t.type({
   links: t.type({}),
   resource: ContractDetailsGuard,
+});
+
+export type GetContractByIdRequest = t.TypeOf<typeof GetContractByIdRequest>;
+export const GetContractByIdRequest = t.type({
+  contractId: ContractIdGuard,
 });
 
 /**

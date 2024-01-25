@@ -43,6 +43,7 @@ import {
   CompatibleRuntimeVersionGuard,
   RuntimeVersion,
 } from "./runtime/version.js";
+import { Errors } from "io-ts";
 
 export {
   Page,
@@ -156,7 +157,9 @@ export interface RestClient {
    * @throws DecodingError - If the response from the server can't be decoded
    * @see {@link https://docs.marlowe.iohk.io/api/get-contract-by-id | The backend documentation}
    */
-  getContractById(contractId: ContractId): Promise<ContractDetails>;
+  getContractById(
+    request: Contract.GetContractByIdRequest
+  ): Promise<ContractDetails>;
 
   /**
    * Submits a signed contract creation transaction
@@ -280,6 +283,15 @@ function strictGuard(strict: unknown): strict is boolean {
   return typeof strict === "boolean";
 }
 
+class InvalidArgumentError extends Error {
+  constructor(
+    public readonly errors: Errors,
+    message?: string
+  ) {
+    super(message);
+  }
+}
+
 /**
  * Instantiates a REST client for the Marlowe API.
  * @param baseURL An http url pointing to the Marlowe API.
@@ -298,12 +310,14 @@ export function mkRestClient(
   strict: unknown = true
 ): RestClient {
   if (!strictGuard(strict)) {
-    throw new Error(
+    throw new InvalidArgumentError(
+      [],
       `Invalid type for argument 'strict', expected boolean but got ${strict}`
     );
   }
   if (!mkRestClientArgumentGuard(baseURL, strict)) {
-    throw new Error(
+    throw new InvalidArgumentError(
+      [],
       `Invalid type for argument 'baseURL', expected string but got ${baseURL}`
     );
   }
@@ -344,8 +358,17 @@ export function mkRestClient(
         })
       );
     },
-    getContractById(contractId) {
-      return Contract.getContractById(axiosInstance, contractId);
+    getContractById(request) {
+      if (strict) {
+        const result = Contract.GetContractByIdRequest.decode(request);
+        if (result._tag === "Left") {
+          throw new InvalidArgumentError(
+            result.left,
+            `Invalid argument to getContractById(${request})`
+          );
+        }
+      }
+      return Contract.getContractById(axiosInstance, request.contractId);
     },
     async buildCreateContractTx(request) {
       const version = await runtimeVersion;
