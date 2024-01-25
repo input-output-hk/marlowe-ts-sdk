@@ -306,7 +306,7 @@ export function mkRestClient(
   }
 
   const axiosInstance = axios.create({
-    baseURL: baseURL,
+    baseURL,
     transformRequest: MarloweJSONCodec.encode,
     transformResponse: MarloweJSONCodec.decode,
   });
