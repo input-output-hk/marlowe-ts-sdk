@@ -31,6 +31,9 @@ const GETPayload = t.type({
   resource: ContractDetailsGuard,
 });
 
+/**
+ * Request options for the {@link index.RestClient#getContractById | Get contracts by ID } endpoint
+ */
 export type GetContractByIdRequest = t.TypeOf<typeof GetContractByIdRequest>;
 export const GetContractByIdRequest = t.type({
   contractId: ContractIdGuard,
