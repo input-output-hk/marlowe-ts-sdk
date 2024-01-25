@@ -346,6 +346,15 @@ export function mkRestClient(
       return healthcheck(axiosInstance).then((status) => status.version);
     },
     getContracts(request) {
+      if (strict) {
+        const result = Contracts.GetContractsRequest.decode(request);
+        if (result._tag === "Left") {
+          throw new InvalidArgumentError(
+            result.left,
+            `Invalid argument to getContracts(${request})`
+          );
+        }
+      }
       const range = request?.range;
       const tags = request?.tags ?? [];
       const partyAddresses = request?.partyAddresses ?? [];

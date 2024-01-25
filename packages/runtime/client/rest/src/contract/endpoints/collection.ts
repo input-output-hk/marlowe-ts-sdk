@@ -32,6 +32,7 @@ import {
   unStakeAddressBech32,
   SourceId,
   SourceIdGuard,
+  AddressBech32Guard,
 } from "@marlowe.io/runtime-core";
 
 import { ContractHeader, ContractHeaderGuard } from "../header.js";
@@ -41,33 +42,24 @@ import {
 } from "../rolesConfigurations.js";
 
 import { ContractId, ContractIdGuard } from "@marlowe.io/runtime-core";
-import { ItemRange, Page, PageGuard } from "../../pagination.js";
+import {
+  ItemRange,
+  ItemRangeGuard,
+  Page,
+  PageGuard,
+} from "../../pagination.js";
 
 /**
  * Request options for the {@link index.RestClient#getContracts | Get contracts } endpoint
  * @category Endpoint : Get Contracts
  */
-export interface GetContractsRequest {
-  /**
-   * Optional pagination request. Note that when you call {@link index.RestClient#getContracts | Get contracts }
-   * the response includes the next and previous range headers.
-   */
-  range?: ItemRange;
-  /**
-   * Optional tags to filter the contracts by.
-   */
-  // QUESTION: @Jamie or @N.H, a tag is marked as string, but when creating a contract you need to pass a key and a value, what is this
-  //           string supposed to be? I have some contracts with tag "{SurveyContract: CryptoPall2023}" that I don't know how to search for.
-  tags?: Tag[];
-  /**
-   * Optional partyAddresses to filter the contracts by.
-   */
-  partyAddresses?: AddressBech32[];
-  /**
-   * Optional partyRoles to filter the contracts by.
-   */
-  partyRoles?: AssetId[];
-}
+export type GetContractsRequest = t.TypeOf<typeof GetContractsRequest>;
+export const GetContractsRequest = t.type({
+  range: t.union([ItemRangeGuard, t.undefined]),
+  tags: t.union([t.array(Tag), t.undefined]),
+  partyAddresses: t.union([t.array(AddressBech32Guard), t.undefined]),
+  partyRoles: t.union([t.array(AssetId), t.undefined]),
+});
 
 export type GETHeadersByRange = (
   range?: ItemRange
