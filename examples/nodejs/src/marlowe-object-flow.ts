@@ -29,8 +29,10 @@ import {
   ContractBundle,
   ContractObjectMap,
   ContractSourceId,
+  Label,
   lovelace,
   mapToContractBundle,
+  ObjectType,
   stripContractBundleAnnotations,
 } from "@marlowe.io/marlowe-object";
 import { input, select } from "@inquirer/prompts";
@@ -45,10 +47,11 @@ import { splitAddress } from "./experimental-features/metadata.js";
 import { SingleInputTx } from "../../../packages/language/core/v1/dist/esm/transaction.js";
 import * as t from "io-ts/lib/index.js";
 import { deepEqual } from "@marlowe.io/adapter/deep-equal";
+import { mkAnnotatedContract } from "./experimental-features/annotated-bundle-map.js";
 import {
-  AnnotatedBundle,
-  mkAnnotatedContract,
-} from "./experimental-features/annotated-bundle-map.js";
+  ContractClosure,
+  getContractClosure,
+} from "./experimental-features/contract-closure.js";
 
 // When this script is called, start with main.
 main();
@@ -395,9 +398,9 @@ type DelayPaymentAnnotations =
 
 function mkDelayPayment(
   input: DelayPaymentScheme
-): AnnotatedBundle<DelayPaymentAnnotations> {
+): ContractObjectMap<DelayPaymentAnnotations> {
   return mkAnnotatedContract<DelayPaymentAnnotations>(({ when, close }) => {
-    const initialDeposit = (cont: AnnotatedBundle<DelayPaymentAnnotations>) =>
+    const initialDeposit = (cont: ContractObjectMap<DelayPaymentAnnotations>) =>
       when({
         annotation: "initialDeposit",
         when: [
@@ -498,6 +501,7 @@ function printState(state: DelayPaymentState, scheme: DelayPaymentScheme) {
 }
 
 // TODO: Candidate for runtime lifecycle helper
+// DELETE
 async function getMerkleizedObjectMap(
   contractSourceId: ContractSourceId,
   lifecycle: RuntimeLifecycle
@@ -598,7 +602,7 @@ async function createContract(
   rewardAddress?: StakeAddressBech32
 ): Promise<[ContractId, TxId]> {
   const contractBundle = stripContractBundleAnnotations(
-    mapToContractBundle(mkDelayPayment(schema).objectMap)
+    mapToContractBundle(mkDelayPayment(schema))
   );
   const tags = mkDelayPaymentTags(schema);
   return lifecycle.contracts.createContract({
@@ -641,8 +645,11 @@ async function validateExistingContract(
   //      to download the sources from the initial runtime and share those with another runtime.
   //      Or this option which doesn't require runtime to runtime communication, and just requires
   //      the dapp to be able to recreate the same sources.
+  const what = await annotatedClosure(mkDelayPayment(scheme), lifecycle);
+  return scheme;
+  /*
   const contractBundle = stripContractBundleAnnotations(
-    mapToContractBundle(mkDelayPayment(scheme).objectMap)
+    mapToContractBundle(mkDelayPayment(scheme))
   );
   const { contractSourceId } =
     await lifecycle.restClient.createContractSources(contractBundle);
@@ -653,7 +660,7 @@ async function validateExistingContract(
   if (!deepEqual(initialContract, contractDetails.initialContract)) {
     return "InvalidContract";
   }
-  return scheme;
+  return scheme;*/
 }
 
 async function main() {

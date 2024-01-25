@@ -29,8 +29,17 @@ export type Close = "close";
  * TODO: Comment
  * @category Contract
  */
-export const CloseGuard: t.Type<Close> = t.literal("close");
-
+// NOTE: Previously the Close guard was defined as the following literal, but it was relaxed to something that
+//       can be coerced to "close" so that we can treat String("close") as well. The reason for doing this is
+//       to allow annotations on a Close contract, which couldn't be done with plain string primitives.
+// export const CloseGuard: t.Type<Close> = t.literal("close");
+export const CloseGuard: t.Type<Close> = new t.Type(
+  "close",
+  (input: unknown): input is "close" => input == "close",
+  (input, context) =>
+    input == "close" ? t.success("close" as const) : t.failure(input, context),
+  t.identity
+);
 /**
  * @hidden
  */

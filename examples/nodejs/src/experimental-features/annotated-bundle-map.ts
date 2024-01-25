@@ -9,55 +9,48 @@ import { Action, Timeout } from "@marlowe.io/language-core-v1";
 import * as M from "fp-ts/lib/Map.js";
 import { deepEqual } from "@marlowe.io/adapter/deep-equal";
 
-export type AnnotatedBundle<T> = {
-  // TODO: remove extra annotation, use objectMap instead.
-  objectMap: ContractObjectMap<T>;
-  annotation?: T;
-};
-
 let globalCounter = 0;
 function fixmeCounter() {
   return globalCounter++;
 }
-
-function closeA<T>(annotation?: T): AnnotatedBundle<T> {
+function closeA<T>(annotation?: T): ContractObjectMap<T> {
   const ref = `close-${fixmeCounter()}`;
+  const contract = annotation
+    ? { annotation, contract: "close" as const }
+    : "close";
   return {
-    annotation,
-    objectMap: {
-      main: ref,
-      objects: new Map([
-        // TODO: Nothing is checking that contract and close match. We need to improve the omit
-        [ref, { type: "contract", value: "close" }],
-      ]),
-    },
+    main: ref,
+    objects: new Map([
+      // TODO: Nothing is checking that contract and close match. We need to improve the omit
+      [ref, { type: "contract", value: contract }],
+    ]),
   };
 }
 
 type WhenAParams<T> = {
   annotation: T;
-  when: [Action, AnnotatedBundle<T>][];
+  when: [Action, ContractObjectMap<T>][];
   timeout: Timeout;
-  timeout_continuation: AnnotatedBundle<T>;
+  timeout_continuation: ContractObjectMap<T>;
 };
 
 type FIXMEMAP<T> = Map<Label, Omit<ObjectType<T>, "label">>;
 
-function whenA<T>(params: WhenAParams<T>): AnnotatedBundle<T> {
+function whenA<T>(params: WhenAParams<T>): ContractObjectMap<T> {
   const timeoutBundle = params.timeout_continuation;
 
-  const timeoutRef = { ref: timeoutBundle.objectMap.main };
+  const timeoutRef = { ref: timeoutBundle.main };
 
   const whenLabel = `when-${fixmeCounter()}`; // FIXME
 
   const cases = params.when.map(([action, cont]) => {
     return {
       case: action,
-      then: { ref: cont.objectMap.main },
+      then: { ref: cont.main },
     } as Case<T>;
   });
   const casesObjects = params.when.flatMap(
-    ([_, cont]) => cont.objectMap.objects as FIXMEMAP<T>
+    ([_, cont]) => cont.objects as FIXMEMAP<T>
   );
 
   const labelEqual = {
@@ -73,7 +66,7 @@ function whenA<T>(params: WhenAParams<T>): AnnotatedBundle<T> {
       throw new Error("Can't merge two objecs with different values");
     },
   };
-  const objects = [...casesObjects, timeoutBundle.objectMap.objects].reduce(
+  const objects = [...casesObjects, timeoutBundle.objects].reduce(
     (acc, curr) => M.union(labelEqual, mergeSameObject)(acc)(curr),
     new Map([
       [
@@ -81,6 +74,7 @@ function whenA<T>(params: WhenAParams<T>): AnnotatedBundle<T> {
         {
           type: "contract",
           value: {
+            annotation: params.annotation,
             when: cases,
             timeout: params.timeout,
             timeout_continuation: timeoutRef,
@@ -91,22 +85,19 @@ function whenA<T>(params: WhenAParams<T>): AnnotatedBundle<T> {
   );
 
   return {
-    annotation: params.annotation,
-    objectMap: {
-      main: whenLabel,
-      objects,
-    },
+    main: whenLabel,
+    objects,
   };
 }
 
 type AnnotatedConstructors<T> = {
-  when: (params: WhenAParams<T>) => AnnotatedBundle<T>;
-  close: (state: T) => AnnotatedBundle<T>;
+  when: (params: WhenAParams<T>) => ContractObjectMap<T>;
+  close: (state: T) => ContractObjectMap<T>;
 };
 
 export function mkAnnotatedContract<T>(
-  creator: (constructors: AnnotatedConstructors<T>) => AnnotatedBundle<T>
-): AnnotatedBundle<T> {
+  creator: (constructors: AnnotatedConstructors<T>) => ContractObjectMap<T>
+): ContractObjectMap<T> {
   return creator({
     when: whenA,
     close: closeA,

@@ -1,6 +1,8 @@
 import * as t from "io-ts/lib/index.js";
 import { Action, ActionGuard, matchAction } from "./actions.js";
 import {
+  AnnotatedContract,
+  AnnotatedContractGuard,
   Contract,
   ContractGuard,
   matchContract,
@@ -106,7 +108,7 @@ export const ObjectTokenGuard: t.Type<ObjectToken> = t.type({
 export interface ObjectContract<A> {
   label: Label;
   type: "contract";
-  value: Contract<A>;
+  value: AnnotatedContract<A>;
 }
 
 /**
@@ -116,7 +118,7 @@ export interface ObjectContract<A> {
 export const ObjectContractGuard: t.Type<ObjectContract<unknown>> = t.type({
   label: LabelGuard,
   type: t.literal("contract"),
-  value: ContractGuard,
+  value: AnnotatedContractGuard,
 });
 
 /**
@@ -414,7 +416,7 @@ export function mapToContractBundle<A>(
         if (parents.includes(label)) {
           throw new CircularDependencyError(label);
         }
-        goContract([...parents, label])(obj.value as Contract<A>);
+        goContract([...parents, label])(obj.value as Contract);
         break;
       case "value":
         goValue(obj.value as Value);

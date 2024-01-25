@@ -22,6 +22,16 @@ import { Reference, ReferenceGuard } from "./reference.js";
 
 export { close, Close, Timeout, BuiltinByteString };
 
+export interface AnnotatedClose<A> {
+  annotation: A;
+  contract: "close";
+}
+
+export const AnnotatedCloseGuard = t.type({
+  annotation: t.unknown,
+  contract: t.literal("close"),
+});
+
 /**
  * Marlowe Object version of {@link @marlowe.io/language-core-v1!index.Pay | Core Pay}.
  * @category Contract
@@ -32,7 +42,7 @@ export interface Pay<A> {
   token: Token;
   from_account: AccountId;
   to: Payee;
-  then: Contract<A>;
+  then: AnnotatedContract<A>;
 }
 
 /**
@@ -45,7 +55,7 @@ export const PayGuard = t.recursion<Pay<unknown>>("Pay", () =>
     token: TokenGuard,
     from_account: AccountIdGuard,
     to: PayeeGuard,
-    then: ContractGuard,
+    then: AnnotatedContractGuard,
   })
 );
 
@@ -56,8 +66,8 @@ export const PayGuard = t.recursion<Pay<unknown>>("Pay", () =>
 export interface If<A> {
   annotation?: A;
   if: Observation;
-  then: Contract<A>;
-  else: Contract<A>;
+  then: AnnotatedContract<A>;
+  else: AnnotatedContract<A>;
 }
 
 /**
@@ -65,7 +75,11 @@ export interface If<A> {
  * @category Contract
  */
 export const IfGuard: t.Type<If<unknown>> = t.recursion("If", () =>
-  t.type({ if: ObservationGuard, then: ContractGuard, else: ContractGuard })
+  t.type({
+    if: ObservationGuard,
+    then: AnnotatedContractGuard,
+    else: AnnotatedContractGuard,
+  })
 );
 
 /**
@@ -76,7 +90,7 @@ export interface Let<A> {
   annotation?: A;
   let: ValueId;
   be: Value;
-  then: Contract<A>;
+  then: AnnotatedContract<A>;
 }
 
 /**
@@ -84,7 +98,7 @@ export interface Let<A> {
  * @category Contract
  */
 export const LetGuard: t.Type<Let<unknown>> = t.recursion("Let", () =>
-  t.type({ let: G.ValueId, be: ValueGuard, then: ContractGuard })
+  t.type({ let: G.ValueId, be: ValueGuard, then: AnnotatedContractGuard })
 );
 
 /**
@@ -94,7 +108,7 @@ export const LetGuard: t.Type<Let<unknown>> = t.recursion("Let", () =>
 export interface Assert<A> {
   annotation?: A;
   assert: Observation;
-  then: Contract<A>;
+  then: AnnotatedContract<A>;
 }
 
 /**
@@ -102,7 +116,7 @@ export interface Assert<A> {
  * @category Contract
  */
 export const AssertGuard: t.Type<Assert<unknown>> = t.recursion("Assert", () =>
-  t.type({ assert: ObservationGuard, then: ContractGuard })
+  t.type({ assert: ObservationGuard, then: AnnotatedContractGuard })
 );
 
 /**
@@ -113,7 +127,7 @@ export interface When<A> {
   annotation?: A;
   when: Case<A>[];
   timeout: Timeout;
-  timeout_continuation: Contract<A>;
+  timeout_continuation: AnnotatedContract<A>;
 }
 /**
  * {@link !io-ts-usage | Dynamic type guard} for the {@link when | when type}.
@@ -123,7 +137,7 @@ export const WhenGuard: t.Type<When<unknown>> = t.recursion("When", () =>
   t.type({
     when: t.array(CaseGuard),
     timeout: G.Timeout,
-    timeout_continuation: ContractGuard,
+    timeout_continuation: AnnotatedContractGuard,
   })
 );
 
@@ -133,7 +147,7 @@ export const WhenGuard: t.Type<When<unknown>> = t.recursion("When", () =>
  */
 export interface NormalCase<A> {
   case: Action;
-  then: Contract<A>;
+  then: AnnotatedContract<A>;
 }
 
 /**
@@ -142,7 +156,7 @@ export interface NormalCase<A> {
  */
 export const NormalCaseGuard: t.Type<NormalCase<unknown>> = t.recursion(
   "Case",
-  () => t.type({ case: ActionGuard, then: ContractGuard })
+  () => t.type({ case: ActionGuard, then: AnnotatedContractGuard })
 );
 
 /**
@@ -186,8 +200,34 @@ export const CaseGuard: t.Type<Case<unknown>> = t.recursion("Case", () =>
  * the ability to reference other contracts.
  * @category Contract
  */
-export type Contract<A> =
+export type Contract =
   | Close
+  | Pay<unknown>
+  | If<unknown>
+  | When<unknown>
+  | Let<unknown>
+  | Assert<unknown>
+  | Reference;
+
+/**
+ * {@link !io-ts-usage | Dynamic type guard} for the {@link Contract | contract type}.
+ * @category Contract
+ */
+export const ContractGuard: t.Type<Contract> = t.recursion("Contract", () =>
+  t.union([
+    G.Close,
+    PayGuard,
+    IfGuard,
+    WhenGuard,
+    LetGuard,
+    AssertGuard,
+    ReferenceGuard,
+  ])
+);
+
+export type AnnotatedContract<A> =
+  | Close
+  | AnnotatedClose<A>
   | Pay<A>
   | If<A>
   | When<A>
@@ -195,15 +235,11 @@ export type Contract<A> =
   | Assert<A>
   | Reference;
 
-/**
- * {@link !io-ts-usage | Dynamic type guard} for the {@link Contract | contract type}.
- * @category Contract
- */
-export const ContractGuard: t.Type<Contract<unknown>> = t.recursion(
-  "Contract",
-  () =>
+export const AnnotatedContractGuard: t.Type<AnnotatedContract<unknown>> =
+  t.recursion("AnnotatedContract", () =>
     t.union([
       G.Close,
+      AnnotatedCloseGuard,
       PayGuard,
       IfGuard,
       WhenGuard,
@@ -211,7 +247,7 @@ export const ContractGuard: t.Type<Contract<unknown>> = t.recursion(
       AssertGuard,
       ReferenceGuard,
     ])
-);
+  );
 
 /**
  * Pattern match object on the Contract type
@@ -220,6 +256,7 @@ export const ContractGuard: t.Type<Contract<unknown>> = t.recursion(
  */
 export type ContractMatcher<T> = {
   close: () => T;
+  annotatedClose: (contract: AnnotatedClose<unknown>) => T;
   pay: (pay: Pay<unknown>) => T;
   if: (contract: If<unknown>) => T;
   when: (contract: When<unknown>) => T;
@@ -235,14 +272,16 @@ export type ContractMatcher<T> = {
  */
 export function matchContract<T>(
   matcher: ContractMatcher<T>
-): (contract: Contract<unknown>) => T;
+): (contract: AnnotatedContract<unknown>) => T;
 export function matchContract<T>(
   matcher: Partial<ContractMatcher<T>>
-): (contract: Contract<unknown>) => T | undefined;
+): (contract: AnnotatedContract<unknown>) => T | undefined;
 export function matchContract<T>(matcher: Partial<ContractMatcher<T>>) {
-  return (contract: Contract<unknown>) => {
+  return (contract: AnnotatedContract<unknown>) => {
     if (G.Close.is(contract) && matcher.close) {
       return matcher.close();
+    } else if (AnnotatedCloseGuard.is(contract) && matcher.annotatedClose) {
+      return matcher.annotatedClose(contract);
     } else if (PayGuard.is(contract) && matcher.pay) {
       return matcher.pay(contract);
     } else if (IfGuard.is(contract) && matcher.if) {
@@ -267,11 +306,17 @@ function stripCaseAnnotations<A>(c: Case<A>): Case<undefined> {
   }
 }
 
+// TODO: Ideally this should be Contract instead of AnnotatedContract<undefined>
+//       but I couldn't align the types. But we are not having type safety from above modules
+//       so nothing is preventing a runtime bug where an AnnotatedClose leaks. So it might be
+//       better to remove the normal Contract and just have AnnotatedContract.
+//       Another solution would be to split into a different module of annotated entities.
 export function stripContractAnnotations<A>(
-  contract: Contract<A>
-): Contract<undefined> {
-  return matchContract({
-    close: () => "close" as Contract<undefined>,
+  contract: AnnotatedContract<A>
+): AnnotatedContract<undefined> {
+  return matchContract<AnnotatedContract<undefined>>({
+    close: () => "close" as const,
+    annotatedClose: () => "close" as const,
     pay: (p) => ({
       ...p,
       then: stripContractAnnotations(p.then),
