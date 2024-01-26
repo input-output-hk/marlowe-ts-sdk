@@ -25,6 +25,18 @@ export const close = "close";
  */
 export type Close = "close";
 
+// TODO: Move to io-ts helpers
+export function isStringLiteral<S extends string>(literal: S) {
+  return (input: unknown): input is S => {
+    if (typeof input === "string") {
+      return input === literal;
+    }
+    if (typeof input === "object" && input instanceof String) {
+      return input.valueOf() === literal;
+    }
+    return false;
+  };
+}
 /**
  * TODO: Comment
  * @category Contract
@@ -35,9 +47,11 @@ export type Close = "close";
 // export const CloseGuard: t.Type<Close> = t.literal("close");
 export const CloseGuard: t.Type<Close> = new t.Type(
   "close",
-  (input: unknown): input is "close" => input == "close",
+  (input: unknown): input is "close" => isStringLiteral("close")(input),
   (input, context) =>
-    input == "close" ? t.success("close" as const) : t.failure(input, context),
+    isStringLiteral("close")(input)
+      ? t.success("close" as const)
+      : t.failure(input, context),
   t.identity
 );
 /**

@@ -29,34 +29,120 @@ export function isAnnotated(value: unknown): value is Annotated<unknown> {
 export const AnnotatedGuard = <T>(guard: t.Type<T>): t.Type<Annotated<T>> =>
   t.type({ annotation: guard });
 
-// async function annotatedClosure<T>(source: ContractObjectMap<T>, lifecycle: RuntimeLifecycle): Promise<ContractClosure> {
-//   debugger;
-//   const {contractSourceId, intermediateIds} = await lifecycle.restClient.createContractSources(
-//     stripContractBundleAnnotations(mapToContractBundle(source))
-//   );
+export async function annotatedClosure<T>(
+  sourceObjectMap: ContractObjectMap<T>,
+  lifecycle: RuntimeLifecycle
+): Promise<ContractClosure> {
+  debugger;
+  const { contractSourceId, intermediateIds } =
+    await lifecycle.restClient.createContractSources(
+      stripContractBundleAnnotations(mapToContractBundle(sourceObjectMap))
+    );
 
-//   const closure = await getContractClosure({lifecycle})(contractSourceId);
+  const closure = await getContractClosure({ lifecycle })(contractSourceId);
 
-//   // The intermediateIds is an object whose keys belong to the source code and value is the merkle hash.
-//   // We need to reverse this object in order to annotate the closure using the source annotations.
-//   // It is possible for two different source entries to have the same hash and different annotations.
-//   // In that case the last annotation will prevail.
-//   const sourceMap = Object.fromEntries(Object.entries(intermediateIds).map(([source, hash]) => ([hash, source])))
+  // The intermediateIds is an object whose keys belong to the source code and value is the merkle hash.
+  // We need to reverse this object in order to annotate the closure using the source annotations.
+  // It is possible for two different source entries to have the same hash and different annotations.
+  // In that case the last annotation will prevail.
+  const sourceMap = Object.fromEntries(
+    Object.entries(intermediateIds).map(([source, hash]) => [hash, source])
+  );
 
-//   function annotateContract(source: Obj.Contract, dst: Core.Contract): Core.Contract {
-//     if (CoreG.Close.is(dst) && ObjG.Close.is())
-//   }
+  function getSourceContract(ref: Obj.Label) {
+    const sourceContractObject = sourceObjectMap.objects.get(ref);
+    if (typeof sourceContractObject === "undefined")
+      throw new Error(`Cant find source for ${ref}`);
 
-//   function annotateEntry(key: string, contract: Core.Contract): Core.Contract {
-//     const sourceContractObject = source.objects.get(sourceMap[key] ?? '');
-//     if (typeof sourceContractObject === "undefined") throw new Error(`Cant find source for ${key}`);
-//     const sourceContract = sourceContractObject.value as Obj.Contract;
+    return sourceContractObject.value as Obj.Contract<unknown>;
+  }
 
-//     return contract;
-//   }
+  function copyAnnotation<T extends object>(source: object, dst: T): T {
+    if (isAnnotated(source)) {
+      return { annotation: source.annotation, ...dst };
+    }
+    return dst;
+  }
 
-//   return {
-//     main: closure.main,
-//     contracts: M.mapWithIndex(annotateEntry)(closure.contracts)
-//   }
-// }
+  function annotateContract(
+    source: Obj.Contract<unknown>,
+    dst: Core.Contract
+  ): Core.Contract {
+    let srcContract = source;
+    if (ObjG.Reference.is(source)) {
+      srcContract = getSourceContract(source.ref);
+    }
+
+    if (CoreG.Close.is(dst) && ObjG.Close.is(srcContract)) {
+      return srcContract as Core.Close;
+    }
+
+    if (CoreG.Pay.is(dst) && ObjG.Pay.is(srcContract)) {
+      return copyAnnotation(srcContract, {
+        ...dst,
+        then: annotateContract(srcContract.then, dst.then),
+      });
+    }
+
+    if (CoreG.If.is(dst) && ObjG.If.is(srcContract)) {
+      return copyAnnotation(srcContract, {
+        ...dst,
+        then: annotateContract(srcContract.then, dst.then),
+        else: annotateContract(srcContract.else, dst.else),
+      });
+    }
+
+    if (CoreG.Let.is(dst) && ObjG.Let.is(srcContract)) {
+      return copyAnnotation(srcContract, {
+        ...dst,
+        then: annotateContract(srcContract.then, dst.then),
+      });
+    }
+
+    if (CoreG.Assert.is(dst) && ObjG.Assert.is(srcContract)) {
+      return copyAnnotation(srcContract, {
+        ...dst,
+        then: annotateContract(srcContract.then, dst.then),
+      });
+    }
+
+    if (CoreG.When.is(dst) && ObjG.When.is(srcContract)) {
+      const srcWhen = srcContract;
+      return copyAnnotation(srcWhen, {
+        ...dst,
+        timeout_continuation: annotateContract(
+          srcWhen.timeout_continuation,
+          dst.timeout_continuation
+        ),
+        when: dst.when.map((dstCase, index) => {
+          const srcCase = srcWhen.when[index];
+          if ("merkleized_then" in srcCase) {
+            throw new Error(`Merkleized not supported in source.`);
+          }
+
+          if ("then" in srcCase && "then" in dstCase) {
+            return {
+              ...dstCase,
+              then: annotateContract(srcCase.then, dstCase.then),
+            };
+          } else {
+            return dstCase;
+          }
+        }),
+      });
+    }
+
+    throw new Error(`Cant annotate source contract.`);
+  }
+
+  function annotateEntry(key: string, contract: Core.Contract): Core.Contract {
+    debugger;
+    const sourceContract = getSourceContract(sourceMap[key]);
+    return annotateContract(sourceContract, contract);
+  }
+
+  return {
+    main: closure.main,
+    contracts: M.mapWithIndex(annotateEntry)(closure.contracts),
+  };
+}

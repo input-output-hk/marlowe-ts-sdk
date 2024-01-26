@@ -1,5 +1,6 @@
 import {
   Bundle,
+  Close,
   Case,
   ContractObjectMap,
   Label,
@@ -15,14 +16,11 @@ function fixmeCounter() {
 }
 function closeA<T>(annotation?: T): ContractObjectMap<T> {
   const ref = `close-${fixmeCounter()}`;
-  const contract = annotation
-    ? { annotation, contract: "close" as const }
-    : "close";
   return {
     main: ref,
     objects: new Map([
       // TODO: Nothing is checking that contract and close match. We need to improve the omit
-      [ref, { type: "contract", value: contract }],
+      [ref, { type: "contract", value: new Close(annotation) }],
     ]),
   };
 }

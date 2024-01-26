@@ -37,7 +37,6 @@ export {
   TimeIntervalEnd,
   UseValue,
   ValueId,
-  Close,
 } from "@marlowe.io/language-core-v1/guards";
 
 export { ChoiceIdGuard as ChoiceId } from "./choices.js";
@@ -76,11 +75,13 @@ export {
   ValueLEGuard as ValueLE,
 } from "./value-and-observation.js";
 export {
+  CloseGuard as Close,
   ContractGuard as Contract,
   PayGuard as Pay,
   AssertGuard as Assert,
   IfGuard as If,
   LetGuard as Let,
+  WhenGuard as When,
 } from "./contract.js";
 export {
   BundleGuard as Bundle,

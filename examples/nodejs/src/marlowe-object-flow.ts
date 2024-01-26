@@ -52,6 +52,7 @@ import {
   ContractClosure,
   getContractClosure,
 } from "./experimental-features/contract-closure.js";
+import { annotatedClosure } from "./experimental-features/annotations.js";
 
 // When this script is called, start with main.
 main();
