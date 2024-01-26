@@ -318,8 +318,8 @@ export const ContractGuard: t.Type<Contract> = t.recursion("Contract", () =>
  * @hidden
  */
 export type ContractMatcher<T> = {
-  close: () => T;
-  pay: (pay: Pay) => T;
+  close: (contract: Close) => T;
+  pay: (contract: Pay) => T;
   if: (contract: If) => T;
   when: (contract: When) => T;
   let: (contract: Let) => T;
@@ -340,7 +340,7 @@ export function matchContract<T>(
 export function matchContract<T>(matcher: Partial<ContractMatcher<T>>) {
   return (contract: Contract) => {
     if (CloseGuard.is(contract) && matcher.close) {
-      return matcher.close();
+      return matcher.close(contract);
     } else if (PayGuard.is(contract) && matcher.pay) {
       return matcher.pay(contract);
     } else if (IfGuard.is(contract) && matcher.if) {

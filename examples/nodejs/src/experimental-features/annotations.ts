@@ -12,6 +12,14 @@ import * as Obj from "@marlowe.io/marlowe-object";
 import * as ObjG from "@marlowe.io/marlowe-object/guards";
 
 import * as M from "fp-ts/lib/Map.js";
+import {
+  SingleInputTx,
+  TransactionOutput,
+  playSingleInputTxTrace,
+} from "@marlowe.io/language-core-v1/semantics";
+import { RestClient } from "@marlowe.io/runtime-rest-client";
+import { ContractId } from "@marlowe.io/runtime-core";
+import { deepEqual } from "@marlowe.io/adapter/deep-equal";
 
 export interface Annotated<T> {
   annotation: T;
@@ -29,17 +37,49 @@ export function isAnnotated(value: unknown): value is Annotated<unknown> {
 export const AnnotatedGuard = <T>(guard: t.Type<T>): t.Type<Annotated<T>> =>
   t.type({ annotation: guard });
 
-export async function annotatedClosure<T>(
-  sourceObjectMap: ContractObjectMap<T>,
-  lifecycle: RuntimeLifecycle
+function annotateInputFromClosure(contractClosure: ContractClosure) {
+  return function (input: Core.Input): Core.Input {
+    if (input === "input_notify") return "input_notify";
+    if ("merkleized_continuation" in input) {
+      const annotatedContinuation = contractClosure.contracts.get(
+        input.continuation_hash
+      );
+      if (typeof annotatedContinuation === "undefined")
+        throw new Error(
+          `Cant find continuation for ${input.continuation_hash}`
+        );
+      return { ...input, merkleized_continuation: annotatedContinuation };
+    } else {
+      return input;
+    }
+  };
+}
+
+function annotateHistoryFromClosure(contractClosure: ContractClosure) {
+  return function (history: SingleInputTx[]): SingleInputTx[] {
+    return history.map((tx) => {
+      if (typeof tx.input === "undefined") {
+        return tx;
+      } else {
+        return {
+          ...tx,
+          input: annotateInputFromClosure(contractClosure)(tx.input),
+        };
+      }
+    });
+  };
+}
+
+async function annotatedClosure<T>(
+  restClient: RestClient,
+  sourceObjectMap: ContractObjectMap<T>
 ): Promise<ContractClosure> {
-  debugger;
   const { contractSourceId, intermediateIds } =
-    await lifecycle.restClient.createContractSources(
+    await restClient.createContractSources(
       stripContractBundleAnnotations(mapToContractBundle(sourceObjectMap))
     );
 
-  const closure = await getContractClosure({ lifecycle })(contractSourceId);
+  const closure = await getContractClosure({ restClient })(contractSourceId);
 
   // The intermediateIds is an object whose keys belong to the source code and value is the merkle hash.
   // We need to reverse this object in order to annotate the closure using the source annotations.
@@ -136,7 +176,6 @@ export async function annotatedClosure<T>(
   }
 
   function annotateEntry(key: string, contract: Core.Contract): Core.Contract {
-    debugger;
     const sourceContract = getSourceContract(sourceMap[key]);
     return annotateContract(sourceContract, contract);
   }
@@ -144,5 +183,43 @@ export async function annotatedClosure<T>(
   return {
     main: closure.main,
     contracts: M.mapWithIndex(annotateEntry)(closure.contracts),
+  };
+}
+
+export interface SourceMap<T> {
+  source: ContractObjectMap<T>;
+  closure: ContractClosure;
+  annotateHistory(history: SingleInputTx[]): SingleInputTx[];
+  playHistory(history: SingleInputTx[]): TransactionOutput;
+  contractInstanceOf(contractId: ContractId): Promise<boolean>;
+}
+
+export async function mkSourceMap<T>(
+  lifecycle: RuntimeLifecycle,
+  sourceObjectMap: ContractObjectMap<T>
+): Promise<SourceMap<T>> {
+  const closure = await annotatedClosure(lifecycle.restClient, sourceObjectMap);
+  return {
+    source: sourceObjectMap,
+    closure,
+    annotateHistory: (history: SingleInputTx[]) => {
+      return annotateHistoryFromClosure(closure)(history);
+    },
+    playHistory: (history: SingleInputTx[]) => {
+      const annotatedHistory = annotateHistoryFromClosure(closure)(history);
+      const main = closure.contracts.get(closure.main);
+      if (typeof main === "undefined") throw new Error(`Cant find main.`);
+      return playSingleInputTxTrace(0n, main, annotatedHistory);
+    },
+    contractInstanceOf: async (contractId: ContractId) => {
+      const contractDetails =
+        await lifecycle.restClient.getContractById(contractId);
+
+      const initialContract = await lifecycle.restClient.getContractSourceById({
+        contractSourceId: sourceObjectMap.main,
+      });
+
+      return deepEqual(initialContract, contractDetails.initialContract);
+    },
   };
 }
