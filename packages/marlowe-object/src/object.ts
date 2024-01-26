@@ -17,7 +17,7 @@ import {
   matchObservation,
   matchValue,
 } from "./value-and-observation.js";
-import { Payee, matchPayee } from "./payee.js";
+import { matchPayee } from "./payee.js";
 
 /**
  * Bundle of a {@link Label} that references a {@link Party}.

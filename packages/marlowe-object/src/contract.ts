@@ -1,9 +1,5 @@
 import * as t from "io-ts/lib/index.js";
-import {
-  close,
-  Timeout,
-  BuiltinByteString,
-} from "@marlowe.io/language-core-v1";
+import { Timeout, BuiltinByteString } from "@marlowe.io/language-core-v1";
 import * as G from "@marlowe.io/language-core-v1/guards";
 
 import {
@@ -19,13 +15,15 @@ import { ValueGuard } from "./value-and-observation.js";
 import { Action, ActionGuard } from "./actions.js";
 import { Reference, ReferenceGuard } from "./reference.js";
 
-export { close, Timeout, BuiltinByteString };
+export { Timeout, BuiltinByteString };
 
 export class Close<A> extends String {
   constructor(public annotation?: A) {
     super("close");
   }
 }
+
+export const close = <A>(annotation?: A) => new Close<A>(annotation);
 
 export const CloseGuard: t.Type<Close<unknown>> = new t.Type(
   "close",

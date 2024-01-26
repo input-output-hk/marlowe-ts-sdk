@@ -42,6 +42,7 @@ export {
   Contract,
   Pay,
   Close,
+  close,
   Assert,
   Case,
   NormalCase,

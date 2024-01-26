@@ -216,7 +216,7 @@ export async function mkSourceMap<T>(
         await lifecycle.restClient.getContractById(contractId);
 
       const initialContract = await lifecycle.restClient.getContractSourceById({
-        contractSourceId: sourceObjectMap.main,
+        contractSourceId: closure.main,
       });
 
       return deepEqual(initialContract, contractDetails.initialContract);

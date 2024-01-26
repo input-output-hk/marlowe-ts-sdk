@@ -17,23 +17,17 @@ import { datetoTimeout, Timeout, When } from "@marlowe.io/language-core-v1";
 import {
   contractId,
   ContractId,
-  contractIdToTxId,
   stakeAddressBech32,
   StakeAddressBech32,
   Tags,
-  transactionWitnessSetTextEnvelope,
   TxId,
 } from "@marlowe.io/runtime-core";
 import { Address } from "@marlowe.io/language-core-v1";
 import {
   ContractBundle,
   ContractObjectMap,
-  ContractSourceId,
-  Label,
   lovelace,
-  mapToContractBundle,
-  ObjectType,
-  stripContractBundleAnnotations,
+  close,
 } from "@marlowe.io/marlowe-object";
 import { input, select } from "@inquirer/prompts";
 import { RuntimeLifecycle } from "@marlowe.io/runtime-lifecycle/api";
@@ -44,21 +38,15 @@ import {
 } from "./experimental-features/applicable-inputs.js";
 import arg from "arg";
 import { splitAddress } from "./experimental-features/metadata.js";
-import { SingleInputTx } from "../../../packages/language/core/v1/dist/esm/transaction.js";
 import * as t from "io-ts/lib/index.js";
-import { deepEqual } from "@marlowe.io/adapter/deep-equal";
 import { mkAnnotatedContract } from "./experimental-features/annotated-bundle-map.js";
-import {
-  ContractClosure,
-  getContractClosure,
-} from "./experimental-features/contract-closure.js";
 import {
   AnnotatedGuard,
   mkSourceMap,
   SourceMap,
 } from "./experimental-features/annotations.js";
-import { playSingleInputTxTrace } from "@marlowe.io/language-core-v1/semantics";
 import { POSIXTime } from "@marlowe.io/adapter/time";
+import { SingleInputTx } from "@marlowe.io/language-core-v1/semantics";
 
 // When this script is called, start with main.
 main();
@@ -204,7 +192,10 @@ async function createContractMenu(
     releaseDeadline,
   };
   const tags = mkDelayPaymentTags(scheme);
-  const sourceMap = await mkSourceMap(lifecycle, mkDelayPayment(scheme));
+  const sourceMap = await mkSourceMap(
+    lifecycle,
+    mkDelayPaymentDeprecate(scheme)
+  );
   const [contractId, txId] = await lifecycle.contracts.createContract({
     stakeAddress: rewardAddress,
     contract: sourceMap.closure.contracts.get(sourceMap.closure.main)!,
@@ -430,6 +421,48 @@ const DelayPaymentAnnotationsGuard = t.union([
 ]);
 
 function mkDelayPayment(
+  scheme: DelayPaymentScheme
+): ContractBundle<DelayPaymentAnnotations> {
+  return {
+    main: "initial-deposit",
+    bundle: [
+      {
+        label: "release-funds",
+        type: "contract",
+        value: {
+          annotation: "WaitForRelease",
+          when: [],
+          timeout: datetoTimeout(scheme.releaseDeadline),
+          timeout_continuation: close("PaymentReleasedClose"),
+        },
+      },
+      {
+        label: "initial-deposit",
+        type: "contract",
+        value: {
+          annotation: "initialDeposit",
+          when: [
+            {
+              case: {
+                party: scheme.payFrom,
+                deposits: scheme.amount,
+                of_token: lovelace,
+                into_account: scheme.payTo,
+              },
+              then: {
+                ref: "release-funds",
+              },
+            },
+          ],
+          timeout: datetoTimeout(scheme.depositDeadline),
+          timeout_continuation: close("PaymentMissedClose"),
+        },
+      },
+    ],
+  };
+}
+
+function mkDelayPaymentDeprecate(
   input: DelayPaymentScheme
 ): ContractObjectMap<DelayPaymentAnnotations> {
   return mkAnnotatedContract<DelayPaymentAnnotations>(({ when, close }) => {
@@ -680,8 +713,12 @@ async function validateExistingContract(
   //      to download the sources from the initial runtime and share those with another runtime.
   //      Or this option which doesn't require runtime to runtime communication, and just requires
   //      the dapp to be able to recreate the same sources.
-  const sourceMap = await mkSourceMap(lifecycle, mkDelayPayment(scheme));
-  if (!sourceMap.contractInstanceOf(contractId)) {
+  const sourceMap = await mkSourceMap(
+    lifecycle,
+    mkDelayPaymentDeprecate(scheme)
+  );
+  const isInstanceof = await sourceMap.contractInstanceOf(contractId);
+  if (!isInstanceof) {
     return "InvalidContract";
   }
   return { scheme, sourceMap };
