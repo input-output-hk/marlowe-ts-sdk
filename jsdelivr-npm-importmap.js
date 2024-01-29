@@ -48,6 +48,8 @@ const importMap = {
       "https://cdn.jsdelivr.net/npm/@marlowe.io/wallet@0.3.0-beta/dist/bundled/esm/browser.js",
     "@marlowe.io/wallet/lucid":
       "https://cdn.jsdelivr.net/npm/@marlowe.io/wallet@0.3.0-beta/dist/bundled/esm/lucid.js",
+    "@marlowe.io/wallet/peer-connect":
+      "https://cdn.jsdelivr.net/npm/@marlowe.io/wallet@0.3.0-beta/dist/bundled/esm/peer-connect.js",
     "@marlowe.io/runtime-rest-client":
       "https://cdn.jsdelivr.net/npm/@marlowe.io/runtime-rest-client@0.3.0-beta/dist/bundled/esm/runtime-rest-client.js",
     "@marlowe.io/runtime-rest-client/contract":
