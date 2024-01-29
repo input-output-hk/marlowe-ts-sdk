@@ -13,7 +13,7 @@ import * as TE from "fp-ts/lib/TaskEither.js";
 import * as O from "fp-ts/lib/Option.js";
 
 import { MarloweJSONCodec } from "@marlowe.io/adapter/codec";
-import { ContractBundle } from "@marlowe.io/marlowe-object";
+import { ContractBundleList } from "@marlowe.io/marlowe-object";
 
 import * as Payouts from "./payout/endpoints/collection.js";
 import * as Payout from "./payout/endpoints/singleton.js";
@@ -108,7 +108,7 @@ export interface RestClient {
    * @param bundle Contains a list of object types and a main contract reference
    */
   createContractSources(
-    bundle: ContractBundle<undefined>
+    bundle: ContractBundleList<undefined>
   ): Promise<Sources.CreateContractSourcesResponse>;
 
   /**

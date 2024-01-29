@@ -84,12 +84,12 @@ export {
   WhenGuard as When,
 } from "./contract.js";
 export {
-  BundleGuard as Bundle,
-  ContractBundleGuard as ContractBundle,
+  BundleListGuard as BundleList,
+  ContractBundleListGuard as ContractBundleList,
   ObjectPartyGuard as ObjectParty,
   ObjectValueGuard as ObjectValue,
   ObjectObservationGuard as ObjectObservation,
   ObjectTokenGuard as ObjectToken,
   ObjectContractGuard as ObjectContract,
   ObjectActionGuard as ObjectAction,
-} from "./object.js";
+} from "./bundle-list.js";

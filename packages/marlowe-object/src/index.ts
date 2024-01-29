@@ -50,16 +50,8 @@ export {
   Timeout,
 } from "./contract.js";
 export {
-  ObjectType,
-  ContractBundle,
-  ContractObjectMap,
-  mapToContractBundle,
-  stripContractBundleAnnotations,
-  Bundle,
-  ObjectParty,
-  ObjectValue,
-  ObjectObservation,
-  ObjectToken,
-  ObjectContract,
-  ObjectAction,
-} from "./object.js";
+  ContractBundleList,
+  stripContractBundleListAnnotations,
+} from "./bundle-list.js";
+export { ContractBundleMap } from "./bundle-map.js";
+export { bundleMapToList } from "./bundle-conversion.js";

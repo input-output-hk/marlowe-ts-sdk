@@ -1,6 +1,11 @@
 {
   "$schema": "https://typedoc.org/schema.json",
-  "entryPoints": ["./src/index.ts", "./src/guards.ts"],
+  "entryPoints": [
+    "./src/index.ts",
+    "./src/guards.ts",
+    "./src/bundle-list.ts",
+    "./src/bundle-map.ts"
+  ],
   "categorizeByGroup": false,
   "defaultCategory": "General",
   "categoryOrder": [

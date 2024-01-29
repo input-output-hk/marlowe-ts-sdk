@@ -34,6 +34,16 @@
       "import": "./dist/esm/guards.js",
       "require": "./dist/bundled/cjs/guards.cjs",
       "types": "./dist/esm/guards.d.ts"
+    },
+    "./bundle-list": {
+      "import": "./dist/esm/bundle-list.js",
+      "require": "./dist/bundled/cjs/bundle-list.cjs",
+      "types": "./dist/esm/bundle-list.d.ts"
+    },
+    "./bundle-map": {
+      "import": "./dist/esm/bundle-map.js",
+      "require": "./dist/bundled/cjs/bundle-map.cjs",
+      "types": "./dist/esm/bundle-map.d.ts"
     }
   },
   "dependencies": {

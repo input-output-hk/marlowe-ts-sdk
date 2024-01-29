@@ -131,7 +131,7 @@ export interface When<A> {
   timeout_continuation: Contract<A>;
 }
 /**
- * {@link !io-ts-usage | Dynamic type guard} for the {@link when | when type}.
+ * {@link !io-ts-usage | Dynamic type guard} for the {@link When | when type}.
  * @category Contract
  */
 export const WhenGuard: t.Type<When<unknown>> = t.recursion("When", () =>

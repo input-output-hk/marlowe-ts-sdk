@@ -1,11 +1,10 @@
 import {
-  Bundle,
   Close,
   Case,
-  ContractObjectMap,
+  ContractBundleMap,
   Label,
-  ObjectType,
 } from "@marlowe.io/marlowe-object";
+import * as BundleM from "@marlowe.io/marlowe-object/bundle-map";
 import { Action, Timeout } from "@marlowe.io/language-core-v1";
 import * as M from "fp-ts/lib/Map.js";
 import { deepEqual } from "@marlowe.io/adapter/deep-equal";
@@ -14,7 +13,7 @@ let globalCounter = 0;
 function fixmeCounter() {
   return globalCounter++;
 }
-function closeA<T>(annotation?: T): ContractObjectMap<T> {
+function closeA<T>(annotation?: T): ContractBundleMap<T> {
   const ref = `close-${fixmeCounter()}`;
   return {
     main: ref,
@@ -27,14 +26,12 @@ function closeA<T>(annotation?: T): ContractObjectMap<T> {
 
 type WhenAParams<T> = {
   annotation: T;
-  when: [Action, ContractObjectMap<T>][];
+  when: [Action, ContractBundleMap<T>][];
   timeout: Timeout;
-  timeout_continuation: ContractObjectMap<T>;
+  timeout_continuation: ContractBundleMap<T>;
 };
 
-type FIXMEMAP<T> = Map<Label, Omit<ObjectType<T>, "label">>;
-
-function whenA<T>(params: WhenAParams<T>): ContractObjectMap<T> {
+function whenA<T>(params: WhenAParams<T>): ContractBundleMap<T> {
   const timeoutBundle = params.timeout_continuation;
 
   const timeoutRef = { ref: timeoutBundle.main };
@@ -47,19 +44,13 @@ function whenA<T>(params: WhenAParams<T>): ContractObjectMap<T> {
       then: { ref: cont.main },
     } as Case<T>;
   });
-  const casesObjects = params.when.flatMap(
-    ([_, cont]) => cont.objects as FIXMEMAP<T>
-  );
+  const casesObjects = params.when.flatMap(([_, cont]) => cont.objects);
 
   const labelEqual = {
     equals: (a: Label, b: Label) => a === b,
   };
   const mergeSameObject = {
-    // TODO: Give name to the Omit.
-    concat: (
-      a: Omit<ObjectType<T>, "label">,
-      b: Omit<ObjectType<T>, "label">
-    ) => {
+    concat: (a: BundleM.ObjectType<T>, b: BundleM.ObjectType<T>) => {
       if (deepEqual(a, b)) return a;
       throw new Error("Can't merge two objecs with different values");
     },
@@ -79,7 +70,7 @@ function whenA<T>(params: WhenAParams<T>): ContractObjectMap<T> {
           },
         },
       ],
-    ]) as FIXMEMAP<T>
+    ])
   );
 
   return {
@@ -89,13 +80,13 @@ function whenA<T>(params: WhenAParams<T>): ContractObjectMap<T> {
 }
 
 type AnnotatedConstructors<T> = {
-  when: (params: WhenAParams<T>) => ContractObjectMap<T>;
-  close: (state: T) => ContractObjectMap<T>;
+  when: (params: WhenAParams<T>) => ContractBundleMap<T>;
+  close: (state: T) => ContractBundleMap<T>;
 };
 
 export function mkAnnotatedContract<T>(
-  creator: (constructors: AnnotatedConstructors<T>) => ContractObjectMap<T>
-): ContractObjectMap<T> {
+  creator: (constructors: AnnotatedConstructors<T>) => ContractBundleMap<T>
+): ContractBundleMap<T> {
   return creator({
     when: whenA,
     close: closeA,

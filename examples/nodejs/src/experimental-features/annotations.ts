@@ -1,7 +1,7 @@
 import {
-  ContractObjectMap,
-  mapToContractBundle,
-  stripContractBundleAnnotations,
+  ContractBundleMap,
+  bundleMapToList,
+  stripContractBundleListAnnotations,
 } from "@marlowe.io/marlowe-object";
 import { RuntimeLifecycle } from "@marlowe.io/runtime-lifecycle/api";
 import * as t from "io-ts/lib/index.js";
@@ -72,11 +72,11 @@ function annotateHistoryFromClosure(contractClosure: ContractClosure) {
 
 async function annotatedClosure<T>(
   restClient: RestClient,
-  sourceObjectMap: ContractObjectMap<T>
+  sourceObjectMap: ContractBundleMap<T>
 ): Promise<ContractClosure> {
   const { contractSourceId, intermediateIds } =
     await restClient.createContractSources(
-      stripContractBundleAnnotations(mapToContractBundle(sourceObjectMap))
+      stripContractBundleListAnnotations(bundleMapToList(sourceObjectMap))
     );
 
   const closure = await getContractClosure({ restClient })(contractSourceId);
@@ -187,7 +187,7 @@ async function annotatedClosure<T>(
 }
 
 export interface SourceMap<T> {
-  source: ContractObjectMap<T>;
+  source: ContractBundleMap<T>;
   closure: ContractClosure;
   annotateHistory(history: SingleInputTx[]): SingleInputTx[];
   playHistory(history: SingleInputTx[]): TransactionOutput;
@@ -195,8 +195,8 @@ export interface SourceMap<T> {
 }
 
 export async function mkSourceMap<T>(
-  lifecycle: RuntimeLifecycle,
-  sourceObjectMap: ContractObjectMap<T>
+  lifecycle: RuntimeLifecycle, // TODO: reduce to restClient
+  sourceObjectMap: ContractBundleMap<T>
 ): Promise<SourceMap<T>> {
   const closure = await annotatedClosure(lifecycle.restClient, sourceObjectMap);
   return {

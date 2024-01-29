@@ -6,11 +6,11 @@ import { formatValidationErrors } from "jsonbigint-io-ts-reporters";
 
 import { Contract } from "@marlowe.io/language-core-v1";
 import {
-  Bundle,
   Label,
   ContractSourceId,
   ContractSourceIdGuard,
 } from "@marlowe.io/marlowe-object";
+import { BundleList } from "@marlowe.io/marlowe-object/bundle-list";
 import { AxiosInstance } from "axios";
 
 export interface CreateContractSourcesResponse {
@@ -29,7 +29,7 @@ const CreateContractSourcesResponseGuard: t.Type<CreateContractSourcesResponse> 
 export const createContractSources = (axiosInstance: AxiosInstance) => {
   return async (
     main: Label,
-    bundle: Bundle<undefined>
+    bundle: BundleList<undefined>
   ): Promise<CreateContractSourcesResponse> => {
     const response = await axiosInstance.post("/contracts/sources", bundle, {
       params: { main },

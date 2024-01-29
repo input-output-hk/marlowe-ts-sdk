@@ -72,6 +72,10 @@ const importMap = {
       "https://cdn.jsdelivr.net/npm/@marlowe.io/runtime-lifecycle@0.3.0-beta/dist/bundled/esm/generic.js",
     "@marlowe.io/marlowe-object":
       "https://cdn.jsdelivr.net/npm/@marlowe.io/marlowe-object@0.3.0-beta/dist/bundled/esm/marlowe-object.js",
+    "@marlowe.io/marlowe-object/bundle-list":
+      "https://cdn.jsdelivr.net/npm/@marlowe.io/marlowe-object@0.3.0-beta/dist/bundled/esm/bundle-list.js",
+    "@marlowe.io/marlowe-object/bundle-map":
+      "https://cdn.jsdelivr.net/npm/@marlowe.io/marlowe-object@0.3.0-beta/dist/bundled/esm/bundle-map.js",
     "@marlowe.io/marlowe-object/guards":
       "https://cdn.jsdelivr.net/npm/@marlowe.io/marlowe-object@0.3.0-beta/dist/bundled/esm/guards.js",
     "@marlowe.io/testing-kit":

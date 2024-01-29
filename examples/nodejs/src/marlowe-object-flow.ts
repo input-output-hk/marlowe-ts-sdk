@@ -24,8 +24,8 @@ import {
 } from "@marlowe.io/runtime-core";
 import { Address } from "@marlowe.io/language-core-v1";
 import {
-  ContractBundle,
-  ContractObjectMap,
+  ContractBundleList,
+  ContractBundleMap,
   lovelace,
   close,
 } from "@marlowe.io/marlowe-object";
@@ -422,7 +422,7 @@ const DelayPaymentAnnotationsGuard = t.union([
 
 function mkDelayPayment(
   scheme: DelayPaymentScheme
-): ContractBundle<DelayPaymentAnnotations> {
+): ContractBundleList<DelayPaymentAnnotations> {
   return {
     main: "initial-deposit",
     bundle: [
@@ -464,9 +464,9 @@ function mkDelayPayment(
 
 function mkDelayPaymentDeprecate(
   input: DelayPaymentScheme
-): ContractObjectMap<DelayPaymentAnnotations> {
+): ContractBundleMap<DelayPaymentAnnotations> {
   return mkAnnotatedContract<DelayPaymentAnnotations>(({ when, close }) => {
-    const initialDeposit = (cont: ContractObjectMap<DelayPaymentAnnotations>) =>
+    const initialDeposit = (cont: ContractBundleMap<DelayPaymentAnnotations>) =>
       when({
         annotation: "initialDeposit",
         when: [
