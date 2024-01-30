@@ -3,7 +3,10 @@ import {
   bundleMapToList,
   stripContractBundleListAnnotations,
 } from "@marlowe.io/marlowe-object";
-import { RuntimeLifecycle } from "@marlowe.io/runtime-lifecycle/api";
+import {
+  CreateContractRequestBase,
+  RuntimeLifecycle,
+} from "@marlowe.io/runtime-lifecycle/api";
 import * as t from "io-ts/lib/index.js";
 import { ContractClosure, getContractClosure } from "./contract-closure.js";
 import * as Core from "@marlowe.io/language-core-v1";
@@ -18,7 +21,7 @@ import {
   playSingleInputTxTrace,
 } from "@marlowe.io/language-core-v1/semantics";
 import { RestClient } from "@marlowe.io/runtime-rest-client";
-import { ContractId } from "@marlowe.io/runtime-core";
+import { ContractId, TxId } from "@marlowe.io/runtime-core";
 import { deepEqual } from "@marlowe.io/adapter/deep-equal";
 
 export interface Annotated<T> {
@@ -191,11 +194,14 @@ export interface SourceMap<T> {
   closure: ContractClosure;
   annotateHistory(history: SingleInputTx[]): SingleInputTx[];
   playHistory(history: SingleInputTx[]): TransactionOutput;
+  createContract(
+    options: CreateContractRequestBase
+  ): Promise<[ContractId, TxId]>;
   contractInstanceOf(contractId: ContractId): Promise<boolean>;
 }
 
 export async function mkSourceMap<T>(
-  lifecycle: RuntimeLifecycle, // TODO: reduce to restClient
+  lifecycle: RuntimeLifecycle,
   sourceObjectMap: ContractBundleMap<T>
 ): Promise<SourceMap<T>> {
   const closure = await annotatedClosure(lifecycle.restClient, sourceObjectMap);
@@ -210,6 +216,12 @@ export async function mkSourceMap<T>(
       const main = closure.contracts.get(closure.main);
       if (typeof main === "undefined") throw new Error(`Cant find main.`);
       return playSingleInputTxTrace(0n, main, annotatedHistory);
+    },
+    createContract: (options: CreateContractRequestBase) => {
+      return lifecycle.contracts.createContract({
+        ...options,
+        contract: closure.contracts.get(closure.main)!,
+      });
     },
     contractInstanceOf: async (contractId: ContractId) => {
       const contractDetails =

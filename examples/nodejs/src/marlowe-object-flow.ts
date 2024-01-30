@@ -193,9 +193,8 @@ async function createContractMenu(
   };
   const tags = mkDelayPaymentTags(scheme);
   const sourceMap = await mkSourceMap(lifecycle, mkDelayPayment(scheme));
-  const [contractId, txId] = await lifecycle.contracts.createContract({
+  const [contractId, txId] = await sourceMap.createContract({
     stakeAddress: rewardAddress,
-    contract: sourceMap.closure.contracts.get(sourceMap.closure.main)!,
     tags,
   });
 
