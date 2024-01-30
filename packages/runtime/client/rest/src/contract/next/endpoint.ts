@@ -1,6 +1,7 @@
 import { AxiosInstance } from "axios";
 import * as E from "fp-ts/lib/Either.js";
 import * as TE from "fp-ts/lib/TaskEither.js";
+import * as G from "@marlowe.io/language-core-v1/guards";
 import { pipe } from "fp-ts/lib/function.js";
 import * as HTTP from "@marlowe.io/adapter/http";
 import { formatValidationErrors } from "jsonbigint-io-ts-reporters";
@@ -12,7 +13,6 @@ import { DecodingError } from "@marlowe.io/adapter/codec";
 import { posixTimeToIso8601 } from "@marlowe.io/adapter/time";
 import { assertGuardEqual, proxy } from "@marlowe.io/adapter/io-ts";
 import * as t from "io-ts/lib/index.js";
-import { PartyGuard } from "@marlowe.io/language-core-v1/participants";
 
 export type GET = (
   contractId: ContractId
@@ -60,7 +60,7 @@ export const GetNextStepsForContractRequestGuard = assertGuardEqual(
       validityEnd: t.bigint,
     }),
     t.partial({
-      parties: t.array(PartyGuard),
+      parties: t.array(G.Party),
     }),
   ])
 );

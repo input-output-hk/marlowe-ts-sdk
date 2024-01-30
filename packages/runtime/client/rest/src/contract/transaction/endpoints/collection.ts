@@ -36,7 +36,6 @@ import {
   Page,
   PageGuard,
 } from "../../../pagination.js";
-import { InputGuard } from "@marlowe.io/language-core-v1/inputs";
 
 export type GETHeadersByRange = (
   contractId: ContractId,
@@ -148,7 +147,7 @@ export const ApplyInputsToContractRequestGuard = assertGuardEqual(
     t.type({
       contractId: ContractIdGuard,
       changeAddress: AddressBech32Guard,
-      inputs: t.array(InputGuard),
+      inputs: t.array(G.Input),
     }),
     t.partial({
       usedAddresses: t.array(AddressBech32Guard),

@@ -24,16 +24,10 @@ const importMap = {
       "https://cdn.jsdelivr.net/npm/@marlowe.io/adapter@0.3.0-beta/dist/bundled/esm/time.js",
     "@marlowe.io/language-core-v1":
       "https://cdn.jsdelivr.net/npm/@marlowe.io/language-core-v1@0.3.0-beta/dist/bundled/esm/language-core-v1.js",
-    "@marlowe.io/language-core-v1/contract":
-      "https://cdn.jsdelivr.net/npm/@marlowe.io/language-core-v1@0.3.0-beta/dist/bundled/esm/contract.js",
     "@marlowe.io/language-core-v1/guards":
       "https://cdn.jsdelivr.net/npm/@marlowe.io/language-core-v1@0.3.0-beta/dist/bundled/esm/guards.js",
-    "@marlowe.io/language-core-v1/inputs":
-      "https://cdn.jsdelivr.net/npm/@marlowe.io/language-core-v1@0.3.0-beta/dist/bundled/esm/inputs.js",
     "@marlowe.io/language-core-v1/next":
       "https://cdn.jsdelivr.net/npm/@marlowe.io/language-core-v1@0.3.0-beta/dist/bundled/esm/next.js",
-    "@marlowe.io/language-core-v1/participants":
-      "https://cdn.jsdelivr.net/npm/@marlowe.io/language-core-v1@0.3.0-beta/dist/bundled/esm/participants.js",
     "@marlowe.io/language-core-v1/playground-v1":
       "https://cdn.jsdelivr.net/npm/@marlowe.io/language-core-v1@0.3.0-beta/dist/bundled/esm/playground-v1.js",
     "@marlowe.io/language-core-v1/semantics":

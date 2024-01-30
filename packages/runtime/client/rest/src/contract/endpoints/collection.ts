@@ -5,7 +5,6 @@ import * as TE from "fp-ts/lib/TaskEither.js";
 import { pipe } from "fp-ts/lib/function.js";
 import * as E from "fp-ts/lib/Either.js";
 import * as A from "fp-ts/lib/Array.js";
-import * as O from "fp-ts/lib/Option.js";
 import { formatValidationErrors } from "jsonbigint-io-ts-reporters";
 import { stringify } from "qs";
 import { assertGuardEqual, proxy } from "@marlowe.io/adapter/io-ts";
@@ -48,8 +47,6 @@ import {
   Page,
   PageGuard,
 } from "../../pagination.js";
-import { ContractGuard } from "@marlowe.io/language-core-v1/contract";
-import { RoleNameGuard } from "@marlowe.io/language-core-v1/participants";
 
 /**
  * Request options for the {@link index.RestClient#getContracts | Get contracts } endpoint
@@ -218,7 +215,7 @@ export const BuildCreateContractTxRequestOptionsGuard = assertGuardEqual(
     t.type({ changeAddress: AddressBech32Guard, version: MarloweVersion }),
     t.partial({
       roles: RolesConfigurationGuard,
-      threadRoleName: RoleNameGuard,
+      threadRoleName: G.RoleName,
       minimumLovelaceUTxODeposit: t.number,
       metadata: Metadata,
       tags: TagsGuard,
@@ -232,7 +229,7 @@ export const BuildCreateContractTxRequestOptionsGuard = assertGuardEqual(
 export const BuildCreateContractTxRequestWithContractGuard = assertGuardEqual(
   proxy<BuildCreateContractTxRequestWithContract>(),
   t.intersection([
-    t.type({ contract: ContractGuard }),
+    t.type({ contract: G.Contract }),
     BuildCreateContractTxRequestOptionsGuard,
   ])
 );
