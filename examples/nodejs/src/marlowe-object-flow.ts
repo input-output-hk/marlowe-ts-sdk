@@ -28,6 +28,7 @@ import {
   ContractBundleMap,
   lovelace,
   close,
+  bundleListToMap,
 } from "@marlowe.io/marlowe-object";
 import { input, select } from "@inquirer/prompts";
 import { RuntimeLifecycle } from "@marlowe.io/runtime-lifecycle/api";
@@ -192,10 +193,7 @@ async function createContractMenu(
     releaseDeadline,
   };
   const tags = mkDelayPaymentTags(scheme);
-  const sourceMap = await mkSourceMap(
-    lifecycle,
-    mkDelayPaymentDeprecate(scheme)
-  );
+  const sourceMap = await mkSourceMap(lifecycle, mkDelayPayment(scheme));
   const [contractId, txId] = await lifecycle.contracts.createContract({
     stakeAddress: rewardAddress,
     contract: sourceMap.closure.contracts.get(sourceMap.closure.main)!,
@@ -422,43 +420,47 @@ const DelayPaymentAnnotationsGuard = t.union([
 
 function mkDelayPayment(
   scheme: DelayPaymentScheme
-): ContractBundleList<DelayPaymentAnnotations> {
+): ContractBundleMap<DelayPaymentAnnotations> {
   return {
     main: "initial-deposit",
-    bundle: [
-      {
-        label: "release-funds",
-        type: "contract",
-        value: {
-          annotation: "WaitForRelease",
-          when: [],
-          timeout: datetoTimeout(scheme.releaseDeadline),
-          timeout_continuation: close("PaymentReleasedClose"),
+    objects: new Map([
+      [
+        "release-funds",
+        {
+          type: "contract",
+          value: {
+            annotation: "WaitForRelease",
+            when: [],
+            timeout: datetoTimeout(scheme.releaseDeadline),
+            timeout_continuation: close("PaymentReleasedClose"),
+          },
         },
-      },
-      {
-        label: "initial-deposit",
-        type: "contract",
-        value: {
-          annotation: "initialDeposit",
-          when: [
-            {
-              case: {
-                party: scheme.payFrom,
-                deposits: scheme.amount,
-                of_token: lovelace,
-                into_account: scheme.payTo,
+      ],
+      [
+        "initial-deposit",
+        {
+          type: "contract",
+          value: {
+            annotation: "initialDeposit",
+            when: [
+              {
+                case: {
+                  party: scheme.payFrom,
+                  deposits: scheme.amount,
+                  of_token: lovelace,
+                  into_account: scheme.payTo,
+                },
+                then: {
+                  ref: "release-funds",
+                },
               },
-              then: {
-                ref: "release-funds",
-              },
-            },
-          ],
-          timeout: datetoTimeout(scheme.depositDeadline),
-          timeout_continuation: close("PaymentMissedClose"),
+            ],
+            timeout: datetoTimeout(scheme.depositDeadline),
+            timeout_continuation: close("PaymentMissedClose"),
+          },
         },
-      },
-    ],
+      ],
+    ]),
   };
 }
 
@@ -713,10 +715,7 @@ async function validateExistingContract(
   //      to download the sources from the initial runtime and share those with another runtime.
   //      Or this option which doesn't require runtime to runtime communication, and just requires
   //      the dapp to be able to recreate the same sources.
-  const sourceMap = await mkSourceMap(
-    lifecycle,
-    mkDelayPaymentDeprecate(scheme)
-  );
+  const sourceMap = await mkSourceMap(lifecycle, mkDelayPayment(scheme));
   const isInstanceof = await sourceMap.contractInstanceOf(contractId);
   if (!isInstanceof) {
     return "InvalidContract";
