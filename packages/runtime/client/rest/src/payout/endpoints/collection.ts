@@ -12,12 +12,18 @@ import { stringify } from "qs";
 import * as HTTP from "@marlowe.io/adapter/http";
 import { DecodingError } from "@marlowe.io/adapter/codec";
 
-import { AssetId } from "@marlowe.io/runtime-core";
+import { AssetId, ContractIdGuard } from "@marlowe.io/runtime-core";
 
 import { ContractId } from "@marlowe.io/runtime-core";
 import { PayoutHeader } from "../header.js";
 import { PayoutStatus } from "../status.js";
-import { ItemRange, Page, PageGuard } from "../../pagination.js";
+import {
+  ItemRange,
+  ItemRangeGuard,
+  Page,
+  PageGuard,
+} from "../../pagination.js";
+import { assertGuardEqual, proxy } from "@marlowe.io/adapter/io-ts";
 
 export type GetPayoutsRequest = {
   contractIds: ContractId[];
@@ -25,6 +31,20 @@ export type GetPayoutsRequest = {
   status?: PayoutStatus;
   range?: ItemRange;
 };
+
+export const GetPayoutsRequestGuard = assertGuardEqual(
+  proxy<GetPayoutsRequest>(),
+  t.intersection([
+    t.partial({
+      status: PayoutStatus,
+      range: ItemRangeGuard,
+    }),
+    t.type({
+      contractIds: t.array(ContractIdGuard),
+      roleTokens: t.array(AssetId),
+    }),
+  ])
+);
 
 export type GetPayoutsResponse = {
   payouts: PayoutHeader[];

@@ -588,8 +588,9 @@ async function validateExistingContract(
   contractId: ContractId
 ): Promise<ValidationResults> {
   // First we try to fetch the contract details and the required tags
-  const contractDetails =
-    await lifecycle.restClient.getContractById(contractId);
+  const contractDetails = await lifecycle.restClient.getContractById({
+    contractId,
+  });
 
   const scheme = extractSchemeFromTags(contractDetails.tags);
 
@@ -609,8 +610,9 @@ async function validateExistingContract(
   //      Or this option which doesn't require runtime to runtime communication, and just requires
   //      the dapp to be able to recreate the same sources.
   const contractBundle = mkDelayPayment(scheme);
-  const { contractSourceId } =
-    await lifecycle.restClient.createContractSources(contractBundle);
+  const { contractSourceId } = await lifecycle.restClient.createContractSources(
+    { bundle: contractBundle }
+  );
   const initialContract = await lifecycle.restClient.getContractSourceById({
     contractSourceId,
   });

@@ -31,6 +31,7 @@ export {
   RoleTokenConfigurations,
   RolesConfiguration,
 } from "./rolesConfigurations.js";
+
 export {
   GetContractsResponse,
   GetContractsRequest,
@@ -41,13 +42,23 @@ export {
   BuildCreateContractTxRequestOptions,
   BuildCreateContractTxResponse,
 } from "./endpoints/collection.js";
+
+export { SubmitContractRequest } from "./endpoints/singleton.js";
 export { TxHeader } from "./transaction/header.js";
+
+export {
+  GetContractTransactionByIdRequest,
+  SubmitContractTransactionRequest,
+} from "./transaction/endpoints/singleton.js";
 
 export {
   GetTransactionsForContractResponse,
   ApplyInputsToContractRequest,
+  GetTransactionsForContractRequest,
 } from "./transaction/endpoints/collection.js";
+
 export {
+  CreateContractSourcesRequest,
   CreateContractSourcesResponse,
   GetContractSourceAdjacencyResponse,
   GetContractSourceClosureResponse,

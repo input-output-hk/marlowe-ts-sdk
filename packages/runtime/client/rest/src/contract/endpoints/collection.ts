@@ -5,7 +5,6 @@ import * as TE from "fp-ts/lib/TaskEither.js";
 import { pipe } from "fp-ts/lib/function.js";
 import * as E from "fp-ts/lib/Either.js";
 import * as A from "fp-ts/lib/Array.js";
-import * as O from "fp-ts/lib/Option.js";
 import { formatValidationErrors } from "jsonbigint-io-ts-reporters";
 import { stringify } from "qs";
 import { assertGuardEqual, proxy } from "@marlowe.io/adapter/io-ts";
@@ -32,6 +31,7 @@ import {
   unStakeAddressBech32,
   SourceId,
   SourceIdGuard,
+  AddressBech32Guard,
 } from "@marlowe.io/runtime-core";
 
 import { ContractHeader, ContractHeaderGuard } from "../header.js";
@@ -41,7 +41,12 @@ import {
 } from "../rolesConfigurations.js";
 
 import { ContractId, ContractIdGuard } from "@marlowe.io/runtime-core";
-import { ItemRange, Page, PageGuard } from "../../pagination.js";
+import {
+  ItemRange,
+  ItemRangeGuard,
+  Page,
+  PageGuard,
+} from "../../pagination.js";
 
 /**
  * Request options for the {@link index.RestClient#getContracts | Get contracts } endpoint
@@ -68,6 +73,16 @@ export interface GetContractsRequest {
    */
   partyRoles?: AssetId[];
 }
+
+export const GetContractsRequestGuard = assertGuardEqual(
+  proxy<GetContractsRequest>(),
+  t.partial({
+    range: ItemRangeGuard,
+    tags: t.array(Tag),
+    partyAddresses: t.array(AddressBech32Guard),
+    partyRoles: t.array(AssetId),
+  }) as t.Type<GetContractsRequest>
+);
 
 export type GETHeadersByRange = (
   range?: ItemRange
@@ -194,6 +209,31 @@ export type BuildCreateContractTxRequestWithContract = {
   contract: Contract;
 } & BuildCreateContractTxRequestOptions;
 
+export const BuildCreateContractTxRequestOptionsGuard = assertGuardEqual(
+  proxy<BuildCreateContractTxRequestOptions>(),
+  t.intersection([
+    t.type({ changeAddress: AddressBech32Guard, version: MarloweVersion }),
+    t.partial({
+      roles: RolesConfigurationGuard,
+      threadRoleName: G.RoleName,
+      minimumLovelaceUTxODeposit: t.number,
+      metadata: Metadata,
+      tags: TagsGuard,
+      collateralUTxOs: t.array(TxOutRef),
+      usedAddresses: t.array(AddressBech32Guard),
+      stakeAddress: StakeAddressBech32,
+    }),
+  ])
+);
+
+export const BuildCreateContractTxRequestWithContractGuard = assertGuardEqual(
+  proxy<BuildCreateContractTxRequestWithContract>(),
+  t.intersection([
+    t.type({ contract: G.Contract }),
+    BuildCreateContractTxRequestOptionsGuard,
+  ])
+);
+
 /**
  * Request for the {@link index.RestClient#buildCreateContractTx | Build Create Contract Tx } endpoint using a contract
  * @category Endpoint : Build Create Contract Tx
@@ -205,6 +245,14 @@ export type BuildCreateContractTxRequestWithSourceId = {
    */
   sourceId: SourceId;
 } & BuildCreateContractTxRequestOptions;
+
+export const BuildCreateContractTxRequestWithSourceIdGuard = assertGuardEqual(
+  proxy<BuildCreateContractTxRequestWithSourceId>(),
+  t.intersection([
+    t.type({ sourceId: SourceIdGuard }),
+    BuildCreateContractTxRequestOptionsGuard,
+  ])
+);
 
 /**
  * Request options for the {@link index.RestClient#buildCreateContractTx | Build Create Contract Tx } endpoint
@@ -248,6 +296,14 @@ export type BuildCreateContractTxRequestWithSourceId = {
 export type BuildCreateContractTxRequest =
   | BuildCreateContractTxRequestWithContract
   | BuildCreateContractTxRequestWithSourceId;
+
+export const BuildCreateContractTxRequestGuard = assertGuardEqual(
+  proxy<BuildCreateContractTxRequest>(),
+  t.union([
+    BuildCreateContractTxRequestWithContractGuard,
+    BuildCreateContractTxRequestWithSourceIdGuard,
+  ])
+);
 
 /**
  * Request options for the {@link index.RestClient#buildCreateContractTx | Build Create Contract Tx } endpoint

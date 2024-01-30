@@ -11,9 +11,9 @@
 import axios from "axios";
 import * as TE from "fp-ts/lib/TaskEither.js";
 import * as O from "fp-ts/lib/Option.js";
+import * as t from "io-ts/lib/index.js";
 
 import { MarloweJSONCodec } from "@marlowe.io/adapter/codec";
-import { ContractBundle } from "@marlowe.io/marlowe-object";
 
 import * as Payouts from "./payout/endpoints/collection.js";
 import * as Payout from "./payout/endpoints/singleton.js";
@@ -27,19 +27,18 @@ import * as Transactions from "./contract/transaction/endpoints/collection.js";
 import * as Sources from "./contract/endpoints/sources.js";
 import * as Next from "./contract/next/endpoint.js";
 import { unsafeTaskEither } from "@marlowe.io/adapter/fp-ts";
-import {
-  ContractId,
-  TextEnvelope,
-  TxId,
-  HexTransactionWitnessSet,
-  WithdrawalId,
-} from "@marlowe.io/runtime-core";
-import { submitContractViaAxios } from "./contract/endpoints/singleton.js";
 import { ContractDetails } from "./contract/details.js";
 import { TransactionDetails } from "./contract/transaction/details.js";
-import { ItemRange } from "./pagination.js";
 import { RuntimeStatus, healthcheck } from "./runtime/status.js";
-import { RuntimeVersion } from "./runtime/version.js";
+import {
+  CompatibleRuntimeVersionGuard,
+  RuntimeVersion,
+} from "./runtime/version.js";
+import {
+  InvalidTypeError,
+  strictDynamicTypeCheck,
+} from "@marlowe.io/adapter/io-ts";
+import { BuildCreateContractTxRequest } from "./contract/endpoints/collection.js";
 
 export {
   Page,
@@ -108,7 +107,7 @@ export interface RestClient {
    * @param bundle Contains a list of object types and a main contract reference
    */
   createContractSources(
-    bundle: ContractBundle
+    request: Sources.CreateContractSourcesRequest
   ): Promise<Sources.CreateContractSourcesResponse>;
 
   /**
@@ -153,16 +152,15 @@ export interface RestClient {
    * @throws DecodingError - If the response from the server can't be decoded
    * @see {@link https://docs.marlowe.iohk.io/api/get-contract-by-id | The backend documentation}
    */
-  getContractById(contractId: ContractId): Promise<ContractDetails>;
+  getContractById(
+    request: Contract.GetContractByIdRequest
+  ): Promise<ContractDetails>;
 
   /**
    * Submits a signed contract creation transaction
    * @see {@link https://docs.marlowe.iohk.io/api/submit-contract-to-chain | The backend documentation}
    */
-  submitContract(
-    contractId: ContractId,
-    txEnvelope: TextEnvelope
-  ): Promise<void>;
+  submitContract(request: Contract.SubmitContractRequest): Promise<void>;
 
   /**
    * Gets a paginated list of  {@link contract.TxHeader } for a given contract.
@@ -172,8 +170,7 @@ export interface RestClient {
   //             with an AxiosError 404, we could return a nullable value or wrap the error into a custom
   //             ContractNotFound error and specify it in the docs.
   getTransactionsForContract(
-    contractId: ContractId,
-    range?: ItemRange
+    request: Transactions.GetTransactionsForContractRequest
   ): Promise<Transactions.GetTransactionsForContractResponse>;
 
   /**
@@ -193,9 +190,7 @@ export interface RestClient {
    * @see {@link https://docs.marlowe.iohk.io/api/submit-contract-input-application | The backend documentation}
    */
   submitContractTransaction(
-    contractId: ContractId,
-    transactionId: TxId,
-    hexTransactionWitnessSet: HexTransactionWitnessSet
+    request: Transaction.SubmitContractTransactionRequest
   ): Promise<void>;
 
   /**
@@ -206,8 +201,7 @@ export interface RestClient {
    * @see {@link https://docs.marlowe.iohk.io/api/get-contract-transaction-by-id | The backend documentation}
    */
   getContractTransactionById(
-    contractId: ContractId,
-    txId: TxId
+    request: Transaction.GetContractTransactionByIdRequest
   ): Promise<TransactionDetails>;
   //   submitTransaction: Transaction.PUT; // - Jamie is it this one? https://docs.marlowe.iohk.io/api/create-transaction-by-id? If so, lets unify
 
@@ -231,23 +225,18 @@ export interface RestClient {
   ): Promise<Withdrawals.GetWithdrawalsResponse>;
 
   //   createWithdrawal: Withdrawals.POST; // - https://docs.marlowe.iohk.io/api/create-withdrawals
-  //   getWithdrawalById: Withdrawal.GET; // - https://docs.marlowe.iohk.io/api/get-withdrawal-by-id
   /**
    * Get published withdrawal transaction by ID.
    * @see {@link https://docs.marlowe.iohk.io/api/get-withdrawal-by-id | The backend documentation}
    */
   getWithdrawalById(
-    withdrawalId: WithdrawalId
+    request: Withdrawal.GetWithdrawalByIdRequest
   ): Promise<Withdrawal.GetWithdrawalByIdResponse>;
-  //   submitWithdrawal: Withdrawal.PUT; - is it this one? https://docs.marlowe.iohk.io/api/create-withdrawal? or the one for createWithdrawal?
   /**
    * Submit a signed transaction (generated with {@link @marlowe.io/runtime-rest-client!index.RestClient#withdrawPayouts} and signed with the {@link @marlowe.io/wallet!api.WalletAPI#signTx} procedure) that withdraws available payouts from a contract.
    * @see {@link https://docs.marlowe.iohk.io/api/submit-payout-withdrawal | The backend documentation}
    */
-  submitWithdrawal(
-    withdrawalId: WithdrawalId,
-    hexTransactionWitnessSet: HexTransactionWitnessSet
-  ): Promise<void>;
+  submitWithdrawal(request: Withdrawal.SubmitWithdrawalRequest): Promise<void>;
 
   /**
    * Get payouts to parties from role-based contracts.
@@ -266,14 +255,59 @@ export interface RestClient {
   ): Promise<Payout.GetPayoutByIdResponse>;
 }
 
+function mkRestClientArgumentDynamicTypeCheck(
+  baseURL: unknown,
+  strict: boolean
+): baseURL is string {
+  return strict ? typeof baseURL === "string" : true;
+}
+
+function withDynamicTypeCheck<T, G>(
+  arg: any,
+  decode: (x: any) => t.Validation<T>,
+  strict: boolean,
+  cont: (x: T) => G
+): G {
+  if (strict) {
+    const result = decode(arg);
+    if (result._tag === "Left")
+      throw new InvalidTypeError(result.left, arg, "Invalid argument");
+  }
+  return cont(arg);
+}
+
 /**
  * Instantiates a REST client for the Marlowe API.
  * @param baseURL An http url pointing to the Marlowe API.
  * @see {@link https://github.com/input-output-hk/marlowe-starter-kit#quick-overview} To get a Marlowe runtime instance up and running.
  */
-export function mkRestClient(baseURL: string): RestClient {
+export function mkRestClient(baseURL: string): RestClient;
+/**
+ * Instantiates a REST client for the Marlowe API.
+ * @param baseURL An http url pointing to the Marlowe API.
+ * @param strict Whether to perform runtime checking to provide helpful error messages. May have a slight negative performance impact. Default value is `true`.
+ * @see {@link https://github.com/input-output-hk/marlowe-starter-kit#quick-overview} To get a Marlowe runtime instance up and running.
+ */
+export function mkRestClient(baseURL: string, strict: boolean): RestClient;
+export function mkRestClient(
+  baseURL: unknown,
+  strict: unknown = true
+): RestClient {
+  if (!strictDynamicTypeCheck(strict)) {
+    throw new InvalidTypeError(
+      [],
+      `Invalid type for argument 'strict', expected boolean but got ${strict}`
+    );
+  }
+  if (!mkRestClientArgumentDynamicTypeCheck(baseURL, strict)) {
+    throw new InvalidTypeError(
+      [],
+      `Invalid type for argument 'baseURL', expected string but got ${baseURL}`
+    );
+  }
+
   const axiosInstance = axios.create({
-    baseURL: baseURL,
+    baseURL,
     transformRequest: MarloweJSONCodec.encode,
     transformResponse: MarloweJSONCodec.decode,
   });
@@ -283,178 +317,329 @@ export function mkRestClient(baseURL: string): RestClient {
     (status) => status.version
   );
 
+  runtimeVersion.then((x) => {
+    if (CompatibleRuntimeVersionGuard.decode(x)._tag === "Left")
+      throw new Error(`Invalid runtime version ${x}`);
+  });
+
   return {
     healthcheck() {
       return healthcheck(axiosInstance);
     },
     version() {
-      return runtimeVersion;
+      return healthcheck(axiosInstance).then((status) => status.version);
     },
     getContracts(request) {
-      const range = request?.range;
-      const tags = request?.tags ?? [];
-      const partyAddresses = request?.partyAddresses ?? [];
-      const partyRoles = request?.partyRoles ?? [];
-      return unsafeTaskEither(
-        Contracts.getHeadersByRangeViaAxios(axiosInstance)(range)({
-          tags,
-          partyAddresses,
-          partyRoles,
-        })
+      return withDynamicTypeCheck(
+        request,
+        (x) => Contracts.GetContractsRequestGuard.decode(x),
+        strict,
+        (request) => {
+          const range = request?.range;
+          const tags = request?.tags ?? [];
+          const partyAddresses = request?.partyAddresses ?? [];
+          const partyRoles = request?.partyRoles ?? [];
+          return unsafeTaskEither(
+            Contracts.getHeadersByRangeViaAxios(axiosInstance)(range)({
+              tags,
+              partyAddresses,
+              partyRoles,
+            })
+          );
+        }
       );
     },
-    getContractById(contractId) {
-      return Contract.getContractById(axiosInstance, contractId);
+    getContractById(request) {
+      return withDynamicTypeCheck(
+        request,
+        (x) => Contract.GetContractByIdRequest.decode(x),
+        strict,
+        (request) => {
+          return Contract.getContractById(axiosInstance, request.contractId);
+        }
+      );
     },
     async buildCreateContractTx(request) {
-      const version = await runtimeVersion;
-      // NOTE: Runtime 0.0.5 requires an explicit minUTxODeposit, but 0.0.6 and forward allows that field as optional
-      //       and it will calculate the actual minimum required. We use the version of the runtime to determine
-      //       if we use a "safe" default that is bigger than needed.
-      const minUTxODeposit =
-        request.minimumLovelaceUTxODeposit ??
-        (version === "0.0.5" ? 3000000 : undefined);
-      const postContractsRequest = {
-        contract: "contract" in request ? request.contract : request.sourceId,
-        version: request.version,
-        metadata: request.metadata ?? {},
-        tags: request.tags ?? {},
-        minUTxODeposit,
-        roles: request.roles,
-        threadRoleName: request.threadRoleName,
-      };
-      const addressesAndCollaterals = {
-        changeAddress: request.changeAddress,
-        usedAddresses: request.usedAddresses ?? [],
-        collateralUTxOs: request.collateralUTxOs ?? [],
-      };
-      return unsafeTaskEither(
-        Contracts.postViaAxios(axiosInstance)(
-          postContractsRequest,
-          addressesAndCollaterals,
-          request.stakeAddress
-        )
-      );
-    },
-    createContractSources({ main, bundle }) {
-      return Sources.createContractSources(axiosInstance)(main, bundle);
-    },
-    getContractSourceById(request) {
-      return Sources.getContractSourceById(axiosInstance)(request);
-    },
-    getContractSourceAdjacency(request) {
-      return Sources.getContractSourceAdjacency(axiosInstance)(request);
-    },
-    getContractSourceClosure(request) {
-      return Sources.getContractSourceClosure(axiosInstance)(request);
-    },
-    getNextStepsForContract(request) {
-      return Next.getNextStepsForContract(axiosInstance)(request);
-    },
-    submitContract(contractId, txEnvelope) {
-      return submitContractViaAxios(axiosInstance)(contractId, txEnvelope);
-    },
-    getTransactionsForContract(contractId, range) {
-      return unsafeTaskEither(
-        Transactions.getHeadersByRangeViaAxios(axiosInstance)(contractId, range)
-      );
-    },
-    submitContractTransaction(
-      contractId,
-      transactionId,
-      hexTransactionWitnessSet
-    ) {
-      return unsafeTaskEither(
-        Transaction.putViaAxios(axiosInstance)(
-          contractId,
-          transactionId,
-          hexTransactionWitnessSet
-        )
-      );
-    },
-    getContractTransactionById(contractId, txId) {
-      return unsafeTaskEither(
-        Transaction.getViaAxios(axiosInstance)(contractId, txId)
-      );
-    },
-    withdrawPayouts({ payoutIds, changeAddress, ...request }) {
-      return unsafeTaskEither(
-        Withdrawals.postViaAxios(axiosInstance)(payoutIds, {
-          changeAddress,
-          usedAddresses: request.usedAddresses ?? [],
-          collateralUTxOs: request.collateralUTxOs ?? [],
-        })
-      );
-    },
-    async getWithdrawalById(withdrawalId) {
-      const { block, ...response } = await unsafeTaskEither(
-        Withdrawal.getViaAxios(axiosInstance)(withdrawalId)
-      );
-      return { ...response, block: O.toUndefined(block) };
-    },
-    getWithdrawals(request) {
-      return unsafeTaskEither(
-        Withdrawals.getHeadersByRangeViaAxios(axiosInstance)(request)
-      );
-    },
-    applyInputsToContract({
-      contractId,
-      changeAddress,
-      invalidBefore,
-      invalidHereafter,
-      inputs,
-      ...request
-    }) {
-      return unsafeTaskEither(
-        Transactions.postViaAxios(axiosInstance)(
-          contractId,
-          {
-            invalidBefore,
-            invalidHereafter,
-            version: request.version ?? "v1",
+      return withDynamicTypeCheck(
+        request,
+        (x) => Contracts.BuildCreateContractTxRequestGuard.decode(x),
+        strict,
+        async (request) => {
+          const version = await runtimeVersion;
+          // NOTE: Runtime 0.0.5 requires an explicit minUTxODeposit, but 0.0.6 and forward allows that field as optional
+          //       and it will calculate the actual minimum required. We use the version of the runtime to determine
+          //       if we use a "safe" default that is bigger than needed.
+          const minUTxODeposit =
+            request.minimumLovelaceUTxODeposit ??
+            (version === "0.0.5" ? 3000000 : undefined);
+          const postContractsRequest = {
+            contract:
+              "contract" in request ? request.contract : request.sourceId,
+            version: request.version,
             metadata: request.metadata ?? {},
             tags: request.tags ?? {},
-            inputs,
-          },
-          {
-            changeAddress,
+            minUTxODeposit,
+            roles: request.roles,
+            threadRoleName: request.threadRoleName,
+          };
+          const addressesAndCollaterals = {
+            changeAddress: request.changeAddress,
             usedAddresses: request.usedAddresses ?? [],
             collateralUTxOs: request.collateralUTxOs ?? [],
-          }
-        )
+          };
+          return unsafeTaskEither(
+            Contracts.postViaAxios(axiosInstance)(
+              postContractsRequest,
+              addressesAndCollaterals,
+              request.stakeAddress
+            )
+          );
+        }
       );
     },
-    submitWithdrawal(withdrawalId, hexTransactionWitnessSet) {
-      return unsafeTaskEither(
-        Withdrawal.putViaAxios(axiosInstance)(
-          withdrawalId,
-          hexTransactionWitnessSet
-        )
+    createContractSources(request) {
+      return withDynamicTypeCheck(
+        request,
+        (x) => Sources.CreateContractSourcesRequestGuard.decode(x),
+        strict,
+        (request) => {
+          const {
+            bundle: { main, bundle },
+          } = request;
+          return Sources.createContractSources(axiosInstance)(main, bundle);
+        }
       );
     },
-    async getPayouts({ contractIds, roleTokens, range, status }) {
-      return await unsafeTaskEither(
-        Payouts.getHeadersByRangeViaAxios(axiosInstance)(range)(contractIds)(
-          roleTokens
-        )(O.fromNullable(status))
+    getContractSourceById(request) {
+      return withDynamicTypeCheck(
+        request,
+        (x) => Sources.GetContractBySourceIdRequestGuard.decode(x),
+        strict,
+        (request) => {
+          return Sources.getContractSourceById(axiosInstance)(request);
+        }
       );
     },
-    async getPayoutById({ payoutId }) {
-      const result = await unsafeTaskEither(
-        Payout.getViaAxios(axiosInstance)(payoutId)
+    getContractSourceAdjacency(request) {
+      return withDynamicTypeCheck(
+        request,
+        (x) => Sources.GetContractSourceAdjacencyRequestGuard.decode(x),
+        strict,
+        (request) => {
+          return Sources.getContractSourceAdjacency(axiosInstance)(request);
+        }
       );
-      return {
-        payoutId: result.payoutId,
-        contractId: result.contractId,
-        ...O.match(
-          () => ({}),
-          (withdrawalId) => ({ withdrawalId })
-        )(result.withdrawalId),
-        role: result.role,
-        payoutValidatorAddress: result.payoutValidatorAddress,
-        status: result.status,
-        assets: result.assets,
-      };
+    },
+    getContractSourceClosure(request) {
+      return withDynamicTypeCheck(
+        request,
+        (x) => Sources.GetContractSourceClosureRequestGuard.decode(x),
+        strict,
+        (request) => {
+          return Sources.getContractSourceClosure(axiosInstance)(request);
+        }
+      );
+    },
+    getNextStepsForContract(request) {
+      return withDynamicTypeCheck(
+        request,
+        (x) => Next.GetNextStepsForContractRequestGuard.decode(x),
+        strict,
+        (request) => {
+          return Next.getNextStepsForContract(axiosInstance)(request);
+        }
+      );
+    },
+    submitContract(request) {
+      return withDynamicTypeCheck(
+        request,
+        (x) => Contract.SubmitContractRequestGuard.decode(x),
+        strict,
+        (request) => {
+          const { contractId, txEnvelope } = request;
+          return Contract.submitContract(axiosInstance)(contractId, txEnvelope);
+        }
+      );
+    },
+    getTransactionsForContract(request) {
+      return withDynamicTypeCheck(
+        request,
+        (x) => Transactions.GetTransactionsForContractRequestGuard.decode(x),
+        strict,
+        (request) => {
+          const { contractId, range } = request;
+          return unsafeTaskEither(
+            Transactions.getHeadersByRangeViaAxios(axiosInstance)(
+              contractId,
+              range
+            )
+          );
+        }
+      );
+    },
+    submitContractTransaction(request) {
+      return withDynamicTypeCheck(
+        request,
+        (x) => Transaction.SubmitContractTransactionRequestGuard.decode(x),
+        strict,
+        (request) => {
+          const { contractId, transactionId, hexTransactionWitnessSet } =
+            request;
+          return unsafeTaskEither(
+            Transaction.putViaAxios(axiosInstance)(
+              contractId,
+              transactionId,
+              hexTransactionWitnessSet
+            )
+          );
+        }
+      );
+    },
+    getContractTransactionById(request) {
+      return withDynamicTypeCheck(
+        request,
+        (x) => Transaction.GetContractTransactionByIdRequestGuard.decode(x),
+        strict,
+        (request) => {
+          const { contractId, txId } = request;
+          return unsafeTaskEither(
+            Transaction.getViaAxios(axiosInstance)(contractId, txId)
+          );
+        }
+      );
+    },
+    withdrawPayouts(request) {
+      return withDynamicTypeCheck(
+        request,
+        (x) => Withdrawals.WithdrawPayoutsRequestGuard.decode(x),
+        strict,
+        (request) => {
+          const { payoutIds, changeAddress } = request;
+          return unsafeTaskEither(
+            Withdrawals.postViaAxios(axiosInstance)(payoutIds, {
+              changeAddress,
+              usedAddresses: request.usedAddresses ?? [],
+              collateralUTxOs: request.collateralUTxOs ?? [],
+            })
+          );
+        }
+      );
+    },
+    async getWithdrawalById(request) {
+      return withDynamicTypeCheck(
+        request,
+        (x) => Withdrawal.GetWithdrawalByIdRequestGuard.decode(x),
+        strict,
+        async (request) => {
+          const { withdrawalId } = request;
+          const { block, ...response } = await unsafeTaskEither(
+            Withdrawal.getViaAxios(axiosInstance)(withdrawalId)
+          );
+          return { ...response, block: O.toUndefined(block) };
+        }
+      );
+    },
+    getWithdrawals(request) {
+      return withDynamicTypeCheck(
+        request,
+        (x) => Withdrawals.GetWithdrawalsRequestGuard.decode(x),
+        strict,
+        (request) => {
+          return unsafeTaskEither(
+            Withdrawals.getHeadersByRangeViaAxios(axiosInstance)(request)
+          );
+        }
+      );
+    },
+    applyInputsToContract(request) {
+      return withDynamicTypeCheck(
+        request,
+        (x) => Transactions.ApplyInputsToContractRequestGuard.decode(x),
+        strict,
+        (request) => {
+          const {
+            contractId,
+            changeAddress,
+            invalidBefore,
+            invalidHereafter,
+            inputs,
+          } = request;
+          return unsafeTaskEither(
+            Transactions.postViaAxios(axiosInstance)(
+              contractId,
+              {
+                invalidBefore,
+                invalidHereafter,
+                version: request.version ?? "v1",
+                metadata: request.metadata ?? {},
+                tags: request.tags ?? {},
+                inputs,
+              },
+              {
+                changeAddress,
+                usedAddresses: request.usedAddresses ?? [],
+                collateralUTxOs: request.collateralUTxOs ?? [],
+              }
+            )
+          );
+        }
+      );
+    },
+    submitWithdrawal(request) {
+      return withDynamicTypeCheck(
+        request,
+        (x) => Withdrawal.SubmitWithdrawalRequestGuard.decode(x),
+        strict,
+        (request) => {
+          const { withdrawalId, hexTransactionWitnessSet } = request;
+          return unsafeTaskEither(
+            Withdrawal.putViaAxios(axiosInstance)(
+              withdrawalId,
+              hexTransactionWitnessSet
+            )
+          );
+        }
+      );
+    },
+    async getPayouts(request) {
+      return withDynamicTypeCheck(
+        request,
+        (x) => Payouts.GetPayoutsRequestGuard.decode(x),
+        strict,
+        async (request) => {
+          const { contractIds, roleTokens, range, status } = request;
+          return await unsafeTaskEither(
+            Payouts.getHeadersByRangeViaAxios(axiosInstance)(range)(
+              contractIds
+            )(roleTokens)(O.fromNullable(status))
+          );
+        }
+      );
+    },
+    async getPayoutById(request) {
+      return withDynamicTypeCheck(
+        request,
+        (x) => Payout.GetPayoutByIdRequestGuard.decode(x),
+        strict,
+        async (request) => {
+          const { payoutId } = request;
+          const result = await unsafeTaskEither(
+            Payout.getViaAxios(axiosInstance)(payoutId)
+          );
+          return {
+            payoutId: result.payoutId,
+            contractId: result.contractId,
+            ...O.match(
+              () => ({}),
+              (withdrawalId) => ({ withdrawalId })
+            )(result.withdrawalId),
+            role: result.role,
+            payoutValidatorAddress: result.payoutValidatorAddress,
+            status: result.status,
+            assets: result.assets,
+          };
+        }
+      );
     },
   };
 }

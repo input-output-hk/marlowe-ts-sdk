@@ -22,7 +22,9 @@ async function loadContract() {
   log("Loading contract");
   const contractId = document.getElementById("contract-id").value;
   const restClient = await H.getRestClient();
-  const paginatedTxs = await restClient.getTransactionsForContract(contractId);
+  const paginatedTxs = await restClient.getTransactionsForContract({
+    contractId,
+  });
   if (paginatedTxs.transactions.length !== 1) {
     log(
       "Expected 1 transaction for contract, got " +
@@ -33,10 +35,10 @@ async function loadContract() {
   }
   logJSON("txId", paginatedTxs.transactions[0].transactionId);
   const txId = paginatedTxs.transactions[0].transactionId;
-  const answerTx = await restClient.getContractTransactionById(
+  const answerTx = await restClient.getContractTransactionById({
     contractId,
-    txId
-  );
+    txId,
+  });
 
   const answers = await getAnswers(answerTx);
   logJSON("answers", answers);
