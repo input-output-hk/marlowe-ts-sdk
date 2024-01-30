@@ -54,4 +54,4 @@ export {
   stripContractBundleListAnnotations,
 } from "./bundle-list.js";
 export { ContractBundleMap } from "./bundle-map.js";
-export { bundleMapToList } from "./bundle-conversion.js";
+export { bundleMapToList, bundleListToMap } from "./bundle-conversion.js";
