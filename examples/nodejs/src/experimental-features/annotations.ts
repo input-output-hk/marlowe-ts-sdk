@@ -90,7 +90,7 @@ async function annotatedClosure<T>(
   );
 
   function getSourceContract(ref: Obj.Label) {
-    const sourceContractObject = sourceObjectMap.objects.get(ref);
+    const sourceContractObject = sourceObjectMap.objects[ref];
     if (typeof sourceContractObject === "undefined")
       throw new Error(`Cant find source for ${ref}`);
 

@@ -40,7 +40,6 @@ import {
 import arg from "arg";
 import { splitAddress } from "./experimental-features/metadata.js";
 import * as t from "io-ts/lib/index.js";
-import { mkAnnotatedContract } from "./experimental-features/annotated-bundle-map.js";
 import {
   AnnotatedGuard,
   mkSourceMap,
@@ -423,77 +422,39 @@ function mkDelayPayment(
 ): ContractBundleMap<DelayPaymentAnnotations> {
   return {
     main: "initial-deposit",
-    objects: new Map([
-      [
-        "release-funds",
-        {
-          type: "contract",
-          value: {
-            annotation: "WaitForRelease",
-            when: [],
-            timeout: datetoTimeout(scheme.releaseDeadline),
-            timeout_continuation: close("PaymentReleasedClose"),
-          },
+    objects: {
+      "release-funds": {
+        type: "contract",
+        value: {
+          annotation: "WaitForRelease",
+          when: [],
+          timeout: datetoTimeout(scheme.releaseDeadline),
+          timeout_continuation: close("PaymentReleasedClose"),
         },
-      ],
-      [
-        "initial-deposit",
-        {
-          type: "contract",
-          value: {
-            annotation: "initialDeposit",
-            when: [
-              {
-                case: {
-                  party: scheme.payFrom,
-                  deposits: scheme.amount,
-                  of_token: lovelace,
-                  into_account: scheme.payTo,
-                },
-                then: {
-                  ref: "release-funds",
-                },
-              },
-            ],
-            timeout: datetoTimeout(scheme.depositDeadline),
-            timeout_continuation: close("PaymentMissedClose"),
-          },
-        },
-      ],
-    ]),
-  };
-}
-
-function mkDelayPaymentDeprecate(
-  input: DelayPaymentScheme
-): ContractBundleMap<DelayPaymentAnnotations> {
-  return mkAnnotatedContract<DelayPaymentAnnotations>(({ when, close }) => {
-    const initialDeposit = (cont: ContractBundleMap<DelayPaymentAnnotations>) =>
-      when({
-        annotation: "initialDeposit",
-        when: [
-          [
+      },
+      "initial-deposit": {
+        type: "contract",
+        value: {
+          annotation: "initialDeposit",
+          when: [
             {
-              party: input.payFrom,
-              deposits: input.amount,
-              of_token: lovelace,
-              into_account: input.payTo,
+              case: {
+                party: scheme.payFrom,
+                deposits: scheme.amount,
+                of_token: lovelace,
+                into_account: scheme.payTo,
+              },
+              then: {
+                ref: "release-funds",
+              },
             },
-            cont,
           ],
-        ],
-        timeout: datetoTimeout(input.depositDeadline),
-        timeout_continuation: close("PaymentMissedClose"),
-      });
-    const waitForRelease = when({
-      annotation: "WaitForRelease",
-      when: [],
-      timeout: datetoTimeout(input.releaseDeadline),
-      timeout_continuation: close("PaymentReleasedClose"),
-    });
-
-    return initialDeposit(waitForRelease);
-  });
+          timeout: datetoTimeout(scheme.depositDeadline),
+          timeout_continuation: close("PaymentMissedClose"),
+        },
+      },
+    },
+  };
 }
 // #endregion
 

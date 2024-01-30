@@ -213,7 +213,7 @@ export function bundleMapToList<A>(
   const visited = new Set<Label>();
 
   function goRef(label: Label, type: ObjectTypes, parents: Label[]) {
-    const obj = contractBundleMap.objects.get(label);
+    const obj = contractBundleMap.objects[label];
     if (!obj) {
       throw new MissingLabelError(label);
     }
@@ -261,14 +261,14 @@ export function bundleMapToList<A>(
 export function bundleListToMap<A>(
   contractBundleList: ContractBundleList<A>
 ): ContractBundleMap<A> {
-  const bundleMap = new Map<Label, BundleM.ObjectType<A>>();
+  const bundleMap = {} as BundleM.BundleMap<A>;
 
   function checkReference(
     label: Label,
     expectedType: ObjectTypes,
     tail: BundleList<A>
   ) {
-    const obj = bundleMap.get(label);
+    const obj = bundleMap[label];
     if (typeof obj === "undefined") {
       if (tail.some((obj) => obj.label === label)) {
         throw new LabelReferencedBeforeDefinedError(label);
@@ -432,7 +432,7 @@ export function bundleListToMap<A>(
 
     const head = bundle[0];
     const tail = bundle.slice(1);
-    if (bundleMap.has(head.label)) {
+    if (typeof bundleMap[head.label] !== "undefined") {
       throw new LabelRedefinedError(head.label);
     }
 
@@ -457,10 +457,10 @@ export function bundleListToMap<A>(
         break;
     }
 
-    bundleMap.set(head.label, {
+    bundleMap[head.label] = {
       type: head.type,
       value: head.value,
-    } as BundleM.ObjectType<A>);
+    } as BundleM.ObjectType<A>;
 
     goBundle(tail);
   }
