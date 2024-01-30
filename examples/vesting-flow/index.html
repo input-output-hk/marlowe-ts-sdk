@@ -140,21 +140,21 @@
       const contractIdsAndDetails = await Promise.all(
         contractIds.map((contractId) =>
           restClient
-            .getContractById(contractId)
+            .getContractById({ contractId })
             .then((details) => [contractId, details])
         )
       );
       const contractIdsAndDetailsAndInputHistory = await Promise.all(
         contractIdsAndDetails.map(([contractId, details]) =>
           restClient
-            .getTransactionsForContract(contractId)
+            .getTransactionsForContract({ contractId })
             .then((result) =>
               Promise.all(
                 result.transactions.map((transaction) =>
-                  restClient.getContractTransactionById(
+                  restClient.getContractTransactionById({
                     contractId,
-                    transaction.transactionId
-                  )
+                    txId: transaction.transactionId,
+                  })
                 )
               )
             )

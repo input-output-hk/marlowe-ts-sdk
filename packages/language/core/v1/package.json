@@ -54,6 +54,21 @@
       "import": "./dist/esm/semantics.js",
       "require": "./dist/bundled/cjs/semantics.cjs",
       "types": "./dist/esm/semantics.d.ts"
+    },
+    "./contract": {
+      "import": "./dist/esm/contract.js",
+      "require": "./dist/bundled/cjs/contract.cjs",
+      "types": "./dist/esm/contract.d.ts"
+    },
+    "./participants": {
+      "import": "./dist/esm/participants.js",
+      "require": "./dist/bundled/cjs/participants.cjs",
+      "types": "./dist/esm/participants.d.ts"
+    },
+    "./inputs": {
+      "import": "./dist/esm/inputs.js",
+      "require": "./dist/bundled/cjs/inputs.cjs",
+      "types": "./dist/esm/inputs.d.ts"
     }
   },
   "dependencies": {

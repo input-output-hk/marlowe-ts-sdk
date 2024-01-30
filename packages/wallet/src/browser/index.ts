@@ -1,7 +1,9 @@
 import { WalletAPI } from "../api.js";
 import { C } from "lucid-cardano";
+import * as t from "io-ts/lib/index.js";
 import * as Lucid from "lucid-cardano";
 import { hex, utf8 } from "@47ng/codec";
+import { assertGuardEqual, proxy } from "@marlowe.io/adapter/io-ts";
 // DISCUSSION: these should be imported from a cardano helpers library.
 //       They are independent of the runtime. Maybe the adaptor library?
 import {
@@ -21,6 +23,12 @@ import {
  * The SupportedWalletName is the list of Known and tested Browser Cardano Wallet Extensions supporting building/signing Marlowe Transactions.
  */
 export type SupportedWalletName = "nami" | "eternl" | "lace";
+
+export const SupportedWalletNameGuard: t.Type<SupportedWalletName> =
+  assertGuardEqual(
+    proxy<SupportedWalletName>(),
+    t.union([t.literal("nami"), t.literal("eternl"), t.literal("lace")])
+  );
 
 /**
  * The BroswerWalletExtension is an interface for interacting with a querying the list of Browser Cardano Wallet Extensions.

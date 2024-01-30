@@ -13,7 +13,6 @@ import * as TE from "fp-ts/lib/TaskEither.js";
 import * as O from "fp-ts/lib/Option.js";
 
 import { MarloweJSONCodec } from "@marlowe.io/adapter/codec";
-import { ContractBundle } from "@marlowe.io/marlowe-object";
 
 import * as Payouts from "./payout/endpoints/collection.js";
 import * as Payout from "./payout/endpoints/singleton.js";
@@ -27,23 +26,17 @@ import * as Transactions from "./contract/transaction/endpoints/collection.js";
 import * as Sources from "./contract/endpoints/sources.js";
 import * as Next from "./contract/next/endpoint.js";
 import { unsafeTaskEither } from "@marlowe.io/adapter/fp-ts";
-import {
-  ContractId,
-  TextEnvelope,
-  TxId,
-  HexTransactionWitnessSet,
-  WithdrawalId,
-} from "@marlowe.io/runtime-core";
-import { submitContractViaAxios } from "./contract/endpoints/singleton.js";
 import { ContractDetails } from "./contract/details.js";
 import { TransactionDetails } from "./contract/transaction/details.js";
-import { ItemRange } from "./pagination.js";
 import { RuntimeStatus, healthcheck } from "./runtime/status.js";
 import {
   CompatibleRuntimeVersionGuard,
   RuntimeVersion,
 } from "./runtime/version.js";
-import { Errors } from "io-ts";
+import {
+  InvalidTypeError,
+  strictDynamicTypeCheck,
+} from "@marlowe.io/adapter/io-ts";
 
 export {
   Page,
@@ -112,7 +105,7 @@ export interface RestClient {
    * @param bundle Contains a list of object types and a main contract reference
    */
   createContractSources(
-    bundle: ContractBundle
+    request: Sources.CreateContractSourcesRequest
   ): Promise<Sources.CreateContractSourcesResponse>;
 
   /**
@@ -165,10 +158,7 @@ export interface RestClient {
    * Submits a signed contract creation transaction
    * @see {@link https://docs.marlowe.iohk.io/api/submit-contract-to-chain | The backend documentation}
    */
-  submitContract(
-    contractId: ContractId,
-    txEnvelope: TextEnvelope
-  ): Promise<void>;
+  submitContract(request: Contract.SubmitContractRequest): Promise<void>;
 
   /**
    * Gets a paginated list of  {@link contract.TxHeader } for a given contract.
@@ -178,8 +168,7 @@ export interface RestClient {
   //             with an AxiosError 404, we could return a nullable value or wrap the error into a custom
   //             ContractNotFound error and specify it in the docs.
   getTransactionsForContract(
-    contractId: ContractId,
-    range?: ItemRange
+    request: Transactions.GetTransactionsForContractRequest
   ): Promise<Transactions.GetTransactionsForContractResponse>;
 
   /**
@@ -199,9 +188,7 @@ export interface RestClient {
    * @see {@link https://docs.marlowe.iohk.io/api/submit-contract-input-application | The backend documentation}
    */
   submitContractTransaction(
-    contractId: ContractId,
-    transactionId: TxId,
-    hexTransactionWitnessSet: HexTransactionWitnessSet
+    request: Transaction.SubmitContractTransactionRequest
   ): Promise<void>;
 
   /**
@@ -212,8 +199,7 @@ export interface RestClient {
    * @see {@link https://docs.marlowe.iohk.io/api/get-contract-transaction-by-id | The backend documentation}
    */
   getContractTransactionById(
-    contractId: ContractId,
-    txId: TxId
+    request: Transaction.GetContractTransactionByIdRequest
   ): Promise<TransactionDetails>;
   //   submitTransaction: Transaction.PUT; // - Jamie is it this one? https://docs.marlowe.iohk.io/api/create-transaction-by-id? If so, lets unify
 
@@ -237,23 +223,18 @@ export interface RestClient {
   ): Promise<Withdrawals.GetWithdrawalsResponse>;
 
   //   createWithdrawal: Withdrawals.POST; // - https://docs.marlowe.iohk.io/api/create-withdrawals
-  //   getWithdrawalById: Withdrawal.GET; // - https://docs.marlowe.iohk.io/api/get-withdrawal-by-id
   /**
    * Get published withdrawal transaction by ID.
    * @see {@link https://docs.marlowe.iohk.io/api/get-withdrawal-by-id | The backend documentation}
    */
   getWithdrawalById(
-    withdrawalId: WithdrawalId
+    request: Withdrawal.GetWithdrawalByIdRequest
   ): Promise<Withdrawal.GetWithdrawalByIdResponse>;
-  //   submitWithdrawal: Withdrawal.PUT; - is it this one? https://docs.marlowe.iohk.io/api/create-withdrawal? or the one for createWithdrawal?
   /**
    * Submit a signed transaction (generated with {@link @marlowe.io/runtime-rest-client!index.RestClient#withdrawPayouts} and signed with the {@link @marlowe.io/wallet!api.WalletAPI#signTx} procedure) that withdraws available payouts from a contract.
    * @see {@link https://docs.marlowe.iohk.io/api/submit-payout-withdrawal | The backend documentation}
    */
-  submitWithdrawal(
-    withdrawalId: WithdrawalId,
-    hexTransactionWitnessSet: HexTransactionWitnessSet
-  ): Promise<void>;
+  submitWithdrawal(request: Withdrawal.SubmitWithdrawalRequest): Promise<void>;
 
   /**
    * Get payouts to parties from role-based contracts.
@@ -272,24 +253,11 @@ export interface RestClient {
   ): Promise<Payout.GetPayoutByIdResponse>;
 }
 
-function mkRestClientArgumentGuard(
+function mkRestClientArgumentDynamicTypeCheck(
   baseURL: unknown,
   strict: boolean
 ): baseURL is string {
   return strict ? typeof baseURL === "string" : true;
-}
-
-function strictGuard(strict: unknown): strict is boolean {
-  return typeof strict === "boolean";
-}
-
-class InvalidArgumentError extends Error {
-  constructor(
-    public readonly errors: Errors,
-    message?: string
-  ) {
-    super(message);
-  }
 }
 
 /**
@@ -309,14 +277,14 @@ export function mkRestClient(
   baseURL: unknown,
   strict: unknown = true
 ): RestClient {
-  if (!strictGuard(strict)) {
-    throw new InvalidArgumentError(
+  if (!strictDynamicTypeCheck(strict)) {
+    throw new InvalidTypeError(
       [],
       `Invalid type for argument 'strict', expected boolean but got ${strict}`
     );
   }
-  if (!mkRestClientArgumentGuard(baseURL, strict)) {
-    throw new InvalidArgumentError(
+  if (!mkRestClientArgumentDynamicTypeCheck(baseURL, strict)) {
+    throw new InvalidTypeError(
       [],
       `Invalid type for argument 'baseURL', expected string but got ${baseURL}`
     );
@@ -347,12 +315,14 @@ export function mkRestClient(
     },
     getContracts(request) {
       if (strict) {
-        const result = Contracts.GetContractsRequest.decode(request);
+        const result = Contracts.GetContractsRequestGuard.decode(request);
         if (result._tag === "Left") {
-          throw new InvalidArgumentError(
+          throw new InvalidTypeError(
             result.left,
             `Invalid argument to getContracts(${request})`
           );
+        } else {
+          const test: typeof request = result.right;
         }
       }
       const range = request?.range;
@@ -371,15 +341,30 @@ export function mkRestClient(
       if (strict) {
         const result = Contract.GetContractByIdRequest.decode(request);
         if (result._tag === "Left") {
-          throw new InvalidArgumentError(
+          throw new InvalidTypeError(
             result.left,
             `Invalid argument to getContractById(${request})`
           );
+        } else {
+          const test: typeof request = result.right;
         }
       }
       return Contract.getContractById(axiosInstance, request.contractId);
     },
     async buildCreateContractTx(request) {
+      if (strict) {
+        const result =
+          Contracts.BuildCreateContractTxRequestGuard.decode(request);
+        if (result._tag === "Left") {
+          throw new InvalidTypeError(
+            result.left,
+            `Invalid argument to buildCreateContractTx(${request})`
+          );
+        } else {
+          const test: typeof request = result.right;
+        }
+      }
+
       const version = await runtimeVersion;
       // NOTE: Runtime 0.0.5 requires an explicit minUTxODeposit, but 0.0.6 and forward allows that field as optional
       //       and it will calculate the actual minimum required. We use the version of the runtime to determine
@@ -409,34 +394,130 @@ export function mkRestClient(
         )
       );
     },
-    createContractSources({ main, bundle }) {
+    createContractSources(request) {
+      if (strict) {
+        const result =
+          Sources.CreateContractSourcesRequestGuard.decode(request);
+        if (result._tag === "Left") {
+          throw new InvalidTypeError(
+            result.left,
+            `Invalid argument to createContractSources(${request})`
+          );
+        } else {
+          const test: typeof request = result.right;
+        }
+      }
+      const {
+        bundle: { main, bundle },
+      } = request;
       return Sources.createContractSources(axiosInstance)(main, bundle);
     },
     getContractSourceById(request) {
+      if (strict) {
+        const result =
+          Sources.GetContractBySourceIdRequestGuard.decode(request);
+        if (result._tag === "Left") {
+          throw new InvalidTypeError(
+            result.left,
+            `Invalid argument to getContractSourceById(${request})`
+          );
+        } else {
+          const test: typeof request = result.right;
+        }
+      }
       return Sources.getContractSourceById(axiosInstance)(request);
     },
     getContractSourceAdjacency(request) {
+      if (strict) {
+        const result =
+          Sources.GetContractSourceAdjacencyRequestGuard.decode(request);
+        if (result._tag === "Left") {
+          throw new InvalidTypeError(
+            result.left,
+            `Invalid argument to getContractSourceAdjacency(${request})`
+          );
+        } else {
+          const test: typeof request = result.right;
+        }
+      }
       return Sources.getContractSourceAdjacency(axiosInstance)(request);
     },
     getContractSourceClosure(request) {
+      if (strict) {
+        const result =
+          Sources.GetContractSourceClosureRequestGuard.decode(request);
+        if (result._tag === "Left") {
+          throw new InvalidTypeError(
+            result.left,
+            `Invalid argument to getContractSourceClosure(${request})`
+          );
+        } else {
+          const test: typeof request = result.right;
+        }
+      }
       return Sources.getContractSourceClosure(axiosInstance)(request);
     },
     getNextStepsForContract(request) {
+      if (strict) {
+        const result = Next.GetNextStepsForContractRequestGuard.decode(request);
+        if (result._tag === "Left") {
+          throw new InvalidTypeError(
+            result.left,
+            `Invalid argument to getNextStepsForContract(${request})`
+          );
+        } else {
+          const test: typeof request = result.right;
+        }
+      }
       return Next.getNextStepsForContract(axiosInstance)(request);
     },
-    submitContract(contractId, txEnvelope) {
-      return submitContractViaAxios(axiosInstance)(contractId, txEnvelope);
+    submitContract(request) {
+      if (strict) {
+        const result = Contract.SubmitContractRequestGuard.decode(request);
+        if (result._tag === "Left") {
+          throw new InvalidTypeError(
+            result.left,
+            `Invalid argument to submitContract(${request})`
+          );
+        } else {
+          const test: typeof request = result.right;
+        }
+      }
+      const { contractId, txEnvelope } = request;
+      return Contract.submitContract(axiosInstance)(contractId, txEnvelope);
     },
-    getTransactionsForContract(contractId, range) {
+    getTransactionsForContract(request) {
+      if (strict) {
+        const result =
+          Transactions.GetTransactionsForContractRequestGuard.decode(request);
+        if (result._tag === "Left") {
+          throw new InvalidTypeError(
+            result.left,
+            `Invalid argument to getTransactionsForContract(${request})`
+          );
+        } else {
+          const test: typeof request = result.right;
+        }
+      }
+      const { contractId, range } = request;
       return unsafeTaskEither(
         Transactions.getHeadersByRangeViaAxios(axiosInstance)(contractId, range)
       );
     },
-    submitContractTransaction(
-      contractId,
-      transactionId,
-      hexTransactionWitnessSet
-    ) {
+    submitContractTransaction(request) {
+      if (strict) {
+        const result =
+          Transaction.SubmitContractTransactionRequestGuard.decode(request);
+        if (result._tag === "Left") {
+          throw new InvalidTypeError(
+            result.left,
+            `Invalid argument to submitContractTransaction(${request})`
+          );
+        } else {
+          const test: typeof request = result.right;
+        }
+      }
+      const { contractId, transactionId, hexTransactionWitnessSet } = request;
       return unsafeTaskEither(
         Transaction.putViaAxios(axiosInstance)(
           contractId,
@@ -445,12 +526,37 @@ export function mkRestClient(
         )
       );
     },
-    getContractTransactionById(contractId, txId) {
+    getContractTransactionById(request) {
+      if (strict) {
+        const result =
+          Transaction.GetContractTransactionByIdRequestGuard.decode(request);
+        if (result._tag === "Left") {
+          throw new InvalidTypeError(
+            result.left,
+            `Invalid argument to getContractTransactionById(${request})`
+          );
+        } else {
+          const test: typeof request = result.right;
+        }
+      }
+      const { contractId, txId } = request;
       return unsafeTaskEither(
         Transaction.getViaAxios(axiosInstance)(contractId, txId)
       );
     },
-    withdrawPayouts({ payoutIds, changeAddress, ...request }) {
+    withdrawPayouts(request) {
+      if (strict) {
+        const result = Withdrawals.WithdrawPayoutsRequestGuard.decode(request);
+        if (result._tag === "Left") {
+          throw new InvalidTypeError(
+            result.left,
+            `Invalid argument to withdrawPayouts(${request})`
+          );
+        } else {
+          const test: typeof request = result.right;
+        }
+      }
+      const { payoutIds, changeAddress } = request;
       return unsafeTaskEither(
         Withdrawals.postViaAxios(axiosInstance)(payoutIds, {
           changeAddress,
@@ -459,25 +565,60 @@ export function mkRestClient(
         })
       );
     },
-    async getWithdrawalById(withdrawalId) {
+    async getWithdrawalById(request) {
+      if (strict) {
+        const result = Withdrawal.GetWithdrawalByIdRequestGuard.decode(request);
+        if (result._tag === "Left") {
+          throw new InvalidTypeError(
+            result.left,
+            `Invalid argument to getWithdrawalById(${request})`
+          );
+        } else {
+          const test: typeof request = result.right;
+        }
+      }
+      const { withdrawalId } = request;
       const { block, ...response } = await unsafeTaskEither(
         Withdrawal.getViaAxios(axiosInstance)(withdrawalId)
       );
       return { ...response, block: O.toUndefined(block) };
     },
     getWithdrawals(request) {
+      if (strict) {
+        const result = Withdrawals.GetWithdrawalsRequestGuard.decode(request);
+        if (result._tag === "Left") {
+          throw new InvalidTypeError(
+            result.left,
+            `Invalid argument to getWithdrawals(${request})`
+          );
+        } else {
+          const test: typeof request = result.right;
+        }
+      }
       return unsafeTaskEither(
         Withdrawals.getHeadersByRangeViaAxios(axiosInstance)(request)
       );
     },
-    applyInputsToContract({
-      contractId,
-      changeAddress,
-      invalidBefore,
-      invalidHereafter,
-      inputs,
-      ...request
-    }) {
+    applyInputsToContract(request) {
+      if (strict) {
+        const result =
+          Transactions.ApplyInputsToContractRequestGuard.decode(request);
+        if (result._tag === "Left") {
+          throw new InvalidTypeError(
+            result.left,
+            `Invalid argument to applyInputsToContract(${request})`
+          );
+        } else {
+          const test: typeof request = result.right;
+        }
+      }
+      const {
+        contractId,
+        changeAddress,
+        invalidBefore,
+        invalidHereafter,
+        inputs,
+      } = request;
       return unsafeTaskEither(
         Transactions.postViaAxios(axiosInstance)(
           contractId,
@@ -497,7 +638,19 @@ export function mkRestClient(
         )
       );
     },
-    submitWithdrawal(withdrawalId, hexTransactionWitnessSet) {
+    submitWithdrawal(request) {
+      if (strict) {
+        const result = Withdrawal.SubmitWithdrawalRequestGuard.decode(request);
+        if (result._tag === "Left") {
+          throw new InvalidTypeError(
+            result.left,
+            `Invalid argument to submitWithdrawal(${request})`
+          );
+        } else {
+          const test: typeof request = result.right;
+        }
+      }
+      const { withdrawalId, hexTransactionWitnessSet } = request;
       return unsafeTaskEither(
         Withdrawal.putViaAxios(axiosInstance)(
           withdrawalId,
@@ -505,14 +658,38 @@ export function mkRestClient(
         )
       );
     },
-    async getPayouts({ contractIds, roleTokens, range, status }) {
+    async getPayouts(request) {
+      if (strict) {
+        const result = Payouts.GetPayoutsRequestGuard.decode(request);
+        if (result._tag === "Left") {
+          throw new InvalidTypeError(
+            result.left,
+            `Invalid argument to getPayouts(${request})`
+          );
+        } else {
+          const test: typeof request = result.right;
+        }
+      }
+      const { contractIds, roleTokens, range, status } = request;
       return await unsafeTaskEither(
         Payouts.getHeadersByRangeViaAxios(axiosInstance)(range)(contractIds)(
           roleTokens
         )(O.fromNullable(status))
       );
     },
-    async getPayoutById({ payoutId }) {
+    async getPayoutById(request) {
+      if (strict) {
+        const result = Payout.GetPayoutByIdRequestGuard.decode(request);
+        if (result._tag === "Left") {
+          throw new InvalidTypeError(
+            result.left,
+            `Invalid argument to getPayoutById(${request})`
+          );
+        } else {
+          const test: typeof request = result.right;
+        }
+      }
+      const { payoutId } = request;
       const result = await unsafeTaskEither(
         Payout.getViaAxios(axiosInstance)(payoutId)
       );

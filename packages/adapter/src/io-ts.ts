@@ -1,6 +1,7 @@
 import * as t from "io-ts/lib/index.js";
 import { withValidate } from "io-ts-types";
 import { MarloweJSON } from "./codec.js";
+import { Errors } from "io-ts/lib/index.js";
 /**
  * In the TS-SDK we duplicate the type and guard definition for each type as the
  * inferred type from io-ts does not produce a good type export when used with
@@ -89,5 +90,22 @@ export function expectType<T>(guard: t.Type<T>, aValue: unknown): T {
     throw `Expected value from type ${
       guard.name
     } but got ${MarloweJSON.stringify(aValue, null, 4)} `;
+  }
+}
+
+/**
+ * A mechanism for validating the type of a strict in a dynamically type context.
+ * @param strict Whether to perform runtime checking to provide helpful error messages. May have a slight negative performance impact.
+ */
+export function strictDynamicTypeCheck(strict: unknown): strict is boolean {
+  return typeof strict === "boolean";
+}
+
+export class InvalidTypeError extends Error {
+  constructor(
+    public readonly errors: Errors,
+    message?: string
+  ) {
+    super(message);
   }
 }

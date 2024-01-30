@@ -22,6 +22,11 @@ import {
   mkFPTSRestClient,
   mkRestClient,
 } from "@marlowe.io/runtime-rest-client";
+import { RuntimeLifecycle } from "./api.js";
+import {
+  InvalidTypeError,
+  strictDynamicTypeCheck,
+} from "@marlowe.io/adapter/io-ts";
 
 export * as Browser from "./browser/index.js";
 
@@ -41,12 +46,32 @@ export interface RuntimeLifecycleOptions {
 
 /**
  * Creates an instance of RuntimeLifecycle.
+ * @param options
  */
-export function mkRuntimeLifecycle({
-  runtimeURL,
-  wallet,
-}: RuntimeLifecycleOptions) {
+export function mkRuntimeLifecycle(
+  options: RuntimeLifecycleOptions
+): RuntimeLifecycle;
+/**
+ * Creates an instance of RuntimeLifecycle.
+ * @param options
+ * @param strict Whether to perform runtime checking to provide helpful error messages. May have a slight negative performance impact. Default value is `true`.
+ */
+export function mkRuntimeLifecycle(
+  options: RuntimeLifecycleOptions,
+  strict: boolean
+): RuntimeLifecycle;
+export function mkRuntimeLifecycle(
+  options: RuntimeLifecycleOptions,
+  strict: unknown = true
+) {
+  if (!strictDynamicTypeCheck(strict)) {
+    throw new InvalidTypeError(
+      [],
+      `Invalid type for argument 'strict', expected boolean but got ${strict}`
+    );
+  }
+  const { runtimeURL, wallet } = options;
   const deprecatedRestAPI = mkFPTSRestClient(runtimeURL);
-  const restClient = mkRestClient(runtimeURL);
+  const restClient = mkRestClient(runtimeURL, strict);
   return Generic.mkRuntimeLifecycle(deprecatedRestAPI, restClient, wallet);
 }

@@ -48,18 +48,44 @@ import {
   Page,
   PageGuard,
 } from "../../pagination.js";
+import { ContractGuard } from "@marlowe.io/language-core-v1/contract";
+import { RoleNameGuard } from "@marlowe.io/language-core-v1/participants";
 
 /**
  * Request options for the {@link index.RestClient#getContracts | Get contracts } endpoint
  * @category Endpoint : Get Contracts
  */
-export type GetContractsRequest = t.TypeOf<typeof GetContractsRequest>;
-export const GetContractsRequest = t.type({
-  range: t.union([ItemRangeGuard, t.undefined]),
-  tags: t.union([t.array(Tag), t.undefined]),
-  partyAddresses: t.union([t.array(AddressBech32Guard), t.undefined]),
-  partyRoles: t.union([t.array(AssetId), t.undefined]),
-});
+export interface GetContractsRequest {
+  /**
+   * Optional pagination request. Note that when you call {@link index.RestClient#getContracts | Get contracts }
+   * the response includes the next and previous range headers.
+   */
+  range?: ItemRange;
+  /**
+   * Optional tags to filter the contracts by.
+   */
+  // QUESTION: @Jamie or @N.H, a tag is marked as string, but when creating a contract you need to pass a key and a value, what is this
+  //           string supposed to be? I have some contracts with tag "{SurveyContract: CryptoPall2023}" that I don't know how to search for.
+  tags?: Tag[];
+  /**
+   * Optional partyAddresses to filter the contracts by.
+   */
+  partyAddresses?: AddressBech32[];
+  /**
+   * Optional partyRoles to filter the contracts by.
+   */
+  partyRoles?: AssetId[];
+}
+
+export const GetContractsRequestGuard = assertGuardEqual(
+  proxy<GetContractsRequest>(),
+  t.partial({
+    range: ItemRangeGuard,
+    tags: t.array(Tag),
+    partyAddresses: t.array(AddressBech32Guard),
+    partyRoles: t.array(AssetId),
+  })
+);
 
 export type GETHeadersByRange = (
   range?: ItemRange
@@ -186,6 +212,31 @@ export type BuildCreateContractTxRequestWithContract = {
   contract: Contract;
 } & BuildCreateContractTxRequestOptions;
 
+export const BuildCreateContractTxRequestOptionsGuard = assertGuardEqual(
+  proxy<BuildCreateContractTxRequestOptions>(),
+  t.intersection([
+    t.type({ changeAddress: AddressBech32Guard, version: MarloweVersion }),
+    t.partial({
+      roles: RolesConfigurationGuard,
+      threadRoleName: RoleNameGuard,
+      minimumLovelaceUTxODeposit: t.number,
+      metadata: Metadata,
+      tags: TagsGuard,
+      collateralUTxOs: t.array(TxOutRef),
+      usedAddresses: t.array(AddressBech32Guard),
+      stakeAddress: StakeAddressBech32,
+    }),
+  ])
+);
+
+export const BuildCreateContractTxRequestWithContractGuard = assertGuardEqual(
+  proxy<BuildCreateContractTxRequestWithContract>(),
+  t.intersection([
+    t.type({ contract: ContractGuard }),
+    BuildCreateContractTxRequestOptionsGuard,
+  ])
+);
+
 /**
  * Request for the {@link index.RestClient#buildCreateContractTx | Build Create Contract Tx } endpoint using a contract
  * @category Endpoint : Build Create Contract Tx
@@ -197,6 +248,14 @@ export type BuildCreateContractTxRequestWithSourceId = {
    */
   sourceId: SourceId;
 } & BuildCreateContractTxRequestOptions;
+
+export const BuildCreateContractTxRequestWithSourceIdGuard = assertGuardEqual(
+  proxy<BuildCreateContractTxRequestWithSourceId>(),
+  t.intersection([
+    t.type({ sourceId: SourceIdGuard }),
+    BuildCreateContractTxRequestOptionsGuard,
+  ])
+);
 
 /**
  * Request options for the {@link index.RestClient#buildCreateContractTx | Build Create Contract Tx } endpoint
@@ -240,6 +299,14 @@ export type BuildCreateContractTxRequestWithSourceId = {
 export type BuildCreateContractTxRequest =
   | BuildCreateContractTxRequestWithContract
   | BuildCreateContractTxRequestWithSourceId;
+
+export const BuildCreateContractTxRequestGuard = assertGuardEqual(
+  proxy<BuildCreateContractTxRequest>(),
+  t.union([
+    BuildCreateContractTxRequestWithContractGuard,
+    BuildCreateContractTxRequestWithSourceIdGuard,
+  ])
+);
 
 /**
  * Request options for the {@link index.RestClient#buildCreateContractTx | Build Create Contract Tx } endpoint

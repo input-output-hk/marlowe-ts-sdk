@@ -34,6 +34,11 @@
       "import": "./dist/esm/guards.js",
       "require": "./dist/bundled/cjs/guards.cjs",
       "types": "./dist/esm/guards.d.ts"
+    },
+    "./object": {
+      "import": "./dist/esm/object.js",
+      "require": "./dist/bundled/cjs/object.cjs",
+      "types": "./dist/esm/object.d.ts"
     }
   },
   "dependencies": {

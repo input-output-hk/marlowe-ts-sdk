@@ -4,12 +4,15 @@ import * as TE from "fp-ts/lib/TaskEither.js";
 import { pipe } from "fp-ts/lib/function.js";
 import * as HTTP from "@marlowe.io/adapter/http";
 import { formatValidationErrors } from "jsonbigint-io-ts-reporters";
-import { ContractId } from "@marlowe.io/runtime-core";
+import { ContractId, ContractIdGuard } from "@marlowe.io/runtime-core";
 import { Environment, Party } from "@marlowe.io/language-core-v1";
 import { Next } from "@marlowe.io/language-core-v1/next";
 import { stringify } from "qs";
 import { DecodingError } from "@marlowe.io/adapter/codec";
 import { posixTimeToIso8601 } from "@marlowe.io/adapter/time";
+import { assertGuardEqual, proxy } from "@marlowe.io/adapter/io-ts";
+import * as t from "io-ts/lib/index.js";
+import { PartyGuard } from "@marlowe.io/language-core-v1/participants";
 
 export type GET = (
   contractId: ContractId
@@ -47,6 +50,20 @@ export interface GetNextStepsForContractRequest {
   validityEnd: bigint;
   parties?: Party[];
 }
+
+export const GetNextStepsForContractRequestGuard = assertGuardEqual(
+  proxy<GetNextStepsForContractRequest>(),
+  t.intersection([
+    t.type({
+      contractId: ContractIdGuard,
+      validityStart: t.bigint,
+      validityEnd: t.bigint,
+    }),
+    t.partial({
+      parties: t.array(PartyGuard),
+    }),
+  ])
+);
 
 export type GetNextStepsForContractResponse = Next;
 

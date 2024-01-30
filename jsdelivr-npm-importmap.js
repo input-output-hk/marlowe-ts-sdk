@@ -24,10 +24,16 @@ const importMap = {
       "https://cdn.jsdelivr.net/npm/@marlowe.io/adapter@0.3.0-beta/dist/bundled/esm/time.js",
     "@marlowe.io/language-core-v1":
       "https://cdn.jsdelivr.net/npm/@marlowe.io/language-core-v1@0.3.0-beta/dist/bundled/esm/language-core-v1.js",
+    "@marlowe.io/language-core-v1/contract":
+      "https://cdn.jsdelivr.net/npm/@marlowe.io/language-core-v1@0.3.0-beta/dist/bundled/esm/contract.js",
     "@marlowe.io/language-core-v1/guards":
       "https://cdn.jsdelivr.net/npm/@marlowe.io/language-core-v1@0.3.0-beta/dist/bundled/esm/guards.js",
+    "@marlowe.io/language-core-v1/inputs":
+      "https://cdn.jsdelivr.net/npm/@marlowe.io/language-core-v1@0.3.0-beta/dist/bundled/esm/inputs.js",
     "@marlowe.io/language-core-v1/next":
       "https://cdn.jsdelivr.net/npm/@marlowe.io/language-core-v1@0.3.0-beta/dist/bundled/esm/next.js",
+    "@marlowe.io/language-core-v1/participants":
+      "https://cdn.jsdelivr.net/npm/@marlowe.io/language-core-v1@0.3.0-beta/dist/bundled/esm/participants.js",
     "@marlowe.io/language-core-v1/playground-v1":
       "https://cdn.jsdelivr.net/npm/@marlowe.io/language-core-v1@0.3.0-beta/dist/bundled/esm/playground-v1.js",
     "@marlowe.io/language-core-v1/semantics":
@@ -76,6 +82,8 @@ const importMap = {
       "https://cdn.jsdelivr.net/npm/@marlowe.io/marlowe-object@0.3.0-beta/dist/bundled/esm/marlowe-object.js",
     "@marlowe.io/marlowe-object/guards":
       "https://cdn.jsdelivr.net/npm/@marlowe.io/marlowe-object@0.3.0-beta/dist/bundled/esm/guards.js",
+    "@marlowe.io/marlowe-object/object":
+      "https://cdn.jsdelivr.net/npm/@marlowe.io/marlowe-object@0.3.0-beta/dist/bundled/esm/object.js",
     "@marlowe.io/testing-kit":
       "https://cdn.jsdelivr.net/npm/@marlowe.io/testing-kit@0.3.0-beta/dist/bundled/esm/testing-kit.js",
     "lucid-cardano": "https://unpkg.com/lucid-cardano@0.10.7/web/mod.js",
