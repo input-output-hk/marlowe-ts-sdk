@@ -81,7 +81,7 @@ export const GetContractsRequestGuard = assertGuardEqual(
     tags: t.array(Tag),
     partyAddresses: t.array(AddressBech32Guard),
     partyRoles: t.array(AssetId),
-  })
+  }) as t.Type<GetContractsRequest>
 );
 
 export type GETHeadersByRange = (

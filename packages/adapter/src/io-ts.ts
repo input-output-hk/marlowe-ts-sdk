@@ -104,6 +104,7 @@ export function strictDynamicTypeCheck(strict: unknown): strict is boolean {
 export class InvalidTypeError extends Error {
   constructor(
     public readonly errors: Errors,
+    public readonly value: any,
     message?: string
   ) {
     super(message);

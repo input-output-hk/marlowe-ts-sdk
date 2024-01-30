@@ -11,6 +11,7 @@
 import axios from "axios";
 import * as TE from "fp-ts/lib/TaskEither.js";
 import * as O from "fp-ts/lib/Option.js";
+import * as t from "io-ts/lib/index.js";
 
 import { MarloweJSONCodec } from "@marlowe.io/adapter/codec";
 
@@ -37,6 +38,7 @@ import {
   InvalidTypeError,
   strictDynamicTypeCheck,
 } from "@marlowe.io/adapter/io-ts";
+import { BuildCreateContractTxRequest } from "./contract/endpoints/collection.js";
 
 export {
   Page,
@@ -260,6 +262,20 @@ function mkRestClientArgumentDynamicTypeCheck(
   return strict ? typeof baseURL === "string" : true;
 }
 
+function withDynamicTypeCheck<T, G>(
+  arg: any,
+  decode: (x: any) => t.Validation<T>,
+  strict: boolean,
+  cont: (x: T) => G
+): G {
+  if (strict) {
+    const result = decode(arg);
+    if (result._tag === "Left")
+      throw new InvalidTypeError(result.left, arg, "Invalid argument");
+  }
+  return cont(arg);
+}
+
 /**
  * Instantiates a REST client for the Marlowe API.
  * @param baseURL An http url pointing to the Marlowe API.
@@ -314,397 +330,316 @@ export function mkRestClient(
       return healthcheck(axiosInstance).then((status) => status.version);
     },
     getContracts(request) {
-      if (strict) {
-        const result = Contracts.GetContractsRequestGuard.decode(request);
-        if (result._tag === "Left") {
-          throw new InvalidTypeError(
-            result.left,
-            `Invalid argument to getContracts(${request})`
+      return withDynamicTypeCheck(
+        request,
+        (x) => Contracts.GetContractsRequestGuard.decode(x),
+        strict,
+        (request) => {
+          const range = request?.range;
+          const tags = request?.tags ?? [];
+          const partyAddresses = request?.partyAddresses ?? [];
+          const partyRoles = request?.partyRoles ?? [];
+          return unsafeTaskEither(
+            Contracts.getHeadersByRangeViaAxios(axiosInstance)(range)({
+              tags,
+              partyAddresses,
+              partyRoles,
+            })
           );
-        } else {
-          const test: typeof request = result.right;
         }
-      }
-      const range = request?.range;
-      const tags = request?.tags ?? [];
-      const partyAddresses = request?.partyAddresses ?? [];
-      const partyRoles = request?.partyRoles ?? [];
-      return unsafeTaskEither(
-        Contracts.getHeadersByRangeViaAxios(axiosInstance)(range)({
-          tags,
-          partyAddresses,
-          partyRoles,
-        })
       );
     },
     getContractById(request) {
-      if (strict) {
-        const result = Contract.GetContractByIdRequest.decode(request);
-        if (result._tag === "Left") {
-          throw new InvalidTypeError(
-            result.left,
-            `Invalid argument to getContractById(${request})`
-          );
-        } else {
-          const test: typeof request = result.right;
+      return withDynamicTypeCheck(
+        request,
+        (x) => Contract.GetContractByIdRequest.decode(x),
+        strict,
+        (request) => {
+          return Contract.getContractById(axiosInstance, request.contractId);
         }
-      }
-      return Contract.getContractById(axiosInstance, request.contractId);
+      );
     },
     async buildCreateContractTx(request) {
-      if (strict) {
-        const result =
-          Contracts.BuildCreateContractTxRequestGuard.decode(request);
-        if (result._tag === "Left") {
-          throw new InvalidTypeError(
-            result.left,
-            `Invalid argument to buildCreateContractTx(${request})`
+      return withDynamicTypeCheck(
+        request,
+        (x) => Contracts.BuildCreateContractTxRequestGuard.decode(x),
+        strict,
+        async (request) => {
+          const version = await runtimeVersion;
+          // NOTE: Runtime 0.0.5 requires an explicit minUTxODeposit, but 0.0.6 and forward allows that field as optional
+          //       and it will calculate the actual minimum required. We use the version of the runtime to determine
+          //       if we use a "safe" default that is bigger than needed.
+          const minUTxODeposit =
+            request.minimumLovelaceUTxODeposit ??
+            (version === "0.0.5" ? 3000000 : undefined);
+          const postContractsRequest = {
+            contract:
+              "contract" in request ? request.contract : request.sourceId,
+            version: request.version,
+            metadata: request.metadata ?? {},
+            tags: request.tags ?? {},
+            minUTxODeposit,
+            roles: request.roles,
+            threadRoleName: request.threadRoleName,
+          };
+          const addressesAndCollaterals = {
+            changeAddress: request.changeAddress,
+            usedAddresses: request.usedAddresses ?? [],
+            collateralUTxOs: request.collateralUTxOs ?? [],
+          };
+          return unsafeTaskEither(
+            Contracts.postViaAxios(axiosInstance)(
+              postContractsRequest,
+              addressesAndCollaterals,
+              request.stakeAddress
+            )
           );
-        } else {
-          const test: typeof request = result.right;
         }
-      }
-
-      const version = await runtimeVersion;
-      // NOTE: Runtime 0.0.5 requires an explicit minUTxODeposit, but 0.0.6 and forward allows that field as optional
-      //       and it will calculate the actual minimum required. We use the version of the runtime to determine
-      //       if we use a "safe" default that is bigger than needed.
-      const minUTxODeposit =
-        request.minimumLovelaceUTxODeposit ??
-        (version === "0.0.5" ? 3000000 : undefined);
-      const postContractsRequest = {
-        contract: "contract" in request ? request.contract : request.sourceId,
-        version: request.version,
-        metadata: request.metadata ?? {},
-        tags: request.tags ?? {},
-        minUTxODeposit,
-        roles: request.roles,
-        threadRoleName: request.threadRoleName,
-      };
-      const addressesAndCollaterals = {
-        changeAddress: request.changeAddress,
-        usedAddresses: request.usedAddresses ?? [],
-        collateralUTxOs: request.collateralUTxOs ?? [],
-      };
-      return unsafeTaskEither(
-        Contracts.postViaAxios(axiosInstance)(
-          postContractsRequest,
-          addressesAndCollaterals,
-          request.stakeAddress
-        )
       );
     },
     createContractSources(request) {
-      if (strict) {
-        const result =
-          Sources.CreateContractSourcesRequestGuard.decode(request);
-        if (result._tag === "Left") {
-          throw new InvalidTypeError(
-            result.left,
-            `Invalid argument to createContractSources(${request})`
-          );
-        } else {
-          const test: typeof request = result.right;
+      return withDynamicTypeCheck(
+        request,
+        (x) => Sources.CreateContractSourcesRequestGuard.decode(x),
+        strict,
+        (request) => {
+          const {
+            bundle: { main, bundle },
+          } = request;
+          return Sources.createContractSources(axiosInstance)(main, bundle);
         }
-      }
-      const {
-        bundle: { main, bundle },
-      } = request;
-      return Sources.createContractSources(axiosInstance)(main, bundle);
+      );
     },
     getContractSourceById(request) {
-      if (strict) {
-        const result =
-          Sources.GetContractBySourceIdRequestGuard.decode(request);
-        if (result._tag === "Left") {
-          throw new InvalidTypeError(
-            result.left,
-            `Invalid argument to getContractSourceById(${request})`
-          );
-        } else {
-          const test: typeof request = result.right;
+      return withDynamicTypeCheck(
+        request,
+        (x) => Sources.GetContractBySourceIdRequestGuard.decode(x),
+        strict,
+        (request) => {
+          return Sources.getContractSourceById(axiosInstance)(request);
         }
-      }
-      return Sources.getContractSourceById(axiosInstance)(request);
+      );
     },
     getContractSourceAdjacency(request) {
-      if (strict) {
-        const result =
-          Sources.GetContractSourceAdjacencyRequestGuard.decode(request);
-        if (result._tag === "Left") {
-          throw new InvalidTypeError(
-            result.left,
-            `Invalid argument to getContractSourceAdjacency(${request})`
-          );
-        } else {
-          const test: typeof request = result.right;
+      return withDynamicTypeCheck(
+        request,
+        (x) => Sources.GetContractSourceAdjacencyRequestGuard.decode(x),
+        strict,
+        (request) => {
+          return Sources.getContractSourceAdjacency(axiosInstance)(request);
         }
-      }
-      return Sources.getContractSourceAdjacency(axiosInstance)(request);
+      );
     },
     getContractSourceClosure(request) {
-      if (strict) {
-        const result =
-          Sources.GetContractSourceClosureRequestGuard.decode(request);
-        if (result._tag === "Left") {
-          throw new InvalidTypeError(
-            result.left,
-            `Invalid argument to getContractSourceClosure(${request})`
-          );
-        } else {
-          const test: typeof request = result.right;
+      return withDynamicTypeCheck(
+        request,
+        (x) => Sources.GetContractSourceClosureRequestGuard.decode(x),
+        strict,
+        (request) => {
+          return Sources.getContractSourceClosure(axiosInstance)(request);
         }
-      }
-      return Sources.getContractSourceClosure(axiosInstance)(request);
+      );
     },
     getNextStepsForContract(request) {
-      if (strict) {
-        const result = Next.GetNextStepsForContractRequestGuard.decode(request);
-        if (result._tag === "Left") {
-          throw new InvalidTypeError(
-            result.left,
-            `Invalid argument to getNextStepsForContract(${request})`
-          );
-        } else {
-          const test: typeof request = result.right;
+      return withDynamicTypeCheck(
+        request,
+        (x) => Next.GetNextStepsForContractRequestGuard.decode(x),
+        strict,
+        (request) => {
+          return Next.getNextStepsForContract(axiosInstance)(request);
         }
-      }
-      return Next.getNextStepsForContract(axiosInstance)(request);
+      );
     },
     submitContract(request) {
-      if (strict) {
-        const result = Contract.SubmitContractRequestGuard.decode(request);
-        if (result._tag === "Left") {
-          throw new InvalidTypeError(
-            result.left,
-            `Invalid argument to submitContract(${request})`
-          );
-        } else {
-          const test: typeof request = result.right;
+      return withDynamicTypeCheck(
+        request,
+        (x) => Contract.SubmitContractRequestGuard.decode(x),
+        strict,
+        (request) => {
+          const { contractId, txEnvelope } = request;
+          return Contract.submitContract(axiosInstance)(contractId, txEnvelope);
         }
-      }
-      const { contractId, txEnvelope } = request;
-      return Contract.submitContract(axiosInstance)(contractId, txEnvelope);
+      );
     },
     getTransactionsForContract(request) {
-      if (strict) {
-        const result =
-          Transactions.GetTransactionsForContractRequestGuard.decode(request);
-        if (result._tag === "Left") {
-          throw new InvalidTypeError(
-            result.left,
-            `Invalid argument to getTransactionsForContract(${request})`
+      return withDynamicTypeCheck(
+        request,
+        (x) => Transactions.GetTransactionsForContractRequestGuard.decode(x),
+        strict,
+        (request) => {
+          const { contractId, range } = request;
+          return unsafeTaskEither(
+            Transactions.getHeadersByRangeViaAxios(axiosInstance)(
+              contractId,
+              range
+            )
           );
-        } else {
-          const test: typeof request = result.right;
         }
-      }
-      const { contractId, range } = request;
-      return unsafeTaskEither(
-        Transactions.getHeadersByRangeViaAxios(axiosInstance)(contractId, range)
       );
     },
     submitContractTransaction(request) {
-      if (strict) {
-        const result =
-          Transaction.SubmitContractTransactionRequestGuard.decode(request);
-        if (result._tag === "Left") {
-          throw new InvalidTypeError(
-            result.left,
-            `Invalid argument to submitContractTransaction(${request})`
+      return withDynamicTypeCheck(
+        request,
+        (x) => Transaction.SubmitContractTransactionRequestGuard.decode(x),
+        strict,
+        (request) => {
+          const { contractId, transactionId, hexTransactionWitnessSet } =
+            request;
+          return unsafeTaskEither(
+            Transaction.putViaAxios(axiosInstance)(
+              contractId,
+              transactionId,
+              hexTransactionWitnessSet
+            )
           );
-        } else {
-          const test: typeof request = result.right;
         }
-      }
-      const { contractId, transactionId, hexTransactionWitnessSet } = request;
-      return unsafeTaskEither(
-        Transaction.putViaAxios(axiosInstance)(
-          contractId,
-          transactionId,
-          hexTransactionWitnessSet
-        )
       );
     },
     getContractTransactionById(request) {
-      if (strict) {
-        const result =
-          Transaction.GetContractTransactionByIdRequestGuard.decode(request);
-        if (result._tag === "Left") {
-          throw new InvalidTypeError(
-            result.left,
-            `Invalid argument to getContractTransactionById(${request})`
+      return withDynamicTypeCheck(
+        request,
+        (x) => Transaction.GetContractTransactionByIdRequestGuard.decode(x),
+        strict,
+        (request) => {
+          const { contractId, txId } = request;
+          return unsafeTaskEither(
+            Transaction.getViaAxios(axiosInstance)(contractId, txId)
           );
-        } else {
-          const test: typeof request = result.right;
         }
-      }
-      const { contractId, txId } = request;
-      return unsafeTaskEither(
-        Transaction.getViaAxios(axiosInstance)(contractId, txId)
       );
     },
     withdrawPayouts(request) {
-      if (strict) {
-        const result = Withdrawals.WithdrawPayoutsRequestGuard.decode(request);
-        if (result._tag === "Left") {
-          throw new InvalidTypeError(
-            result.left,
-            `Invalid argument to withdrawPayouts(${request})`
+      return withDynamicTypeCheck(
+        request,
+        (x) => Withdrawals.WithdrawPayoutsRequestGuard.decode(x),
+        strict,
+        (request) => {
+          const { payoutIds, changeAddress } = request;
+          return unsafeTaskEither(
+            Withdrawals.postViaAxios(axiosInstance)(payoutIds, {
+              changeAddress,
+              usedAddresses: request.usedAddresses ?? [],
+              collateralUTxOs: request.collateralUTxOs ?? [],
+            })
           );
-        } else {
-          const test: typeof request = result.right;
         }
-      }
-      const { payoutIds, changeAddress } = request;
-      return unsafeTaskEither(
-        Withdrawals.postViaAxios(axiosInstance)(payoutIds, {
-          changeAddress,
-          usedAddresses: request.usedAddresses ?? [],
-          collateralUTxOs: request.collateralUTxOs ?? [],
-        })
       );
     },
     async getWithdrawalById(request) {
-      if (strict) {
-        const result = Withdrawal.GetWithdrawalByIdRequestGuard.decode(request);
-        if (result._tag === "Left") {
-          throw new InvalidTypeError(
-            result.left,
-            `Invalid argument to getWithdrawalById(${request})`
+      return withDynamicTypeCheck(
+        request,
+        (x) => Withdrawal.GetWithdrawalByIdRequestGuard.decode(x),
+        strict,
+        async (request) => {
+          const { withdrawalId } = request;
+          const { block, ...response } = await unsafeTaskEither(
+            Withdrawal.getViaAxios(axiosInstance)(withdrawalId)
           );
-        } else {
-          const test: typeof request = result.right;
+          return { ...response, block: O.toUndefined(block) };
         }
-      }
-      const { withdrawalId } = request;
-      const { block, ...response } = await unsafeTaskEither(
-        Withdrawal.getViaAxios(axiosInstance)(withdrawalId)
       );
-      return { ...response, block: O.toUndefined(block) };
     },
     getWithdrawals(request) {
-      if (strict) {
-        const result = Withdrawals.GetWithdrawalsRequestGuard.decode(request);
-        if (result._tag === "Left") {
-          throw new InvalidTypeError(
-            result.left,
-            `Invalid argument to getWithdrawals(${request})`
+      return withDynamicTypeCheck(
+        request,
+        (x) => Withdrawals.GetWithdrawalsRequestGuard.decode(x),
+        strict,
+        (request) => {
+          return unsafeTaskEither(
+            Withdrawals.getHeadersByRangeViaAxios(axiosInstance)(request)
           );
-        } else {
-          const test: typeof request = result.right;
         }
-      }
-      return unsafeTaskEither(
-        Withdrawals.getHeadersByRangeViaAxios(axiosInstance)(request)
       );
     },
     applyInputsToContract(request) {
-      if (strict) {
-        const result =
-          Transactions.ApplyInputsToContractRequestGuard.decode(request);
-        if (result._tag === "Left") {
-          throw new InvalidTypeError(
-            result.left,
-            `Invalid argument to applyInputsToContract(${request})`
-          );
-        } else {
-          const test: typeof request = result.right;
-        }
-      }
-      const {
-        contractId,
-        changeAddress,
-        invalidBefore,
-        invalidHereafter,
-        inputs,
-      } = request;
-      return unsafeTaskEither(
-        Transactions.postViaAxios(axiosInstance)(
-          contractId,
-          {
+      return withDynamicTypeCheck(
+        request,
+        (x) => Transactions.ApplyInputsToContractRequestGuard.decode(x),
+        strict,
+        (request) => {
+          const {
+            contractId,
+            changeAddress,
             invalidBefore,
             invalidHereafter,
-            version: request.version ?? "v1",
-            metadata: request.metadata ?? {},
-            tags: request.tags ?? {},
             inputs,
-          },
-          {
-            changeAddress,
-            usedAddresses: request.usedAddresses ?? [],
-            collateralUTxOs: request.collateralUTxOs ?? [],
-          }
-        )
+          } = request;
+          return unsafeTaskEither(
+            Transactions.postViaAxios(axiosInstance)(
+              contractId,
+              {
+                invalidBefore,
+                invalidHereafter,
+                version: request.version ?? "v1",
+                metadata: request.metadata ?? {},
+                tags: request.tags ?? {},
+                inputs,
+              },
+              {
+                changeAddress,
+                usedAddresses: request.usedAddresses ?? [],
+                collateralUTxOs: request.collateralUTxOs ?? [],
+              }
+            )
+          );
+        }
       );
     },
     submitWithdrawal(request) {
-      if (strict) {
-        const result = Withdrawal.SubmitWithdrawalRequestGuard.decode(request);
-        if (result._tag === "Left") {
-          throw new InvalidTypeError(
-            result.left,
-            `Invalid argument to submitWithdrawal(${request})`
+      return withDynamicTypeCheck(
+        request,
+        (x) => Withdrawal.SubmitWithdrawalRequestGuard.decode(x),
+        strict,
+        (request) => {
+          const { withdrawalId, hexTransactionWitnessSet } = request;
+          return unsafeTaskEither(
+            Withdrawal.putViaAxios(axiosInstance)(
+              withdrawalId,
+              hexTransactionWitnessSet
+            )
           );
-        } else {
-          const test: typeof request = result.right;
         }
-      }
-      const { withdrawalId, hexTransactionWitnessSet } = request;
-      return unsafeTaskEither(
-        Withdrawal.putViaAxios(axiosInstance)(
-          withdrawalId,
-          hexTransactionWitnessSet
-        )
       );
     },
     async getPayouts(request) {
-      if (strict) {
-        const result = Payouts.GetPayoutsRequestGuard.decode(request);
-        if (result._tag === "Left") {
-          throw new InvalidTypeError(
-            result.left,
-            `Invalid argument to getPayouts(${request})`
+      return withDynamicTypeCheck(
+        request,
+        (x) => Payouts.GetPayoutsRequestGuard.decode(x),
+        strict,
+        async (request) => {
+          const { contractIds, roleTokens, range, status } = request;
+          return await unsafeTaskEither(
+            Payouts.getHeadersByRangeViaAxios(axiosInstance)(range)(
+              contractIds
+            )(roleTokens)(O.fromNullable(status))
           );
-        } else {
-          const test: typeof request = result.right;
         }
-      }
-      const { contractIds, roleTokens, range, status } = request;
-      return await unsafeTaskEither(
-        Payouts.getHeadersByRangeViaAxios(axiosInstance)(range)(contractIds)(
-          roleTokens
-        )(O.fromNullable(status))
       );
     },
     async getPayoutById(request) {
-      if (strict) {
-        const result = Payout.GetPayoutByIdRequestGuard.decode(request);
-        if (result._tag === "Left") {
-          throw new InvalidTypeError(
-            result.left,
-            `Invalid argument to getPayoutById(${request})`
+      return withDynamicTypeCheck(
+        request,
+        (x) => Payout.GetPayoutByIdRequestGuard.decode(x),
+        strict,
+        async (request) => {
+          const { payoutId } = request;
+          const result = await unsafeTaskEither(
+            Payout.getViaAxios(axiosInstance)(payoutId)
           );
-        } else {
-          const test: typeof request = result.right;
+          return {
+            payoutId: result.payoutId,
+            contractId: result.contractId,
+            ...O.match(
+              () => ({}),
+              (withdrawalId) => ({ withdrawalId })
+            )(result.withdrawalId),
+            role: result.role,
+            payoutValidatorAddress: result.payoutValidatorAddress,
+            status: result.status,
+            assets: result.assets,
+          };
         }
-      }
-      const { payoutId } = request;
-      const result = await unsafeTaskEither(
-        Payout.getViaAxios(axiosInstance)(payoutId)
       );
-      return {
-        payoutId: result.payoutId,
-        contractId: result.contractId,
-        ...O.match(
-          () => ({}),
-          (withdrawalId) => ({ withdrawalId })
-        )(result.withdrawalId),
-        role: result.role,
-        payoutValidatorAddress: result.payoutValidatorAddress,
-        status: result.status,
-        assets: result.assets,
-      };
     },
   };
 }
