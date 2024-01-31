@@ -13,7 +13,7 @@ import { mkLucidWallet, WalletAPI } from "@marlowe.io/wallet";
 import { mkRuntimeLifecycle } from "@marlowe.io/runtime-lifecycle";
 import { Lucid, Blockfrost, C } from "lucid-cardano";
 import { readConfig } from "./config.js";
-import { datetoTimeout, Timeout, When } from "@marlowe.io/language-core-v1";
+import { datetoTimeout, When } from "@marlowe.io/language-core-v1";
 import {
   contractId,
   ContractId,
@@ -23,13 +23,7 @@ import {
   TxId,
 } from "@marlowe.io/runtime-core";
 import { Address } from "@marlowe.io/language-core-v1";
-import {
-  ContractBundleList,
-  ContractBundleMap,
-  lovelace,
-  close,
-  bundleListToMap,
-} from "@marlowe.io/marlowe-object";
+import { ContractBundleMap, lovelace, close } from "@marlowe.io/marlowe-object";
 import { input, select } from "@inquirer/prompts";
 import { RuntimeLifecycle } from "@marlowe.io/runtime-lifecycle/api";
 import {
@@ -262,8 +256,7 @@ async function contractMenu(
   // Get and print the contract logical state.
   const inputHistory = await lifecycle.contracts.getInputHistory(contractId);
   debugger;
-  const contractState = getState(scheme, new Date(), inputHistory);
-  const constractState2 = getStateFromAnnotation(
+  const contractState = getState(
     datetoTimeout(new Date()),
     inputHistory,
     sourceMap
@@ -528,7 +521,7 @@ function printState(state: DelayPaymentState, scheme: DelayPaymentScheme) {
   }
 }
 
-function getStateFromAnnotation(
+function getState(
   currenTime: POSIXTime,
   history: SingleInputTx[],
   sourceMap: SourceMap<DelayPaymentAnnotations>
@@ -559,34 +552,6 @@ function getStateFromAnnotation(
       return { type: "Closed", result: "Missed deposit" };
     case "PaymentReleasedClose":
       return { type: "Closed", result: "Payment released" };
-  }
-}
-
-function getState(
-  scheme: DelayPaymentScheme,
-  currentTime: Date,
-  history: SingleInputTx[]
-): DelayPaymentState {
-  if (history.length === 0) {
-    if (currentTime < scheme.depositDeadline) {
-      return { type: "InitialState" };
-    } else {
-      return { type: "PaymentMissed" };
-    }
-  } else if (history.length === 1) {
-    // If the first transaction doesn't have an input, it means it was used to advace a timeouted contract
-    if (!history[0].input) {
-      return { type: "Closed", result: "Missed deposit" };
-    }
-    if (currentTime < scheme.releaseDeadline) {
-      return { type: "PaymentDeposited" };
-    } else {
-      return { type: "PaymentReady" };
-    }
-  } else if (history.length === 2) {
-    return { type: "Closed", result: "Payment released" };
-  } else {
-    throw new Error("Wrong state/contract, too many transactions");
   }
 }
 
