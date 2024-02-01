@@ -39,7 +39,7 @@ import {
   mkSourceMap,
   SourceMap,
 } from "./experimental-features/annotations.js";
-import { POSIXTime } from "@marlowe.io/adapter/time";
+import { POSIXTime, posixTimeToIso8601 } from "@marlowe.io/adapter/time";
 import { SingleInputTx } from "@marlowe.io/language-core-v1/semantics";
 
 // When this script is called, start with main.
@@ -322,6 +322,12 @@ async function contractMenu(
       console.log("Applying input");
       const txId = await lifecycle.contracts.applyInputs(contractId, {
         inputs: action.results.inputs,
+        invalidBefore: posixTimeToIso8601(
+          action.results.environment.timeInterval.from
+        ),
+        invalidHereafter: posixTimeToIso8601(
+          action.results.environment.timeInterval.to
+        ),
       });
       console.log(`Input applied with txId ${txId}`);
       await waitIndicator(lifecycle.wallet, txId);
@@ -361,6 +367,10 @@ async function mainLoop(
   } catch (e) {
     if (e instanceof Error && e.message.includes("closed the prompt")) {
       process.exit(0);
+    }
+    if (e instanceof Error) {
+      console.error(e.message);
+      process.exit(1);
     } else {
       throw e;
     }

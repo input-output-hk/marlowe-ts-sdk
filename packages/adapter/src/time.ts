@@ -3,6 +3,7 @@ import * as t from "io-ts/lib/index.js";
 export type ISO8601 = t.TypeOf<typeof ISO8601>;
 export const ISO8601 = t.string;
 
+// Epoch time in Milliseconds
 export type POSIXTime = t.TypeOf<typeof POSIXTime>;
 export const POSIXTime = t.bigint;
 
