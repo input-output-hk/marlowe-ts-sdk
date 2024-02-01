@@ -93,3 +93,5 @@ export {
   ObjectContractGuard as ObjectContract,
   ObjectActionGuard as ObjectAction,
 } from "./bundle-list.js";
+
+export { AnnotatedGuard as Annotated } from "./annotations.js";

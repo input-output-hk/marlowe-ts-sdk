@@ -131,7 +131,6 @@ export async function getApplicableActions(
   const lowerBound = datetoTimeout(
     new Date(status.tips.runtimeChain.slotTimeUTC)
   );
-  // const lowerBound = datetoTimeout(new Date());
   const nextTimeout =
     getNextTimeout(currentContract, lowerBound) ?? oneDayFrom(lowerBound);
   const timeInterval = { from: lowerBound, to: nextTimeout - 1n };

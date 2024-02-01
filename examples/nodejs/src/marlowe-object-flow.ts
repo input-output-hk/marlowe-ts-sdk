@@ -34,13 +34,10 @@ import {
 import arg from "arg";
 import { splitAddress } from "./experimental-features/metadata.js";
 import * as t from "io-ts/lib/index.js";
-import {
-  AnnotatedGuard,
-  mkSourceMap,
-  SourceMap,
-} from "./experimental-features/annotations.js";
+import { mkSourceMap, SourceMap } from "./experimental-features/annotations.js";
 import { POSIXTime, posixTimeToIso8601 } from "@marlowe.io/adapter/time";
 import { SingleInputTx } from "@marlowe.io/language-core-v1/semantics";
+import * as ObjG from "@marlowe.io/marlowe-object/guards";
 
 // When this script is called, start with main.
 main();
@@ -536,7 +533,7 @@ function getState(
   history: SingleInputTx[],
   sourceMap: SourceMap<DelayPaymentAnnotations>
 ): DelayPaymentState {
-  const Annotated = AnnotatedGuard(DelayPaymentAnnotationsGuard);
+  const Annotated = ObjG.Annotated(DelayPaymentAnnotationsGuard);
   const txOut = sourceMap.playHistory(history);
   if ("transaction_error" in txOut) {
     throw new Error(`Error playing history: ${txOut.transaction_error}`);
@@ -630,8 +627,9 @@ async function validateExistingContract(
   contractId: ContractId
 ): Promise<ValidationResults> {
   // First we try to fetch the contract details and the required tags
-  const contractDetails =
-    await lifecycle.restClient.getContractById(contractId);
+  const contractDetails = await lifecycle.restClient.getContractById({
+    contractId,
+  });
 
   const scheme = extractSchemeFromTags(contractDetails.tags);
 

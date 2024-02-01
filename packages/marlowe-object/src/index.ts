@@ -52,3 +52,4 @@ export {
 export { ContractBundleList } from "./bundle-list.js";
 export { ContractBundleMap } from "./bundle-map.js";
 export { bundleMapToList, bundleListToMap } from "./bundle-conversion.js";
+export { stripAnnotations, isAnnotated } from "./annotations.js";
