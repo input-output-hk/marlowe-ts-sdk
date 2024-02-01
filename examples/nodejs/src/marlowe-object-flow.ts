@@ -34,7 +34,7 @@ import {
 import arg from "arg";
 import { splitAddress } from "./experimental-features/metadata.js";
 import * as t from "io-ts/lib/index.js";
-import { mkSourceMap, SourceMap } from "./experimental-features/annotations.js";
+import { mkSourceMap, SourceMap } from "./experimental-features/source-map.js";
 import { POSIXTime, posixTimeToIso8601 } from "@marlowe.io/adapter/time";
 import { SingleInputTx } from "@marlowe.io/language-core-v1/semantics";
 import * as ObjG from "@marlowe.io/marlowe-object/guards";
@@ -207,7 +207,6 @@ async function loadContractMenu(lifecycle: RuntimeLifecycle) {
     message: "Enter the contractId",
   });
   const cid = contractId(cidStr);
-  debugger;
   // Then we make sure that contract id is an instance of our delayed payment contract
   const validationResult = await validateExistingContract(lifecycle, cid);
   if (validationResult === "InvalidTags") {
@@ -252,7 +251,6 @@ async function contractMenu(
 ): Promise<void> {
   // Get and print the contract logical state.
   const inputHistory = await lifecycle.contracts.getInputHistory(contractId);
-  debugger;
   const contractState = getState(
     datetoTimeout(new Date()),
     inputHistory,
