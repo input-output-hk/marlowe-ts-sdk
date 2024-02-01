@@ -49,9 +49,6 @@ export {
   MerkleizedCase,
   Timeout,
 } from "./contract.js";
-export {
-  ContractBundleList,
-  stripContractBundleListAnnotations,
-} from "./bundle-list.js";
+export { ContractBundleList } from "./bundle-list.js";
 export { ContractBundleMap } from "./bundle-map.js";
 export { bundleMapToList, bundleListToMap } from "./bundle-conversion.js";

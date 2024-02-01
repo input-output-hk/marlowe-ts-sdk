@@ -1,20 +1,20 @@
-import {
-  ContractBundleMap,
-  bundleMapToList,
-  stripContractBundleListAnnotations,
-} from "@marlowe.io/marlowe-object";
+import * as t from "io-ts/lib/index.js";
+import * as R from "fp-ts/lib/Record.js";
+import * as O from "fp-ts/lib/Option.js";
+import * as M from "fp-ts/lib/Map.js";
+
+import { ContractBundleMap, bundleMapToList } from "@marlowe.io/marlowe-object";
 import {
   CreateContractRequestBase,
   RuntimeLifecycle,
 } from "@marlowe.io/runtime-lifecycle/api";
-import * as t from "io-ts/lib/index.js";
+
 import { ContractClosure, getContractClosure } from "./contract-closure.js";
 import * as Core from "@marlowe.io/language-core-v1";
 import * as CoreG from "@marlowe.io/language-core-v1/guards";
 import * as Obj from "@marlowe.io/marlowe-object";
 import * as ObjG from "@marlowe.io/marlowe-object/guards";
 
-import * as M from "fp-ts/lib/Map.js";
 import {
   SingleInputTx,
   TransactionOutput,
@@ -39,6 +39,21 @@ export function isAnnotated(value: unknown): value is Annotated<unknown> {
 
 export const AnnotatedGuard = <T>(guard: t.Type<T>): t.Type<Annotated<T>> =>
   t.type({ annotation: guard });
+
+export function stripAnnotations<T>(value: T): T {
+  if (typeof value !== "object" || value === null) {
+    return value;
+  }
+  if (value instanceof String) {
+    return `${value}` as T;
+  }
+  if (Array.isArray(value)) {
+    return value.map(stripAnnotations) as T;
+  }
+  return R.filterMapWithIndex((key, v) =>
+    key === "annotation" ? O.none : O.some(stripAnnotations(v))
+  )(value as any) as T;
+}
 
 function annotateInputFromClosure(contractClosure: ContractClosure) {
   return function (input: Core.Input): Core.Input {
@@ -79,7 +94,9 @@ async function annotatedClosure<T>(
 ): Promise<ContractClosure> {
   const { contractSourceId, intermediateIds } =
     await restClient.createContractSources(
-      stripContractBundleListAnnotations(bundleMapToList(sourceObjectMap))
+      stripAnnotations(
+        bundleMapToList(sourceObjectMap)
+      ) as Obj.ContractBundleList<undefined>
     );
 
   const closure = await getContractClosure({ restClient })(contractSourceId);
@@ -218,9 +235,10 @@ export async function mkSourceMap<T>(
       return playSingleInputTxTrace(0n, main, annotatedHistory);
     },
     createContract: (options: CreateContractRequestBase) => {
+      const contract = stripAnnotations(closure.contracts.get(closure.main)!);
       return lifecycle.contracts.createContract({
         ...options,
-        contract: closure.contracts.get(closure.main)!,
+        contract,
       });
     },
     contractInstanceOf: async (contractId: ContractId) => {

@@ -1,10 +1,6 @@
 import * as t from "io-ts/lib/index.js";
 import { Action, ActionGuard } from "./actions.js";
-import {
-  Contract,
-  ContractGuard,
-  stripContractAnnotations,
-} from "./contract.js";
+import { Contract, ContractGuard } from "./contract.js";
 import { Party, PartyGuard } from "./participants.js";
 import { Label, LabelGuard } from "./reference.js";
 import { Token, TokenGuard } from "./token.js";
@@ -160,18 +156,6 @@ export const ObjectTypeGuard = t.union([
   ObjectActionGuard,
 ]);
 
-function stripObjectTypeAnnotations<A>(
-  obj: ObjectType<A>
-): ObjectType<undefined> {
-  if (obj.type === "contract") {
-    return {
-      type: obj.type,
-      label: obj.label,
-      value: stripContractAnnotations(obj.value),
-    };
-  }
-  return obj;
-}
 /**
  * A bundle of {@link ObjectType | ObjectType's}.
  * @category Object
@@ -183,12 +167,6 @@ export type BundleList<A> = ObjectType<A>[];
  * @category Object
  */
 export const BundleListGuard = t.array(ObjectTypeGuard);
-
-function stripBundleAnnotations<A>(
-  bundle: BundleList<A>
-): BundleList<undefined> {
-  return bundle.map(stripObjectTypeAnnotations);
-}
 
 /**
  * A contract bundle is just a {@link BundleList} with a main entrypoint.
@@ -207,12 +185,3 @@ export const ContractBundleListGuard: t.Type<ContractBundleList<unknown>> =
     main: LabelGuard,
     bundle: BundleListGuard,
   });
-
-export function stripContractBundleListAnnotations<A>(
-  bundle: ContractBundleList<A>
-): ContractBundleList<undefined> {
-  return {
-    main: bundle.main,
-    bundle: stripBundleAnnotations(bundle.bundle),
-  };
-}
