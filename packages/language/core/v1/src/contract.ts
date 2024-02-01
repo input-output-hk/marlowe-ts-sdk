@@ -14,6 +14,7 @@ import { pipe } from "fp-ts/lib/function.js";
 import getUnixTime from "date-fns/getUnixTime/index.js";
 import { BuiltinByteString } from "./inputs.js";
 import * as Big from "@marlowe.io/adapter/bigint";
+import { likeLiteral } from "@marlowe.io/adapter/io-ts";
 /**
  * Search [[lower-name-builders]]
  * @hidden
@@ -25,35 +26,15 @@ export const close = "close";
  */
 export type Close = "close";
 
-// TODO: Move to io-ts helpers
-export function isStringLiteral<S extends string>(literal: S) {
-  return (input: unknown): input is S => {
-    if (typeof input === "string") {
-      return input === literal;
-    }
-    if (typeof input === "object" && input instanceof String) {
-      return input.valueOf() === literal;
-    }
-    return false;
-  };
-}
 /**
  * TODO: Comment
  * @category Contract
  */
-// NOTE: Previously the Close guard was defined as the following literal, but it was relaxed to something that
-//       can be coerced to "close" so that we can treat String("close") as well. The reason for doing this is
+// NOTE: Previously the Close guard was defined as a literal string, but now it is relaxed to something that
+//       can be coerced to "close" so that we can use String("close") as well. The reason for doing this is
 //       to allow annotations on a Close contract, which couldn't be done with plain string primitives.
 // export const CloseGuard: t.Type<Close> = t.literal("close");
-export const CloseGuard: t.Type<Close> = new t.Type(
-  "close",
-  (input: unknown): input is "close" => isStringLiteral("close")(input),
-  (input, context) =>
-    isStringLiteral("close")(input)
-      ? t.success("close" as const)
-      : t.failure(input, context),
-  t.identity
-);
+export const CloseGuard: t.Type<Close> = likeLiteral("close");
 /**
  * @hidden
  */
