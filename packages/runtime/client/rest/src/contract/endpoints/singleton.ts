@@ -11,14 +11,17 @@ import * as HTTP from "@marlowe.io/adapter/http";
 import { DecodingError } from "@marlowe.io/adapter/codec";
 
 import {
+  ContractIdGuard,
   HexTransactionWitnessSet,
   TextEnvelope,
+  TextEnvelopeGuard,
   transactionWitnessSetTextEnvelope,
 } from "@marlowe.io/runtime-core";
 
 import { ContractDetails, ContractDetailsGuard } from "../details.js";
 import { ContractId } from "@marlowe.io/runtime-core";
 import { unsafeEither, unsafeTaskEither } from "@marlowe.io/adapter/fp-ts";
+import { assertGuardEqual, proxy } from "@marlowe.io/adapter/io-ts";
 
 export type GET = (
   contractId: ContractId
@@ -28,6 +31,14 @@ type GETPayload = t.TypeOf<typeof GETPayload>;
 const GETPayload = t.type({
   links: t.type({}),
   resource: ContractDetailsGuard,
+});
+
+/**
+ * Request options for the {@link index.RestClient#getContractById | Get contracts by ID } endpoint
+ */
+export type GetContractByIdRequest = t.TypeOf<typeof GetContractByIdRequest>;
+export const GetContractByIdRequest = t.type({
+  contractId: ContractIdGuard,
 });
 
 /**
@@ -56,7 +67,24 @@ export type PUT = (
   hexTransactionWitnessSet: HexTransactionWitnessSet
 ) => TE.TaskEither<Error, void>;
 
-export const submitContractViaAxios =
+/**
+ * Request options for the {@link index.RestClient#submitContract | Submit contract } endpoint
+ * @category Endpoint : Submit contract
+ */
+export interface SubmitContractRequest {
+  contractId: ContractId;
+  txEnvelope: TextEnvelope;
+}
+
+export const SubmitContractRequestGuard = assertGuardEqual(
+  proxy<SubmitContractRequest>(),
+  t.type({
+    contractId: ContractIdGuard,
+    txEnvelope: TextEnvelopeGuard,
+  })
+);
+
+export const submitContract =
   (axiosInstance: AxiosInstance) =>
   (contractId: ContractId, envelope: TextEnvelope) =>
     axiosInstance

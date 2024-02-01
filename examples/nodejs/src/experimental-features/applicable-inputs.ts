@@ -122,7 +122,7 @@ export async function getApplicableActions(
   contractId: ContractId,
   environment?: Environment
 ): Promise<ApplicableAction[]> {
-  const contractDetails = await restClient.getContractById(contractId);
+  const contractDetails = await restClient.getContractById({ contractId });
   const currentContract = contractDetails.currentContract
     ? contractDetails.currentContract
     : contractDetails.initialContract;

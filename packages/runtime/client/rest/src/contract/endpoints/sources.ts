@@ -9,9 +9,23 @@ import {
   Label,
   ContractSourceId,
   ContractSourceIdGuard,
+  ContractBundle,
 } from "@marlowe.io/marlowe-object";
 import { BundleList } from "@marlowe.io/marlowe-object/bundle-list";
 import { AxiosInstance } from "axios";
+import { ContractBundleGuard } from "@marlowe.io/marlowe-object/object";
+import { assertGuardEqual, proxy } from "@marlowe.io/adapter/io-ts";
+
+/**
+ * Request options for the {@link index.RestClient#createContractSources | Create contract sources } endpoint
+ * @category Endpoint : Create contract sources
+ */
+export interface CreateContractSourcesRequest {
+  bundle: ContractBundle;
+}
+
+export const CreateContractSourcesRequestGuard: t.Type<CreateContractSourcesRequest> =
+  t.type({ bundle: ContractBundleGuard });
 
 export interface CreateContractSourcesResponse {
   contractSourceId: ContractSourceId;
@@ -51,6 +65,14 @@ export interface GetContractBySourceIdRequest {
   expand?: boolean;
 }
 
+export const GetContractBySourceIdRequestGuard = assertGuardEqual(
+  proxy<GetContractBySourceIdRequest>(),
+  t.intersection([
+    t.type({ contractSourceId: ContractSourceIdGuard }),
+    t.partial({ expand: t.boolean }),
+  ])
+);
+
 export type GetContractBySourceIdResponse = Contract;
 
 const GetContractBySourceIdResponseGuard: t.Type<GetContractBySourceIdResponse> =
@@ -81,6 +103,9 @@ export interface GetContractSourceAdjacencyRequest {
   contractSourceId: ContractSourceId;
 }
 
+export const GetContractSourceAdjacencyRequestGuard: t.Type<GetContractSourceAdjacencyRequest> =
+  t.type({ contractSourceId: ContractSourceIdGuard });
+
 export interface GetContractSourceAdjacencyResponse {
   results: ContractSourceId[];
 }
@@ -110,6 +135,9 @@ export const getContractSourceAdjacency =
 export interface GetContractSourceClosureRequest {
   contractSourceId: ContractSourceId;
 }
+
+export const GetContractSourceClosureRequestGuard: t.Type<GetContractSourceClosureRequest> =
+  t.type({ contractSourceId: ContractSourceIdGuard });
 
 export interface GetContractSourceClosureResponse {
   results: ContractSourceId[];

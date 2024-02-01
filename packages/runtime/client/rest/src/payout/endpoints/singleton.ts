@@ -20,10 +20,16 @@ import {
   unPayoutId,
 } from "@marlowe.io/runtime-core";
 import { PayoutStatus, PayoutDetails } from "../index.js";
+import { assertGuardEqual, proxy } from "@marlowe.io/adapter/io-ts";
 
 export type GetPayoutByIdRequest = {
   payoutId: PayoutId;
 };
+
+export const GetPayoutByIdRequestGuard = assertGuardEqual(
+  proxy<GetPayoutByIdRequest>(),
+  t.type({ payoutId: PayoutId })
+);
 
 export type GetPayoutByIdResponse = {
   payoutId: PayoutId;

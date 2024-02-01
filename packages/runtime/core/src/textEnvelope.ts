@@ -42,6 +42,9 @@ export const TextEnvelopeGuard: t.Type<TextEnvelope> = t.type({
 export type MarloweTxCBORHex = string;
 export type HexTransactionWitnessSet = string;
 
+export const HexTransactionWitnessSetGuard: t.Type<HexTransactionWitnessSet> =
+  t.string;
+
 export const transactionWitnessSetTextEnvelope: (
   hexTransactionWitnessSet: HexTransactionWitnessSet
 ) => TextEnvelope = (hexTransactionWitnessSet) => ({

@@ -15,6 +15,7 @@ import { ISO8601 } from "@marlowe.io/adapter/time";
 
 import {
   AddressBech32,
+  AddressBech32Guard,
   AddressesAndCollaterals,
   Metadata,
   Tags,
@@ -29,7 +30,12 @@ import { TxHeader, TxHeaderGuard } from "../header.js";
 import { ContractId, ContractIdGuard } from "@marlowe.io/runtime-core";
 import { assertGuardEqual, proxy } from "@marlowe.io/adapter/io-ts";
 import { Input } from "@marlowe.io/language-core-v1";
-import { ItemRange, Page, PageGuard } from "../../../pagination.js";
+import {
+  ItemRange,
+  ItemRangeGuard,
+  Page,
+  PageGuard,
+} from "../../../pagination.js";
 
 export type GETHeadersByRange = (
   contractId: ContractId,
@@ -75,6 +81,27 @@ const GetContractsRawResponse = t.type({
 });
 
 /**
+ * Request options for the {@link index.RestClient#getTransactionsForContract | Get transactions for contract } endpoint
+ * @category Endpoint : Get transactions for contract
+ */
+export interface GetTransactionsForContractRequest {
+  contractId: ContractId;
+  range?: ItemRange;
+}
+
+export const GetTransactionsForContractRequestGuard = assertGuardEqual(
+  proxy<GetTransactionsForContractRequest>(),
+  t.intersection([
+    t.type({
+      contractId: ContractIdGuard,
+    }),
+    t.partial({
+      range: ItemRangeGuard,
+    }),
+  ])
+);
+
+/**
  * Represents the response of the {@link index.RestClient#getTransactionsForContract | Get transactions for contract } endpoint
  * @category GetTransactionsForContractResponse
  */
@@ -113,6 +140,26 @@ export type ApplyInputsToContractRequest = {
   tags?: Tags;
   inputs: Input[];
 };
+
+export const ApplyInputsToContractRequestGuard = assertGuardEqual(
+  proxy<ApplyInputsToContractRequest>(),
+  t.intersection([
+    t.type({
+      contractId: ContractIdGuard,
+      changeAddress: AddressBech32Guard,
+      inputs: t.array(G.Input),
+    }),
+    t.partial({
+      usedAddresses: t.array(AddressBech32Guard),
+      collateralUTxOs: t.array(TxOutRef),
+      invalidBefore: ISO8601,
+      invalidHereafter: ISO8601,
+      version: MarloweVersion,
+      metadata: Metadata,
+      tags: TagsGuard,
+    }),
+  ])
+);
 
 export type POST = (
   contractId: ContractId,

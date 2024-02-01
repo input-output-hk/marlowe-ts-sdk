@@ -13,6 +13,7 @@ import { DecodingError } from "@marlowe.io/adapter/codec";
 
 import {
   AddressBech32,
+  AddressBech32Guard,
   AddressesAndCollaterals,
   AssetId,
   PayoutId,
@@ -24,12 +25,21 @@ import {
 
 import { WithdrawalHeader } from "../header.js";
 import { stringify } from "qs";
-import { ItemRange, PageGuard } from "../../pagination.js";
+import { ItemRange, ItemRangeGuard, PageGuard } from "../../pagination.js";
+import { assertGuardEqual, proxy } from "@marlowe.io/adapter/io-ts";
 
 export type GetWithdrawalsRequest = {
   range?: ItemRange;
   partyRoles?: AssetId[];
 };
+
+export const GetWithdrawalsRequestGuard = assertGuardEqual(
+  proxy<GetWithdrawalsRequest>(),
+  t.partial({
+    range: ItemRangeGuard,
+    partyRoles: t.array(AssetId),
+  })
+);
 
 export type GETHeadersByRange = (
   request?: GetWithdrawalsRequest
@@ -103,6 +113,20 @@ export type WithdrawPayoutsRequest = {
   usedAddresses?: AddressBech32[];
   collateralUTxOs?: TxOutRef[];
 };
+
+export const WithdrawPayoutsRequestGuard = assertGuardEqual(
+  proxy<WithdrawPayoutsRequest>(),
+  t.intersection([
+    t.type({
+      payoutIds: t.array(PayoutId),
+      changeAddress: AddressBech32Guard,
+    }),
+    t.partial({
+      usedAddresses: t.array(AddressBech32Guard),
+      collateralUTxOs: t.array(TxOutRef),
+    }),
+  ])
+);
 
 export type POST = (
   payoutIds: PayoutId[],

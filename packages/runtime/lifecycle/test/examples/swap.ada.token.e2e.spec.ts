@@ -249,7 +249,7 @@ const shouldBeAClosedContract = async (
   contractId: ContractId
 ): Promise<void> => {
   const state = await restClient
-    .getContractById(contractId)
+    .getContractById({ contractId })
     .then((contractDetails) => contractDetails.state);
   if (state) {
     throw new Error("Contract retrieved is not Closed");
@@ -268,5 +268,5 @@ const getMarloweStatefromAnActiveContract = (
   contractId: ContractId
 ): Promise<MarloweState> =>
   restClient
-    .getContractById(contractId)
+    .getContractById({ contractId })
     .then((contractDetails) => shouldBeAnActiveContract(contractDetails.state));

@@ -48,6 +48,8 @@ const importMap = {
       "https://cdn.jsdelivr.net/npm/@marlowe.io/wallet@0.3.0-beta/dist/bundled/esm/browser.js",
     "@marlowe.io/wallet/lucid":
       "https://cdn.jsdelivr.net/npm/@marlowe.io/wallet@0.3.0-beta/dist/bundled/esm/lucid.js",
+    "@marlowe.io/wallet/peer-connect":
+      "https://cdn.jsdelivr.net/npm/@marlowe.io/wallet@0.3.0-beta/dist/bundled/esm/peer-connect.js",
     "@marlowe.io/runtime-rest-client":
       "https://cdn.jsdelivr.net/npm/@marlowe.io/runtime-rest-client@0.3.0-beta/dist/bundled/esm/runtime-rest-client.js",
     "@marlowe.io/runtime-rest-client/contract":
@@ -78,6 +80,8 @@ const importMap = {
       "https://cdn.jsdelivr.net/npm/@marlowe.io/marlowe-object@0.3.0-beta/dist/bundled/esm/bundle-map.js",
     "@marlowe.io/marlowe-object/guards":
       "https://cdn.jsdelivr.net/npm/@marlowe.io/marlowe-object@0.3.0-beta/dist/bundled/esm/guards.js",
+    "@marlowe.io/marlowe-object/object":
+      "https://cdn.jsdelivr.net/npm/@marlowe.io/marlowe-object@0.3.0-beta/dist/bundled/esm/object.js",
     "@marlowe.io/testing-kit":
       "https://cdn.jsdelivr.net/npm/@marlowe.io/testing-kit@0.3.0-beta/dist/bundled/esm/testing-kit.js",
     "lucid-cardano": "https://unpkg.com/lucid-cardano@0.10.7/web/mod.js",

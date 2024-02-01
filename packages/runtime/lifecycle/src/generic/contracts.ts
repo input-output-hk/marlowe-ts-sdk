@@ -56,14 +56,15 @@ export function mkContractLifecycle(
 const getInputHistory =
   ({ restClient }: ContractsDI) =>
   async (contractId: ContractId): Promise<SingleInputTx[]> => {
-    const transactionHeaders =
-      await restClient.getTransactionsForContract(contractId);
+    const transactionHeaders = await restClient.getTransactionsForContract({
+      contractId,
+    });
     const transactions = await Promise.all(
       transactionHeaders.transactions.map((txHeader) =>
-        restClient.getContractTransactionById(
+        restClient.getContractTransactionById({
           contractId,
-          txHeader.transactionId
-        )
+          txId: txHeader.transactionId,
+        })
       )
     );
     const sortOptionalBlock = (
@@ -140,9 +141,9 @@ const createContract =
         contract: createContractRequest.contract,
       };
     } else {
-      const contractSources = await restClient.createContractSources(
-        createContractRequest.bundle
-      );
+      const contractSources = await restClient.createContractSources({
+        bundle: createContractRequest.bundle,
+      });
       restClientRequest = {
         ...baseRequest,
         sourceId: contractSources.contractSourceId,
@@ -156,10 +157,10 @@ const createContract =
       buildCreateContractTxResponse.tx.cborHex
     );
 
-    await restClient.submitContract(
+    await restClient.submitContract({
       contractId,
-      transactionWitnessSetTextEnvelope(hexTransactionWitnessSet)
-    );
+      txEnvelope: transactionWitnessSetTextEnvelope(hexTransactionWitnessSet),
+    });
     return [contractId, contractIdToTxId(contractId)];
   };
 

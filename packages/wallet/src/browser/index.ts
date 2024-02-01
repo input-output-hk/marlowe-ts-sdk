@@ -1,7 +1,9 @@
 import { WalletAPI } from "../api.js";
 import { C } from "lucid-cardano";
+import * as t from "io-ts/lib/index.js";
 import * as Lucid from "lucid-cardano";
 import { hex, utf8 } from "@47ng/codec";
+import { assertGuardEqual, proxy } from "@marlowe.io/adapter/io-ts";
 // DISCUSSION: these should be imported from a cardano helpers library.
 //       They are independent of the runtime. Maybe the adaptor library?
 import {
@@ -21,6 +23,12 @@ import {
  * The SupportedWalletName is the list of Known and tested Browser Cardano Wallet Extensions supporting building/signing Marlowe Transactions.
  */
 export type SupportedWalletName = "nami" | "eternl" | "lace";
+
+export const SupportedWalletNameGuard: t.Type<SupportedWalletName> =
+  assertGuardEqual(
+    proxy<SupportedWalletName>(),
+    t.union([t.literal("nami"), t.literal("eternl"), t.literal("lace")])
+  );
 
 /**
  * The BroswerWalletExtension is an interface for interacting with a querying the list of Browser Cardano Wallet Extensions.
@@ -101,7 +109,10 @@ export async function mkBrowserWallet(
 
 // DISCUSSION: This can currently wait forever. Maybe we should add
 //             an abort controller or a timeout
-const waitConfirmation =
+/**
+ * @hidden
+ */
+export const waitConfirmation =
   (di: ExtensionDI) =>
   (txHash: string, checkInterval = 3000) => {
     return new Promise<boolean>((txConfirm) => {
@@ -118,55 +129,79 @@ const waitConfirmation =
     });
   };
 
-const signTx =
+/**
+ * @hidden
+ */
+export const signTx =
   ({ extension }: ExtensionDI) =>
   (tx: string) => {
     return extension.signTx(tx, true);
   };
 
-const getChangeAddress =
+/**
+ * @hidden
+ */
+export const getChangeAddress =
   ({ extension }: ExtensionDI) =>
   async () => {
     const changeAddress = await extension.getChangeAddress();
     return deserializeAddress(changeAddress);
   };
 
-const getUsedAddresses =
+/**
+ * @hidden
+ */
+export const getUsedAddresses =
   ({ extension }: ExtensionDI) =>
   async () => {
     const usedAddresses = await extension.getUsedAddresses();
     return usedAddresses.map(deserializeAddress);
   };
 
-const getUTxOs =
+/**
+ * @hidden
+ */
+export const getUTxOs =
   ({ extension }: ExtensionDI) =>
   async () => {
     const utxos = (await extension.getUtxos()) ?? [];
     return utxos.map(deserializeTxOutRef);
   };
 
-const getCollaterals =
+/**
+ * @hidden
+ */
+export const getCollaterals =
   ({ extension }: ExtensionDI) =>
   async () => {
     const collaterals = (await extension.experimental.getCollateral()) ?? [];
     return collaterals.map(deserializeTxOutRef);
   };
 
-const isMainnet =
+/**
+ * @hidden
+ */
+export const isMainnet =
   ({ extension }: ExtensionDI) =>
   async () => {
     const networkId = await extension.getNetworkId();
     return networkId == 1;
   };
 
-const getTokens =
+/**
+ * @hidden
+ */
+export const getTokens =
   ({ extension }: ExtensionDI) =>
   async () => {
     const balances = await extension.getBalance();
     return valueToTokens(deserializeValue(balances));
   };
 
-const getLovelaces =
+/**
+ * @hidden
+ */
+export const getLovelaces =
   ({ extension }: ExtensionDI) =>
   async () => {
     const balances = await extension.getBalance();

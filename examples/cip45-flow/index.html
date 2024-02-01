@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CIP45 test Flow</title>
+    <!-- This import map tells the browser what version of the SDK to use, the route is rewritten by the
+        local web server to point to the correct version -->
+    <script src="/importmap"></script>
+  </head>
+  <body>
+    <h1>CIP45 test Flow</h1>
+    <div>
+      <h2>Setup Runtime</h2>
+
+      <label for="runtimeUrl">URL to a Marlowe Runtime instance:</label>
+      <input
+        id="runtimeUrl"
+        type="text"
+        autocomplete="on"
+        placeholder="http://localhost:32952"
+      />
+    </div>
+    <div id="qr-code"></div>
+    <div id="connected-wallet" style="display: none">
+      <h2>Connected Wallet</h2>
+      <div id="connected-wallet-address"></div>
+      <div id="connected-wallet-balance"></div>
+      <button id="create-contract">Create contract</button>
+      <button id="wallet-flow">Wallet flow</button>
+      <button id="disconnect-wallet">Disconnect Wallet</button>
+    </div>
+    <span id="connection-id"></span>
+    <h2>Console</h2>
+    <input id="clear-console" type="button" value="Clear console" />
+    <div id="console"></div>
+
+    <script src="https://fabianbormann.github.io/cardano-peer-connect/latest/index.js"></script>
+    <script type="module" src="./index.js"></script>
+  </body>
+</html>
