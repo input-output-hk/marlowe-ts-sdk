@@ -1,15 +1,15 @@
 import * as t from "io-ts/lib/index.js";
-import { Action, ActionGuard } from "./actions.js";
-import { Contract, ContractGuard } from "./contract.js";
-import { Party, PartyGuard } from "./participants.js";
-import { Label, LabelGuard } from "./reference.js";
-import { Token, TokenGuard } from "./token.js";
+import { Action, ActionGuard } from "../actions.js";
+import { Contract, ContractGuard } from "../contract.js";
+import { Party, PartyGuard } from "../participants.js";
+import { Label, LabelGuard } from "../reference.js";
+import { Token, TokenGuard } from "../token.js";
 import {
   ValueGuard,
   Value,
   Observation,
   ObservationGuard,
-} from "./value-and-observation.js";
+} from "../value-and-observation.js";
 
 /**
  * An entry of a {@link BundleList} that references a {@link Party}.

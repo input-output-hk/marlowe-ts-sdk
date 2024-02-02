@@ -17,14 +17,28 @@ import { Reference, ReferenceGuard } from "./reference.js";
 
 export { Timeout, BuiltinByteString };
 
+/**
+ * Marlowe Object version of {@link @marlowe.io/language-core-v1!index.Close | Core Close}.\
+ * @typeParam A - An optional {@link index.Annotated | annotation} of the contract nodes.
+ * @category Contract
+ */
 export class Close<A> extends String {
   constructor(public annotation?: A) {
     super("close");
   }
 }
 
+/**
+ * Helper function to create a possible annotated Close contract
+ * @typeParam A - An optional {@link index.Annotated | annotation} of the contract nodes.
+ * @category Contract
+ */
 export const close = <A>(annotation?: A) => new Close<A>(annotation);
 
+/**
+ * {@link !io-ts-usage | Dynamic type guard} for the {@link Close | Close type}.
+ * @category Contract
+ */
 export const CloseGuard: t.Type<Close<unknown>> = new t.Type(
   "close",
   (input: unknown): input is Close<unknown> => input == "close",
@@ -35,6 +49,7 @@ export const CloseGuard: t.Type<Close<unknown>> = new t.Type(
 
 /**
  * Marlowe Object version of {@link @marlowe.io/language-core-v1!index.Pay | Core Pay}.
+ * @typeParam A - An optional {@link index.Annotated | annotation} of the contract nodes.
  * @category Contract
  */
 export interface Pay<A> {
@@ -62,6 +77,7 @@ export const PayGuard = t.recursion<Pay<unknown>>("Pay", () =>
 
 /**
  * Marlowe Object version of {@link @marlowe.io/language-core-v1!index.If | Core If}.
+ * @typeParam A - An optional {@link index.Annotated | annotation} of the contract nodes.
  * @category Contract
  */
 export interface If<A> {
@@ -85,6 +101,7 @@ export const IfGuard: t.Type<If<unknown>> = t.recursion("If", () =>
 
 /**
  * Marlowe Object version of {@link @marlowe.io/language-core-v1!index.Let | Core Let}.
+ * @typeParam A - An optional {@link index.Annotated | annotation} of the contract nodes.
  * @category Contract
  */
 export interface Let<A> {
@@ -104,6 +121,7 @@ export const LetGuard: t.Type<Let<unknown>> = t.recursion("Let", () =>
 
 /**
  * Marlowe Object version of {@link @marlowe.io/language-core-v1!index.Assert | Core Assert}.
+ * @typeParam A - An optional {@link index.Annotated | annotation} of the contract nodes.
  * @category Contract
  */
 export interface Assert<A> {
@@ -122,6 +140,7 @@ export const AssertGuard: t.Type<Assert<unknown>> = t.recursion("Assert", () =>
 
 /**
  * Marlowe Object version of {@link @marlowe.io/language-core-v1!index.When | Core When}.
+ * @typeParam A - An optional {@link index.Annotated | annotation} of the contract nodes.
  * @category Contract
  */
 export interface When<A> {
@@ -144,6 +163,7 @@ export const WhenGuard: t.Type<When<unknown>> = t.recursion("When", () =>
 
 /**
  * Marlowe Object version of {@link @marlowe.io/language-core-v1!index.NormalCase | Core NormalCase}.
+ * @typeParam A - An optional {@link index.Annotated | annotation} of the contract nodes.
  * @category Contract
  */
 export interface NormalCase<A> {
@@ -184,6 +204,7 @@ export const MerkleizedCaseGuard: t.Type<MerkleizedCase> = t.type({
 });
 
 /**
+ * @typeParam A - An optional {@link index.Annotated | annotation} of the contract nodes.
  * @category Contract
  */
 export type Case<A> = NormalCase<A> | MerkleizedCase;
@@ -199,6 +220,7 @@ export const CaseGuard: t.Type<Case<unknown>> = t.recursion("Case", () =>
 /**
  * Marlowe Object version of {@link @marlowe.io/language-core-v1!index.MerkleizedCase | Core MerkleizedCase} with
  * the ability to reference other contracts.
+ * @typeParam A - An optional {@link index.Annotated | annotation} of the contract nodes.
  * @category Contract
  */
 export type Contract<A> =

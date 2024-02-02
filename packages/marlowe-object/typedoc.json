@@ -1,14 +1,16 @@
 {
   "$schema": "https://typedoc.org/schema.json",
   "entryPoints": [
+    "./src/bundle-list/index.ts",
+    "./src/bundle-map/index.ts",
     "./src/index.ts",
-    "./src/guards.ts",
-    "./src/bundle-list.ts",
-    "./src/bundle-map.ts"
+    "./src/guards.ts"
   ],
   "categorizeByGroup": false,
   "defaultCategory": "General",
   "categoryOrder": [
+    "Annotation",
+    "Bundle",
     "Object",
     "Contract",
     "Observation",

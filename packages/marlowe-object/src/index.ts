@@ -49,7 +49,16 @@ export {
   MerkleizedCase,
   Timeout,
 } from "./contract.js";
-export { ContractBundleList } from "./bundle-list.js";
-export { ContractBundleMap } from "./bundle-map.js";
-export { bundleMapToList, bundleListToMap } from "./bundle-conversion.js";
-export { stripAnnotations, isAnnotated } from "./annotations.js";
+export { ContractBundleList } from "./bundle-list/bundle-list.js";
+export { ContractBundleMap } from "./bundle-map/bundle-map.js";
+export {
+  bundleMapToList,
+  bundleListToMap,
+  CircularDependencyError,
+  MissingLabelError,
+  ObjectTypeMismatchError,
+  LabelReferencedBeforeDefinedError,
+  LabelRedefinedError,
+  ObjectTypes,
+} from "./bundle-conversion.js";
+export { stripAnnotations, isAnnotated, Annotated } from "./annotations.js";

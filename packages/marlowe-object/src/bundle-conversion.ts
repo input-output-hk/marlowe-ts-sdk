@@ -1,8 +1,8 @@
 import { Action, matchAction } from "./actions.js";
-import { BundleList, ContractBundleList } from "./bundle-list.js";
-import * as BundleL from "./bundle-list.js";
-import * as BundleM from "./bundle-map.js";
-import { ContractBundleMap } from "./bundle-map.js";
+import { BundleList, ContractBundleList } from "./bundle-list/bundle-list.js";
+import * as BundleL from "./bundle-list/bundle-list.js";
+import * as BundleM from "./bundle-map/bundle-map.js";
+import { ContractBundleMap } from "./bundle-map/bundle-map.js";
 import { Contract, matchContract } from "./contract.js";
 import { Party, matchParty } from "./participants.js";
 import { Payee, matchPayee } from "./payee.js";
@@ -44,7 +44,7 @@ export class LabelRedefinedError extends Error {
   }
 }
 
-type ObjectTypes =
+export type ObjectTypes =
   | "action"
   | "contract"
   | "observation"
@@ -59,10 +59,13 @@ export class ObjectTypeMismatchError extends Error {
 }
 /**
  * Converts a {@link ContractBundleMap} to a {@link ContractBundleList} while checking
- * that all references are valid and there are no circular dependencies.
- * @throws {CircularDependencyError} if a circular dependency is detected.
- * @throws {MissingLabelError} if a label referenced either in the `main` contract or one of the entries but is missing from the bundle.
- * @throws {ObjectTypeMismatchError} if a bundle entry does not have the expected type.
+ * the integrity of the bundle.
+ *
+ * @typeParam A - An optional {@link index.Annotated | annotation} of the contract nodes.
+ * @throws {@link CircularDependencyError} if a circular dependency is detected.
+ * @throws {@link MissingLabelError} if a label referenced either in the `main` contract or one of the entries but is missing from the bundle.
+ * @throws {@link ObjectTypeMismatchError} if a bundle entry does not have the expected type.
+ * @category Bundle
  */
 export function bundleMapToList<A>(
   contractBundleMap: ContractBundleMap<A>
@@ -254,9 +257,16 @@ export function bundleMapToList<A>(
   goRef(contractBundleMap.main, "contract", []);
   return { main: contractBundleMap.main, bundle };
 }
+
 /**
  * Converts a {@link ContractBundleList} to a {@link ContractBundleMap} while checking
- * that all references are valid and there are no circular dependencies.
+ * the integrity of the bundle.
+ * @typeParam A - An optional {@link index.Annotated | annotation} of the contract nodes.
+ * @throws {@link LabelReferencedBeforeDefinedError} If a reference is used before the object type definition. This can hint a cyclic dependency.
+ * @throws {@link MissingLabelError} If a reference is not present in the bundle.
+ * @throws {@link ObjectTypeMismatchError} if a bundle entry does not have the expected type.
+ * @throws {@link LabelRedefinedError} if a bundle entry is defined more than once.
+ * @category Bundle
  */
 export function bundleListToMap<A>(
   contractBundleList: ContractBundleList<A>

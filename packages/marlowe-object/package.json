@@ -36,14 +36,14 @@
       "types": "./dist/esm/guards.d.ts"
     },
     "./bundle-list": {
-      "import": "./dist/esm/bundle-list.js",
-      "require": "./dist/bundled/cjs/bundle-list.cjs",
-      "types": "./dist/esm/bundle-list.d.ts"
+      "import": "./dist/esm/bundle-list/index.js",
+      "require": "./dist/bundled/cjs/bundle-list/index.cjs",
+      "types": "./dist/esm/bundle-list/index.d.ts"
     },
     "./bundle-map": {
-      "import": "./dist/esm/bundle-map.js",
-      "require": "./dist/bundled/cjs/bundle-map.cjs",
-      "types": "./dist/esm/bundle-map.d.ts"
+      "import": "./dist/esm/bundle-map/index.js",
+      "require": "./dist/bundled/cjs/bundle-map/index.cjs",
+      "types": "./dist/esm/bundle-map/index.d.ts"
     }
   },
   "dependencies": {
