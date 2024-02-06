@@ -40,6 +40,7 @@ import { WalletAPI } from "@marlowe.io/wallet";
 import * as Big from "@marlowe.io/adapter/bigint";
 import { Monoid } from "fp-ts/lib/Monoid.js";
 import * as R from "fp-ts/lib/Record.js";
+import { ContractDetails } from "../../../../packages/runtime/client/rest/dist/esm/contract/details.js";
 
 type ActionApplicant = Party | "anybody";
 
@@ -117,36 +118,61 @@ function getApplicant(action: ApplicableAction): ActionApplicant {
   }
 }
 
+/**
+ * Computes a "safe" environment for the contract.
+ */
+async function computeEnvironment(
+  restClient: RestClient,
+  currentContract: Contract
+): Promise<Environment> {
+  const oneDayFrom = (time: Timeout) => time + 24n * 60n * 60n * 1000n; // in milliseconds
+  // For the lower, bound we use the tip of the runtime chain.
+  // If we used new Date(), the runtime can complain that the lower bound is too high
+  // because it is ahead of the time that it knows.
+  const status = await restClient.healthcheck();
+  const lowerBound = datetoTimeout(
+    new Date(status.tips.runtimeChain.slotTimeUTC)
+  );
+
+  // For the upper bound, we use the next timeout if available or one day from the lower bound.
+  // IMPORTANT NOTE: With this code, if the upper bound is far into the future, and this interval
+  //                 is used when applying an input, you can end up with a Slot conversion error.
+  //                 This is because the ledger can change the slot length at particular times
+  //                 so the runtime cannot predict what is the exact slot.
+  //                 The safe way to solve this is to get the network parameters from the runtime
+  //                 and instead of doing oneDayFrom, do the max safe conversion.
+  const upperBound =
+    getNextTimeout(currentContract, lowerBound) ?? oneDayFrom(lowerBound);
+
+  return { timeInterval: { from: lowerBound, to: upperBound - 1n } };
+}
+
 export async function getApplicableActions(
   restClient: RestClient,
   contractId: ContractId,
   environment?: Environment
 ): Promise<ApplicableAction[]> {
   const contractDetails = await restClient.getContractById({ contractId });
-  const currentContract = contractDetails.currentContract
-    ? contractDetails.currentContract
-    : contractDetails.initialContract;
-  const oneDayFrom = (time: Timeout) => time + 24n * 60n * 60n * 1000n; // in milliseconds
-  const status = await restClient.healthcheck();
-  const lowerBound = datetoTimeout(
-    new Date(status.tips.runtimeChain.slotTimeUTC)
-  );
-  const nextTimeout =
-    getNextTimeout(currentContract, lowerBound) ?? oneDayFrom(lowerBound);
-  const timeInterval = { from: lowerBound, to: nextTimeout - 1n };
-  const env = environment ?? { timeInterval };
-  if (typeof contractDetails.state === "undefined") {
-    // TODO: Check, I believe this happens when a contract is in a closed state, but it would be nice
-    //       if the API returned something more explicit.
+  // If the contract is closed there are no applicable actions
+  if (
+    typeof contractDetails.state === "undefined" ||
+    typeof contractDetails.currentContract === "undefined"
+  ) {
     return [];
   }
+
+  const env =
+    environment ??
+    (await computeEnvironment(restClient, contractDetails.currentContract));
+
   const initialReduce = reduceContractUntilQuiescent(
     env,
     contractDetails.state,
-    currentContract
+    contractDetails.currentContract
   );
   if (initialReduce == "TEAmbiguousTimeIntervalError")
     throw new Error("AmbiguousTimeIntervalError");
+
   const applicableActions: ApplicableAction[] = initialReduce.reduced
     ? [
         {
@@ -166,8 +192,7 @@ export async function getApplicableActions(
       ]
     : [];
   const cont = initialReduce.continuation;
-  if (cont === "close") return applicableActions;
-  if ("when" in cont) {
+  if (typeof cont === "object" && "when" in cont) {
     const applicableActionsFromCases = await Promise.all(
       cont.when.map((aCase) =>
         getApplicableActionFromCase(
