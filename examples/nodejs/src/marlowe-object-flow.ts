@@ -29,6 +29,7 @@ import {
   AppliedActionResult,
   getApplicableActions,
   mkApplicableActionsFilter,
+  mkGetApplicableActionsDI,
 } from "./experimental-features/applicable-inputs.js";
 import arg from "arg";
 import * as t from "io-ts/lib/index.js";
@@ -265,12 +266,11 @@ async function contractMenu(
   printState(contractState, scheme);
 
   if (contractState.type === "Closed") return;
-
   // See what actions are applicable to the current contract state
   const applicableActions = await getApplicableActions(
-    lifecycle.restClient,
-    contractId
-  );
+    mkGetApplicableActionsDI(lifecycle.restClient)
+  )(contractId);
+
   const myActionsFilter = await mkApplicableActionsFilter(lifecycle.wallet);
   const myActions = applicableActions.filter(myActionsFilter);
 

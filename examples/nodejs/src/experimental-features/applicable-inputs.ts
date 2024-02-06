@@ -35,12 +35,12 @@ import {
   TransactionWarning,
 } from "@marlowe.io/language-core-v1/semantics";
 import { AddressBech32, ContractId, PolicyId } from "@marlowe.io/runtime-core";
-import { RestClient } from "@marlowe.io/runtime-rest-client";
+import { RestClient, Tip } from "@marlowe.io/runtime-rest-client";
 import { WalletAPI } from "@marlowe.io/wallet";
 import * as Big from "@marlowe.io/adapter/bigint";
 import { Monoid } from "fp-ts/lib/Monoid.js";
 import * as R from "fp-ts/lib/Record.js";
-import { ContractDetails } from "../../../../packages/runtime/client/rest/dist/esm/contract/details.js";
+import { ContractSourceId } from "@marlowe.io/marlowe-object";
 
 type ActionApplicant = Party | "anybody";
 
@@ -118,21 +118,24 @@ function getApplicant(action: ApplicableAction): ActionApplicant {
   }
 }
 
+type ChainTipDI = {
+  getRuntimeTip: () => Promise<Date>;
+};
+
 /**
  * Computes a "safe" environment for the contract.
  */
 async function computeEnvironment(
-  restClient: RestClient,
+  { getRuntimeTip }: ChainTipDI,
   currentContract: Contract
 ): Promise<Environment> {
   const oneDayFrom = (time: Timeout) => time + 24n * 60n * 60n * 1000n; // in milliseconds
   // For the lower, bound we use the tip of the runtime chain.
   // If we used new Date(), the runtime can complain that the lower bound is too high
   // because it is ahead of the time that it knows.
-  const status = await restClient.healthcheck();
-  const lowerBound = datetoTimeout(
-    new Date(status.tips.runtimeChain.slotTimeUTC)
-  );
+  const tip = await getRuntimeTip();
+
+  const lowerBound = datetoTimeout(tip);
 
   // For the upper bound, we use the next timeout if available or one day from the lower bound.
   // IMPORTANT NOTE: With this code, if the upper bound is far into the future, and this interval
@@ -147,76 +150,106 @@ async function computeEnvironment(
   return { timeInterval: { from: lowerBound, to: upperBound - 1n } };
 }
 
-export async function getApplicableActions(
-  restClient: RestClient,
-  contractId: ContractId,
-  environment?: Environment
-): Promise<ApplicableAction[]> {
-  const contractDetails = await restClient.getContractById({ contractId });
-  // If the contract is closed there are no applicable actions
-  if (
-    typeof contractDetails.state === "undefined" ||
-    typeof contractDetails.currentContract === "undefined"
-  ) {
-    return [];
-  }
+export const mkGetApplicableActionsDI = (
+  restClient: RestClient
+): GetApplicableActionsDI => {
+  return {
+    getContractContinuation: (contractSourceId: ContractSourceId) => {
+      return restClient.getContractSourceById({ contractSourceId });
+    },
+    getContractDetails: async (contractId: ContractId) => {
+      const contractDetails = await restClient.getContractById({ contractId });
+      if (
+        typeof contractDetails.state === "undefined" ||
+        typeof contractDetails.currentContract === "undefined"
+      ) {
+        return { type: "closed" };
+      } else {
+        return {
+          type: "active",
+          currentState: contractDetails.state,
+          currentContract: contractDetails.currentContract,
+          roleTokenMintingPolicyId: contractDetails.roleTokenMintingPolicyId,
+        };
+      }
+    },
+    getRuntimeTip: async () => {
+      const status = await restClient.healthcheck();
+      return new Date(status.tips.runtimeChain.slotTimeUTC);
+    },
+  };
+};
 
-  const env =
-    environment ??
-    (await computeEnvironment(restClient, contractDetails.currentContract));
+type GetApplicableActionsDI = GetContinuationDI &
+  GetContractDetailsDI &
+  ChainTipDI;
 
-  const initialReduce = reduceContractUntilQuiescent(
-    env,
-    contractDetails.state,
-    contractDetails.currentContract
-  );
-  if (initialReduce == "TEAmbiguousTimeIntervalError")
-    throw new Error("AmbiguousTimeIntervalError");
+export function getApplicableActions(di: GetApplicableActionsDI) {
+  return async function (
+    contractId: ContractId,
+    environment?: Environment
+  ): Promise<ApplicableAction[]> {
+    const contractDetails = await di.getContractDetails(contractId);
+    // If the contract is closed there are no applicable actions
+    if (contractDetails.type === "closed") return [];
 
-  const applicableActions: ApplicableAction[] = initialReduce.reduced
-    ? [
-        {
-          type: "Advance",
-          policyId: contractDetails.roleTokenMintingPolicyId,
-          applyAction() {
-            return {
-              inputs: [],
-              environment: env,
-              reducedState: initialReduce.state,
-              reducedContract: initialReduce.continuation,
-              warnings: convertReduceWarning(initialReduce.warnings),
-              payments: initialReduce.payments,
-            };
+    const env =
+      environment ??
+      (await computeEnvironment(di, contractDetails.currentContract));
+
+    const initialReduce = reduceContractUntilQuiescent(
+      env,
+      contractDetails.currentState,
+      contractDetails.currentContract
+    );
+    if (initialReduce == "TEAmbiguousTimeIntervalError")
+      throw new Error("AmbiguousTimeIntervalError");
+
+    const applicableActions: ApplicableAction[] = initialReduce.reduced
+      ? [
+          {
+            type: "Advance",
+            policyId: contractDetails.roleTokenMintingPolicyId,
+            applyAction() {
+              return {
+                inputs: [],
+                environment: env,
+                reducedState: initialReduce.state,
+                reducedContract: initialReduce.continuation,
+                warnings: convertReduceWarning(initialReduce.warnings),
+                payments: initialReduce.payments,
+              };
+            },
           },
-        },
-      ]
-    : [];
-  const cont = initialReduce.continuation;
-  if (typeof cont === "object" && "when" in cont) {
-    const applicableActionsFromCases = await Promise.all(
-      cont.when.map((aCase) =>
-        getApplicableActionFromCase(
-          restClient,
-          env,
-          initialReduce.continuation,
-          initialReduce.state,
-          initialReduce.payments,
-          convertReduceWarning(initialReduce.warnings),
-          aCase,
-          contractDetails.roleTokenMintingPolicyId
+        ]
+      : [];
+    const cont = initialReduce.continuation;
+    if (typeof cont === "object" && "when" in cont) {
+      const applicableActionsFromCases = await Promise.all(
+        cont.when.map((aCase) =>
+          getApplicableActionFromCase(
+            di,
+            env,
+            initialReduce.continuation,
+            initialReduce.state,
+            initialReduce.payments,
+            convertReduceWarning(initialReduce.warnings),
+            aCase,
+            contractDetails.roleTokenMintingPolicyId
+          )
         )
-      )
-    );
-    return applicableActions.concat(
-      toApplicableActions(
-        applicableActionsFromCases.reduce(
-          mergeApplicableActionAccumulator.concat,
-          mergeApplicableActionAccumulator.empty
+      );
+      return applicableActions.concat(
+        toApplicableActions(
+          applicableActionsFromCases.reduce(
+            mergeApplicableActionAccumulator.concat,
+            mergeApplicableActionAccumulator.empty
+          )
         )
-      )
-    );
-  }
-  return applicableActions;
+      );
+    }
+    return applicableActions;
+  };
 }
 
 export async function mkPartyFilter(wallet: WalletAPI) {
@@ -410,8 +443,12 @@ const mergeApplicableActionAccumulator: Monoid<ApplicableActionAccumulator> = {
   },
 };
 
+type GetContinuationDI = {
+  getContractContinuation: (sourceId: ContractSourceId) => Promise<Contract>;
+};
+
 async function getApplicableActionFromCase(
-  restClient: RestClient,
+  di: GetContinuationDI,
   env: Environment,
   currentContract: Contract,
   state: MarloweState,
@@ -422,9 +459,7 @@ async function getApplicableActionFromCase(
 ): Promise<ApplicableActionAccumulator> {
   let aCaseContinuation: Contract;
   if ("merkleized_then" in aCase) {
-    aCaseContinuation = await restClient.getContractSourceById({
-      contractSourceId: aCase.merkleized_then,
-    });
+    aCaseContinuation = await di.getContractContinuation(aCase.merkleized_then);
   } else {
     aCaseContinuation = aCase.then;
   }
@@ -539,3 +574,27 @@ async function getApplicableActionFromCase(
     });
   }
 }
+
+// #region High level Contract Details
+// This is the start of a high level API to get the contract details.
+// The current restAPI is not clear wether the details that you get are
+// from a closed or active contract. This API is just the start to get
+// getApplicableInputs ready in production, but as part of a ContractsAPI
+// refactoring, the whole contract details should be modeled.
+type ClosedContract = {
+  type: "closed";
+};
+
+type ActiveContract = {
+  type: "active";
+  currentState: MarloweState;
+  currentContract: Contract;
+  roleTokenMintingPolicyId: PolicyId;
+};
+
+type ContractDetails = ClosedContract | ActiveContract;
+
+type GetContractDetailsDI = {
+  getContractDetails: (contractId: ContractId) => Promise<ContractDetails>;
+};
+// #endregion
