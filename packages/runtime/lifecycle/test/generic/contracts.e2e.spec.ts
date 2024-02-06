@@ -63,7 +63,7 @@ describe("Runtime Contract Lifecycle ", () => {
           await bank.waitConfirmation(txIdContractCreated);
           logInfo(
             `contractID status : ${contractId} -> ${
-              (await runtime.restClient.getContractById(contractId)).status
+              (await runtime.restClient.getContractById({ contractId })).status
             }`
           );
           await bank.waitRuntimeSyncingTillCurrentWalletTip(runtime.restClient);

@@ -58,7 +58,7 @@ describe("contracts endpoints", () => {
 
       await Promise.all(
         firstPage.contracts.map((contract) =>
-          restClient.getContractById(contract.contractId)
+          restClient.getContractById({ contractId: contract.contractId })
         )
       );
     },
