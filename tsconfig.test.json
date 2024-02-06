@@ -18,6 +18,7 @@
     { "path": "./packages/runtime/client/rest/test" },
     { "path": "./packages/language/core/v1/test" },
     { "path": "./packages/language/examples/test" },
+    { "path": "./packages/marlowe-object/test" },
     { "path": "./packages/wallet/test" }
   ]
 }

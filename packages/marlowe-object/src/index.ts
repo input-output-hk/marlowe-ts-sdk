@@ -42,20 +42,23 @@ export {
   Contract,
   Pay,
   Close,
+  close,
   Assert,
   Case,
   NormalCase,
   MerkleizedCase,
   Timeout,
 } from "./contract.js";
+export { ContractBundleList } from "./bundle-list/bundle-list.js";
+export { ContractBundleMap } from "./bundle-map/bundle-map.js";
 export {
-  ObjectType,
-  ContractBundle,
-  Bundle,
-  ObjectParty,
-  ObjectValue,
-  ObjectObservation,
-  ObjectToken,
-  ObjectContract,
-  ObjectAction,
-} from "./object.js";
+  bundleMapToList,
+  bundleListToMap,
+  CircularDependencyError,
+  MissingLabelError,
+  ObjectTypeMismatchError,
+  LabelReferencedBeforeDefinedError,
+  LabelRedefinedError,
+  ObjectTypes,
+} from "./bundle-conversion.js";
+export { stripAnnotations, isAnnotated, Annotated } from "./annotations.js";

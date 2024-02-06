@@ -91,7 +91,14 @@ const getInputHistory =
       .map((tx) => {
         const interval = {
           from: iso8601ToPosixTime(tx.invalidBefore),
-          to: iso8601ToPosixTime(tx.invalidHereafter),
+          // FIXME: The runtime method getContractTransactionById responds
+          //        a cardano timeinterval (which is closed on the lower bound and
+          //        open in the upper bound), and a Marlowe time interval is closed
+          //        in both parts. Here I substract 1 millisecond from the open bound
+          //        to get a "safe" closed bound. But the runtime should instead respond
+          //        with the same interval as computed here:
+          //        https://github.com/input-output-hk/marlowe-cardano/blob/9ae464a2be332a004cc4d5284fb1ccaf607fa6c7/marlowe-runtime/tx/Language/Marlowe/Runtime/Transaction/BuildConstraints.hs#L463-L479
+          to: iso8601ToPosixTime(tx.invalidHereafter) - 1n,
         };
         if (tx.inputs.length === 0) {
           return [{ interval }];

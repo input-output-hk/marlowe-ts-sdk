@@ -1,19 +1,20 @@
 import * as t from "io-ts/lib/index.js";
 import * as G from "@marlowe.io/language-core-v1/guards";
+import * as ObjG from "@marlowe.io/marlowe-object/guards";
 import * as E from "fp-ts/lib/Either.js";
 import { pipe } from "fp-ts/lib/function.js";
 import { formatValidationErrors } from "jsonbigint-io-ts-reporters";
 
 import { Contract } from "@marlowe.io/language-core-v1";
 import {
-  Bundle,
   Label,
   ContractSourceId,
   ContractSourceIdGuard,
-  ContractBundle,
+  ContractBundleList,
+  stripAnnotations,
 } from "@marlowe.io/marlowe-object";
+import { BundleList } from "@marlowe.io/marlowe-object/bundle-list";
 import { AxiosInstance } from "axios";
-import { ContractBundleGuard } from "@marlowe.io/marlowe-object/object";
 import { assertGuardEqual, proxy } from "@marlowe.io/adapter/io-ts";
 
 /**
@@ -21,11 +22,11 @@ import { assertGuardEqual, proxy } from "@marlowe.io/adapter/io-ts";
  * @category Endpoint : Create contract sources
  */
 export interface CreateContractSourcesRequest {
-  bundle: ContractBundle;
+  bundle: ContractBundleList<unknown>;
 }
 
 export const CreateContractSourcesRequestGuard: t.Type<CreateContractSourcesRequest> =
-  t.type({ bundle: ContractBundleGuard });
+  t.type({ bundle: ObjG.ContractBundleList });
 
 export interface CreateContractSourcesResponse {
   contractSourceId: ContractSourceId;
@@ -43,11 +44,15 @@ const CreateContractSourcesResponseGuard: t.Type<CreateContractSourcesResponse> 
 export const createContractSources = (axiosInstance: AxiosInstance) => {
   return async (
     main: Label,
-    bundle: Bundle
+    bundle: BundleList<unknown>
   ): Promise<CreateContractSourcesResponse> => {
-    const response = await axiosInstance.post("/contracts/sources", bundle, {
-      params: { main },
-    });
+    const response = await axiosInstance.post(
+      "/contracts/sources",
+      stripAnnotations(bundle),
+      {
+        params: { main },
+      }
+    );
     return pipe(
       CreateContractSourcesResponseGuard.decode(response.data),
       E.match(

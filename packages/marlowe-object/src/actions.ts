@@ -83,3 +83,44 @@ export type Action = Deposit | Choice | Notify | Reference;
 export const ActionGuard: t.Type<Action> = t.recursion("Action", () =>
   t.union([DepositGuard, ChoiceGuard, NotifyGuard, ReferenceGuard])
 );
+
+/**
+ * Pattern match object on the Action type
+ * @category Action
+ * @hidden
+ */
+export type ActionMatcher<T> = {
+  deposit: (deposit: Deposit) => T;
+  choice: (choice: Choice) => T;
+  notify: (notify: Notify) => T;
+  reference: (reference: Reference) => T;
+};
+
+/**
+ * Pattern matching on the Action type
+ * @hidden
+ * @category Action
+ */
+export function matchAction<T>(
+  matcher: ActionMatcher<T>
+): (action: Action) => T;
+export function matchAction<T>(
+  matcher: Partial<ActionMatcher<T>>
+): (action: Action) => T | undefined;
+export function matchAction<T>(matcher: Partial<ActionMatcher<T>>) {
+  return (action: Action) => {
+    if (DepositGuard.is(action) && matcher.deposit) {
+      return matcher.deposit(action);
+    }
+    if (ChoiceGuard.is(action) && matcher.choice) {
+      return matcher.choice(action);
+    }
+    if (NotifyGuard.is(action) && matcher.notify) {
+      return matcher.notify(action);
+    }
+    if (ReferenceGuard.is(action) && matcher.reference) {
+      return matcher.reference(action);
+    }
+    return undefined;
+  };
+}

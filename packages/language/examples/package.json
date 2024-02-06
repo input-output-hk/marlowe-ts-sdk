@@ -33,6 +33,7 @@
   },
   "dependencies": {
     "@marlowe.io/language-core-v1": "0.3.0-beta",
+    "@marlowe.io/marlowe-object": "0.3.0-beta",
     "date-fns": "2.29.3",
     "fp-ts": "^2.16.1"
   }

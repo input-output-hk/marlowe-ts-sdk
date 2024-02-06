@@ -110,3 +110,26 @@ export class InvalidTypeError extends Error {
     super(message);
   }
 }
+
+/**
+ * This function creates a guard that matches with a literal string or an object
+ * than can be coerced to a literal string, like the String object
+ */
+export function likeLiteral<S extends string>(literal: S): t.Type<S> {
+  function guard(input: unknown): input is S {
+    if (typeof input === "string") {
+      return input === literal;
+    }
+    if (typeof input === "object" && input instanceof String) {
+      return input.valueOf() === literal;
+    }
+    return false;
+  }
+  return new t.Type(
+    literal,
+    (input: unknown): input is S => guard(input),
+    (input, context) =>
+      guard(input) ? t.success(literal) : t.failure(input, context),
+    t.identity
+  );
+}

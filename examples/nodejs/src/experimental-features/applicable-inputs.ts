@@ -127,9 +127,13 @@ export async function getApplicableActions(
     ? contractDetails.currentContract
     : contractDetails.initialContract;
   const oneDayFrom = (time: Timeout) => time + 24n * 60n * 60n * 1000n; // in milliseconds
-  const now = datetoTimeout(new Date());
-  const nextTimeout = getNextTimeout(currentContract, now) ?? oneDayFrom(now);
-  const timeInterval = { from: now, to: nextTimeout - 1n };
+  const status = await restClient.healthcheck();
+  const lowerBound = datetoTimeout(
+    new Date(status.tips.runtimeChain.slotTimeUTC)
+  );
+  const nextTimeout =
+    getNextTimeout(currentContract, lowerBound) ?? oneDayFrom(lowerBound);
+  const timeInterval = { from: lowerBound, to: nextTimeout - 1n };
   const env = environment ?? { timeInterval };
   if (typeof contractDetails.state === "undefined") {
     // TODO: Check, I believe this happens when a contract is in a closed state, but it would be nice

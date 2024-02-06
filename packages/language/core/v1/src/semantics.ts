@@ -75,6 +75,7 @@ import {
   PartialPay,
   Payment,
   Shadowing,
+  SingleInputTx,
   Transaction,
   TransactionError,
   TransactionOutput,
@@ -396,7 +397,7 @@ function reduceContractStep(
   cont: Contract
 ): ReduceStepResult {
   return matchContract<ReduceStepResult>({
-    close: () => {
+    close: (closeContract) => {
       const refund = refundOne(state.accounts);
       if (typeof refund == "undefined") {
         return NotReduced;
@@ -412,7 +413,7 @@ function reduceContractStep(
             amount: amount,
             token: token,
           }),
-          continuation: "close",
+          continuation: closeContract,
         });
       }
     },
@@ -1044,4 +1045,19 @@ export function playTrace(
     },
     transactions
   );
+}
+
+export function playSingleInputTxTrace(
+  initialTime: POSIXTime,
+  contract: Contract,
+  transactions: SingleInputTx[]
+) {
+  const txs = transactions.map((tx) => {
+    const tx_inputs = typeof tx.input === "undefined" ? [] : [tx.input];
+    return {
+      tx_interval: tx.interval,
+      tx_inputs,
+    };
+  });
+  return playTrace(initialTime, contract, txs);
 }

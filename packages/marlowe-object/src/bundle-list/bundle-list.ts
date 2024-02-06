@@ -1,18 +1,18 @@
 import * as t from "io-ts/lib/index.js";
-import { Action, ActionGuard } from "./actions.js";
-import { Contract, ContractGuard } from "./contract.js";
-import { Party, PartyGuard } from "./participants.js";
-import { Label, LabelGuard } from "./reference.js";
-import { Token, TokenGuard } from "./token.js";
+import { Action, ActionGuard } from "../actions.js";
+import { Contract, ContractGuard } from "../contract.js";
+import { Party, PartyGuard } from "../participants.js";
+import { Label, LabelGuard } from "../reference.js";
+import { Token, TokenGuard } from "../token.js";
 import {
   ValueGuard,
   Value,
   Observation,
   ObservationGuard,
-} from "./value-and-observation.js";
+} from "../value-and-observation.js";
 
 /**
- * Bundle of a {@link Label} that references a {@link Party}.
+ * An entry of a {@link BundleList} that references a {@link Party}.
  * @category Object
  */
 export interface ObjectParty {
@@ -32,7 +32,7 @@ export const ObjectPartyGuard: t.Type<ObjectParty> = t.type({
 });
 
 /**
- * Bundle of a {@link Label} that references a {@link Value}.
+ * An entry of a {@link BundleList} that references a {@link Value}.
  * @category Object
  */
 export interface ObjectValue {
@@ -52,7 +52,7 @@ export const ObjectValueGuard: t.Type<ObjectValue> = t.type({
 });
 
 /**
- * Bundle of a {@link Label} that references an {@link Observation}.
+ * An entry of a {@link BundleList} that references an {@link Observation}.
  * @category Object
  */
 export interface ObjectObservation {
@@ -72,7 +72,7 @@ export const ObjectObservationGuard: t.Type<ObjectObservation> = t.type({
 });
 
 /**
- * Bundle of a {@link Label} that references a {@link Token}.
+ * An entry of a {@link BundleList} that references a {@link Token}.
  * @category Object
  */
 export interface ObjectToken {
@@ -92,27 +92,27 @@ export const ObjectTokenGuard: t.Type<ObjectToken> = t.type({
 });
 
 /**
- * Bundle of a {@link Label} that references a {@link Contract}.
+ * An entry of a {@link BundleList} that references a {@link Contract}.
  * @category Object
  */
-export interface ObjectContract {
+export interface ObjectContract<A> {
   label: Label;
   type: "contract";
-  value: Contract;
+  value: Contract<A>;
 }
 
 /**
  * {@link !io-ts-usage | Dynamic type guard} for the {@link ObjectContract | object contract type}.
  * @category Object
  */
-export const ObjectContractGuard: t.Type<ObjectContract> = t.type({
+export const ObjectContractGuard: t.Type<ObjectContract<unknown>> = t.type({
   label: LabelGuard,
   type: t.literal("contract"),
   value: ContractGuard,
 });
 
 /**
- * Bundle of a {@link Label} that references an {@link Action}.
+ * An entry of a {@link BundleList} that references a an {@link Action}.
  * @category Object
  */
 export interface ObjectAction {
@@ -132,15 +132,15 @@ export const ObjectActionGuard: t.Type<ObjectAction> = t.type({
 });
 
 /**
- * A bundle of a {@link Label} that references a {@link Party}, {@link Value}, {@link Observation}, {@link Token}, {@link Contract}, or {@link Action}.
+ * An entry of a {@link BundleList} that references a {@link Party}, {@link Value}, {@link Observation}, {@link Token}, {@link Contract}, or {@link Action}.
  * @category Object
  */
-export type ObjectType =
+export type ObjectType<A> =
   | ObjectParty
   | ObjectValue
   | ObjectObservation
   | ObjectToken
-  | ObjectContract
+  | ObjectContract<A>
   | ObjectAction;
 
 /**
@@ -157,30 +157,31 @@ export const ObjectTypeGuard = t.union([
 ]);
 
 /**
- * A bundle of {@link ObjectType}s.
+ * A bundle of {@link ObjectType | ObjectType's}.
  * @category Object
  */
-export type Bundle = ObjectType[];
+export type BundleList<A> = ObjectType<A>[];
 
 /**
- * {@link !io-ts-usage | Dynamic type guard} for the {@link Bundle | bundle type}.
+ * {@link !io-ts-usage | Dynamic type guard} for the {@link BundleList | bundle type}.
  * @category Object
  */
-export const BundleGuard = t.array(ObjectTypeGuard);
+export const BundleListGuard = t.array(ObjectTypeGuard);
 
 /**
- * A contract bundle is just a {@link Bundle} with a main entrypoint.
+ * A contract bundle is just a {@link BundleList} with a main entrypoint.
  * @category Object
  */
-export interface ContractBundle {
+export interface ContractBundleList<A> {
   main: Label;
-  bundle: Bundle;
+  bundle: BundleList<A>;
 }
 
 /**
- * {@link !io-ts-usage | Dynamic type guard} for the {@link ContractBundle | contract bundle type}.
+ * {@link !io-ts-usage | Dynamic type guard} for the {@link ContractBundleList | contract bundle type}.
  */
-export const ContractBundleGuard: t.Type<ContractBundle> = t.type({
-  main: LabelGuard,
-  bundle: BundleGuard,
-});
+export const ContractBundleListGuard: t.Type<ContractBundleList<unknown>> =
+  t.type({
+    main: LabelGuard,
+    bundle: BundleListGuard,
+  });

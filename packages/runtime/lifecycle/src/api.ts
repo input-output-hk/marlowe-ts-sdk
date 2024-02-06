@@ -21,7 +21,7 @@ import {
 } from "@marlowe.io/language-core-v1";
 import { Next } from "@marlowe.io/language-core-v1/next";
 import { SingleInputTx } from "@marlowe.io/language-core-v1/transaction.js";
-import { ContractBundle } from "../../../marlowe-object/src/object.js";
+import { ContractBundleList } from "@marlowe.io/marlowe-object";
 
 export type RuntimeLifecycle = {
   wallet: WalletAPI;
@@ -61,7 +61,7 @@ export interface CreateContractRequestFromBundle
   /**
    * The Marlowe Object bundle to create
    */
-  bundle: ContractBundle;
+  bundle: ContractBundleList<undefined>;
 }
 
 export interface CreateContractRequestBase {

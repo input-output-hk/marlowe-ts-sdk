@@ -2,12 +2,12 @@
   * This module offers {@link !io-ts-usage | dynamic type guards} for the for the JSON schema of marlowe-objects.
   ```
   import * as G from "@marlowe/marlowe-objects/guards"
-  import { isValidBundle } from "@marlowe/marlowe-objects"
 
   const jsonObject = JSON.parse(fileContents)
 
-  if (G.Bundle.is(jsonObject)) {
-    // console.log("Object is a  bundle")
+  if (G.ContractBundleMap.is(jsonObject)) {
+    // console.log("Object is a bundle")
+    // console.log("entry contract is ", jsonObject.main)
     //...
   } else {
     // console.error(...)
@@ -15,8 +15,9 @@
   ```
   @packageDocumentation
  */
-// TODO: Create isValidBundle and modify the package docs
-// if (G.Bundle.is(jsonObject) && isValidBundle(jsonObject)) {
+
+import * as BL from "./bundle-list/bundle-list.js";
+import * as BM from "./bundle-map/bundle-map.js";
 
 export {
   ActionGuard as Action,
@@ -37,7 +38,6 @@ export {
   TimeIntervalEnd,
   UseValue,
   ValueId,
-  Close,
 } from "@marlowe.io/language-core-v1/guards";
 
 export { ChoiceIdGuard as ChoiceId } from "./choices.js";
@@ -76,19 +76,41 @@ export {
   ValueLEGuard as ValueLE,
 } from "./value-and-observation.js";
 export {
+  CloseGuard as Close,
   ContractGuard as Contract,
   PayGuard as Pay,
   AssertGuard as Assert,
   IfGuard as If,
   LetGuard as Let,
+  WhenGuard as When,
 } from "./contract.js";
+
 export {
-  BundleGuard as Bundle,
-  ContractBundleGuard as ContractBundle,
-  ObjectPartyGuard as ObjectParty,
-  ObjectValueGuard as ObjectValue,
-  ObjectObservationGuard as ObjectObservation,
-  ObjectTokenGuard as ObjectToken,
-  ObjectContractGuard as ObjectContract,
-  ObjectActionGuard as ObjectAction,
-} from "./object.js";
+  BundleListGuard as BundleList,
+  ContractBundleListGuard as ContractBundleList,
+} from "./bundle-list/bundle-list.js";
+
+export const BundleListObject = {
+  Party: BL.ObjectPartyGuard,
+  Value: BL.ObjectValueGuard,
+  Observation: BL.ObjectObservationGuard,
+  Token: BL.ObjectTokenGuard,
+  Contract: BL.ObjectContractGuard,
+  Action: BL.ObjectActionGuard,
+};
+
+export {
+  BundleMapGuard as BundleMap,
+  ContractBundleMapGuard as ContractBundleMap,
+} from "./bundle-map/bundle-map.js";
+
+export const BundleMapObject = {
+  Party: BM.ObjectPartyGuard,
+  Value: BM.ObjectValueGuard,
+  Observation: BM.ObjectObservationGuard,
+  Token: BM.ObjectTokenGuard,
+  Contract: BM.ObjectContractGuard,
+  Action: BM.ObjectActionGuard,
+};
+
+export { AnnotatedGuard as Annotated } from "./annotations.js";
