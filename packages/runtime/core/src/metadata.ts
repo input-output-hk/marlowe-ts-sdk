@@ -1,6 +1,7 @@
 /**
  * This module contains the static types and the dynamic guards for the metadata that can be attached to a transaction.
  */
+import { BigIntOrNumberGuard } from "@marlowe.io/adapter/bigint";
 import * as t from "io-ts/lib/index.js";
 
 // NOTE: [[recursive branded types]]
@@ -55,23 +56,6 @@ export type MetadatumArray = Array<Metadatum>;
 export type MetadatumOutputArray = Array<MetadatumOutput>;
 export const MetadatumArrayGuard: t.Type<MetadatumArray, MetadatumOutputArray> =
   t.recursion("MetadatumArray", () => t.array(MetadatumGuard));
-
-// Probably move to adaptor. See if it is a good idea to always use BigInt as output.
-export type BigIntOrNumber = bigint | number;
-export const BigIntOrNumberGuard = new t.Type<BigIntOrNumber, bigint, unknown>(
-  "BigIntOrNumber",
-  (u): u is BigIntOrNumber => typeof u === "bigint" || typeof u === "number",
-  (u, c) => {
-    if (typeof u === "bigint") {
-      return t.success(u);
-    } else if (typeof u === "number") {
-      return t.success(u);
-    } else {
-      return t.failure(u, c);
-    }
-  },
-  (u) => BigInt(u)
-);
 
 export type Metadatum =
   | bigint

@@ -1,17 +1,22 @@
 import * as t from "io-ts/lib/index.js";
 import { StringUnder64, StringUnder64Guard } from "@marlowe.io/runtime-core";
+import {
+  BigIntOrNumber,
+  BigIntOrNumberGuard,
+} from "@marlowe.io/adapter/bigint";
 
-const DateCodec = new t.Type<Date, number, number>(
+const DateCodec = new t.Type<Date, number, BigIntOrNumber>(
   "Date",
   (num): num is Date => num instanceof Date,
   (num, ctx) => {
+    num = Number(num);
     const date = new Date(num);
     return t.success(date);
   },
   (dte) => dte.getTime()
 );
 
-export const DateFromEpochMS = t.number.pipe(DateCodec);
+export const DateFromEpochMS = BigIntOrNumberGuard.pipe(DateCodec);
 
 const StringSplitCodec = new t.Type<string, StringUnder64[], StringUnder64[]>(
   "StringSplit",

@@ -3,6 +3,7 @@ import { MarloweJSON } from "@marlowe.io/adapter/codec";
 import * as t from "io-ts/lib/index.js";
 import { DateFromEpochMS, StringCodec } from "./codecs.js";
 import { Metadata, MetadatumGuard } from "@marlowe.io/runtime-core";
+import { BigIntOrNumberGuard } from "@marlowe.io/adapter/bigint";
 
 type StringParam<Name extends string> = Readonly<{
   name: Name;
@@ -97,8 +98,60 @@ class Blueprint<T extends object> {
         "Blueprint T",
         paramObjectCodec.is,
         (val, ctx) => {
-          const metadatum = val[9041] ?? val["9041"];
-          throw new Error("Not implemented");
+          const metadatum = val[9041] ?? (val["9041"] as unknown);
+          if (typeof metadatum === "undefined") {
+            return t.failure(val, ctx, "Missing metadata entry 9041");
+          }
+          if (typeof metadatum !== "object") {
+            return t.failure(val, ctx, "Metadata entry 9041 is not an object");
+          }
+          if (metadatum === null) {
+            return t.failure(val, ctx, "Metadata entry 9041 is null");
+          }
+
+          if ("v" in metadatum === false) {
+            return t.failure(
+              val,
+              ctx,
+              "Metadata entry 9041 doesn't have a version field"
+            );
+          }
+          if ("params" in metadatum === false) {
+            return t.failure(
+              val,
+              ctx,
+              "Metadata entry 9041 doesn't have a params field"
+            );
+          }
+
+          const version = metadatum["v" as any];
+
+          if (
+            !BigIntOrNumberGuard.is(version) ||
+            BigIntOrNumberGuard.encode(version) !== 1n
+          ) {
+            return t.failure(
+              val,
+              ctx,
+              "Metadata entry 9041 has an invalid version"
+            );
+          }
+          const params = metadatum["params" as any];
+          console.log("params", params);
+
+          const paramList = paramListCodec.decode(metadatum["params" as any]);
+          if (paramList._tag === "Left") {
+            return t.failure(
+              paramList.left[0].value,
+              paramList.left[0].context,
+              "Invalid params"
+            );
+          }
+          const result = {} as any;
+          blueprintParams.forEach((param, ix) => {
+            result[param.name] = paramList.right[ix];
+          });
+          return t.success(result as T);
         },
         (values) => {
           // FIXME: Try to type
@@ -112,14 +165,12 @@ class Blueprint<T extends object> {
             }
             valuesAsList.push(value);
           });
-          const result = {
+          return {
             "9041": {
               v: 1,
               params: paramListCodec.encode(valuesAsList),
             },
           };
-          console.log(result);
-          return result;
         }
       )
     );
@@ -164,6 +215,7 @@ class Blueprint<T extends object> {
     if (decoded._tag === "Right") {
       return decoded.right;
     } else {
+      console.log(MarloweJSON.stringify(decoded.left, null, 2));
       throw new Error("Invalid value");
     }
   }
