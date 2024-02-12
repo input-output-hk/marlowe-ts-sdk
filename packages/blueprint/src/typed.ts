@@ -3,7 +3,10 @@ import { MarloweJSON } from "@marlowe.io/adapter/codec";
 import * as t from "io-ts/lib/index.js";
 import { DateFromEpochMS, StringCodec } from "./codecs.js";
 import { Metadata, MetadatumGuard } from "@marlowe.io/runtime-core";
-import { BigIntOrNumberGuard } from "@marlowe.io/adapter/bigint";
+import {
+  BigIntOrNumber,
+  BigIntOrNumberGuard,
+} from "@marlowe.io/adapter/bigint";
 
 type StringParam<Name extends string> = Readonly<{
   name: Name;
@@ -40,7 +43,7 @@ type TypeOfParam<Param extends BlueprintParam<any>> = Param extends StringParam<
 >
   ? string
   : Param extends ValueParam<infer Name>
-  ? bigint
+  ? BigIntOrNumber
   : Param extends AddressParam<infer Name>
   ? Address
   : Param extends DateParam<infer Name>
@@ -61,7 +64,7 @@ function blueprintParamCodec<Param extends BlueprintParam<any>>(
   if (param.type === "string") {
     return StringCodec;
   } else if (param.type === "value") {
-    return t.bigint;
+    return BigIntOrNumberGuard;
   } else if (param.type === "address") {
     return t.string;
   } else if (param.type === "date") {
@@ -88,14 +91,17 @@ function blueprintParamsObjectGuard<T extends readonly BlueprintParam<any>[]>(
 }
 
 class Blueprint<T extends object> {
-  private blueprintCodec: t.Mixed; //t.Type<T, Metadata, unknown>;
-  constructor(private blueprintParams: readonly BlueprintParam<any>[]) {
+  private blueprintCodec: t.Type<T, t.OutputOf<typeof Metadata>, unknown>;
+  name: string;
+  description?: string;
+  constructor(args: MkBlueprint<readonly BlueprintParam<any>[]>) {
+    const blueprintParams = args.params;
     const paramListCodec = blueprintParamsCodec(blueprintParams);
     const paramObjectCodec = blueprintParamsObjectGuard(blueprintParams);
 
     this.blueprintCodec = Metadata.pipe(
       new t.Type<T, Metadata, Metadata>(
-        "Blueprint T",
+        args.name,
         paramObjectCodec.is,
         (val, ctx) => {
           const metadatum = val[9041] ?? (val["9041"] as unknown);
@@ -137,7 +143,6 @@ class Blueprint<T extends object> {
             );
           }
           const params = metadatum["params" as any];
-          console.log("params", params);
 
           const paramList = paramListCodec.decode(metadatum["params" as any]);
           if (paramList._tag === "Left") {
@@ -220,7 +225,7 @@ class Blueprint<T extends object> {
     }
   }
 
-  encode(value: T): Metadata {
+  encode(value: T): t.OutputOf<typeof Metadata> {
     return this.blueprintCodec.encode(value);
   }
 }
@@ -234,78 +239,49 @@ type Expand<T> = T extends infer O ? { [K in keyof O]: O[K] } : never;
 
 export type BlueprintOf<T> = T extends Blueprint<infer U> ? U : never;
 
+export type MkBlueprint<T extends readonly BlueprintParam<any>[]> = {
+  name: string;
+  description?: string;
+  params: T;
+};
+
 export function mkBlueprint<T extends readonly BlueprintParam<any>[]>(
-  params: T
+  args: MkBlueprint<T>
 ): Blueprint<Expand<BlueprintType<T>>> {
-  return new Blueprint(params);
+  return new Blueprint(args);
 }
-
-// Example FooBar
-
-const fooParam = {
-  name: "foo",
-  type: "string",
-  description: "A string",
-} as const;
-
-type fooType = TypeOfParam<typeof fooParam>;
-
-const barParam = {
-  name: "bar",
-  type: "value",
-  description: "A number",
-} as const;
-
-type barParamType = TypeOfParam<typeof barParam>;
-
-const fooBarBlueprint = [fooParam, barParam] as const;
-type fooBarKeys = BlueprintKeys<typeof fooBarBlueprint>;
-
-type fooBarBlueprintType = BlueprintType<typeof fooBarBlueprint>;
-
-const fooBarGuard = blueprintParamsCodec(fooBarBlueprint);
-
-const fooBar = ["hello", 42] as const;
-
-// console.log("example 1");
-// console.log(fooBarGuard.decode(fooBar));
-
-const fooBar2 = [42, "hello"] as const;
-
-// console.log("example 2");
-// console.log(JSON.stringify(fooBarGuard.decode(fooBar2), null, 2));
 
 // Example DelayPayment
 
-const delayPaymentBlueprint = mkBlueprint([
-  {
-    name: "payFrom",
-    description: "Who is making the delayed payment",
-    type: "address",
-  },
-  {
-    name: "payTo",
-    description: "Who is receiving the payment",
-    type: "address",
-  },
-  {
-    name: "amount",
-    description: "The amount of lovelaces to be paid",
-    type: "value",
-  },
-  {
-    name: "depositDeadline",
-    description:
-      "The deadline for the payment to be made. If the payment is not made by this date, the contract can be closed",
-    type: "date",
-  },
-  {
-    name: "releaseDeadline",
-    description:
-      "A date after the payment can be released to the receiver. NOTE: An empty transaction must be done to close the contract",
-    type: "date",
-  },
-] as const);
+// const delayPaymentBlueprint = mkBlueprint([
+//   {
+//     name: "payFrom",
+//     description: "Who is making the delayed payment",
+//     type: "address",
+//   },
+//   {
+//     name: "payTo",
+//     description: "Who is receiving the payment",
+//     type: "address",
+//   },
+//   {
+//     name: "amount",
+//     description: "The amount of lovelaces to be paid",
+//     type: "value",
+//   },
+//   {
+//     name: "depositDeadline",
+//     description:
+//       "The deadline for the payment to be made. If the payment is not made by this date, the contract can be closed",
+//     type: "date",
+//   },
+//   {
+//     name: "releaseDeadline",
+//     description:
+//       "A date after the payment can be released to the receiver. NOTE: An empty transaction must be done to close the contract",
+//     type: "date",
+//   },
+// ] as const);
 
 // console.log(
 //   "example 3",
