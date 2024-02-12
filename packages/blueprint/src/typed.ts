@@ -1,6 +1,8 @@
 import { Address } from "@marlowe.io/language-core-v1";
 import { MarloweJSON } from "@marlowe.io/adapter/codec";
 import * as t from "io-ts/lib/index.js";
+import { DateFromEpochMS, StringCodec } from "./codecs.js";
+
 type StringParam<Name extends string> = Readonly<{
   name: Name;
   type: "string";
@@ -43,9 +45,6 @@ type TypeOfParam<Param extends BlueprintParam<any>> = Param extends StringParam<
   ? Date
   : never;
 
-type Blueprint<T extends readonly BlueprintParam<any>[]> = T;
-type TypeOfBlueprint<T extends readonly BlueprintParam<any>[]> = Blueprint<T>;
-
 type BlueprintKeys<T extends readonly BlueprintParam<any>[]> = {
   [K in keyof T]: T[K] extends BlueprintParam<infer Name> ? Name : never;
 }[number];
@@ -58,13 +57,13 @@ function blueprintParamGuard<Param extends BlueprintParam<any>>(
   param: Param
 ): t.Mixed {
   if (param.type === "string") {
-    return t.string;
+    return StringCodec;
   } else if (param.type === "value") {
     return t.bigint;
   } else if (param.type === "address") {
     return t.string;
   } else if (param.type === "date") {
-    return t.number;
+    return DateFromEpochMS;
   } else {
     throw new Error("Invalid parameter type");
   }
@@ -74,6 +73,49 @@ function blueprintGuard<T extends readonly BlueprintParam<any>[]>(
   blueprint: T
 ): t.Mixed {
   return t.tuple(blueprint.map(blueprintParamGuard) as any);
+}
+
+class Blueprint<T extends object> {
+  paramGuards: t.Mixed;
+  constructor(private blueprintParams: readonly BlueprintParam<any>[]) {
+    this.paramGuards = blueprintGuard(blueprintParams);
+  }
+
+  decode(value: unknown): T {
+    const decoded = this.paramGuards.decode(value);
+    if (decoded._tag === "Right") {
+      return Object.fromEntries(
+        decoded.right.map((v: unknown, i: number) => {
+          const param = this.blueprintParams[i];
+          return [param.name, v];
+        })
+      ) as T;
+    } else {
+      throw new Error("Invalid value");
+    }
+  }
+
+  encode(value: T): unknown {
+    let result = [];
+    for (const param of this.blueprintParams) {
+      if (param.name in value) {
+        result.push((value as any)[param.name]);
+      } else {
+        throw new Error(
+          `Missing parameter ${param.name} in value ${MarloweJSON.stringify(
+            value
+          )}`
+        );
+      }
+    }
+    return result;
+  }
+}
+
+function mkBlueprint<T extends readonly BlueprintParam<any>[]>(
+  params: T
+): Blueprint<BlueprintType<T>> {
+  return new Blueprint(params);
 }
 
 // Example FooBar
@@ -95,7 +137,6 @@ const barParam = {
 type barParamType = TypeOfParam<typeof barParam>;
 
 const fooBarBlueprint = [fooParam, barParam] as const;
-type fooBarType = TypeOfBlueprint<typeof fooBarBlueprint>;
 type fooBarKeys = BlueprintKeys<typeof fooBarBlueprint>;
 
 type fooBarBlueprintType = BlueprintType<typeof fooBarBlueprint>;
@@ -114,7 +155,7 @@ const fooBar2 = [42, "hello"] as const;
 
 // Example DelayPayment
 
-const delayPaymentBlueprint = [
+const delayPaymentBlueprint = mkBlueprint([
   {
     name: "payFrom",
     description: "Who is making the delayed payment",
@@ -142,13 +183,22 @@ const delayPaymentBlueprint = [
       "A date after the payment can be released to the receiver. NOTE: An empty transaction must be done to close the contract",
     type: "date",
   },
-] as const;
+] as const);
 
-type delayPaymentBlueprintType = BlueprintType<typeof delayPaymentBlueprint>;
-
-const delayPaymentGuard = blueprintGuard(delayPaymentBlueprint);
 const dp1 = ["address1", "address2", 42n, 1234567890, 1234567890] as const;
-console.log(
-  "example 3",
-  MarloweJSON.stringify(delayPaymentGuard.decode(dp1), null, 2)
-);
+const decoded1 = delayPaymentBlueprint.decode(dp1);
+
+// console.log(
+//   "example 3",
+//   MarloweJSON.stringify(decoded1, null, 2)
+// );
+
+// console.log(decoded1.amount);
+
+// console.log(delayPaymentBlueprint.encode({
+//   payFrom: {address: "address1"},
+//   payTo: {address: "address2"},
+//   amount: 42n,
+//   depositDeadline: new Date("2024-02-02"),
+//   releaseDeadline: new Date("2024-02-02"),
+// }))
