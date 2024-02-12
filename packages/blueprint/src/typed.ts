@@ -2,6 +2,7 @@ import { Address } from "@marlowe.io/language-core-v1";
 import { MarloweJSON } from "@marlowe.io/adapter/codec";
 import * as t from "io-ts/lib/index.js";
 import { DateFromEpochMS, StringCodec } from "./codecs.js";
+import { Metadata, MetadatumGuard } from "@marlowe.io/runtime-core";
 
 type StringParam<Name extends string> = Readonly<{
   name: Name;
@@ -53,7 +54,7 @@ type BlueprintType<T extends readonly BlueprintParam<any>[]> = {
   [K in BlueprintKeys<T>]: TypeOfParam<Extract<T[number], { name: K }>>;
 };
 
-function blueprintParamGuard<Param extends BlueprintParam<any>>(
+function blueprintParamCodec<Param extends BlueprintParam<any>>(
   param: Param
 ): t.Mixed {
   if (param.type === "string") {
@@ -69,52 +70,121 @@ function blueprintParamGuard<Param extends BlueprintParam<any>>(
   }
 }
 
-function blueprintGuard<T extends readonly BlueprintParam<any>[]>(
+function blueprintParamsCodec<T extends readonly BlueprintParam<any>[]>(
   blueprint: T
 ): t.Mixed {
-  return t.tuple(blueprint.map(blueprintParamGuard) as any);
+  return t.tuple(blueprint.map(blueprintParamCodec) as any);
+}
+
+function blueprintParamsObjectGuard<T extends readonly BlueprintParam<any>[]>(
+  blueprint: T
+): t.Mixed {
+  return t.type(
+    Object.fromEntries(
+      blueprint.map((param) => [param.name, blueprintParamCodec(param)])
+    ) as any
+  );
 }
 
 class Blueprint<T extends object> {
-  paramGuards: t.Mixed;
+  private blueprintCodec: t.Mixed; //t.Type<T, Metadata, unknown>;
   constructor(private blueprintParams: readonly BlueprintParam<any>[]) {
-    this.paramGuards = blueprintGuard(blueprintParams);
+    const paramListCodec = blueprintParamsCodec(blueprintParams);
+    const paramObjectCodec = blueprintParamsObjectGuard(blueprintParams);
+
+    this.blueprintCodec = Metadata.pipe(
+      new t.Type<T, Metadata, Metadata>(
+        "Blueprint T",
+        paramObjectCodec.is,
+        (val, ctx) => {
+          const metadatum = val[9041] ?? val["9041"];
+          throw new Error("Not implemented");
+        },
+        (values) => {
+          // FIXME: Try to type
+          let valuesAsList: any[] = [];
+          // iterate over blueprintParams and for each entry.name, look for the values[name] a
+
+          blueprintParams.forEach((param, ix) => {
+            const value = (values as any)[param.name];
+            if (typeof value === "undefined") {
+              throw new Error(`The value for ${param.name} is missing`);
+            }
+            valuesAsList.push(value);
+          });
+          const result = {
+            "9041": {
+              v: 1,
+              params: paramListCodec.encode(valuesAsList),
+            },
+          };
+          console.log(result);
+          return result;
+        }
+      )
+    );
+
+    /**
+    this.blueprintCodec = t.type({
+      v: t.literal(1),
+      params: t.unknown,
+    }).pipe(
+      // new t.Type<T, Metadata, {v: 1, params: unknown}>(
+      new t.Type<T, any, any>(
+        "Blueprint T",
+        paramObjectCodec.is,
+        (val, ctx) => {
+          return null as any;
+          // throw new Error("Not implemented");
+          // if (paramObjectCodec.is(val)) {
+          //   return t.success(val);
+          // } else {
+          //   return t.failure(val, ctx);
+          // }
+        },
+        (values) => {
+          return {
+            v: 1,
+            params: []
+          } as Metadata;
+          // throw new Error("Not implemented");
+        // paramObjectCodec.encode
+        }
+      )
+    )
+     */
   }
 
-  decode(value: unknown): T {
-    const decoded = this.paramGuards.decode(value);
+  is(value: unknown): value is T {
+    return this.blueprintCodec.is(value);
+  }
+
+  decode(value: Metadata): T {
+    const decoded = this.blueprintCodec.decode(value);
     if (decoded._tag === "Right") {
-      return Object.fromEntries(
-        decoded.right.map((v: unknown, i: number) => {
-          const param = this.blueprintParams[i];
-          return [param.name, v];
-        })
-      ) as T;
+      return decoded.right;
     } else {
       throw new Error("Invalid value");
     }
   }
 
-  encode(value: T): unknown {
-    let result = [];
-    for (const param of this.blueprintParams) {
-      if (param.name in value) {
-        result.push((value as any)[param.name]);
-      } else {
-        throw new Error(
-          `Missing parameter ${param.name} in value ${MarloweJSON.stringify(
-            value
-          )}`
-        );
-      }
-    }
-    return result;
+  encode(value: T): Metadata {
+    return this.blueprintCodec.encode(value);
   }
 }
 
-function mkBlueprint<T extends readonly BlueprintParam<any>[]>(
+/**
+ * This type function helps expanding the calculation of a type. It is used
+ * in mkBlueprint to show the results of BlueprintType. When it is not used,
+ * the types are hard to read.
+ */
+type Expand<T> = T extends infer O ? { [K in keyof O]: O[K] } : never;
+
+export type BlueprintOf<T> = T extends Blueprint<infer U> ? U : never;
+
+export function mkBlueprint<T extends readonly BlueprintParam<any>[]>(
   params: T
-): Blueprint<BlueprintType<T>> {
+): Blueprint<Expand<BlueprintType<T>>> {
   return new Blueprint(params);
 }
 
@@ -141,7 +211,7 @@ type fooBarKeys = BlueprintKeys<typeof fooBarBlueprint>;
 
 type fooBarBlueprintType = BlueprintType<typeof fooBarBlueprint>;
 
-const fooBarGuard = blueprintGuard(fooBarBlueprint);
+const fooBarGuard = blueprintParamsCodec(fooBarBlueprint);
 
 const fooBar = ["hello", 42] as const;
 
@@ -184,9 +254,6 @@ const delayPaymentBlueprint = mkBlueprint([
     type: "date",
   },
 ] as const);
-
-const dp1 = ["address1", "address2", 42n, 1234567890, 1234567890] as const;
-const decoded1 = delayPaymentBlueprint.decode(dp1);
 
 // console.log(
 //   "example 3",

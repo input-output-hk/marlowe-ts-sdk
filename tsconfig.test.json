@@ -2,6 +2,7 @@
   "files": [],
   "references": [
     { "path": "./packages/adapter/src" },
+    { "path": "./packages/blueprint/src" },
     { "path": "./packages/language/core/v1/src" },
     { "path": "./packages/language/examples/src" },
     { "path": "./packages/language/specification-client/src" },
@@ -14,6 +15,7 @@
     { "path": "./examples/nodejs/src" },
     { "path": "./packages/testing-kit/src" },
 
+    { "path": "./packages/blueprint/test" },
     { "path": "./packages/runtime/lifecycle/test" },
     { "path": "./packages/runtime/client/rest/test" },
     { "path": "./packages/language/core/v1/test" },

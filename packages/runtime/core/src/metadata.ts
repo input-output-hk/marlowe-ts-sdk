@@ -47,17 +47,35 @@ export type MetadatumOutputRecord = { [Key: string | number]: MetadatumOutput };
 export const MetadatumRecordGuard: t.Type<
   MetadatumRecord,
   MetadatumOutputRecord
-> = t.recursion("Metadatum", () =>
+> = t.recursion("MetadatumRecord", () =>
   t.record(MetadatumLabelGuard, MetadatumGuard)
 );
 
 export type MetadatumArray = Array<Metadatum>;
 export type MetadatumOutputArray = Array<MetadatumOutput>;
 export const MetadatumArrayGuard: t.Type<MetadatumArray, MetadatumOutputArray> =
-  t.recursion("Metadatum", () => t.array(MetadatumGuard));
+  t.recursion("MetadatumArray", () => t.array(MetadatumGuard));
+
+// Probably move to adaptor. See if it is a good idea to always use BigInt as output.
+export type BigIntOrNumber = bigint | number;
+export const BigIntOrNumberGuard = new t.Type<BigIntOrNumber, bigint, unknown>(
+  "BigIntOrNumber",
+  (u): u is BigIntOrNumber => typeof u === "bigint" || typeof u === "number",
+  (u, c) => {
+    if (typeof u === "bigint") {
+      return t.success(u);
+    } else if (typeof u === "number") {
+      return t.success(u);
+    } else {
+      return t.failure(u, c);
+    }
+  },
+  (u) => BigInt(u)
+);
 
 export type Metadatum =
   | bigint
+  | number
   | StringUnder64
   | MetadatumArray
   | MetadatumRecord;
@@ -70,7 +88,7 @@ export const MetadatumGuard: t.Type<Metadatum, MetadatumOutput> = t.recursion(
   "Metadatum",
   () =>
     t.union([
-      t.bigint,
+      BigIntOrNumberGuard,
       StringUnder64Guard,
       MetadatumArrayGuard,
       MetadatumRecordGuard,
