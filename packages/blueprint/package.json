@@ -13,7 +13,7 @@
   "scripts": {
     "build": "tsc --build src",
     "clean": "shx rm -rf dist",
-    "test": "echo 'No tests for blueprint package'"
+    "test": "NODE_OPTIONS='--experimental-vm-modules --no-warnings' jest --config test/jest.unit.config.mjs"
   },
   "type": "module",
   "module": "./dist/esm/index.js",
