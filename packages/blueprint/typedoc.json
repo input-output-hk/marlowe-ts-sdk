@@ -4,5 +4,6 @@
   "tsconfig": "./src/tsconfig.json",
   "categorizeByGroup": false,
   "defaultCategory": "General",
-  "categoryOrder": ["*"]
+  "categoryOrder": ["Blueprint", "Blueprint parameters", "Type functions", "*"],
+  "readme": "none"
 }

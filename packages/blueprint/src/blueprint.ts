@@ -1,102 +1,21 @@
 import * as t from "io-ts/lib/index.js";
-import { DateFromEpochMS, StringCodec } from "./codecs.js";
+import { Metadata } from "@marlowe.io/runtime-core";
+import { BigIntOrNumberGuard } from "@marlowe.io/adapter/bigint";
 import {
-  AddressBech32,
-  AddressBech32Guard,
-  Metadata,
-} from "@marlowe.io/runtime-core";
-import {
-  BigIntOrNumber,
-  BigIntOrNumberGuard,
-} from "@marlowe.io/adapter/bigint";
+  BlueprintParam,
+  BlueprintType,
+  blueprintParamsCodec,
+  blueprintParamsObjectGuard,
+} from "./blueprint-param.js";
 
-type StringParam<Name extends string> = Readonly<{
-  name: Name;
-  type: "string";
-  description?: string;
-}>;
-
-type ValueParam<Name extends string> = Readonly<{
-  name: Name;
-  type: "value";
-  description?: string;
-}>;
-
-type AddressParam<Name extends string> = Readonly<{
-  name: Name;
-  type: "address";
-  description?: string;
-}>;
-
-type DateParam<Name extends string> = Readonly<{
-  name: Name;
-  type: "date";
-  description?: string;
-}>;
-
-type BlueprintParam<Name extends string> =
-  | StringParam<Name>
-  | ValueParam<Name>
-  | AddressParam<Name>
-  | DateParam<Name>;
-
-type TypeOfParam<Param extends BlueprintParam<any>> = Param extends StringParam<
-  infer Name
->
-  ? string
-  : Param extends ValueParam<infer Name>
-  ? BigIntOrNumber
-  : Param extends AddressParam<infer Name>
-  ? AddressBech32
-  : Param extends DateParam<infer Name>
-  ? Date
-  : never;
-
-type BlueprintKeys<T extends readonly BlueprintParam<any>[]> = {
-  [K in keyof T]: T[K] extends BlueprintParam<infer Name> ? Name : never;
-}[number];
-
-type BlueprintType<T extends readonly BlueprintParam<any>[]> = {
-  [K in BlueprintKeys<T>]: TypeOfParam<Extract<T[number], { name: K }>>;
-};
-
-function blueprintParamCodec<Param extends BlueprintParam<any>>(
-  param: Param
-): t.Mixed {
-  if (param.type === "string") {
-    return StringCodec;
-  } else if (param.type === "value") {
-    return BigIntOrNumberGuard;
-  } else if (param.type === "address") {
-    return StringCodec.pipe(AddressBech32Guard);
-  } else if (param.type === "date") {
-    return DateFromEpochMS;
-  } else {
-    throw new Error("Invalid parameter type");
-  }
-}
-
-function blueprintParamsCodec<T extends readonly BlueprintParam<any>[]>(
-  blueprint: T
-): t.Mixed {
-  return t.tuple(blueprint.map(blueprintParamCodec) as any);
-}
-
-function blueprintParamsObjectGuard<T extends readonly BlueprintParam<any>[]>(
-  blueprint: T
-): t.Mixed {
-  return t.type(
-    Object.fromEntries(
-      blueprint.map((param) => [param.name, blueprintParamCodec(param)])
-    ) as any
-  );
-}
-
+/**
+ * @category Blueprint
+ */
 export class Blueprint<T extends object> {
   private blueprintCodec: t.Type<T, t.OutputOf<typeof Metadata>, unknown>;
   name: string;
   description?: string;
-  constructor(args: MkBlueprint<readonly BlueprintParam<any>[]>) {
+  constructor(args: MkBlueprintOptions<readonly BlueprintParam<any>[]>) {
     const blueprintParams = args.params;
     this.name = args.name;
     this.description = args.description;
@@ -147,7 +66,6 @@ export class Blueprint<T extends object> {
               "Metadata entry 9041 has an invalid version"
             );
           }
-          const params = metadatum["params" as any];
 
           const paramList = paramListCodec.decode(metadatum["params" as any]);
           if (paramList._tag === "Left") {
@@ -211,19 +129,30 @@ export class Blueprint<T extends object> {
  * This type function helps expanding the calculation of a type. It is used
  * in mkBlueprint to show the results of BlueprintType. When it is not used,
  * the types are hard to read.
+ * @internal
+ * @category Type functions
  */
-type Expand<T> = T extends infer O ? { [K in keyof O]: O[K] } : never;
+export type Expand<T> = T extends infer O ? { [K in keyof O]: O[K] } : never;
 
+/**
+ * @category Blueprint
+ */
 export type BlueprintOf<T> = T extends Blueprint<infer U> ? U : never;
 
-export type MkBlueprint<T extends readonly BlueprintParam<any>[]> = {
+/**
+ * @category Blueprint
+ */
+export type MkBlueprintOptions<T extends readonly BlueprintParam<any>[]> = {
   name: string;
   description?: string;
   params: T;
 };
 
+/**
+ * @category Blueprint
+ */
 export function mkBlueprint<T extends readonly BlueprintParam<any>[]>(
-  args: MkBlueprint<T>
+  args: MkBlueprintOptions<T>
 ): Blueprint<Expand<BlueprintType<T>>> {
   return new Blueprint(args);
 }
