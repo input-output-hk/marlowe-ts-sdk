@@ -1,0 +1,8 @@
+{
+  "entryPointStrategy": "expand",
+  "entryPoints": ["./src/index.ts"],
+  "tsconfig": "./src/tsconfig.json",
+  "categorizeByGroup": false,
+  "defaultCategory": "General",
+  "categoryOrder": ["*"]
+}

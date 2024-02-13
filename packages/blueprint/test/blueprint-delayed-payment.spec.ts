@@ -1,5 +1,5 @@
 import { AddressBech32, addressBech32 } from "@marlowe.io/runtime-core";
-import { BlueprintOf, mkBlueprint } from "../src/typed.js";
+import { BlueprintOf, mkBlueprint } from "@marlowe.io/blueprint";
 describe("Delayed payment Blueprint", () => {
   const delayPaymentBlueprint = mkBlueprint({
     name: "Delayed payment",

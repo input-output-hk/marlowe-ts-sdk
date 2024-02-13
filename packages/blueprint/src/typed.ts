@@ -4,7 +4,6 @@ import {
   AddressBech32,
   AddressBech32Guard,
   Metadata,
-  MetadatumGuard,
 } from "@marlowe.io/runtime-core";
 import {
   BigIntOrNumber,
@@ -93,7 +92,7 @@ function blueprintParamsObjectGuard<T extends readonly BlueprintParam<any>[]>(
   );
 }
 
-class Blueprint<T extends object> {
+export class Blueprint<T extends object> {
   private blueprintCodec: t.Type<T, t.OutputOf<typeof Metadata>, unknown>;
   name: string;
   description?: string;
@@ -198,9 +197,13 @@ class Blueprint<T extends object> {
       throw new Error("Invalid value");
     }
   }
-
-  encode(value: T): t.OutputOf<typeof Metadata> {
-    return this.blueprintCodec.encode(value);
+  // NOTE: The output of the encode is the output of the Metadata codec,
+  //       which is compatible with its inputs, but it doesn't have the
+  //       branded types. Here we cast to the Metadata type to allow easier
+  //       usability with the rest of the runtime, that expects the Branded
+  //       types.
+  encode(value: T): Metadata {
+    return this.blueprintCodec.encode(value) as Metadata;
   }
 }
 
