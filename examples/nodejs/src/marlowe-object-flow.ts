@@ -18,13 +18,10 @@ import {
   addressBech32,
   contractId,
   ContractId,
-  Metadata,
   stakeAddressBech32,
   StakeAddressBech32,
-  Tags,
   TxId,
 } from "@marlowe.io/runtime-core";
-import { Address } from "@marlowe.io/language-core-v1";
 import { ContractBundleMap, lovelace, close } from "@marlowe.io/marlowe-object";
 import { input, select } from "@inquirer/prompts";
 import { RuntimeLifecycle } from "@marlowe.io/runtime-lifecycle/api";
@@ -34,7 +31,6 @@ import {
   mkApplicableActionsFilter,
 } from "./experimental-features/applicable-inputs.js";
 import arg from "arg";
-import { splitAddress } from "./experimental-features/metadata.js";
 import * as t from "io-ts/lib/index.js";
 import { mkSourceMap, SourceMap } from "./experimental-features/source-map.js";
 import { POSIXTime, posixTimeToIso8601 } from "@marlowe.io/adapter/time";
