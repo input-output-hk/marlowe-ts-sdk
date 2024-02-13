@@ -3,6 +3,8 @@ import { iso, Newtype } from "newtype-ts";
 import { fromNewtype } from "io-ts-types";
 import { TxOutRef } from "./tx/outRef.js";
 import { unsafeEither } from "@marlowe.io/adapter/fp-ts";
+// TODO: Try to use a lighter library than lucid for checking this.
+import { C } from "lucid-cardano";
 
 export interface AddressBech32Brand {
   readonly AddressBech32: unique symbol;
@@ -10,7 +12,15 @@ export interface AddressBech32Brand {
 
 export const AddressBech32Guard = t.brand(
   t.string,
-  (s): s is t.Branded<string, AddressBech32Brand> => true,
+  (s): s is t.Branded<string, AddressBech32Brand> => {
+    try {
+      // TODO: Try to use a lighter library than lucid for checking this.
+      C.Address.from_bech32(s);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  },
   "AddressBech32"
 );
 

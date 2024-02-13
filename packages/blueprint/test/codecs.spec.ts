@@ -11,7 +11,7 @@ describe("DateFromEpochMS", () => {
   });
   it("should encode a date as a number", () => {
     const aDate = DateFromEpochMS.encode(new Date("2024-01-01T00:00:00.000Z"));
-    expect(aDate).toEqual(1704067200000);
+    expect(aDate).toEqual(1704067200000n);
   });
 });
 
