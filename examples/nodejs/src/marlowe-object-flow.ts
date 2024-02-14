@@ -376,7 +376,6 @@ async function mainLoop(
 // #endregion
 
 // #region Delay Payment Contract
-
 const delayPaymentBlueprint = mkBlueprint({
   name: "Delayed payment",
   description:

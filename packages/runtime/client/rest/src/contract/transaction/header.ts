@@ -6,15 +6,15 @@ import * as G from "@marlowe.io/language-core-v1/guards";
 import {
   Tags,
   TagsGuard,
+  MetadataGuard,
   Metadata,
   BlockHeader,
   BlockHeaderGuard,
+  ContractIdGuard,
   TxOutRef,
   TxId,
   ContractId,
 } from "@marlowe.io/runtime-core";
-
-import { ContractIdGuard } from "@marlowe.io/runtime-core";
 import { TxStatus } from "./status.js";
 import { BuiltinByteString } from "@marlowe.io/language-core-v1";
 
@@ -49,7 +49,7 @@ export const TxHeaderGuard = t.type({
   transactionId: TxId,
   continuations: optionFromNullable(G.BuiltinByteString),
   tags: TagsGuard,
-  metadata: Metadata,
+  metadata: MetadataGuard,
   status: TxStatus,
   block: optionFromNullable(BlockHeaderGuard),
   utxo: optionFromNullable(TxOutRef),

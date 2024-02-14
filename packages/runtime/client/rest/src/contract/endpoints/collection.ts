@@ -19,6 +19,7 @@ import {
   Tag,
   Tags,
   TagsGuard,
+  MetadataGuard,
   Metadata,
   TextEnvelope,
   TextEnvelopeGuard,
@@ -32,15 +33,14 @@ import {
   SourceId,
   SourceIdGuard,
   AddressBech32Guard,
+  ContractId,
+  ContractIdGuard,
 } from "@marlowe.io/runtime-core";
-
 import { ContractHeader, ContractHeaderGuard } from "../header.js";
 import {
   RolesConfiguration,
   RolesConfigurationGuard,
 } from "../rolesConfigurations.js";
-
-import { ContractId, ContractIdGuard } from "@marlowe.io/runtime-core";
 import {
   ItemRange,
   ItemRangeGuard,
@@ -217,7 +217,7 @@ export const BuildCreateContractTxRequestOptionsGuard = assertGuardEqual(
       roles: RolesConfigurationGuard,
       threadRoleName: G.RoleName,
       minimumLovelaceUTxODeposit: t.number,
-      metadata: Metadata,
+      metadata: MetadataGuard,
       tags: TagsGuard,
       collateralUTxOs: t.array(TxOutRef),
       usedAddresses: t.array(AddressBech32Guard),
@@ -546,7 +546,7 @@ export const PostContractsRequest = t.intersection([
     version: MarloweVersion,
     contract: ContractOrSourceIdGuard,
     tags: TagsGuard,
-    metadata: Metadata,
+    metadata: MetadataGuard,
   }),
   t.partial({ roles: RolesConfigurationGuard }),
   t.partial({ threadTokenName: G.RoleName }),

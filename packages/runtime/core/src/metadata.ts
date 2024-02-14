@@ -1,7 +1,10 @@
 /**
  * This module contains the static types and the dynamic guards for the metadata that can be attached to a transaction.
  */
-import { BigIntOrNumberGuard } from "@marlowe.io/adapter/bigint";
+import {
+  BigIntOrNumber,
+  BigIntOrNumberGuard,
+} from "@marlowe.io/adapter/bigint";
 import * as t from "io-ts/lib/index.js";
 
 // NOTE: [[recursive branded types]]
@@ -58,8 +61,7 @@ export const MetadatumArrayGuard: t.Type<MetadatumArray, MetadatumOutputArray> =
   t.recursion("MetadatumArray", () => t.array(MetadatumGuard));
 
 export type Metadatum =
-  | bigint
-  | number
+  | BigIntOrNumber
   | StringUnder64
   | MetadatumArray
   | MetadatumRecord;
@@ -89,5 +91,12 @@ export const MetadatumTopLevelLabelGuard = t.union([
   NumberLikeStringGuard,
 ]);
 
-export type Metadata = t.TypeOf<typeof Metadata>;
-export const Metadata = t.record(MetadatumTopLevelLabelGuard, MetadatumGuard);
+export interface Metadata {
+  [key: MetadatumTopLevelLabel]: Metadatum;
+}
+
+export interface MetadataOutput {
+  [key: string]: MetadatumOutput;
+}
+export const MetadataGuard: t.Type<Metadata, MetadataOutput, unknown> =
+  t.record(MetadatumTopLevelLabelGuard, MetadatumGuard);

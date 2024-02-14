@@ -1,4 +1,4 @@
-import { BlueprintOf, mkBlueprint } from "../src/typed.js";
+import { BlueprintOf, mkBlueprint } from "@marlowe.io/blueprint";
 describe("Blueprint basic types", () => {
   const basicBlueprint = mkBlueprint({
     name: "Basic types Blueprint",

@@ -1,11 +1,9 @@
-import { fromNullable } from "io-ts-types";
 import * as t from "io-ts/lib/index.js";
 import { Contract, MarloweState } from "@marlowe.io/language-core-v1";
 import * as G from "@marlowe.io/language-core-v1/guards";
 import { MarloweVersion } from "@marlowe.io/language-core-v1/version";
 import {
-  AssetsMap,
-  AssetsMapGuard,
+  Metadata,
   BlockHeader,
   ContractId,
   ContractIdGuard,
@@ -13,15 +11,13 @@ import {
   Tags,
   TagsGuard,
   TextEnvelope,
-} from "@marlowe.io/runtime-core";
-
-import {
   TxOutRef,
   BlockHeaderGuard,
-  Metadata,
+  MetadataGuard,
   TextEnvelopeGuard,
   PolicyId,
 } from "@marlowe.io/runtime-core";
+
 import {
   assertGuardEqual,
   convertNullableToUndefined,
@@ -93,7 +89,7 @@ export const ContractDetailsGuard = assertGuardEqual(
       roleTokenMintingPolicyId: PolicyIdGuard,
       status: TxStatus,
       tags: TagsGuard,
-      metadata: Metadata,
+      metadata: MetadataGuard,
       unclaimedPayouts: t.array(Payout),
     }),
     t.partial({
