@@ -70,4 +70,5 @@ export {
   DateParam,
   BlueprintKeys,
   TypeOfParam,
+  TokenParam,
 } from "./blueprint-param.js";
