@@ -1,4 +1,4 @@
-import { DateFromEpochMS, StringCodec } from "../src/codecs.js";
+import { DateFromEpochMS, StringCodec, TokenCodec } from "../src/codecs.js";
 import * as t from "io-ts/lib/index.js";
 describe("DateFromEpochMS", () => {
   it("should decode a number as a Date", () => {
@@ -35,5 +35,18 @@ describe("StringCodec", () => {
   it("should fail to decode a number", () => {
     const aString = StringCodec.decode(42);
     expect(aString).toHaveProperty("_tag", "Left");
+  });
+});
+
+describe("TokenCodec", () => {
+  it("should decode a valid token", () => {
+    const aToken = TokenCodec.decode([["a"], ["b"]]);
+    expect(aToken).toEqual(
+      t.success({ currency_symbol: "a", token_name: "b" })
+    );
+  });
+  it("should encode a valid token", () => {
+    const aToken = TokenCodec.encode({ currency_symbol: "a", token_name: "b" });
+    expect(aToken).toEqual([["a"], ["b"]]);
   });
 });

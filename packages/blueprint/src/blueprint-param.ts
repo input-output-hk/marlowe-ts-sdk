@@ -1,10 +1,11 @@
 import * as t from "io-ts/lib/index.js";
-import { DateFromEpochMS, StringCodec } from "./codecs.js";
+import { DateFromEpochMS, StringCodec, TokenCodec } from "./codecs.js";
 import { AddressBech32, AddressBech32Guard } from "@marlowe.io/runtime-core";
 import {
   BigIntOrNumber,
   BigIntOrNumberGuard,
 } from "@marlowe.io/adapter/bigint";
+import { Token } from "@marlowe.io/language-core-v1";
 
 /**
  * This interface represents a string parameter in a {@link Blueprint}.
@@ -59,6 +60,19 @@ export interface DateParam<Name extends string> {
 }
 
 /**
+ * This interface represents a token parameter in a {@link Blueprint}.
+ *
+ * Tokens are encoded as a tuple of 2 {@link StringParam}. The first string is the policy id and the second one is the token name.
+ * @typeParam Name - The name of the parameter is used by different type functions to infer the Blueprint's ObjectParam.
+ * @category Blueprint parameters
+ */
+export interface TokenParam<Name extends string> {
+  readonly name: Name;
+  readonly type: "token";
+  readonly description?: string;
+}
+
+/**
  * This type represents one of the possible parameters in a {@link Blueprint}.
  *
  * @See The documentation on each parameter to see how is encoded and decoded.
@@ -69,7 +83,8 @@ export type BlueprintParam<Name extends string> =
   | StringParam<Name>
   | ValueParam<Name>
   | AddressParam<Name>
-  | DateParam<Name>;
+  | DateParam<Name>
+  | TokenParam<Name>;
 
 /**
  * @internal
@@ -84,6 +99,8 @@ export type TypeOfParam<Param extends BlueprintParam<any>> =
     ? AddressBech32
     : Param extends DateParam<infer Name>
     ? Date
+    : Param extends TokenParam<infer Name>
+    ? Token
     : never;
 
 /**
@@ -114,6 +131,8 @@ function blueprintParamCodec<Param extends BlueprintParam<any>>(
       return StringCodec.pipe(AddressBech32Guard);
     case "date":
       return DateFromEpochMS;
+    case "token":
+      return TokenCodec;
     default:
       throw new Error("Invalid parameter type");
   }
