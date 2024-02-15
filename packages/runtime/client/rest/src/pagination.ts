@@ -1,12 +1,16 @@
 import * as t from "io-ts/lib/index.js";
-import { assertGuardEqual, proxy } from "@marlowe.io/adapter/io-ts";
+import {
+  assertGuardEqual,
+  preservedBrand,
+  proxy,
+} from "@marlowe.io/adapter/io-ts";
 import { unsafeEither } from "@marlowe.io/adapter/fp-ts";
 
 export interface ItemRangeBrand {
   readonly ItemRange: unique symbol;
 }
 
-export const ItemRangeGuard = t.brand(
+export const ItemRangeGuard = preservedBrand(
   t.string,
   (s): s is t.Branded<string, ItemRangeBrand> => true,
   "ItemRange"

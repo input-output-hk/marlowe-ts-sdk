@@ -32,7 +32,7 @@ const StringSplitCodec = new t.Type<string, StringUnder64[], StringUnder64[]>(
   }
 );
 
-export const StringCodec: t.Type<string, string[], unknown> = t
+export const StringCodec: t.Type<string, StringUnder64[], unknown> = t
   .array(StringUnder64Guard)
   .pipe(StringSplitCodec);
 

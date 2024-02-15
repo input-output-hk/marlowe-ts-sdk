@@ -1,11 +1,12 @@
 import * as t from "io-ts/lib/index.js";
 import { unsafeEither } from "@marlowe.io/adapter/fp-ts";
+import { preservedBrand } from "@marlowe.io/adapter/io-ts";
 
 export interface RuntimeVersionBrand {
   readonly RuntimeVersion: unique symbol;
 }
 
-export const RuntimeVersionGuard = t.brand(
+export const RuntimeVersionGuard = preservedBrand(
   t.string,
   (s): s is t.Branded<string, RuntimeVersionBrand> => true,
   "RuntimeVersion"

@@ -1,9 +1,5 @@
 import * as t from "io-ts/lib/index.js";
-import {
-  Metadata,
-  MetadataGuard,
-  MetadataOutput,
-} from "@marlowe.io/runtime-core";
+import { Metadata, MetadataGuard } from "@marlowe.io/runtime-core";
 import { BigIntOrNumberGuard } from "@marlowe.io/adapter/bigint";
 import {
   BlueprintParam,
@@ -44,7 +40,7 @@ export class DecodingBlueprintError extends Error {
  * @category Blueprint
  */
 export class Blueprint<ObjectParams extends object> {
-  private blueprintCodec: t.Type<ObjectParams, MetadataOutput, unknown>;
+  private blueprintCodec: t.Type<ObjectParams, Metadata, unknown>;
   name: string;
   description?: string;
   constructor(options: MkBlueprintOptions<readonly BlueprintParam<any>[]>) {
