@@ -6,7 +6,7 @@ import {
   BlueprintType,
   blueprintParamsCodec,
   blueprintParamsObjectGuard,
-} from "./blueprint-param.js";
+} from "./template-param.js";
 
 /**
  * This class represents an error while decoding the Metadata according to a {@link Blueprint}.

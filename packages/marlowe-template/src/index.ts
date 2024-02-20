@@ -60,7 +60,7 @@ export {
   TemplateParametersOf,
   Expand,
   DecodingBlueprintError,
-} from "./blueprint.js";
+} from "./template.js";
 export {
   BlueprintParam,
   BlueprintType,
@@ -71,4 +71,4 @@ export {
   BlueprintKeys,
   TypeOfParam,
   TokenParam,
-} from "./blueprint-param.js";
+} from "./template-param.js";
