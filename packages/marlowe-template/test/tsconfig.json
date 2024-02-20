@@ -5,7 +5,7 @@
     "paths": {
       "@marlowe.io/adapter/*": ["../../adapter/src/*"],
       "@marlowe.io/language-core-v1/*": ["../../language/core/v1/src/*"],
-      "@marlowe.io/blueprint/*": ["../src/*"]
+      "@marlowe.io/marlowe-template/*": ["../src/*"]
     },
     "types": ["node", "jest"]
   },

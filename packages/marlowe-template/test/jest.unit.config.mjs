@@ -1,6 +1,6 @@
 const config = {
   testEnvironment: "node",
-  displayName: "blueprint",
+  displayName: "marlowe-template",
   extensionsToTreatAsEsm: ['.ts'],
 
   moduleNameMapper: {

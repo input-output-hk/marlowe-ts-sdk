@@ -1,5 +1,5 @@
 {
-  "name": "@marlowe.io/blueprint",
+  "name": "@marlowe.io/marlowe-template",
   "version": "0.3.0-beta",
   "description": "Contract parameters serialized as metadata",
   "repository": "https://github.com/input-output-hk/marlowe-ts-sdk",

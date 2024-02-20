@@ -1,4 +1,4 @@
-import { BlueprintOf, mkBlueprint } from "@marlowe.io/blueprint";
+import { BlueprintOf, mkBlueprint } from "@marlowe.io/marlowe-template";
 describe("Blueprint basic types", () => {
   const basicBlueprint = mkBlueprint({
     name: "Basic types Blueprint",

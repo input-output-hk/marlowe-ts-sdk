@@ -36,7 +36,7 @@ import { mkSourceMap, SourceMap } from "./experimental-features/source-map.js";
 import { POSIXTime, posixTimeToIso8601 } from "@marlowe.io/adapter/time";
 import { SingleInputTx } from "@marlowe.io/language-core-v1/semantics";
 import * as ObjG from "@marlowe.io/marlowe-object/guards";
-import { BlueprintOf, mkBlueprint } from "@marlowe.io/blueprint";
+import { BlueprintOf, mkBlueprint } from "@marlowe.io/marlowe-template";
 
 // When this script is called, start with main.
 main();
