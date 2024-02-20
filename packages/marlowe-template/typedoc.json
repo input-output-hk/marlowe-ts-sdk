@@ -1,0 +1,9 @@
+{
+  "entryPointStrategy": "expand",
+  "entryPoints": ["./src/index.ts"],
+  "tsconfig": "./src/tsconfig.json",
+  "categorizeByGroup": false,
+  "defaultCategory": "General",
+  "categoryOrder": ["Template", "Template parameters", "Type functions", "*"],
+  "readme": "none"
+}

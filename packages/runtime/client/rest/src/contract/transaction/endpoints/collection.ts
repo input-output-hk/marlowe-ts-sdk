@@ -17,6 +17,7 @@ import {
   AddressBech32,
   AddressBech32Guard,
   AddressesAndCollaterals,
+  MetadataGuard,
   Metadata,
   Tags,
   TagsGuard,
@@ -24,10 +25,10 @@ import {
   TxId,
   TxOutRef,
   unTxOutRef,
+  ContractId,
+  ContractIdGuard,
 } from "@marlowe.io/runtime-core";
-
 import { TxHeader, TxHeaderGuard } from "../header.js";
-import { ContractId, ContractIdGuard } from "@marlowe.io/runtime-core";
 import { assertGuardEqual, proxy } from "@marlowe.io/adapter/io-ts";
 import { Input } from "@marlowe.io/language-core-v1";
 import {
@@ -155,7 +156,7 @@ export const ApplyInputsToContractRequestGuard = assertGuardEqual(
       invalidBefore: ISO8601,
       invalidHereafter: ISO8601,
       version: MarloweVersion,
-      metadata: Metadata,
+      metadata: MetadataGuard,
       tags: TagsGuard,
     }),
   ])
@@ -204,7 +205,7 @@ export const PostTransactionsRequest = t.intersection([
   t.type({
     version: MarloweVersion,
     inputs: t.array(G.Input),
-    metadata: Metadata,
+    metadata: MetadataGuard,
     tags: TagsGuard,
   }),
   t.partial({ invalidBefore: ISO8601 }),

@@ -2,6 +2,9 @@ import * as t from "io-ts/lib/index.js";
 import { withValidate } from "io-ts-types";
 import { MarloweJSON } from "./codec.js";
 import { Errors } from "io-ts/lib/index.js";
+import { Refinement } from "fp-ts/lib/Refinement.js";
+import { pipe } from "fp-ts/lib/function.js";
+import * as Either from "fp-ts/lib/Either.js";
 /**
  * In the TS-SDK we duplicate the type and guard definition for each type as the
  * inferred type from io-ts does not produce a good type export when used with
@@ -131,5 +134,43 @@ export function likeLiteral<S extends string>(literal: S): t.Type<S> {
     (input, context) =>
       guard(input) ? t.success(literal) : t.failure(input, context),
     t.identity
+  );
+}
+
+export interface BrandP<A, B extends A, I>
+  extends t.Type<t.Branded<A, B>, t.Branded<A, B>, I> {}
+
+// The library io-ts has the helper t.brand which refines a type A into a type B
+// given a predicate. When we use that helper, the resulting codec changes the Actual
+// type to t.Branded<A, B>, and keeps the same Output type as the underlying codec.
+// When branding primitive types this might not be the expected behaviour as you can
+// get a PositiveInt codec of type t.Type<PositiveInt, number, unknown>, which can cause
+// some hiccups when used in recursive data types as explained in the following issue:
+// https://github.com/gcanti/io-ts/issues/604.
+// This helper is a workaround to that issue, making sure that if the original codec
+// has the same Output than the Actual type, the new codec outputs the branded type
+// So a PositiveInt codec will have the type t.Type<PositiveInt, PositiveInt, unknown>
+export function preservedBrand<A, I, B extends A>(
+  codec: t.Type<A, A, I>,
+  predicate: Refinement<A, B>,
+  name: string
+): BrandP<A, B, I> {
+  return new t.Type(
+    name,
+    (u): u is t.Branded<A, B> => codec.is(u) && predicate(u),
+    (u, c) =>
+      pipe(
+        codec.validate(u, c),
+        Either.chain((a) =>
+          predicate(a)
+            ? t.success(a as t.Branded<A, B>)
+            : t.failure<t.Branded<A, B>>(
+                a,
+                c,
+                `Value does not satisfy the ${name} constraint`
+              )
+        )
+      ),
+    (a) => a
   );
 }

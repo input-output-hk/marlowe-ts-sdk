@@ -12,6 +12,7 @@ import {
 } from "@marlowe.io/language-core-v1";
 import {
   TagsGuard,
+  MetadataGuard,
   Metadata,
   BlockHeaderGuard,
   TxOutRef,
@@ -20,10 +21,9 @@ import {
   ContractId,
   Tags,
   BlockHeader,
+  ContractIdGuard,
   TextEnvelope,
 } from "@marlowe.io/runtime-core";
-
-import { ContractIdGuard } from "@marlowe.io/runtime-core";
 import { TxStatus } from "./status.js";
 import { assertGuardEqual, proxy } from "@marlowe.io/adapter/io-ts";
 
@@ -100,7 +100,7 @@ export const TransactionDetailsGuard = assertGuardEqual(
     transactionId: TxId,
     continuations: optionFromNullable(G.BuiltinByteString),
     tags: TagsGuard,
-    metadata: Metadata,
+    metadata: MetadataGuard,
     status: TxStatus,
     block: optionFromNullable(BlockHeaderGuard),
     inputUtxo: TxOutRef,

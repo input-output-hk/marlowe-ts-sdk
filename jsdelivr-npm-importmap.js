@@ -22,6 +22,8 @@ const importMap = {
       "https://cdn.jsdelivr.net/npm/@marlowe.io/adapter@0.3.0-beta/dist/bundled/esm/lucid.js",
     "@marlowe.io/adapter/time":
       "https://cdn.jsdelivr.net/npm/@marlowe.io/adapter@0.3.0-beta/dist/bundled/esm/time.js",
+    "@marlowe.io/marlowe-template":
+      "https://cdn.jsdelivr.net/npm/@marlowe.io/marlowe-template@0.3.0-beta/dist/bundled/esm/marlowe-template.js",
     "@marlowe.io/language-core-v1":
       "https://cdn.jsdelivr.net/npm/@marlowe.io/language-core-v1@0.3.0-beta/dist/bundled/esm/language-core-v1.js",
     "@marlowe.io/language-core-v1/guards":

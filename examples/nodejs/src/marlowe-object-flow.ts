@@ -15,14 +15,13 @@ import { Lucid, Blockfrost, C } from "lucid-cardano";
 import { readConfig } from "./config.js";
 import { datetoTimeout, When } from "@marlowe.io/language-core-v1";
 import {
+  addressBech32,
   contractId,
   ContractId,
   stakeAddressBech32,
   StakeAddressBech32,
-  Tags,
   TxId,
 } from "@marlowe.io/runtime-core";
-import { Address } from "@marlowe.io/language-core-v1";
 import { ContractBundleMap, lovelace, close } from "@marlowe.io/marlowe-object";
 import { input, select } from "@inquirer/prompts";
 import { RuntimeLifecycle } from "@marlowe.io/runtime-lifecycle/api";
@@ -32,12 +31,15 @@ import {
   mkApplicableActionsFilter,
 } from "./experimental-features/applicable-inputs.js";
 import arg from "arg";
-import { splitAddress } from "./experimental-features/metadata.js";
 import * as t from "io-ts/lib/index.js";
 import { mkSourceMap, SourceMap } from "./experimental-features/source-map.js";
 import { POSIXTime, posixTimeToIso8601 } from "@marlowe.io/adapter/time";
 import { SingleInputTx } from "@marlowe.io/language-core-v1/semantics";
 import * as ObjG from "@marlowe.io/marlowe-object/guards";
+import {
+  TemplateParametersOf,
+  mkMarloweTemplate,
+} from "@marlowe.io/marlowe-template";
 
 // When this script is called, start with main.
 main();
@@ -139,10 +141,12 @@ async function createContractMenu(
   lifecycle: RuntimeLifecycle,
   rewardAddress?: StakeAddressBech32
 ) {
-  const payee = await input({
-    message: "Enter the payee address",
-    validate: bech32Validator,
-  });
+  const payee = addressBech32(
+    await input({
+      message: "Enter the payee address",
+      validate: bech32Validator,
+    })
+  );
   const amountStr = await input({
     message: "Enter the payment amount in lovelaces",
     validate: positiveBigIntValidator,
@@ -176,17 +180,18 @@ async function createContractMenu(
   }
 
   const scheme = {
-    payFrom: { address: walletAddress },
-    payTo: { address: payee },
+    payer: walletAddress,
+    payee,
     amount,
     depositDeadline,
     releaseDeadline,
   };
-  const tags = mkDelayPaymentTags(scheme);
+  const metadata = delayPaymentTemplate.toMetadata(scheme);
   const sourceMap = await mkSourceMap(lifecycle, mkDelayPayment(scheme));
   const [contractId, txId] = await sourceMap.createContract({
     stakeAddress: rewardAddress,
-    tags,
+    tags: { DELAY_PAYMENT_VERSION: "2" },
+    metadata,
   });
 
   console.log(`Contract created with id ${contractId}`);
@@ -209,7 +214,7 @@ async function loadContractMenu(lifecycle: RuntimeLifecycle) {
   const cid = contractId(cidStr);
   // Then we make sure that contract id is an instance of our delayed payment contract
   const validationResult = await validateExistingContract(lifecycle, cid);
-  if (validationResult === "InvalidTags") {
+  if (validationResult === "InvalidMarloweTemplate") {
     console.log("Invalid contract, it does not have the expected tags");
     return;
   }
@@ -222,8 +227,8 @@ async function loadContractMenu(lifecycle: RuntimeLifecycle) {
 
   // If it is, we print the contract details and go to the contract menu
   console.log("Contract details:");
-  console.log(`  * Pay from: ${validationResult.scheme.payFrom.address}`);
-  console.log(`  * Pay to: ${validationResult.scheme.payTo.address}`);
+  console.log(`  * Pay from: ${validationResult.scheme.payer}`);
+  console.log(`  * Pay to: ${validationResult.scheme.payee}`);
   console.log(`  * Amount: ${validationResult.scheme.amount} lovelaces`);
   console.log(
     `  * Deposit deadline: ${validationResult.scheme.depositDeadline}`
@@ -245,7 +250,7 @@ async function loadContractMenu(lifecycle: RuntimeLifecycle) {
  */
 async function contractMenu(
   lifecycle: RuntimeLifecycle,
-  scheme: DelayPaymentScheme,
+  scheme: DelayPaymentParameters,
   sourceMap: SourceMap<DelayPaymentAnnotations>,
   contractId: ContractId
 ): Promise<void> {
@@ -374,32 +379,45 @@ async function mainLoop(
 // #endregion
 
 // #region Delay Payment Contract
+const delayPaymentTemplate = mkMarloweTemplate({
+  name: "Delayed payment",
+  description:
+    "In a delay payment, a `payer` transfer an `amount` of ADA to the `payee` which can be redeemed after a `releaseDeadline`. While the payment is held by the contract, it can be staked to the payer, to generate pasive income while the payee has the guarantees that the money will be released.",
+  params: [
+    {
+      name: "payer",
+      description: "Who is making the payment",
+      type: "address",
+    },
+    {
+      name: "payee",
+      description: "Who is receiving the payment",
+      type: "address",
+    },
+    {
+      name: "amount",
+      description: "The amount of lovelaces to be paid",
+      type: "value",
+    },
+    {
+      name: "depositDeadline",
+      description:
+        "The deadline for the payment to be made. If the payment is not made by this date, the contract can be closed",
+      type: "date",
+    },
+    {
+      name: "releaseDeadline",
+      description:
+        "A date after the payment can be released to the receiver. NOTE: An empty transaction must be done to close the contract",
+      type: "date",
+    },
+  ] as const,
+});
+
 /**
  * These are the parameters of the contract
  */
-interface DelayPaymentScheme {
-  /**
-   * Who is making the delayed payment
-   */
-  payFrom: Address;
-  /**
-   * Who is receiving the payment
-   */
-  payTo: Address;
-  /**
-   * The amount of lovelaces to be paid
-   */
-  amount: bigint;
-  /**
-   * The deadline for the payment to be made. If the payment is not made by this date, the contract can be closed
-   */
-  depositDeadline: Date;
-  /**
-   * A date after the payment can be released to the receiver.
-   * NOTE: An empty transaction must be done to close the contract
-   */
-  releaseDeadline: Date;
-}
+type DelayPaymentParameters = TemplateParametersOf<typeof delayPaymentTemplate>;
 
 type DelayPaymentAnnotations =
   | "initialDeposit"
@@ -415,7 +433,7 @@ const DelayPaymentAnnotationsGuard = t.union([
 ]);
 
 function mkDelayPayment(
-  scheme: DelayPaymentScheme
+  scheme: DelayPaymentParameters
 ): ContractBundleMap<DelayPaymentAnnotations> {
   return {
     main: "initial-deposit",
@@ -436,10 +454,10 @@ function mkDelayPayment(
           when: [
             {
               case: {
-                party: scheme.payFrom,
-                deposits: scheme.amount,
+                party: { address: scheme.payer },
+                deposits: BigInt(scheme.amount),
                 of_token: lovelace,
-                into_account: scheme.payTo,
+                into_account: { address: scheme.payee },
               },
               then: {
                 ref: "release-funds",
@@ -500,12 +518,10 @@ type Closed = {
   result: "Missed deposit" | "Payment released";
 };
 
-function printState(state: DelayPaymentState, scheme: DelayPaymentScheme) {
+function printState(state: DelayPaymentState, scheme: DelayPaymentParameters) {
   switch (state.type) {
     case "InitialState":
-      console.log(
-        `Waiting ${scheme.payFrom.address} to deposit ${scheme.amount}`
-      );
+      console.log(`Waiting ${scheme.payer} to deposit ${scheme.amount}`);
       break;
     case "PaymentDeposited":
       console.log(
@@ -562,55 +578,11 @@ function getState(
 
 // #endregion
 
-const mkDelayPaymentTags = (schema: DelayPaymentScheme) => {
-  const tag = "DELAY_PYMNT-1";
-  const tags = {} as Tags;
-
-  tags[`${tag}-from-0`] = splitAddress(schema.payFrom)[0];
-  tags[`${tag}-from-1`] = splitAddress(schema.payFrom)[1];
-  tags[`${tag}-to-0`] = splitAddress(schema.payTo)[0];
-  tags[`${tag}-to-1`] = splitAddress(schema.payTo)[1];
-  tags[`${tag}-amount`] = schema.amount;
-  tags[`${tag}-deposit`] = schema.depositDeadline;
-  tags[`${tag}-release`] = schema.releaseDeadline;
-  return tags;
-};
-
-const extractSchemeFromTags = (
-  tags: unknown
-): DelayPaymentScheme | undefined => {
-  const tagsGuard = t.type({
-    "DELAY_PYMNT-1-from-0": t.string,
-    "DELAY_PYMNT-1-from-1": t.string,
-    "DELAY_PYMNT-1-to-0": t.string,
-    "DELAY_PYMNT-1-to-1": t.string,
-    "DELAY_PYMNT-1-amount": t.bigint,
-    "DELAY_PYMNT-1-deposit": t.string,
-    "DELAY_PYMNT-1-release": t.string,
-  });
-
-  if (!tagsGuard.is(tags)) {
-    return;
-  }
-
-  return {
-    payFrom: {
-      address: `${tags["DELAY_PYMNT-1-from-0"]}${tags["DELAY_PYMNT-1-from-1"]}`,
-    },
-    payTo: {
-      address: `${tags["DELAY_PYMNT-1-to-0"]}${tags["DELAY_PYMNT-1-to-1"]}`,
-    },
-    amount: tags["DELAY_PYMNT-1-amount"],
-    depositDeadline: new Date(tags["DELAY_PYMNT-1-deposit"]),
-    releaseDeadline: new Date(tags["DELAY_PYMNT-1-release"]),
-  };
-};
-
 type ValidationResults =
-  | "InvalidTags"
+  | "InvalidMarloweTemplate"
   | "InvalidContract"
   | {
-      scheme: DelayPaymentScheme;
+      scheme: DelayPaymentParameters;
       sourceMap: SourceMap<DelayPaymentAnnotations>;
     };
 
@@ -629,10 +601,10 @@ async function validateExistingContract(
     contractId,
   });
 
-  const scheme = extractSchemeFromTags(contractDetails.tags);
+  const scheme = delayPaymentTemplate.fromMetadata(contractDetails.metadata);
 
   if (!scheme) {
-    return "InvalidTags";
+    return "InvalidMarloweTemplate";
   }
 
   // If the contract seems to be an instance of the contract we want (meanin, we were able

@@ -1,0 +1,36 @@
+{
+  "name": "@marlowe.io/marlowe-template",
+  "version": "0.3.0-beta",
+  "description": "Contract parameters serialized as metadata",
+  "repository": "https://github.com/input-output-hk/marlowe-ts-sdk",
+  "publishConfig": {
+    "access": "public"
+  },
+  "contributors": [
+    "Hernan Rajchert <hernan.rajchert@iohk.io> (https://iohk.io)"
+  ],
+  "license": "Apache-2.0",
+  "scripts": {
+    "build": "tsc --build src",
+    "clean": "shx rm -rf dist",
+    "test": "NODE_OPTIONS='--experimental-vm-modules --no-warnings' jest --config test/jest.unit.config.mjs"
+  },
+  "type": "module",
+  "module": "./dist/esm/index.js",
+  "main": "./dist/esm/index.js",
+  "types": "./dist/esm/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "import": "./dist/esm/index.js",
+      "require": "./dist/bundled/cjs/language-examples.cjs",
+      "types": "./dist/esm/index.d.ts"
+    }
+  },
+  "dependencies": {
+    "@marlowe.io/runtime-core": "0.3.0-beta",
+    "@marlowe.io/language-core-v1": "0.3.0-beta"
+  }
+}

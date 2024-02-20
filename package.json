@@ -30,6 +30,7 @@
   },
   "workspaces": [
     "packages/adapter",
+    "packages/marlowe-template",
     "packages/language/core/v1",
     "packages/language/examples",
     "packages/language/specification-client",

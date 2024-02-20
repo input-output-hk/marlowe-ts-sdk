@@ -8,6 +8,7 @@ import {
   BlockHeader,
   BlockHeaderGuard,
   Metadata,
+  MetadataGuard,
   PolicyId,
   Tags,
   TagsGuard,
@@ -68,7 +69,7 @@ export const ContractHeaderGuard = t.type({
   version: MarloweVersion,
   // TODO: Add continuations
   tags: TagsGuard,
-  metadata: Metadata,
+  metadata: MetadataGuard,
   status: TxStatus,
   block: optionFromNullable(BlockHeaderGuard),
 });

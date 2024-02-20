@@ -2,6 +2,7 @@
   "files": [],
   "references": [
     { "path": "./packages/adapter/src" },
+    { "path": "./packages/marlowe-template/src" },
     { "path": "./packages/language/core/v1/src" },
     { "path": "./packages/language/examples/src" },
     { "path": "./packages/language/specification-client/src" },

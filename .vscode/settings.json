@@ -4,6 +4,7 @@
     "outFiles": [
       "${workspaceFolder}/examples/nodejs/dist/**/*.js",
       "${workspaceFolder}/packages/adapter/dist/esm/**/*.js",
+      "${workspaceFolder}/packages/marlowe-template/dist/esm/**/*.js",
       "${workspaceFolder}/packages/language/core/v1/dist/esm/**/*.js",
       "${workspaceFolder}/packages/language/examples/dist/esm/**/*.js",
       "${workspaceFolder}/packages/language/specification-client/dist/esm/**/*.js",
@@ -13,6 +14,7 @@
       "${workspaceFolder}/packages/runtime/core/dist/esm/**/*.js",
       "${workspaceFolder}/packages/runtime/lifecycle/dist/esm/**/*.js",
       "${workspaceFolder}/packages/marlowe-object/dist/esm/**/*.js",
+      "${workspaceFolder}/packages/marlowe-template/test-dist/**/*.js",
       "${workspaceFolder}/packages/marlowe-object/test-dist/**/*.js",
       "${workspaceFolder}/packages/runtime/lifecycle/test-dist/**/*.js",
       "${workspaceFolder}/packages/runtime/client/rest/test-dist/**/*.js",
