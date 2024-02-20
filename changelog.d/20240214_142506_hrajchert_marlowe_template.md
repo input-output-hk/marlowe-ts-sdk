@@ -2,7 +2,7 @@
 
 ### General
 
-- Feat: Created a new experimental package `@marlowe.io/blueprints` that helps to share the parameters used in the creation of a Marlowe contract. ([PR-184](https://github.com/input-output-hk/marlowe-ts-sdk/pull/184))
+- Feat: Created a new experimental package `@marlowe.io/marlowe-template` that helps to share the parameters used in the creation of a Marlowe contract. ([PR-184](https://github.com/input-output-hk/marlowe-ts-sdk/pull/184))
 
 
 ### @marlowe.io/runtime-core

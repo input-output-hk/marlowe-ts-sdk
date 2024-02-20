@@ -1,7 +1,10 @@
 import { AddressBech32, addressBech32 } from "@marlowe.io/runtime-core";
-import { BlueprintOf, mkBlueprint } from "@marlowe.io/marlowe-template";
+import {
+  TemplateParametersOf,
+  mkMarloweTemplate,
+} from "@marlowe.io/marlowe-template";
 describe("Delayed payment Blueprint", () => {
-  const delayPaymentBlueprint = mkBlueprint({
+  const delayPaymentBlueprint = mkMarloweTemplate({
     name: "Delayed payment",
     description:
       "In a delay payment, a `payer` transfer an `amount` of ADA to the `payee` which can be redeemed after a `releaseDeadline`. While the payment is held by the contract, it can be staked to the payer, to generate pasive income while the payee has the guarantees that the money will be released.",
@@ -45,7 +48,9 @@ describe("Delayed payment Blueprint", () => {
       releaseDeadline: Date
     }
    */
-  type DelayedPaymentParams = BlueprintOf<typeof delayPaymentBlueprint>;
+  type DelayedPaymentParams = TemplateParametersOf<
+    typeof delayPaymentBlueprint
+  >;
 
   const aDepositDate = new Date("2024-01-01T00:00:00.000Z");
   const aDepositDateMS = BigInt(aDepositDate.getTime());

@@ -33,7 +33,7 @@ export class DecodingBlueprintError extends Error {
  * The Metadata encoding is as following:
  * A top level entry with key `9041` and value with an object with two fields:
  * - `v` a numeric version of the Blueprint encoding (current version is 1)
- * - `params` an array of the encoded parameters with the same order as the Blueprint parameters.
+ * - `params` an array of the encoded parameters with the same order as the Template parameters.
  * @see {@link BlueprintParam} to see how each parameter is encoded.
  * @typeParam ObjectParams - The inferred type of the `options.params` as an object.
  * @experimental
@@ -171,7 +171,7 @@ export class Blueprint<ObjectParams extends object> {
 
 /**
  * This type function helps expanding the calculation of a type. It is used
- * in mkBlueprint to show the results of BlueprintType. When it is not used,
+ * in mkMarloweTemplate to show the results of BlueprintType. When it is not used,
  * the types are hard to read.
  * @internal
  * @category Type functions
@@ -181,7 +181,7 @@ export type Expand<T> = T extends infer O ? { [K in keyof O]: O[K] } : never;
 /**
  * @category Blueprint
  */
-export type BlueprintOf<T> = T extends Blueprint<infer U> ? U : never;
+export type TemplateParametersOf<T> = T extends Blueprint<infer U> ? U : never;
 
 /**
  * Options to create a new {@link Blueprint}.
@@ -215,7 +215,9 @@ export interface MkBlueprintOptions<
  * @typeParam ListParams - An ordered list of the different parameters that conform the blueprint.
  * @category Blueprint
  */
-export function mkBlueprint<ListParams extends readonly BlueprintParam<any>[]>(
+export function mkMarloweTemplate<
+  ListParams extends readonly BlueprintParam<any>[],
+>(
   options: MkBlueprintOptions<ListParams>
 ): Blueprint<Expand<BlueprintType<ListParams>>> {
   return new Blueprint(options);

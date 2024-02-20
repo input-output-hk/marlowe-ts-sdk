@@ -36,7 +36,10 @@ import { mkSourceMap, SourceMap } from "./experimental-features/source-map.js";
 import { POSIXTime, posixTimeToIso8601 } from "@marlowe.io/adapter/time";
 import { SingleInputTx } from "@marlowe.io/language-core-v1/semantics";
 import * as ObjG from "@marlowe.io/marlowe-object/guards";
-import { BlueprintOf, mkBlueprint } from "@marlowe.io/marlowe-template";
+import {
+  TemplateParametersOf,
+  mkMarloweTemplate,
+} from "@marlowe.io/marlowe-template";
 
 // When this script is called, start with main.
 main();
@@ -183,7 +186,7 @@ async function createContractMenu(
     depositDeadline,
     releaseDeadline,
   };
-  const metadata = delayPaymentBlueprint.encode(scheme);
+  const metadata = delayPaymentTemplate.encode(scheme);
   const sourceMap = await mkSourceMap(lifecycle, mkDelayPayment(scheme));
   const [contractId, txId] = await sourceMap.createContract({
     stakeAddress: rewardAddress,
@@ -211,7 +214,7 @@ async function loadContractMenu(lifecycle: RuntimeLifecycle) {
   const cid = contractId(cidStr);
   // Then we make sure that contract id is an instance of our delayed payment contract
   const validationResult = await validateExistingContract(lifecycle, cid);
-  if (validationResult === "InvalidBlueprint") {
+  if (validationResult === "InvalidMarloweTemplate") {
     console.log("Invalid contract, it does not have the expected tags");
     return;
   }
@@ -247,7 +250,7 @@ async function loadContractMenu(lifecycle: RuntimeLifecycle) {
  */
 async function contractMenu(
   lifecycle: RuntimeLifecycle,
-  scheme: DelayPaymentScheme,
+  scheme: DelayPaymentParameters,
   sourceMap: SourceMap<DelayPaymentAnnotations>,
   contractId: ContractId
 ): Promise<void> {
@@ -376,7 +379,7 @@ async function mainLoop(
 // #endregion
 
 // #region Delay Payment Contract
-const delayPaymentBlueprint = mkBlueprint({
+const delayPaymentTemplate = mkMarloweTemplate({
   name: "Delayed payment",
   description:
     "In a delay payment, a `payer` transfer an `amount` of ADA to the `payee` which can be redeemed after a `releaseDeadline`. While the payment is held by the contract, it can be staked to the payer, to generate pasive income while the payee has the guarantees that the money will be released.",
@@ -414,7 +417,7 @@ const delayPaymentBlueprint = mkBlueprint({
 /**
  * These are the parameters of the contract
  */
-type DelayPaymentScheme = BlueprintOf<typeof delayPaymentBlueprint>;
+type DelayPaymentParameters = TemplateParametersOf<typeof delayPaymentTemplate>;
 
 type DelayPaymentAnnotations =
   | "initialDeposit"
@@ -430,7 +433,7 @@ const DelayPaymentAnnotationsGuard = t.union([
 ]);
 
 function mkDelayPayment(
-  scheme: DelayPaymentScheme
+  scheme: DelayPaymentParameters
 ): ContractBundleMap<DelayPaymentAnnotations> {
   return {
     main: "initial-deposit",
@@ -515,7 +518,7 @@ type Closed = {
   result: "Missed deposit" | "Payment released";
 };
 
-function printState(state: DelayPaymentState, scheme: DelayPaymentScheme) {
+function printState(state: DelayPaymentState, scheme: DelayPaymentParameters) {
   switch (state.type) {
     case "InitialState":
       console.log(`Waiting ${scheme.payer} to deposit ${scheme.amount}`);
@@ -576,10 +579,10 @@ function getState(
 // #endregion
 
 type ValidationResults =
-  | "InvalidBlueprint"
+  | "InvalidMarloweTemplate"
   | "InvalidContract"
   | {
-      scheme: DelayPaymentScheme;
+      scheme: DelayPaymentParameters;
       sourceMap: SourceMap<DelayPaymentAnnotations>;
     };
 
@@ -598,10 +601,10 @@ async function validateExistingContract(
     contractId,
   });
 
-  const scheme = delayPaymentBlueprint.decode(contractDetails.metadata);
+  const scheme = delayPaymentTemplate.decode(contractDetails.metadata);
 
   if (!scheme) {
-    return "InvalidBlueprint";
+    return "InvalidMarloweTemplate";
   }
 
   // If the contract seems to be an instance of the contract we want (meanin, we were able

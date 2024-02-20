@@ -1,6 +1,9 @@
-import { BlueprintOf, mkBlueprint } from "@marlowe.io/marlowe-template";
+import {
+  TemplateParametersOf,
+  mkMarloweTemplate,
+} from "@marlowe.io/marlowe-template";
 describe("Blueprint basic types", () => {
-  const basicBlueprint = mkBlueprint({
+  const basicBlueprint = mkMarloweTemplate({
     name: "Basic types Blueprint",
     description: "A test blueprint with basic types",
     params: [
@@ -17,7 +20,7 @@ describe("Blueprint basic types", () => {
       dte: Date
     }
    */
-  type BasicBlueprint = BlueprintOf<typeof basicBlueprint>;
+  type BasicBlueprint = TemplateParametersOf<typeof basicBlueprint>;
 
   const aDate = new Date("2024-01-01T00:00:00.000Z");
   const aDateMS = BigInt(aDate.getTime());

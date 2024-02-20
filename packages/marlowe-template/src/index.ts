@@ -7,11 +7,11 @@
  * and {@link Blueprint.decode | decoding}  the parameters as {@link @marlowe.io/runtime-core!index.Metadata}.
  *
  * ```
- * import { mkBlueprint, BlueprintOf } from "@marlowe.io/blueprint";
+ * import { mkMarloweTemplate, TemplateParametersOf } from "@marlowe.io/blueprint";
  * import { addressBech32 } from "@marlowe.io/runtime-core";
  *
- * const myBlueprint = mkBlueprint({
- *   name: "MyBlueprint",
+ * const myTemplate = mkMarloweTemplate({
+ *   name: "My template example",
  *   description: "This is a blueprint for a simple object",
  *   params: [
  *     {
@@ -32,15 +32,15 @@
  *   ] as const, // it is important to use `as const` for the inference to work correctly
  * });
  *
- * // The inferred type of `MyBlueprint` is:
- * // type MyBlueprint = {
+ * // The inferred type of `MyTemplateParameters` is:
+ * // type MyTemplateParameters = {
  * //   aString: string;
  * //   aValue: number | bigint;
  * //   anAddress: AddressBech32;
  * // };
- * type MyBlueprint = BlueprintOf<typeof myBlueprint>;
+ * type MyTemplateParameters = TemplateParametersOf<typeof myTemplate>;
  *
- * const contractParameters: MyBlueprint = {
+ * const contractParameters: MyTemplateParameters = {
  *   aString: "hello",
  *   aValue: 42n,
  *   anAddress: addressBech32("replace for a valid bech32 address"),
@@ -48,16 +48,16 @@
  *
  * runtime.contracts.create({
  *   contract: mkContract(contractParameters),
- *   metadata: myBlueprint.encode(contractParameters)
+ *   metadata: myTemplate.encode(contractParameters)
  * })
  * ```
  * @packageDocumentation
  */
 export {
   Blueprint,
-  mkBlueprint,
+  mkMarloweTemplate,
   MkBlueprintOptions,
-  BlueprintOf,
+  TemplateParametersOf,
   Expand,
   DecodingBlueprintError,
 } from "./blueprint.js";

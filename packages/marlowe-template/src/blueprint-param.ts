@@ -12,7 +12,7 @@ import { Token } from "@marlowe.io/language-core-v1";
  *
  * Strings are encoded as an array of strings of 64 characters or less to satisfy the ledger's constraints.
  * @typeParam Name - The name of the parameter is used by different type functions to infer the Blueprint's ObjectParam.
- * @category Blueprint parameters
+ * @category Template parameters
  */
 export interface StringParam<Name extends string> {
   readonly name: Name;
@@ -25,7 +25,7 @@ export interface StringParam<Name extends string> {
  *
  * Values are encoded as bigints.
  * @typeParam Name - The name of the parameter is used by different type functions to infer the Blueprint's ObjectParam.
- * @category Blueprint parameters
+ * @category Template parameters
  */
 export interface ValueParam<Name extends string> {
   readonly name: Name;
@@ -38,7 +38,7 @@ export interface ValueParam<Name extends string> {
  *
  * An Address is econded as a {@link StringParam}, and it is also guarded to be a valid {@link @marlowe.io/runtime-core!index.AddressBech32}.
  * @typeParam Name - The name of the parameter is used by different type functions to infer the Blueprint's ObjectParam.
- * @category Blueprint parameters
+ * @category Template parameters
  */
 export interface AddressParam<Name extends string> {
   readonly name: Name;
@@ -51,7 +51,7 @@ export interface AddressParam<Name extends string> {
  *
  * Dates are encoded as a bigint representing the milliseconds since the epoch.
  * @typeParam Name - The name of the parameter is used by different type functions to infer the Blueprint's ObjectParam.
- * @category Blueprint parameters
+ * @category Template parameters
  */
 export interface DateParam<Name extends string> {
   readonly name: Name;
@@ -64,7 +64,7 @@ export interface DateParam<Name extends string> {
  *
  * Tokens are encoded as a tuple of 2 {@link StringParam}. The first string is the policy id and the second one is the token name.
  * @typeParam Name - The name of the parameter is used by different type functions to infer the Blueprint's ObjectParam.
- * @category Blueprint parameters
+ * @category Template parameters
  */
 export interface TokenParam<Name extends string> {
   readonly name: Name;
@@ -77,7 +77,7 @@ export interface TokenParam<Name extends string> {
  *
  * @See The documentation on each parameter to see how is encoded and decoded.
  * @typeParam Name - The name of the parameter is used by different type functions to infer the Blueprint's ObjectParam.
- * @category Blueprint parameters
+ * @category Template parameters
  */
 export type BlueprintParam<Name extends string> =
   | StringParam<Name>
