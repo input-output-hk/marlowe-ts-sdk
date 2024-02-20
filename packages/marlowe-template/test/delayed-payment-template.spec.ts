@@ -3,8 +3,8 @@ import {
   TemplateParametersOf,
   mkMarloweTemplate,
 } from "@marlowe.io/marlowe-template";
-describe("Delayed payment Blueprint", () => {
-  const delayPaymentBlueprint = mkMarloweTemplate({
+describe("Delayed payment Template", () => {
+  const delayPaymentTemplate = mkMarloweTemplate({
     name: "Delayed payment",
     description:
       "In a delay payment, a `payer` transfer an `amount` of ADA to the `payee` which can be redeemed after a `releaseDeadline`. While the payment is held by the contract, it can be staked to the payer, to generate pasive income while the payee has the guarantees that the money will be released.",
@@ -39,7 +39,7 @@ describe("Delayed payment Blueprint", () => {
     ] as const,
   });
 
-  /** The inferred type from the Blueprint should be
+  /** The inferred type should be
     {
       payer: AddressBech32,
       payee: AddressBech32,
@@ -48,9 +48,7 @@ describe("Delayed payment Blueprint", () => {
       releaseDeadline: Date
     }
    */
-  type DelayedPaymentParams = TemplateParametersOf<
-    typeof delayPaymentBlueprint
-  >;
+  type DelayedPaymentParams = TemplateParametersOf<typeof delayPaymentTemplate>;
 
   const aDepositDate = new Date("2024-01-01T00:00:00.000Z");
   const aDepositDateMS = BigInt(aDepositDate.getTime());
@@ -71,7 +69,7 @@ describe("Delayed payment Blueprint", () => {
       releaseDeadline: aReleaseDate,
     };
 
-    expect(delayPaymentBlueprint.is(a)).toBe(true);
+    expect(delayPaymentTemplate.is(a)).toBe(true);
   });
 
   it("should guard for incorrect addresses", () => {
@@ -83,7 +81,7 @@ describe("Delayed payment Blueprint", () => {
       releaseDeadline: aReleaseDate,
     };
 
-    expect(delayPaymentBlueprint.is(a)).toBe(false);
+    expect(delayPaymentTemplate.is(a)).toBe(false);
   });
   it("should encode a valid value", () => {
     const a: DelayedPaymentParams = {
@@ -97,7 +95,7 @@ describe("Delayed payment Blueprint", () => {
       depositDeadline: aDepositDate,
       releaseDeadline: aReleaseDate,
     };
-    expect(delayPaymentBlueprint.encode(a)).toEqual({
+    expect(delayPaymentTemplate.encode(a)).toEqual({
       "9041": {
         v: 1n,
         params: [
@@ -136,7 +134,7 @@ describe("Delayed payment Blueprint", () => {
       },
     };
 
-    expect(delayPaymentBlueprint.decode(metadata)).toEqual({
+    expect(delayPaymentTemplate.decode(metadata)).toEqual({
       payer: addressBech32(
         "addr_test1qpcucug827nlrmsv7n66hwdfpemwqtv8nxnjc4azacuu807w6l6hgelwsph7clqmauq7h3y9qhhgs0rwu3mu8uf7m4kqckxkry"
       ),
@@ -166,6 +164,6 @@ describe("Delayed payment Blueprint", () => {
       },
     };
     // FIXME: Improve the error message checking
-    expect(() => delayPaymentBlueprint.decode(metadata)).toThrow();
+    expect(() => delayPaymentTemplate.decode(metadata)).toThrow();
   });
 });

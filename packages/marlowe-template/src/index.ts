@@ -3,16 +3,16 @@
  * a Marlowe contract template.
  *
  * We call a contract template to a function that receives a set of parameters and returns a Marlowe contract.
- * Manually sharing the contract parameters can be challenging, so this package aims to solve that by {@link Blueprint.encode | encoding}
- * and {@link Blueprint.decode | decoding}  the parameters as {@link @marlowe.io/runtime-core!index.Metadata}.
+ * Manually sharing the contract parameters can be challenging, so this package aims to solve that by {@link MarloweTemplate.encode | encoding}
+ * and {@link MarloweTemplate.decode | decoding}  the parameters as {@link @marlowe.io/runtime-core!index.Metadata}.
  *
  * ```
- * import { mkMarloweTemplate, TemplateParametersOf } from "@marlowe.io/blueprint";
+ * import { mkMarloweTemplate, TemplateParametersOf } from "@marlowe.io/marlowe-template";
  * import { addressBech32 } from "@marlowe.io/runtime-core";
  *
  * const myTemplate = mkMarloweTemplate({
  *   name: "My template example",
- *   description: "This is a blueprint for a simple object",
+ *   description: "This defines the parameters of a simple contract",
  *   params: [
  *     {
  *       name: "aString",
@@ -54,21 +54,21 @@
  * @packageDocumentation
  */
 export {
-  Blueprint,
+  MarloweTemplate,
   mkMarloweTemplate,
-  MkBlueprintOptions,
+  MkTemplateOptions,
   TemplateParametersOf,
   Expand,
-  DecodingBlueprintError,
+  DecodingTemplateError,
 } from "./template.js";
 export {
-  BlueprintParam,
-  BlueprintType,
+  TemplateParam,
+  TemplateType,
   StringParam,
   ValueParam,
   AddressParam,
   DateParam,
-  BlueprintKeys,
+  TemplateKeys,
   TypeOfParam,
   TokenParam,
 } from "./template-param.js";

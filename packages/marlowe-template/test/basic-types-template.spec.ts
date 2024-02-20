@@ -2,10 +2,10 @@ import {
   TemplateParametersOf,
   mkMarloweTemplate,
 } from "@marlowe.io/marlowe-template";
-describe("Blueprint basic types", () => {
-  const basicBlueprint = mkMarloweTemplate({
-    name: "Basic types Blueprint",
-    description: "A test blueprint with basic types",
+describe("Template basic types", () => {
+  const basicTemplate = mkMarloweTemplate({
+    name: "Basic types template",
+    description: "A test template with basic types",
     params: [
       { name: "str", type: "string", description: "A string" },
       { name: "num", type: "value", description: "A number" },
@@ -13,38 +13,38 @@ describe("Blueprint basic types", () => {
     ] as const,
   });
 
-  /** The inferred type from the Blueprint should be
+  /** The inferred type should be
     {
       str: string,
       num: BigIntOrNumber,
       dte: Date
     }
    */
-  type BasicBlueprint = TemplateParametersOf<typeof basicBlueprint>;
+  type BasicParams = TemplateParametersOf<typeof basicTemplate>;
 
   const aDate = new Date("2024-01-01T00:00:00.000Z");
   const aDateMS = BigInt(aDate.getTime());
 
   it("should guard for correct values", () => {
-    const a: BasicBlueprint = { str: "hello", num: 42n, dte: aDate };
+    const a: BasicParams = { str: "hello", num: 42n, dte: aDate };
 
-    expect(basicBlueprint.is(a)).toBe(true);
+    expect(basicTemplate.is(a)).toBe(true);
   });
 
   it("should guard for incorrect values", () => {
-    const a: BasicBlueprint = {
+    const a: BasicParams = {
       /** @ts-expect-error */
       str: 42n,
       /** @ts-expect-error */
       num: "hello",
       dte: aDate,
     };
-    expect(basicBlueprint.is(a)).toBe(false);
+    expect(basicTemplate.is(a)).toBe(false);
   });
 
   it("should encode a valid value", () => {
-    const a: BasicBlueprint = { str: "hello", num: 42, dte: aDate };
-    expect(basicBlueprint.encode(a)).toEqual({
+    const a: BasicParams = { str: "hello", num: 42, dte: aDate };
+    expect(basicTemplate.encode(a)).toEqual({
       "9041": {
         v: 1n,
         params: [["hello"], 42n, aDateMS],
@@ -60,7 +60,7 @@ describe("Blueprint basic types", () => {
       },
     };
 
-    expect(basicBlueprint.decode(metadata)).toEqual({
+    expect(basicTemplate.decode(metadata)).toEqual({
       str: "hello",
       num: 42n,
       dte: aDate,
@@ -68,12 +68,12 @@ describe("Blueprint basic types", () => {
   });
 
   it("should split a long string when encoding", () => {
-    const a: BasicBlueprint = {
+    const a: BasicParams = {
       str: "a".repeat(65),
       num: 42n,
       dte: aDate,
     };
-    expect(basicBlueprint.encode(a)).toEqual({
+    expect(basicTemplate.encode(a)).toEqual({
       "9041": {
         v: 1n,
         params: [["a".repeat(64), "a"], 42n, aDateMS],
@@ -88,7 +88,7 @@ describe("Blueprint basic types", () => {
         params: [["a".repeat(64), "a"], 42n, aDateMS],
       },
     };
-    expect(basicBlueprint.decode(metadata)).toEqual({
+    expect(basicTemplate.decode(metadata)).toEqual({
       str: "a".repeat(65),
       num: 42n,
       dte: aDate,
