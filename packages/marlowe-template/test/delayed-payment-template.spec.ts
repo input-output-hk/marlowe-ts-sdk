@@ -95,7 +95,7 @@ describe("Delayed payment Template", () => {
       depositDeadline: aDepositDate,
       releaseDeadline: aReleaseDate,
     };
-    expect(delayPaymentTemplate.encode(a)).toEqual({
+    expect(delayPaymentTemplate.toMetadata(a)).toEqual({
       "9041": {
         v: 1n,
         params: [
@@ -134,7 +134,7 @@ describe("Delayed payment Template", () => {
       },
     };
 
-    expect(delayPaymentTemplate.decode(metadata)).toEqual({
+    expect(delayPaymentTemplate.fromMetadata(metadata)).toEqual({
       payer: addressBech32(
         "addr_test1qpcucug827nlrmsv7n66hwdfpemwqtv8nxnjc4azacuu807w6l6hgelwsph7clqmauq7h3y9qhhgs0rwu3mu8uf7m4kqckxkry"
       ),
@@ -164,6 +164,6 @@ describe("Delayed payment Template", () => {
       },
     };
     // FIXME: Improve the error message checking
-    expect(() => delayPaymentTemplate.decode(metadata)).toThrow();
+    expect(() => delayPaymentTemplate.fromMetadata(metadata)).toThrow();
   });
 });

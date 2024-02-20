@@ -27,8 +27,8 @@ export class DecodingTemplateError extends Error {
 
 /**
  * This class holds information on the parameters required to create a Marlowe contract and
- * a way to {@link MarloweTemplate.encode} and {@link MarloweTemplate.decode} the contract parameters as {@link @marlowe.io/runtime-core!index.Metadata}.
- * The order of the parameters is important as it is used by the codec to encode and decode.
+ * a way to serialize them {@link MarloweTemplate.toMetadata | to} and {@link MarloweTemplate.fromMetadata | from}  {@link @marlowe.io/runtime-core!index.Metadata}.
+ * The order of the parameters is important as they drive the serialization.
  *
  * The Metadata encoding is as following:
  * A top level entry with key `9041` and value with an object with two fields:
@@ -43,6 +43,11 @@ export class MarloweTemplate<ObjectParams extends object> {
   private templateCodec: t.Type<ObjectParams, Metadata, unknown>;
   name: string;
   description?: string;
+  /**
+   * Manual constructor for the MarloweTemplate class, you should use {@link mkMarloweTemplate} instead.
+   * @typeParam ObjectParams - The inferred type of the `options.params` as an object.
+   * @param options - The {@link MkTemplateOptions | options} to create a new MarloweTemplate.
+   */
   constructor(options: MkTemplateOptions<readonly TemplateParam<any>[]>) {
     const templateParams = options.params;
     this.name = options.name;
@@ -145,7 +150,7 @@ export class MarloweTemplate<ObjectParams extends object> {
    * @returns the decoded ObjectParams.
    * @throws {@link DecodingTemplateError} - if the value is not a valid Metadata.
    */
-  decode(value: Metadata): ObjectParams {
+  fromMetadata(value: Metadata): ObjectParams {
     const decoded = this.templateCodec.decode(value);
     if (decoded._tag === "Right") {
       return decoded.right;
@@ -153,19 +158,14 @@ export class MarloweTemplate<ObjectParams extends object> {
       throw new DecodingTemplateError(this, decoded.left);
     }
   }
-  // NOTE: The output of the encode is the output of the Metadata codec,
-  //       which is compatible with its inputs, but it doesn't have the
-  //       branded types. Here we cast to the Metadata type to allow easier
-  //       usability with the rest of the runtime, that expects the Branded
-  //       types.
   /**
    * Encodes the given value into a Metadata object.
    *
    * @param value The value to be encoded.
    * @returns The encoded Metadata object.
    */
-  encode(value: ObjectParams): Metadata {
-    return this.templateCodec.encode(value) as Metadata;
+  toMetadata(value: ObjectParams) {
+    return this.templateCodec.encode(value);
   }
 }
 

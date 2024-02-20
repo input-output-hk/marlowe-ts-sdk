@@ -2,9 +2,10 @@
  * This is an `experimental` package that helps with the definition and sharing of the parameters of
  * a Marlowe contract template.
  *
- * We call a contract template to a function that receives a set of parameters and returns a Marlowe contract.
- * Manually sharing the contract parameters can be challenging, so this package aims to solve that by {@link MarloweTemplate.encode | encoding}
- * and {@link MarloweTemplate.decode | decoding}  the parameters as {@link @marlowe.io/runtime-core!index.Metadata}.
+ * We call a contract template to a function (e.g. `mkContract`) that receives a set of parameters and returns a Marlowe contract.
+ * Manually sharing the contract parameters can be challenging, so this package aims to solve that by
+ * serializing the parameters {@link MarloweTemplate.toMetadata | to} and
+ * {@link MarloweTemplate.fromMetadata | from} {@link @marlowe.io/runtime-core!index.Metadata}.
  *
  * ```
  * import { mkMarloweTemplate, TemplateParametersOf } from "@marlowe.io/marlowe-template";
@@ -48,7 +49,7 @@
  *
  * runtime.contracts.create({
  *   contract: mkContract(contractParameters),
- *   metadata: myTemplate.encode(contractParameters)
+ *   metadata: myTemplate.toMetadata(contractParameters)
  * })
  * ```
  * @packageDocumentation

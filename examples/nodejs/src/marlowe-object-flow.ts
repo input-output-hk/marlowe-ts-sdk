@@ -186,7 +186,7 @@ async function createContractMenu(
     depositDeadline,
     releaseDeadline,
   };
-  const metadata = delayPaymentTemplate.encode(scheme);
+  const metadata = delayPaymentTemplate.toMetadata(scheme);
   const sourceMap = await mkSourceMap(lifecycle, mkDelayPayment(scheme));
   const [contractId, txId] = await sourceMap.createContract({
     stakeAddress: rewardAddress,
@@ -601,7 +601,7 @@ async function validateExistingContract(
     contractId,
   });
 
-  const scheme = delayPaymentTemplate.decode(contractDetails.metadata);
+  const scheme = delayPaymentTemplate.fromMetadata(contractDetails.metadata);
 
   if (!scheme) {
     return "InvalidMarloweTemplate";

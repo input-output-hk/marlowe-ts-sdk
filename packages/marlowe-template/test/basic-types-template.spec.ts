@@ -44,7 +44,7 @@ describe("Template basic types", () => {
 
   it("should encode a valid value", () => {
     const a: BasicParams = { str: "hello", num: 42, dte: aDate };
-    expect(basicTemplate.encode(a)).toEqual({
+    expect(basicTemplate.toMetadata(a)).toEqual({
       "9041": {
         v: 1n,
         params: [["hello"], 42n, aDateMS],
@@ -60,7 +60,7 @@ describe("Template basic types", () => {
       },
     };
 
-    expect(basicTemplate.decode(metadata)).toEqual({
+    expect(basicTemplate.fromMetadata(metadata)).toEqual({
       str: "hello",
       num: 42n,
       dte: aDate,
@@ -73,7 +73,7 @@ describe("Template basic types", () => {
       num: 42n,
       dte: aDate,
     };
-    expect(basicTemplate.encode(a)).toEqual({
+    expect(basicTemplate.toMetadata(a)).toEqual({
       "9041": {
         v: 1n,
         params: [["a".repeat(64), "a"], 42n, aDateMS],
@@ -88,7 +88,7 @@ describe("Template basic types", () => {
         params: [["a".repeat(64), "a"], 42n, aDateMS],
       },
     };
-    expect(basicTemplate.decode(metadata)).toEqual({
+    expect(basicTemplate.fromMetadata(metadata)).toEqual({
       str: "a".repeat(65),
       num: 42n,
       dte: aDate,
