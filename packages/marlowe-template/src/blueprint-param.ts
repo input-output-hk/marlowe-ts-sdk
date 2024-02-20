@@ -1,5 +1,5 @@
 import * as t from "io-ts/lib/index.js";
-import { DateFromEpochMS, StringCodec, TokenCodec } from "./codecs.js";
+import { DateFromEpochMS, StringSplitCodec, TokenCodec } from "./codecs.js";
 import { AddressBech32, AddressBech32Guard } from "@marlowe.io/runtime-core";
 import {
   BigIntOrNumber,
@@ -124,11 +124,11 @@ function blueprintParamCodec<Param extends BlueprintParam<any>>(
 ): t.Mixed {
   switch (param.type) {
     case "string":
-      return StringCodec;
+      return StringSplitCodec;
     case "value":
       return BigIntOrNumberGuard;
     case "address":
-      return StringCodec.pipe(AddressBech32Guard);
+      return StringSplitCodec.pipe(AddressBech32Guard);
     case "date":
       return DateFromEpochMS;
     case "token":

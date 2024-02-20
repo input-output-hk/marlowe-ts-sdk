@@ -7,34 +7,34 @@ import {
 import { Token } from "@marlowe.io/language-core-v1";
 import * as CoreG from "@marlowe.io/language-core-v1/guards";
 
-const DateCodec = new t.Type<Date, number, BigIntOrNumber>(
-  "Date",
-  (num): num is Date => num instanceof Date,
-  (num, ctx) => {
-    num = Number(num);
-    const date = new Date(num);
-    return t.success(date);
-  },
-  (dte) => dte.getTime()
+export const DateFromEpochMS = BigIntOrNumberGuard.pipe(
+  new t.Type<Date, BigIntOrNumber, BigIntOrNumber>(
+    "DateFromEpochMS",
+    (num): num is Date => num instanceof Date,
+    (num, ctx) => {
+      num = Number(num);
+      const date = new Date(num);
+      return t.success(date);
+    },
+    (dte) => dte.getTime()
+  )
 );
 
-export const DateFromEpochMS = BigIntOrNumberGuard.pipe(DateCodec);
-
-const StringSplitCodec = new t.Type<string, StringUnder64[], StringUnder64[]>(
-  "StringSplit",
-  (str): str is string => typeof str === "string",
-  (str, ctx) => {
-    return t.success(str.join(""));
-  },
-  (str) => {
-    const splitted = str.match(/(.|[\r\n]){1,64}/g) ?? [];
-    return splitted as StringUnder64[];
-  }
-);
-
-export const StringCodec: t.Type<string, StringUnder64[], unknown> = t
+export const StringSplitCodec: t.Type<string, StringUnder64[], unknown> = t
   .array(StringUnder64Guard)
-  .pipe(StringSplitCodec);
+  .pipe(
+    new t.Type<string, StringUnder64[], StringUnder64[]>(
+      "StringSplit",
+      (str): str is string => typeof str === "string",
+      (str, ctx) => {
+        return t.success(str.join(""));
+      },
+      (str) => {
+        const splitted = str.match(/(.|[\r\n]){1,64}/g) ?? [];
+        return splitted as StringUnder64[];
+      }
+    )
+  );
 
 const TokenFromTuple = new t.Type<Token, [string, string], [string, string]>(
   "TokenFromTuple",
@@ -48,5 +48,5 @@ const TokenFromTuple = new t.Type<Token, [string, string], [string, string]>(
 );
 
 export const TokenCodec = t
-  .tuple([StringCodec, StringCodec])
+  .tuple([StringSplitCodec, StringSplitCodec])
   .pipe(TokenFromTuple);

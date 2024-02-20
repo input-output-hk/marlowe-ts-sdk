@@ -1,4 +1,8 @@
-import { DateFromEpochMS, StringCodec, TokenCodec } from "../src/codecs.js";
+import {
+  DateFromEpochMS,
+  StringSplitCodec,
+  TokenCodec,
+} from "../src/codecs.js";
 import * as t from "io-ts/lib/index.js";
 describe("DateFromEpochMS", () => {
   it("should decode a number as a Date", () => {
@@ -17,23 +21,23 @@ describe("DateFromEpochMS", () => {
 
 describe("StringCodec", () => {
   it("should decode a small string", () => {
-    const aString = StringCodec.decode(["hello"]);
+    const aString = StringSplitCodec.decode(["hello"]);
     expect(aString).toEqual(t.success("hello"));
   });
   it("it should merge two strings", () => {
-    const aString = StringCodec.decode(["hello", "world"]);
+    const aString = StringSplitCodec.decode(["hello", "world"]);
     expect(aString).toEqual(t.success("helloworld"));
   });
   it("should encode a small string as a single element array", () => {
-    const aString = StringCodec.encode("hello");
+    const aString = StringSplitCodec.encode("hello");
     expect(aString).toEqual(["hello"]);
   });
   it("should split a string longer that 64 characters", () => {
-    const aString = StringCodec.encode("a".repeat(65));
+    const aString = StringSplitCodec.encode("a".repeat(65));
     expect(aString).toEqual(["a".repeat(64), "a"]);
   });
   it("should fail to decode a number", () => {
-    const aString = StringCodec.decode(42);
+    const aString = StringSplitCodec.decode(42);
     expect(aString).toHaveProperty("_tag", "Left");
   });
 });
