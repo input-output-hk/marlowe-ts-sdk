@@ -14,6 +14,7 @@ import {
   TxOutRef,
   TxId,
   ContractId,
+  TxIdGuard,
 } from "@marlowe.io/runtime-core";
 import { TxStatus } from "./status.js";
 import { BuiltinByteString } from "@marlowe.io/language-core-v1";
@@ -46,7 +47,7 @@ export interface TxHeader {
  */
 export const TxHeaderGuard = t.type({
   contractId: ContractIdGuard,
-  transactionId: TxId,
+  transactionId: TxIdGuard,
   continuations: optionFromNullable(G.BuiltinByteString),
   tags: TagsGuard,
   metadata: MetadataGuard,

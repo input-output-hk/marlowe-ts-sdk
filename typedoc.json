@@ -24,6 +24,9 @@
     "fp-ts": {
       "Option": "https://gcanti.github.io/fp-ts/modules/Option.ts.html"
     },
+    "io-ts": {
+      "Branded": "https://github.com/gcanti/io-ts/blob/master/index.md#branded-types--refinements"
+    },
     "lucid-cardano": {
       "Lucid": "https://deno.land/x/lucid@0.10.7/mod.ts?s=Lucid"
     },

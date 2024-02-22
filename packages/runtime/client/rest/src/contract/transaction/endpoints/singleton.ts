@@ -14,6 +14,7 @@ import {
   HexTransactionWitnessSet,
   HexTransactionWitnessSetGuard,
   TxId,
+  TxIdGuard,
   transactionWitnessSetTextEnvelope,
 } from "@marlowe.io/runtime-core";
 
@@ -45,7 +46,7 @@ export const GetContractTransactionByIdRequestGuard = assertGuardEqual(
   proxy<GetContractTransactionByIdRequest>(),
   t.type({
     contractId: ContractIdGuard,
-    txId: TxId,
+    txId: TxIdGuard,
   })
 );
 
@@ -80,7 +81,7 @@ export const SubmitContractTransactionRequestGuard = assertGuardEqual(
   proxy<SubmitContractTransactionRequest>(),
   t.type({
     contractId: ContractIdGuard,
-    transactionId: TxId,
+    transactionId: TxIdGuard,
     hexTransactionWitnessSet: HexTransactionWitnessSetGuard,
   })
 );
