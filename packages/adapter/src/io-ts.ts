@@ -150,21 +150,25 @@ export interface BrandP<A, B extends A, I>
 // This helper is a workaround to that issue, making sure that if the original codec
 // has the same Output than the Actual type, the new codec outputs the branded type
 // So a PositiveInt codec will have the type t.Type<PositiveInt, PositiveInt, unknown>
-export function preservedBrand<A, I, B extends A>(
-  codec: t.Type<A, A, I>,
-  predicate: Refinement<A, B>,
-  name: string
-): BrandP<A, B, I> {
+export function preservedBrand<
+  C extends t.Any,
+  N extends string,
+  B extends { readonly [K in N]: symbol },
+>(
+  codec: C,
+  predicate: Refinement<t.TypeOf<C>, t.Branded<t.TypeOf<C>, B>>,
+  name: N
+): BrandP<t.TypeOf<C>, B, t.InputOf<C>> {
   return new t.Type(
     name,
-    (u): u is t.Branded<A, B> => codec.is(u) && predicate(u),
+    (u): u is t.Branded<t.TypeOf<C>, B> => codec.is(u) && predicate(u),
     (u, c) =>
       pipe(
         codec.validate(u, c),
         Either.chain((a) =>
           predicate(a)
-            ? t.success(a as t.Branded<A, B>)
-            : t.failure<t.Branded<A, B>>(
+            ? t.success(a as t.Branded<t.TypeOf<C>, B>)
+            : t.failure<t.Branded<t.TypeOf<C>, B>>(
                 a,
                 c,
                 `Value does not satisfy the ${name} constraint`

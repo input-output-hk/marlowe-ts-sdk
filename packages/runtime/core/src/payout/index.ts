@@ -4,7 +4,7 @@ import { fromNewtype } from "io-ts-types";
 import { split } from "fp-ts/lib/string.js";
 import { pipe } from "fp-ts/lib/function.js";
 import { head } from "fp-ts/lib/ReadonlyNonEmptyArray.js";
-import { TxId } from "../tx/id.js";
+import { txId, TxId } from "../tx/id.js";
 import { ContractIdGuard } from "../contract/id.js";
 import { AssetId, Assets } from "../asset/index.js";
 
@@ -15,7 +15,7 @@ export const unPayoutId = iso<PayoutId>().unwrap;
 export const payoutId = iso<PayoutId>().wrap;
 
 export const payoutIdToTxId: (payoutId: PayoutId) => TxId = (payoutId) =>
-  pipe(payoutId, unPayoutId, split("#"), head);
+  pipe(payoutId, unPayoutId, split("#"), head, txId);
 
 export type WithdrawalId = Newtype<
   { readonly WithdrawalId: unique symbol },
@@ -27,7 +27,7 @@ export const withdrawalId = iso<WithdrawalId>().wrap;
 
 export const withdrawalIdToTxId: (withdrawalId: WithdrawalId) => TxId = (
   withdrawalId
-) => pipe(withdrawalId, unWithdrawalId);
+) => pipe(withdrawalId, unWithdrawalId, txId);
 
 // DISCUSSION: PayoutAvailable or AvailablePayout?
 export type PayoutAvailable = t.TypeOf<typeof PayoutAvailable>;
