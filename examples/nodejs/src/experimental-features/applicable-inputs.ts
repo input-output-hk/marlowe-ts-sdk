@@ -26,12 +26,14 @@ import {
 } from "@marlowe.io/language-core-v1";
 import {
   applyAllInputs,
+  computeTransaction,
   convertReduceWarning,
   evalObservation,
   evalValue,
   inBounds,
   Payment,
   reduceContractUntilQuiescent,
+  TransactionSuccess,
   TransactionWarning,
 } from "@marlowe.io/language-core-v1/semantics";
 import { AddressBech32, ContractId, PolicyId } from "@marlowe.io/runtime-core";
@@ -45,15 +47,6 @@ import { ContractSourceId } from "@marlowe.io/marlowe-object";
 type ActionApplicant = Party | "anybody";
 
 export interface AppliedActionResult {
-  /**
-   * What inputs needs to be provided to apply the action
-   */
-  inputs: Input[];
-
-  /**
-   * What is the environment to apply the inputs
-   */
-  environment: Environment;
   /**
    * What is the new state after applying an action and reducing until quiescent
    */
@@ -72,26 +65,50 @@ export interface AppliedActionResult {
   payments: Payment[];
 }
 
+export interface ApplicableInputs {
+  /**
+   * What inputs needs to be provided to apply the action
+   */
+  inputs: Input[];
+
+  /**
+   * What is the environment to apply the inputs
+   */
+  environment: Environment;
+}
+
+export type TODORENAMEAppliedActionResult = AppliedActionResult &
+  ApplicableInputs;
+
 interface CanNotify {
   type: "Notify";
-  policyId: PolicyId;
-  applyAction(): AppliedActionResult;
+  somethingSomethingRuntime: {
+    policyId: PolicyId;
+    environment: Environment;
+  };
+  applyAction(): TODORENAMEAppliedActionResult;
 }
 
 interface CanDeposit {
   type: "Deposit";
-  policyId: PolicyId;
   deposit: Deposit;
+  somethingSomethingRuntime: {
+    policyId: PolicyId;
+    environment: Environment;
+  };
 
-  applyAction(): AppliedActionResult;
+  applyAction(): TODORENAMEAppliedActionResult;
 }
 
 interface CanChoose {
   type: "Choice";
-  policyId: PolicyId;
   choice: Choice;
+  somethingSomethingRuntime: {
+    policyId: PolicyId;
+    environment: Environment;
+  };
 
-  applyAction(choice: ChosenNum): AppliedActionResult;
+  applyAction(choice: ChosenNum): TODORENAMEAppliedActionResult;
 }
 
 /**
@@ -100,11 +117,141 @@ interface CanChoose {
  */
 interface CanAdvance {
   type: "Advance";
-  policyId: PolicyId;
-  applyAction(): AppliedActionResult;
+  somethingSomethingRuntime: {
+    policyId: PolicyId;
+    environment: Environment;
+  };
+  applyAction(): TODORENAMEAppliedActionResult;
 }
 
 export type ApplicableAction = CanNotify | CanDeposit | CanChoose | CanAdvance;
+export function getApplicableInput(di: GetContinuationDI) {
+  async function doMakeApplicableInput(
+    action: CanNotify | CanDeposit | CanAdvance
+  ): Promise<ApplicableInputs>;
+  async function doMakeApplicableInput(
+    action: CanChoose,
+    chosenNum: ChosenNum
+  ): Promise<ApplicableInputs>;
+  async function doMakeApplicableInput(
+    action: ApplicableAction,
+    chosenNum?: ChosenNum
+  ): Promise<ApplicableInputs>;
+  async function doMakeApplicableInput(
+    action: ApplicableAction,
+    chosenNum?: ChosenNum
+  ): Promise<ApplicableInputs> {
+    async function decorateInput(
+      aCase: Case,
+      content: InputContent
+    ): Promise<Input> {
+      if ("merkleized_then" in aCase) {
+        const aCaseContinuation = await di.getContractContinuation(
+          aCase.merkleized_then
+        );
+        const merkleizedHashAndContinuation = {
+          continuation_hash: aCase.merkleized_then,
+          merkleized_continuation: aCaseContinuation,
+        };
+        // MerkleizedNotify are serialized as the plain merkle object
+        if (content === "input_notify") {
+          return merkleizedHashAndContinuation;
+        } else {
+          // For IDeposit and IChoice is the InputContent + the merkle object
+          return {
+            ...merkleizedHashAndContinuation,
+            ...content,
+          };
+        }
+      } else {
+        return content;
+      }
+    }
+    const environment = action.somethingSomethingRuntime.environment;
+    const state = null as any;
+    const aCase = null as any;
+
+    switch (action.type) {
+      case "Advance":
+        return {
+          inputs: [],
+          environment,
+        };
+      case "Deposit":
+        const deposit = action.deposit;
+        const depositInput = await decorateInput(aCase, {
+          input_from_party: deposit.party,
+          that_deposits: evalValue(environment, state, deposit.deposits),
+          of_token: deposit.of_token,
+          into_account: deposit.into_account,
+        });
+        return {
+          inputs: [depositInput],
+          environment,
+        };
+      case "Notify":
+        const notifyInput = await decorateInput(aCase, "input_notify");
+        return {
+          inputs: [notifyInput],
+          environment,
+        };
+      case "Choice":
+        const choice = action.choice;
+        // TODO: Improve errors
+        if (!chosenNum) {
+          throw new Error("Chosen number is not provided");
+        }
+        if (!inBounds(chosenNum, choice.choose_between)) {
+          throw new Error("Chosen number is not in bounds");
+        }
+
+        const choiceInput = await decorateInput(aCase, {
+          for_choice_id: choice.for_choice,
+          input_that_chooses_num: chosenNum,
+        });
+        return {
+          inputs: [choiceInput],
+          environment,
+        };
+    }
+  }
+  return doMakeApplicableInput;
+}
+
+export function simulateApplicableAction(di: GetContinuationDI) {
+  async function doSimulateApplicableAction(
+    contractDetails: ActiveContract,
+    action: CanNotify | CanDeposit | CanAdvance
+  ): Promise<TransactionSuccess>;
+  async function doSimulateApplicableAction(
+    contractDetails: ActiveContract,
+    action: CanChoose,
+    chosenNum: ChosenNum
+  ): Promise<TransactionSuccess>;
+  async function doSimulateApplicableAction(
+    contractDetails: ActiveContract,
+    action: ApplicableAction,
+    chosenNum?: ChosenNum
+  ): Promise<TransactionSuccess> {
+    const applicableInput = await getApplicableInput(di)(action, chosenNum);
+    const txOut = computeTransaction(
+      {
+        tx_interval: applicableInput.environment.timeInterval,
+        tx_inputs: applicableInput.inputs,
+      },
+      contractDetails.currentState,
+      contractDetails.currentContract
+    );
+    if ("transaction_error" in txOut) {
+      // TODO: Improve error
+      throw new Error(
+        "There was a transaction error" + txOut.transaction_error
+      );
+    }
+    return txOut;
+  }
+  return doSimulateApplicableAction;
+}
 
 function getApplicant(action: ApplicableAction): ActionApplicant {
   switch (action.type) {
@@ -155,6 +302,7 @@ export const mkGetApplicableActionsDI = (
 ): GetApplicableActionsDI => {
   return {
     getContractContinuation: (contractSourceId: ContractSourceId) => {
+      // TODO: Add caching
       return restClient.getContractSourceById({ contractSourceId });
     },
     getContractDetails: async (contractId: ContractId) => {
@@ -209,7 +357,10 @@ export function getApplicableActions(di: GetApplicableActionsDI) {
       ? [
           {
             type: "Advance",
-            policyId: contractDetails.roleTokenMintingPolicyId,
+            somethingSomethingRuntime: {
+              policyId: contractDetails.roleTokenMintingPolicyId,
+              environment: env,
+            },
             applyAction() {
               return {
                 inputs: [],
@@ -286,7 +437,7 @@ export async function mkApplicableActionsFilter(wallet: WalletAPI) {
   return (action: ApplicableAction) => {
     const applicant = getApplicant(action);
     if (applicant === "anybody") return true;
-    return partyFilter(applicant, action.policyId);
+    return partyFilter(applicant, action.somethingSomethingRuntime.policyId);
   };
 }
 
@@ -412,7 +563,7 @@ const flattenChoices = {
     );
     return {
       type: "Choice",
-      policyId: fst.policyId,
+      somethingSomethingRuntime: fst.somethingSomethingRuntime,
       choice: {
         for_choice: fst.choice.for_choice,
         choose_between: mergedBounds,
@@ -489,7 +640,10 @@ async function getApplicableActionFromCase(
     return accumulatorFromDeposit(env, state, {
       type: "Deposit",
       deposit,
-      policyId,
+      somethingSomethingRuntime: {
+        policyId,
+        environment: env,
+      },
       applyAction() {
         const input = decorateInput({
           input_from_party: deposit.party,
@@ -520,7 +674,11 @@ async function getApplicableActionFromCase(
     return accumulatorFromChoice({
       type: "Choice",
       choice,
-      policyId,
+      somethingSomethingRuntime: {
+        policyId,
+        environment: env,
+      },
+
       applyAction(chosenNum: ChosenNum) {
         if (!inBounds(chosenNum, choice.choose_between)) {
           throw new Error("Chosen number is not in bounds");
@@ -553,7 +711,11 @@ async function getApplicableActionFromCase(
 
     return accumulatorFromNotify({
       type: "Notify",
-      policyId,
+      somethingSomethingRuntime: {
+        policyId,
+        environment: env,
+      },
+
       applyAction() {
         const input = decorateInput("input_notify");
         // TODO: Re-check if this env should be the same as the initial env or a new one.

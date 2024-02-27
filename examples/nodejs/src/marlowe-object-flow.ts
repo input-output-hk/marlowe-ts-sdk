@@ -26,7 +26,7 @@ import { ContractBundleMap, lovelace, close } from "@marlowe.io/marlowe-object";
 import { input, select } from "@inquirer/prompts";
 import { RuntimeLifecycle } from "@marlowe.io/runtime-lifecycle/api";
 import {
-  AppliedActionResult,
+  TODORENAMEAppliedActionResult,
   getApplicableActions,
   mkApplicableActionsFilter,
   mkGetApplicableActionsDI,
@@ -276,7 +276,7 @@ async function contractMenu(
 
   const choices: Array<{
     name: string;
-    value: { actionType: string; results?: AppliedActionResult };
+    value: { actionType: string; results?: TODORENAMEAppliedActionResult };
   }> = [
     {
       name: "Re-check contract state",
