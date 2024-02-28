@@ -433,19 +433,8 @@ export function getApplicableActions(di: GetApplicableActionsDI) {
       : [];
     const cont = initialReduce.continuation;
     if (typeof cont === "object" && "when" in cont) {
-      const applicableActionsFromCases = await Promise.all(
-        cont.when.map((aCase) =>
-          getApplicableActionFromCase(
-            di,
-            env,
-            initialReduce.continuation,
-            initialReduce.state,
-            initialReduce.payments,
-            convertReduceWarning(initialReduce.warnings),
-            aCase,
-            contractDetails.roleTokenMintingPolicyId
-          )
-        )
+      const applicableActionsFromCases = cont.when.map((aCase) =>
+        getApplicableActionFromCase(env, initialReduce.state, aCase)
       );
       applicableActions = applicableActions.concat(
         toApplicableActions(
@@ -665,45 +654,12 @@ const mergeApplicableActionAccumulator: Monoid<ApplicableActionAccumulator> = {
 type GetContinuationDI = {
   getContractContinuation: (sourceId: ContractSourceId) => Promise<Contract>;
 };
-// TODO: Clean unused params
-async function getApplicableActionFromCase(
-  di: GetContinuationDI,
-  env: Environment,
-  currentContract: Contract,
-  state: MarloweState,
-  previousPayments: Payment[],
-  previousWarnings: TransactionWarning[],
-  aCase: Case,
-  policyId: PolicyId
-): Promise<ApplicableActionAccumulator> {
-  let aCaseContinuation: Contract;
-  if ("merkleized_then" in aCase) {
-    aCaseContinuation = await di.getContractContinuation(aCase.merkleized_then);
-  } else {
-    aCaseContinuation = aCase.then;
-  }
-  // TODO: DELETE
-  function decorateInput(content: InputContent): Input {
-    if ("merkleized_then" in aCase) {
-      const merkleizedHashAndContinuation = {
-        continuation_hash: aCase.merkleized_then,
-        merkleized_continuation: aCaseContinuation,
-      };
-      // MerkleizedNotify are serialized as the plain merkle object
-      if (content === "input_notify") {
-        return merkleizedHashAndContinuation;
-      } else {
-        // For IDeposit and IChoice is the InputContent + the merkle object
-        return {
-          ...merkleizedHashAndContinuation,
-          ...content,
-        };
-      }
-    } else {
-      return content;
-    }
-  }
 
+function getApplicableActionFromCase(
+  env: Environment,
+  state: MarloweState,
+  aCase: Case
+): ApplicableActionAccumulator {
   if (isDepositAction(aCase.case)) {
     const deposit = aCase.case;
     return accumulatorFromDeposit(env, state, {
