@@ -22,12 +22,29 @@ import {
 import { Next } from "@marlowe.io/language-core-v1/next";
 import { SingleInputTx } from "@marlowe.io/language-core-v1/transaction.js";
 import { ContractBundleList } from "@marlowe.io/marlowe-object";
+import {
+  ApplicableInputsAPI,
+  ApplicableAction,
+  CanAdvance,
+  CanChoose,
+  CanDeposit,
+  CanNotify,
+} from "./generic/applicable-inputs.js";
+export {
+  ApplicableInputsAPI,
+  ApplicableAction,
+  CanAdvance,
+  CanChoose,
+  CanDeposit,
+  CanNotify,
+};
 
 export type RuntimeLifecycle = {
   wallet: WalletAPI;
   restClient: RestClient;
   contracts: ContractsAPI;
   payouts: PayoutsAPI;
+  applicableInputs: ApplicableInputsAPI;
 };
 
 /**
@@ -267,7 +284,7 @@ export interface ContractsAPI {
   ): Promise<TxId>;
 
   /**
-   * @experimental
+   * @deprecated
    * Provide Applicability and Reducibility Information moving forward for a given contract connected to a wallet.
    * @description
    *  This piece of information should help you :

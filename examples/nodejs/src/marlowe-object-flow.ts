@@ -24,13 +24,12 @@ import {
 } from "@marlowe.io/runtime-core";
 import { ContractBundleMap, lovelace, close } from "@marlowe.io/marlowe-object";
 import { input, select } from "@inquirer/prompts";
-import { RuntimeLifecycle } from "@marlowe.io/runtime-lifecycle/api";
 import {
-  TODORENAMEAppliedActionResult,
-  getApplicableActions,
-  mkApplicableActionsFilter,
-  mkGetApplicableActionsDI,
-} from "./experimental-features/applicable-inputs.js";
+  RuntimeLifecycle,
+  ApplicableAction,
+  CanDeposit,
+  CanAdvance,
+} from "@marlowe.io/runtime-lifecycle/api";
 import arg from "arg";
 import * as t from "io-ts/lib/index.js";
 import { mkSourceMap, SourceMap } from "./experimental-features/source-map.js";
@@ -265,25 +264,30 @@ async function contractMenu(
 
   printState(contractState, scheme);
 
-  if (contractState.type === "Closed") return;
   // See what actions are applicable to the current contract state
-  const applicableActions = await getApplicableActions(
-    mkGetApplicableActionsDI(lifecycle.restClient)
-  )(contractId);
+  const { contractDetails, actions } =
+    await lifecycle.applicableInputs.getApplicableActions(contractId);
 
-  const myActionsFilter = await mkApplicableActionsFilter(lifecycle.wallet);
-  const myActions = applicableActions.filter(myActionsFilter);
+  if (contractDetails.type === "closed") return;
+
+  const myActionsFilter =
+    await lifecycle.applicableInputs.mkFilter(contractDetails);
+  const myActions = actions.filter(myActionsFilter);
 
   const choices: Array<{
     name: string;
-    value: { actionType: string; results?: TODORENAMEAppliedActionResult };
+    value:
+      | CanDeposit
+      | CanAdvance
+      | { actionType: "check-state" }
+      | { actionType: "return" };
   }> = [
     {
       name: "Re-check contract state",
-      value: { actionType: "check-state", results: undefined },
+      value: { actionType: "check-state" },
     },
     ...myActions.map((action) => {
-      switch (action.type) {
+      switch (action.actionType) {
         case "Advance":
           return {
             name: "Close contract",
@@ -291,13 +295,13 @@ async function contractMenu(
               contractState.type == "PaymentMissed"
                 ? "The payer will receive minUTXO"
                 : "The payer will receive minUTXO and the payee will receive the payment",
-            value: { actionType: "advance", results: action.applyAction() },
+            value: action,
           };
 
         case "Deposit":
           return {
             name: `Deposit ${action.deposit.deposits} lovelaces`,
-            value: { actionType: "deposit", results: action.applyAction() },
+            value: action,
           };
         default:
           throw new Error("Unexpected action type");
@@ -305,35 +309,38 @@ async function contractMenu(
     }),
     {
       name: "Return to main menu",
-      value: { actionType: "return", results: undefined },
+      value: { actionType: "return" },
     },
   ];
 
-  const action = await select({
+  const selectedAction = await select({
     message: "Contract menu",
     choices,
   });
-  switch (action.actionType) {
+  switch (selectedAction.actionType) {
     case "check-state":
       return contractMenu(lifecycle, scheme, sourceMap, contractId);
-    case "advance":
-    case "deposit":
-      if (!action.results) throw new Error("This should not happen");
+    case "return":
+      return;
+    case "Advance":
+    case "Deposit":
       console.log("Applying input");
+      const applicableInput = await lifecycle.applicableInputs.getInput(
+        contractDetails,
+        selectedAction
+      );
       const txId = await lifecycle.contracts.applyInputs(contractId, {
-        inputs: action.results.inputs,
+        inputs: applicableInput.inputs,
         invalidBefore: posixTimeToIso8601(
-          action.results.environment.timeInterval.from
+          applicableInput.environment.timeInterval.from
         ),
         invalidHereafter: posixTimeToIso8601(
-          action.results.environment.timeInterval.to
+          applicableInput.environment.timeInterval.to
         ),
       });
       console.log(`Input applied with txId ${txId}`);
       await waitIndicator(lifecycle.wallet, txId);
       return contractMenu(lifecycle, scheme, sourceMap, contractId);
-    case "return":
-      return;
   }
 }
 
