@@ -28,6 +28,7 @@ import {
   ContractId,
   ContractIdGuard,
   TxIdGuard,
+  TextEnvelope,
 } from "@marlowe.io/runtime-core";
 import { TxHeader, TxHeaderGuard } from "../header.js";
 import { assertGuardEqual, proxy } from "@marlowe.io/adapter/io-ts";
@@ -123,12 +124,21 @@ export const GetTransactionsForContractResponseGuard = assertGuardEqual(
   })
 );
 
-export type TransactionTextEnvelope = t.TypeOf<typeof TransactionTextEnvelope>;
-export const TransactionTextEnvelope = t.type({
-  contractId: ContractIdGuard,
-  transactionId: TxIdGuard,
-  tx: TextEnvelopeGuard,
-});
+// TODO: Rename to ApplyInputsToContractResponse to match with buildCreateContractTx stye.
+export interface TransactionTextEnvelope {
+  contractId: ContractId;
+  transactionId: TxId;
+  tx: TextEnvelope;
+}
+
+export const TransactionTextEnvelope = assertGuardEqual(
+  proxy<TransactionTextEnvelope>(),
+  t.type({
+    contractId: ContractIdGuard,
+    transactionId: TxIdGuard,
+    tx: TextEnvelopeGuard,
+  })
+);
 
 export type ApplyInputsToContractRequest = {
   contractId: ContractId;

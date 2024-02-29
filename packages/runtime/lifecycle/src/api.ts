@@ -25,27 +25,57 @@ import { ContractBundleList } from "@marlowe.io/marlowe-object";
 import {
   ApplicableInputsAPI,
   ApplicableAction,
+  ApplicableInputs,
+  ApplicableActionsFilter,
+  ApplicableActionsWithDetailsFilter,
   CanAdvance,
   CanChoose,
   CanDeposit,
   CanNotify,
+  GetApplicableActionsResponse,
+  ActiveContract,
+  ClosedContract,
+  ContractDetails,
 } from "./generic/applicable-inputs.js";
 export {
   ApplicableInputsAPI,
   ApplicableAction,
+  ApplicableInputs,
+  ApplicableActionsFilter,
+  ApplicableActionsWithDetailsFilter,
   CanAdvance,
   CanChoose,
   CanDeposit,
   CanNotify,
+  GetApplicableActionsResponse,
+  ActiveContract,
+  ClosedContract,
+  ContractDetails,
 };
 
-export type RuntimeLifecycle = {
+/**
+ * This is the main entry point of the @marlowe.io/runtime-lifecycle package. It provides a set of APIs to
+ * interact with the Marlowe Runtime.
+ *
+ * This interface can be created from {@link @marlowe.io/runtime-lifecycle!index | a wallet API instance } or if you are in the browser
+ * from a {@link @marlowe.io/runtime-lifecycle!browser | wallet name}.
+ */
+export interface RuntimeLifecycle {
+  /**
+   * The wallet API as defined in the {@link @marlowe.io/wallet! } package. It is re-exported here for convenience.
+   */
   wallet: WalletAPI;
+  /**
+   * Access to the low-level REST API as defined in the {@link @marlowe.io/runtime-rest-client! } package. It is re-exported here for convenience.
+   */
   restClient: RestClient;
+  /**
+   * The contracts API is a high level API that lets you create and interact with Marlowe contracts.
+   */
   contracts: ContractsAPI;
   payouts: PayoutsAPI;
   applicableInputs: ApplicableInputsAPI;
-};
+}
 
 /**
  *

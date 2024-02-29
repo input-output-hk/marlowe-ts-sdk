@@ -38,7 +38,6 @@ import {
   InvalidTypeError,
   strictDynamicTypeCheck,
 } from "@marlowe.io/adapter/io-ts";
-import { BuildCreateContractTxRequest } from "./contract/endpoints/collection.js";
 
 export {
   Page,

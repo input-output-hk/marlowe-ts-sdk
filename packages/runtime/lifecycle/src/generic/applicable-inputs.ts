@@ -694,18 +694,18 @@ function getApplicableActionFromCase(
 // from a closed or active contract. This API is just the start to get
 // getApplicableInputs ready in production, but as part of a ContractsAPI
 // refactoring, the whole contract details should be modeled.
-type ClosedContract = {
+export type ClosedContract = {
   type: "closed";
 };
 
-type ActiveContract = {
+export type ActiveContract = {
   type: "active";
   currentState: MarloweState;
   currentContract: Contract;
   roleTokenMintingPolicyId: PolicyId;
 };
 
-type ContractDetails = ClosedContract | ActiveContract;
+export type ContractDetails = ClosedContract | ActiveContract;
 
 type GetContractDetailsDI = {
   getContractDetails: (contractId: ContractId) => Promise<ContractDetails>;
