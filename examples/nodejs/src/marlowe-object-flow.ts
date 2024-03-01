@@ -266,12 +266,12 @@ async function contractMenu(
 
   // See what actions are applicable to the current contract state
   const { contractDetails, actions } =
-    await lifecycle.applicableInputs.getApplicableActions(contractId);
+    await lifecycle.applicableActions.getApplicableActions(contractId);
 
   if (contractDetails.type === "closed") return;
 
   const myActionsFilter =
-    await lifecycle.applicableInputs.mkFilter(contractDetails);
+    await lifecycle.applicableActions.mkFilter(contractDetails);
   const myActions = actions.filter(myActionsFilter);
 
   const choices: Array<{
@@ -325,7 +325,7 @@ async function contractMenu(
     case "Advance":
     case "Deposit":
       console.log("Applying input");
-      const applicableInput = await lifecycle.applicableInputs.getInput(
+      const applicableInput = await lifecycle.applicableActions.getInput(
         contractDetails,
         selectedAction
       );

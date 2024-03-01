@@ -45,40 +45,93 @@ import { Monoid } from "fp-ts/lib/Monoid.js";
 import * as R from "fp-ts/lib/Record.js";
 import { ContractSourceId } from "@marlowe.io/marlowe-object";
 
-export interface ApplicableInputsAPI {
+/**
+ * @experimental
+ */
+export interface ApplicableActionsAPI {
   // TODO: Maybe we want to add an applyAction or applyInput here instead or in addition to getInput.
-  getInput(
-    contractDetails: ActiveContract,
-    action: CanNotify | CanDeposit | CanAdvance
-  ): Promise<ApplicableInputs>;
-  getInput(
-    contractDetails: ActiveContract,
-    action: CanChoose,
-    chosenNum: ChosenNum
-  ): Promise<ApplicableInputs>;
 
-  simulateApplicableAction(
-    contractDetails: ActiveContract,
-    action: CanNotify | CanDeposit | CanAdvance
-  ): Promise<TransactionSuccess>;
-  simulateApplicableAction(
-    contractDetails: ActiveContract,
-    action: CanChoose,
-    chosenNum: ChosenNum
-  ): Promise<TransactionSuccess>;
-
+  /**
+   * Get what actions can be applied to a contract in a given environment.
+   * @param contractId The id of a Marlowe contract
+   * @param environment An optional interval with the time bounds to apply the actions. If none is provided
+   *                    the environment is computed using the runtime tip as a lower bound and the next timeout
+   *                    as an upper bound.
+   * @returns An object with an array of {@link ApplicableAction | applicable actions} and the {@link ContractDetails | contract details}
+   * @experimental
+   * @remarks
+   * **EXPERIMENTAL:** Perhaps instead of receiving a contractId and returning the actions and contractDetails this
+   * function should receive the contractDetails and just return the actions.
+   * To do this, we should refactor the {@link ContractsAPI} first to use the {@link ContractDetails} type
+   */
   getApplicableActions(
     contractId: ContractId,
     environment?: Environment
   ): Promise<GetApplicableActionsResponse>;
+
+  /**
+   * Converts an {@link ApplicableAction} into an {@link ApplicableInput}.
+   *
+   * This function has two {@link https://www.tutorialsteacher.com/typescript/function-overloading | overloads}. This
+   * one can be used with {@link @marlowe.io/language-core-v1!index.Notify},
+   * {@link @marlowe.io/language-core-v1!index.Deposit} actions, or to Advance a timed out
+   * contract, none of which require further information.
+   */
+  getInput(
+    contractDetails: ActiveContract,
+    action: CanNotify | CanDeposit | CanAdvance
+  ): Promise<ApplicableInput>;
+  /**
+   * Converts an {@link ApplicableAction} into an {@link ApplicableInput}.
+   *
+   * This function has two {@link https://www.tutorialsteacher.com/typescript/function-overloading | overloads}. This
+   * one can be used with the Choose action, which requires the chosen number.
+   */
+  getInput(
+    contractDetails: ActiveContract,
+    action: CanChoose,
+    chosenNum: ChosenNum
+  ): Promise<ApplicableInput>;
+
+  /**
+   * Simulates the result of applying an {@link ApplicableInput}. The input should be obtained by
+   * {@link getApplicableActions | computing the applicable actions} and then {@link getInput | converting them into an input}.
+   * @returns If the input was obtained by the described flow, it is guaranteed to return a {@link TransactionSuccess} with
+   *          the payments, state, warnings and new continuation.
+   */
+  simulateInput(
+    contractDetails: ActiveContract,
+    input: ApplicableInput
+  ): TransactionSuccess;
+
+  /**
+   * Creates a filter function for the {@link ApplicableAction | applicable actions} of the wallet owner.
+   * The wallet is configured when we instantiate the {@link RuntimeLifecycle}. This function returns a new
+   * filter function when called multiple times. This is useful to update the filter to check for new Role tokens
+   * available in the wallet.
+   *
+   * The function has two {@link https://www.tutorialsteacher.com/typescript/function-overloading | overloads}. This
+   * one is appied with the contract details and it is useful when filtering the actions of a specific contract.
+   */
   mkFilter(contractDetails: ActiveContract): Promise<ApplicableActionsFilter>;
+  /**
+   * Creates a filter function for the {@link ApplicableAction | applicable actions} of the wallet owner.
+   * The wallet is configured when we instantiate the {@link RuntimeLifecycle}. This function returns a new
+   * filter function when called multiple times. This is useful to update the filter to check for new Role tokens
+   * available in the wallet.
+   *
+   * The function has two {@link https://www.tutorialsteacher.com/typescript/function-overloading | overloads}. This
+   * one does not receive any argument and it is useful when filtering the actions of multiple contracts.
+   * Notice that the {@link ApplicableActionsWithDetailsFilter | filter function} returned by this overload will require the contract details to be passed as
+   * a second argument.
+   */
   mkFilter(): Promise<ApplicableActionsWithDetailsFilter>;
 }
 
-export function mkApplicableInputsAPI(
+export function mkApplicableActionsAPI(
   restClient: RestClient,
   wallet: WalletAPI
-): ApplicableInputsAPI {
+): ApplicableActionsAPI {
   const di = mkGetApplicableActionsDI(restClient);
 
   async function mkFilter(): Promise<ApplicableActionsWithDetailsFilter>;
@@ -99,7 +152,7 @@ export function mkApplicableInputsAPI(
 
   return {
     getInput: getApplicableInput(di),
-    simulateApplicableAction: simulateApplicableAction(di),
+    simulateInput: simulateApplicableInput,
     getApplicableActions: getApplicableActions(di),
     mkFilter,
   };
@@ -131,7 +184,7 @@ export interface AppliedActionResult {
   payments: Payment[];
 }
 
-export interface ApplicableInputs {
+export interface ApplicableInput {
   /**
    * What inputs needs to be provided to apply the action
    */
@@ -177,22 +230,22 @@ export function getApplicableInput(di: GetContinuationDI) {
   async function doMakeApplicableInput(
     contractDetails: ActiveContract,
     action: CanNotify | CanDeposit | CanAdvance
-  ): Promise<ApplicableInputs>;
+  ): Promise<ApplicableInput>;
   async function doMakeApplicableInput(
     contractDetails: ActiveContract,
     action: CanChoose,
     chosenNum: ChosenNum
-  ): Promise<ApplicableInputs>;
+  ): Promise<ApplicableInput>;
   async function doMakeApplicableInput(
     contractDetails: ActiveContract,
     action: ApplicableAction,
     chosenNum?: ChosenNum
-  ): Promise<ApplicableInputs>;
+  ): Promise<ApplicableInput>;
   async function doMakeApplicableInput(
     contractDetails: ActiveContract,
     action: ApplicableAction,
     chosenNum?: ChosenNum
-  ): Promise<ApplicableInputs> {
+  ): Promise<ApplicableInput> {
     async function decorateInput(
       content: InputContent,
       merkleizedContinuationHash?: BuiltinByteString
@@ -283,43 +336,23 @@ export function getApplicableInput(di: GetContinuationDI) {
   return doMakeApplicableInput;
 }
 
-export function simulateApplicableAction(di: GetContinuationDI) {
-  async function doSimulateApplicableAction(
-    contractDetails: ActiveContract,
-    action: CanNotify | CanDeposit | CanAdvance
-  ): Promise<TransactionSuccess>;
-  async function doSimulateApplicableAction(
-    contractDetails: ActiveContract,
-    action: CanChoose,
-    chosenNum: ChosenNum
-  ): Promise<TransactionSuccess>;
-  async function doSimulateApplicableAction(
-    contractDetails: ActiveContract,
-    action: ApplicableAction,
-    chosenNum?: ChosenNum
-  ): Promise<TransactionSuccess> {
-    const applicableInput = await getApplicableInput(di)(
-      contractDetails,
-      action,
-      chosenNum
-    );
-    const txOut = computeTransaction(
-      {
-        tx_interval: applicableInput.environment.timeInterval,
-        tx_inputs: applicableInput.inputs,
-      },
-      contractDetails.currentState,
-      contractDetails.currentContract
-    );
-    if ("transaction_error" in txOut) {
-      // TODO: Improve error
-      throw new Error(
-        "There was a transaction error" + txOut.transaction_error
-      );
-    }
-    return txOut;
+export function simulateApplicableInput(
+  contractDetails: ActiveContract,
+  applicableInput: ApplicableInput
+): TransactionSuccess {
+  const txOut = computeTransaction(
+    {
+      tx_interval: applicableInput.environment.timeInterval,
+      tx_inputs: applicableInput.inputs,
+    },
+    contractDetails.currentState,
+    contractDetails.currentContract
+  );
+  if ("transaction_error" in txOut) {
+    // TODO: Improve error
+    throw new Error("There was a transaction error" + txOut.transaction_error);
   }
-  return doSimulateApplicableAction;
+  return txOut;
 }
 
 function getApplicant(action: ApplicableAction): ActionApplicant {

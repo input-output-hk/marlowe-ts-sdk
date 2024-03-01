@@ -23,9 +23,9 @@ import { Next } from "@marlowe.io/language-core-v1/next";
 import { SingleInputTx } from "@marlowe.io/language-core-v1/transaction.js";
 import { ContractBundleList } from "@marlowe.io/marlowe-object";
 import {
-  ApplicableInputsAPI,
+  ApplicableActionsAPI,
   ApplicableAction,
-  ApplicableInputs,
+  ApplicableInput,
   ApplicableActionsFilter,
   ApplicableActionsWithDetailsFilter,
   CanAdvance,
@@ -36,11 +36,11 @@ import {
   ActiveContract,
   ClosedContract,
   ContractDetails,
-} from "./generic/applicable-inputs.js";
+} from "./generic/applicable-actions.js";
 export {
-  ApplicableInputsAPI,
+  ApplicableActionsAPI,
   ApplicableAction,
-  ApplicableInputs,
+  ApplicableInput,
   ApplicableActionsFilter,
   ApplicableActionsWithDetailsFilter,
   CanAdvance,
@@ -74,7 +74,7 @@ export interface RuntimeLifecycle {
    */
   contracts: ContractsAPI;
   payouts: PayoutsAPI;
-  applicableInputs: ApplicableInputsAPI;
+  applicableActions: ApplicableActionsAPI;
 }
 
 /**
