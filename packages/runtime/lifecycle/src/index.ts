@@ -32,6 +32,7 @@ export * as Browser from "./browser/index.js";
 
 /**
  * Options for creating a RuntimeLifecycle instance.
+ * @category RuntimeLifecycle
  */
 export interface RuntimeLifecycleOptions {
   /**
@@ -47,6 +48,7 @@ export interface RuntimeLifecycleOptions {
 /**
  * Creates an instance of RuntimeLifecycle.
  * @param options
+ * @category RuntimeLifecycle
  */
 export function mkRuntimeLifecycle(
   options: RuntimeLifecycleOptions
@@ -55,15 +57,12 @@ export function mkRuntimeLifecycle(
  * Creates an instance of RuntimeLifecycle.
  * @param options
  * @param strict Whether to perform runtime checking to provide helpful error messages. May have a slight negative performance impact. Default value is `true`.
+ * @category RuntimeLifecycle
  */
 export function mkRuntimeLifecycle(
   options: RuntimeLifecycleOptions,
-  strict: boolean
-): RuntimeLifecycle;
-export function mkRuntimeLifecycle(
-  options: RuntimeLifecycleOptions,
-  strict: unknown = true
-) {
+  strict = true
+): RuntimeLifecycle {
   if (!strictDynamicTypeCheck(strict)) {
     throw new InvalidTypeError(
       [],

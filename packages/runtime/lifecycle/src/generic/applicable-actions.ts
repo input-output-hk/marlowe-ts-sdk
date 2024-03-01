@@ -47,6 +47,7 @@ import { ContractSourceId } from "@marlowe.io/marlowe-object";
 
 /**
  * @experimental
+ * @category ApplicableActionsAPI
  */
 export interface ApplicableActionsAPI {
   // TODO: Maybe we want to add an applyAction or applyInput here instead or in addition to getInput.
@@ -128,6 +129,9 @@ export interface ApplicableActionsAPI {
   mkFilter(): Promise<ApplicableActionsWithDetailsFilter>;
 }
 
+/**
+ * @hidden
+ */
 export function mkApplicableActionsAPI(
   restClient: RestClient,
   wallet: WalletAPI
@@ -158,6 +162,9 @@ export function mkApplicableActionsAPI(
   };
 }
 
+/**
+ * @category ApplicableActionsAPI
+ */
 export interface GetApplicableActionsResponse {
   actions: ApplicableAction[];
   contractDetails: ContractDetails;
@@ -165,25 +172,9 @@ export interface GetApplicableActionsResponse {
 
 type ActionApplicant = Party | "anybody";
 
-export interface AppliedActionResult {
-  /**
-   * What is the new state after applying an action and reducing until quiescent
-   */
-  reducedState: MarloweState;
-  /**
-   * What is the new contract after applying an action and reducing until quiescent
-   */
-  reducedContract: Contract;
-  /**
-   * What warnings were produced while applying an action
-   */
-  warnings: TransactionWarning[];
-  /**
-   * What payments were produced while applying an action
-   */
-  payments: Payment[];
-}
-
+/**
+ * @category ApplicableActionsAPI
+ */
 export interface ApplicableInput {
   /**
    * What inputs needs to be provided to apply the action
@@ -196,36 +187,92 @@ export interface ApplicableInput {
   environment: Environment;
 }
 
+/**
+ * This data structure indicates that the contract can be notified.
+ * @category ApplicableActionsAPI
+ */
 export interface CanNotify {
+  /**
+   * Discriminator field, used to differentiate the action type.
+   */
   actionType: "Notify";
+  /**
+   * If the When's case is merkleized, this is the hash of the merkleized continuation.
+   */
   merkleizedContinuationHash?: BuiltinByteString;
-  environment: Environment;
-}
-
-export interface CanDeposit {
-  actionType: "Deposit";
-  merkleizedContinuationHash?: BuiltinByteString;
-  deposit: Deposit;
-  environment: Environment;
-}
-
-export interface CanChoose {
-  actionType: "Choice";
-  merkleizedContinuationHash?: BuiltinByteString;
-  choice: Choice;
+  /**
+   * The action can be applied in this environment.
+   */
   environment: Environment;
 }
 
 /**
- * This Applicable action is intended to be used when the contract is not in a quiescent state.
- * This means that the contract is either timed out, or it was just created and it doesn't starts with a `When`
+ * This data structure indicates that the contract can receive a deposit.
+ * @category ApplicableActionsAPI
+ */
+export interface CanDeposit {
+  /**
+   * Discriminator field, used to differentiate the action type.
+   */
+  actionType: "Deposit";
+  /**
+   * If the When's case is merkleized, this is the hash of the merkleized continuation.
+   */
+  merkleizedContinuationHash?: BuiltinByteString;
+  /**
+   * The deposit action that can be applied.
+   */
+  deposit: Deposit;
+  /**
+   * The action can be applied in this environment.
+   */
+  environment: Environment;
+}
+
+/**
+ * This data structure indicates that the contract can receive a Choice action.
+ * @category ApplicableActionsAPI
+ */
+export interface CanChoose {
+  /**
+   * Discriminator field, used to differentiate the action type.
+   */
+  actionType: "Choice";
+  /**
+   * If the When's case is merkleized, this is the hash of the merkleized continuation.
+   */
+  merkleizedContinuationHash?: BuiltinByteString;
+  /**
+   * The choice action that can be applied.
+   */
+  choice: Choice;
+  /**
+   * The action can be applied in this environment.
+   */
+  environment: Environment;
+}
+
+/**
+ * This data structure indicates that the contract is timed out and can be advanced to it's continuation.
+ * If the timeout continuation is a Close contract, then this is the only way to close it. If the continuation
+ * has a When with some actions, then the contract can either be advanced to the next When, or one of the
+ * next actions can be applied.
+ * @category ApplicableActionsAPI
  */
 export interface CanAdvance {
   actionType: "Advance";
   environment: Environment;
 }
 
+/**
+ * Represents what actions can be applied to a contract in a given environment.
+ * @category ApplicableActionsAPI
+ */
 export type ApplicableAction = CanNotify | CanDeposit | CanChoose | CanAdvance;
+
+/**
+ * @hidden
+ */
 export function getApplicableInput(di: GetContinuationDI) {
   async function doMakeApplicableInput(
     contractDetails: ActiveContract,
@@ -336,6 +383,9 @@ export function getApplicableInput(di: GetContinuationDI) {
   return doMakeApplicableInput;
 }
 
+/**
+ * @hidden
+ */
 export function simulateApplicableInput(
   contractDetails: ActiveContract,
   applicableInput: ApplicableInput
@@ -373,6 +423,7 @@ type ChainTipDI = {
 
 /**
  * Computes a "safe" environment for the contract.
+ * @hidden
  */
 async function computeEnvironment(
   { getRuntimeTip }: ChainTipDI,
@@ -399,6 +450,9 @@ async function computeEnvironment(
   return { timeInterval: { from: lowerBound, to: upperBound - 1n } };
 }
 
+/**
+ * @hidden
+ */
 export const mkGetApplicableActionsDI = (
   restClient: RestClient
 ): GetApplicableActionsDI => {
@@ -434,6 +488,9 @@ type GetApplicableActionsDI = GetContinuationDI &
   GetContractDetailsDI &
   ChainTipDI;
 
+/**
+ * @hidden
+ */
 export function getApplicableActions(di: GetApplicableActionsDI) {
   return async function (
     contractId: ContractId,
@@ -485,6 +542,9 @@ export function getApplicableActions(di: GetApplicableActionsDI) {
   };
 }
 
+/**
+ * @hidden
+ */
 export async function mkPartyFilter(wallet: WalletAPI) {
   const address = await wallet.getUsedAddresses();
   const tokens = await wallet.getTokens();
@@ -514,12 +574,30 @@ export async function mkPartyFilter(wallet: WalletAPI) {
   };
 }
 
+/**
+ * A filter function for applicable actions.
+ * ```ts
+ * const applicableActions = await lifecycle.applicableActions.getApplicableActions(contractId);
+ * const myActionsFilter = await lifecycle.applicableActions.mkFilter(contractDetails);
+ * const myActions = applicableActions.actions.filter(myActionsFilter);
+ * ```
+ * @see How to create the filter using {@link ApplicableActionsAPI.mkFilter | mkFilter}
+ * @category ApplicableActionsAPI
+ */
 export type ApplicableActionsFilter = (action: ApplicableAction) => boolean;
+
+/**
+ * @see How to create the filter using {@link ApplicableActionsAPI.mkFilter | mkFilter}
+ * @category ApplicableActionsAPI
+ */
 export type ApplicableActionsWithDetailsFilter = (
   action: ApplicableAction,
   contractDetails: ActiveContract
 ) => boolean;
 
+/**
+ * @hidden
+ */
 export async function mkApplicableActionsFilter(wallet: WalletAPI) {
   const partyFilter = await mkPartyFilter(wallet);
 
@@ -657,14 +735,6 @@ const flattenChoices = {
         for_choice: fst.choice.for_choice,
         choose_between: mergedBounds,
       },
-      // TODO: DELETE
-      // applyAction: (chosenNum: ChosenNum) => {
-      //   if (inBounds(chosenNum, fst.choice.choose_between)) {
-      //     return fst.applyAction(chosenNum);
-      //   } else {
-      //     return snd.applyAction(chosenNum);
-      //   }
-      // },
     };
   },
 };
@@ -722,15 +792,16 @@ function getApplicableActionFromCase(
 }
 
 // #region High level Contract Details
-// This is the start of a high level API to get the contract details.
-// The current restAPI is not clear wether the details that you get are
-// from a closed or active contract. This API is just the start to get
-// getApplicableInputs ready in production, but as part of a ContractsAPI
-// refactoring, the whole contract details should be modeled.
+/**
+ * @category New ContractsAPI
+ */
 export type ClosedContract = {
   type: "closed";
 };
 
+/**
+ * @category New ContractsAPI
+ */
 export type ActiveContract = {
   type: "active";
   currentState: MarloweState;
@@ -738,6 +809,14 @@ export type ActiveContract = {
   roleTokenMintingPolicyId: PolicyId;
 };
 
+/**
+ * This is the start of a high level API to get the contract details.
+ * The current restAPI is not clear wether the details that you get are
+ * from a closed or active contract. This API is just the start to get
+ * getApplicableInputs ready in production, but as part of a ContractsAPI
+ * refactoring, the whole contract details should be modeled.
+ * @category New ContractsAPI
+ */
 export type ContractDetails = ClosedContract | ActiveContract;
 
 type GetContractDetailsDI = {

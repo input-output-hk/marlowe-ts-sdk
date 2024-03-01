@@ -56,6 +56,7 @@ import * as t from "io-ts/lib/index.js";
 
 /**
  * Options for creating a RuntimeLifecycle instance using the browser wallet.
+ * @category RuntimeLifecycle
  */
 export interface BrowserRuntimeLifecycleOptions {
   // DISCUSSION: should we pass a Map of urls instead? Ideally we could distinguish between
@@ -70,6 +71,9 @@ export interface BrowserRuntimeLifecycleOptions {
   walletName: SupportedWalletName;
 }
 
+/**
+ * @hidden
+ */
 export const BrowserRuntimeLifecycleOptionsGuard: t.Type<BrowserRuntimeLifecycleOptions> =
   t.type({
     runtimeURL: t.string,
@@ -95,6 +99,7 @@ function mkRuntimeLifecycleArgumentDynamicTypeCheck(
 /**
  * Creates an instance of RuntimeLifecycle using the browser wallet.
  * @param options
+ * @category RuntimeLifecycle
  */
 export async function mkRuntimeLifecycle(
   options: BrowserRuntimeLifecycleOptions
@@ -103,15 +108,12 @@ export async function mkRuntimeLifecycle(
  * Creates an instance of RuntimeLifecycle using the browser wallet.
  * @param options
  * @param strict Whether to perform runtime checking to provide helpful error messages. May have a slight negative performance impact. Default value is `true`.
+ * @category RuntimeLifecycle
  */
 export async function mkRuntimeLifecycle(
   options: BrowserRuntimeLifecycleOptions,
-  strict: boolean
-): Promise<RuntimeLifecycle>;
-export async function mkRuntimeLifecycle(
-  options: unknown,
-  strict: unknown = true
-) {
+  strict = true
+): Promise<RuntimeLifecycle> {
   if (!strictDynamicTypeCheck(strict)) {
     throw new InvalidTypeError(
       [],

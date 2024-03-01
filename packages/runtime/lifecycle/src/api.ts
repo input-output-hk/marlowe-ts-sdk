@@ -59,6 +59,7 @@ export {
  *
  * This interface can be created from {@link @marlowe.io/runtime-lifecycle!index | a wallet API instance } or if you are in the browser
  * from a {@link @marlowe.io/runtime-lifecycle!browser | wallet name}.
+ * @category RuntimeLifecycle
  */
 export interface RuntimeLifecycle {
   /**
@@ -89,12 +90,15 @@ export type ContractsDI = WalletDI & RestDI;
  * If the contract is "small", you can create it directly with a {@link CreateContractRequestFromContract| core contract},
  * if the contract is "large" you can use a {@link CreateContractRequestFromBundle | contract bundle} instead.
  * Both options share the same {@link CreateContractRequestBase | request parameters}.
-
+ * @category ContractsAPI
  */
 export type CreateContractRequest =
   | CreateContractRequestFromContract
   | CreateContractRequestFromBundle;
 
+/**
+ * @category ContractsAPI
+ */
 export interface CreateContractRequestFromContract
   extends CreateContractRequestBase {
   /**
@@ -103,6 +107,9 @@ export interface CreateContractRequestFromContract
   contract: Contract;
 }
 
+/**
+ * @category ContractsAPI
+ */
 export interface CreateContractRequestFromBundle
   extends CreateContractRequestBase {
   /**
@@ -111,6 +118,9 @@ export interface CreateContractRequestFromBundle
   bundle: ContractBundleList<undefined>;
 }
 
+/**
+ * @category ContractsAPI
+ */
 export interface CreateContractRequestBase {
   /**
    * Marlowe contracts can have staking rewards for the ADA locked in the contract.
@@ -281,6 +291,9 @@ export interface CreateContractRequestBase {
   minimumLovelaceUTxODeposit?: number;
 }
 
+/**
+ * @category ContractsAPI
+ */
 export type ApplyInputsRequest = {
   inputs: Input[];
   tags?: Tags;
@@ -288,8 +301,10 @@ export type ApplyInputsRequest = {
   invalidBefore?: ISO8601;
   invalidHereafter?: ISO8601;
 };
+
 /**
  * This Interface provides capabilities for runnning a Contract over Cardano.
+ * @category ContractsAPI
  */
 export interface ContractsAPI {
   /**
@@ -342,8 +357,15 @@ export interface ContractsAPI {
    */
   getInputHistory(contractId: ContractId): Promise<SingleInputTx[]>;
 }
+
+/**
+ * @hidden
+ */
 export type PayoutsDI = WalletDI & RestDI;
 
+/**
+ * @category PayoutsAPI
+ */
 export interface PayoutsAPI {
   /**
    * Provide All the availaible payouts for the connected Wallet
@@ -370,6 +392,7 @@ export interface PayoutsAPI {
  * Provide filtering capabilities on the payouts returned only by ContractIds
  * @param byContractIds filters the payouts by contract Ids
  * @throws DecodingError
+ * @category PayoutsAPI
  */
 export const onlyByContractIds = (contractIds: ContractId[]) =>
   ({
@@ -382,6 +405,7 @@ export const onlyByContractIds = (contractIds: ContractId[]) =>
  * @param byContractIds filters the payouts by contract Ids
  * @param byMyRoleTokens filters the payouts by role tokens owned in the connected wallet
  * @throws DecodingError
+ * @category PayoutsAPI
  */
 export type Filters = {
   byContractIds: ContractId[];
