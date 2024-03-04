@@ -1,8 +1,7 @@
-/**
-This is an experimental module that aims to replace the current `next` features.
-TODO: After PR-8891 and as part of PLT-9054 move these to the runtime-lifecycle package
-      and create a github discussion to modify the backend.
- */
+import { ContractsAPI } from "../api.js";
+
+import { Monoid } from "fp-ts/lib/Monoid.js";
+import * as R from "fp-ts/lib/Record.js";
 
 import {
   MarloweState,
@@ -26,32 +25,32 @@ import {
   BuiltinByteString,
 } from "@marlowe.io/language-core-v1";
 import {
-  applyAllInputs,
   computeTransaction,
-  convertReduceWarning,
   evalObservation,
   evalValue,
   inBounds,
-  Payment,
   reduceContractUntilQuiescent,
   TransactionSuccess,
-  TransactionWarning,
 } from "@marlowe.io/language-core-v1/semantics";
-import { AddressBech32, ContractId, PolicyId } from "@marlowe.io/runtime-core";
+import {
+  AddressBech32,
+  ContractId,
+  Metadata,
+  PolicyId,
+  Tags,
+  TxId,
+} from "@marlowe.io/runtime-core";
 import { RestClient, Tip } from "@marlowe.io/runtime-rest-client";
 import { WalletAPI } from "@marlowe.io/wallet";
 import * as Big from "@marlowe.io/adapter/bigint";
-import { Monoid } from "fp-ts/lib/Monoid.js";
-import * as R from "fp-ts/lib/Record.js";
 import { ContractSourceId } from "@marlowe.io/marlowe-object";
+import { posixTimeToIso8601 } from "@marlowe.io/adapter/time";
 
 /**
  * @experimental
  * @category ApplicableActionsAPI
  */
 export interface ApplicableActionsAPI {
-  // TODO: Maybe we want to add an applyAction or applyInput here instead or in addition to getInput.
-
   /**
    * Get what actions can be applied to a contract in a given environment.
    * @param contractId The id of a Marlowe contract
@@ -95,6 +94,13 @@ export interface ApplicableActionsAPI {
   ): Promise<ApplicableInput>;
 
   /**
+   * Applies an input to a contract. This is a wrapper around the {@link ContractsAPI.applyInputs | Contracts's API applyInputs} function.
+   */
+  applyInput(
+    contractId: ContractId,
+    request: ApplyApplicableInputRequest
+  ): Promise<TxId>;
+  /**
    * Simulates the result of applying an {@link ApplicableInput}. The input should be obtained by
    * {@link getApplicableActions | computing the applicable actions} and then {@link getInput | converting them into an input}.
    * @returns If the input was obtained by the described flow, it is guaranteed to return a {@link TransactionSuccess} with
@@ -130,11 +136,22 @@ export interface ApplicableActionsAPI {
 }
 
 /**
+ *
+ * @category ApplicableActionsAPI
+ */
+export interface ApplyApplicableInputRequest {
+  input: ApplicableInput;
+  tags?: Tags;
+  metadata?: Metadata;
+}
+
+/**
  * @hidden
  */
 export function mkApplicableActionsAPI(
   restClient: RestClient,
-  wallet: WalletAPI
+  wallet: WalletAPI,
+  contractDI: ContractsAPI
 ): ApplicableActionsAPI {
   const di = mkGetApplicableActionsDI(restClient);
 
@@ -158,10 +175,36 @@ export function mkApplicableActionsAPI(
     getInput: getApplicableInput(di),
     simulateInput: simulateApplicableInput,
     getApplicableActions: getApplicableActions(di),
+    applyInput: applyInput(contractDI),
     mkFilter,
   };
 }
 
+function applyInput(contractDI: ContractsAPI) {
+  return async function (
+    contractId: ContractId,
+    request: ApplyApplicableInputRequest
+  ): Promise<TxId> {
+    return contractDI.applyInputs(contractId, {
+      inputs: request.input.inputs,
+      tags: request.tags,
+      metadata: request.metadata,
+      invalidBefore: posixTimeToIso8601(
+        request.input.environment.timeInterval.from
+      ),
+      // NOTE: This is commented out because the end time of the interval might be
+      //       way into the future and the time to slot conversion is undefined if the
+      //       end time passes a certain threshold.
+      //       We currently don't have the network parameters to do the conversion ourselves
+      //       so we leave to the runtime to calculate an adecuate max slot.
+      //       This might cause some issues if the contract relies on the TimeIntervalEnd value
+      //       as the result of simulating and applying the input might differ.
+      // invalidHereafter: posixTimeToIso8601(
+      //   request.input.environment.timeInterval.to
+      // ),
+    });
+  };
+}
 /**
  * @category ApplicableActionsAPI
  */
@@ -471,6 +514,7 @@ export const mkGetApplicableActionsDI = (
       } else {
         return {
           type: "active",
+          contractId,
           currentState: contractDetails.state,
           currentContract: contractDetails.currentContract,
           roleTokenMintingPolicyId: contractDetails.roleTokenMintingPolicyId,
@@ -804,6 +848,7 @@ export type ClosedContract = {
  */
 export type ActiveContract = {
   type: "active";
+  contractId: ContractId;
   currentState: MarloweState;
   currentContract: Contract;
   roleTokenMintingPolicyId: PolicyId;

@@ -12,11 +12,12 @@ export function mkRuntimeLifecycle(
   restClient: RestClient,
   wallet: WalletAPI
 ): RuntimeLifecycle {
+  const contracts = mkContractLifecycle(wallet, deprecatedRestAPI, restClient);
   return {
     wallet: wallet,
     restClient,
-    contracts: mkContractLifecycle(wallet, deprecatedRestAPI, restClient),
+    contracts,
     payouts: mkPayoutLifecycle(wallet, deprecatedRestAPI, restClient),
-    applicableActions: mkApplicableActionsAPI(restClient, wallet),
+    applicableActions: mkApplicableActionsAPI(restClient, wallet, contracts),
   };
 }

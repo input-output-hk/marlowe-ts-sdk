@@ -329,14 +329,8 @@ async function contractMenu(
         contractDetails,
         selectedAction
       );
-      const txId = await lifecycle.contracts.applyInputs(contractId, {
-        inputs: applicableInput.inputs,
-        invalidBefore: posixTimeToIso8601(
-          applicableInput.environment.timeInterval.from
-        ),
-        invalidHereafter: posixTimeToIso8601(
-          applicableInput.environment.timeInterval.to
-        ),
+      const txId = await lifecycle.applicableActions.applyInput(contractId, {
+        input: applicableInput,
       });
       console.log(`Input applied with txId ${txId}`);
       await waitIndicator(lifecycle.wallet, txId);
