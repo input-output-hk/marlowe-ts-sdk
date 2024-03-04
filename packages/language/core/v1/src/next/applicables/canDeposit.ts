@@ -7,7 +7,13 @@ import { IDeposit, IDepositGuard } from "../../inputs.js";
 import { PartyGuard } from "../../participants.js";
 import { AccountIdGuard } from "../../payee.js";
 
+/**
+ * @deprecated Deprecated in favour of {@link @marlowe.io/runtime-lifecycle!api.ApplicableActionsAPI}
+ */
 export type CanDeposit = t.TypeOf<typeof CanDeposit>;
+/**
+ * @deprecated Deprecated in favour of {@link @marlowe.io/runtime-lifecycle!api.ApplicableActionsAPI}
+ */
 export const CanDeposit = t.type({
   case_index: CaseIndex,
   party: PartyGuard,
@@ -16,7 +22,9 @@ export const CanDeposit = t.type({
   into_account: AccountIdGuard,
   is_merkleized_continuation: IsMerkleizedContinuation,
 });
-
+/**
+ * @deprecated Deprecated in favour of {@link @marlowe.io/runtime-lifecycle!api.ApplicableActionsAPI}
+ */
 export const toInput: (canDeposit: CanDeposit) => IDeposit = (canDeposit) => ({
   input_from_party: canDeposit.party,
   that_deposits: canDeposit.can_deposit,

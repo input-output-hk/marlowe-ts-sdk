@@ -331,15 +331,7 @@ export interface ContractsAPI {
   ): Promise<TxId>;
 
   /**
-   * @deprecated
-   * Provide Applicability and Reducibility Information moving forward for a given contract connected to a wallet.
-   * @description
-   *  This piece of information should help you :
-   *  - 1) Deciding which inputs to provide for the current state of the given contract
-   *  - 2) Constructing the inputs to apply for a given contract
-   * @param contractId Contract Id of a created contract
-   * @param environement Time interval in which inputs would like to be applied
-   * @throws DecodingError
+   * @deprecated Deprecated in favour of {@link @marlowe.io/runtime-lifecycle!api.ApplicableActionsAPI}
    */
   getApplicableInputs(
     contractId: ContractId,
