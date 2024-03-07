@@ -1,4 +1,8 @@
-import { ContractsAPI } from "./deprecated-contracts.js";
+import {
+  ApplyInputsRequest,
+  ContractsAPI,
+  applyInputs,
+} from "./deprecated-contracts.js";
 
 import { Monoid } from "fp-ts/lib/Monoid.js";
 import * as R from "fp-ts/lib/Record.js";
@@ -40,16 +44,12 @@ import {
   Tags,
   TxId,
 } from "@marlowe.io/runtime-core";
-import { RestClient, Tip } from "@marlowe.io/runtime-rest-client";
-import { WalletAPI } from "@marlowe.io/wallet";
+import { RestClient, RestDI, Tip } from "@marlowe.io/runtime-rest-client";
+import { WalletAPI, WalletDI } from "@marlowe.io/wallet";
 import * as Big from "@marlowe.io/adapter/bigint";
 import { ContractSourceId } from "@marlowe.io/marlowe-object";
 import { posixTimeToIso8601 } from "@marlowe.io/adapter/time";
-import {
-  ActiveContract,
-  ContractDetails,
-  GetContractDetailsDI,
-} from "./new-contract-api.js";
+import { ActiveContract, ContractDetails } from "./new-contract-api.js";
 
 /**
  * @experimental
@@ -70,9 +70,9 @@ export interface ApplicableActionsAPI {
    * To do this, we should refactor the {@link ContractsAPI} first to use the {@link ContractDetails} type
    */
   getApplicableActions(
-    contractId: ContractId,
+    contractDetails: ContractDetails,
     environment?: Environment
-  ): Promise<GetApplicableActionsResponse>;
+  ): Promise<ApplicableAction[]>;
 
   /**
    * Converts an {@link ApplicableAction} into an {@link ApplicableInput}.
@@ -154,11 +154,9 @@ export interface ApplyApplicableInputRequest {
  * @hidden
  */
 export function mkApplicableActionsAPI(
-  restClient: RestClient,
-  wallet: WalletAPI,
-  contractDI: ContractsAPI
+  di: RestDI & WalletDI
 ): ApplicableActionsAPI {
-  const di = mkGetApplicableActionsDI(restClient);
+  const getApplicableActionsDI = mkGetApplicableActionsDI(di.restClient);
 
   async function mkFilter(): Promise<ApplicableActionsWithDetailsFilter>;
   async function mkFilter(
@@ -167,7 +165,7 @@ export function mkApplicableActionsAPI(
   async function mkFilter(
     contractDetails?: ActiveContract
   ): Promise<ApplicableActionsFilter | ApplicableActionsWithDetailsFilter> {
-    const curriedFilter = await mkApplicableActionsFilter(wallet);
+    const curriedFilter = await mkApplicableActionsFilter(di.wallet);
     if (contractDetails) {
       return (action: ApplicableAction) =>
         curriedFilter(action, contractDetails);
@@ -177,20 +175,25 @@ export function mkApplicableActionsAPI(
   }
 
   return {
-    getInput: getApplicableInput(di),
+    getInput: getApplicableInput(getApplicableActionsDI),
     simulateInput: simulateApplicableInput,
-    getApplicableActions: getApplicableActions(di),
-    applyInput: applyInput(contractDI),
+    getApplicableActions: getApplicableActions(getApplicableActionsDI),
+    applyInput: applyInput(applyInputs(di)),
     mkFilter,
   };
 }
 
-function applyInput(contractDI: ContractsAPI) {
+export type ApplyInputDI = (
+  contractId: ContractId,
+  request: ApplyInputsRequest
+) => Promise<TxId>;
+
+function applyInput(doApply: ApplyInputDI) {
   return async function (
     contractId: ContractId,
     request: ApplyApplicableInputRequest
   ): Promise<TxId> {
-    return contractDI.applyInputs(contractId, {
+    return doApply(contractId, {
       inputs: request.input.inputs,
       tags: request.tags,
       metadata: request.metadata,
@@ -209,13 +212,6 @@ function applyInput(contractDI: ContractsAPI) {
       // ),
     });
   };
-}
-/**
- * @category ApplicableActionsAPI
- */
-export interface GetApplicableActionsResponse {
-  actions: ApplicableAction[];
-  contractDetails: ContractDetails;
 }
 
 type ActionApplicant = Party | "anybody";
@@ -498,6 +494,7 @@ async function computeEnvironment(
   return { timeInterval: { from: lowerBound, to: upperBound - 1n } };
 }
 
+// FIXME: Refactor dependencies
 /**
  * @hidden
  */
@@ -509,23 +506,6 @@ export const mkGetApplicableActionsDI = (
       // TODO: Add caching
       return restClient.getContractSourceById({ contractSourceId });
     },
-    getContractDetails: async (contractId: ContractId) => {
-      const contractDetails = await restClient.getContractById({ contractId });
-      if (
-        typeof contractDetails.state === "undefined" ||
-        typeof contractDetails.currentContract === "undefined"
-      ) {
-        return { type: "closed" };
-      } else {
-        return {
-          type: "active",
-          contractId,
-          currentState: contractDetails.state,
-          currentContract: contractDetails.currentContract,
-          roleTokenMintingPolicyId: contractDetails.roleTokenMintingPolicyId,
-        };
-      }
-    },
     getRuntimeTip: async () => {
       const status = await restClient.healthcheck();
       return new Date(status.tips.runtimeChain.slotTimeUTC);
@@ -533,22 +513,18 @@ export const mkGetApplicableActionsDI = (
   };
 };
 
-type GetApplicableActionsDI = GetContinuationDI &
-  GetContractDetailsDI &
-  ChainTipDI;
+type GetApplicableActionsDI = GetContinuationDI & ChainTipDI;
 
 /**
  * @hidden
  */
 export function getApplicableActions(di: GetApplicableActionsDI) {
   return async function (
-    contractId: ContractId,
+    contractDetails: ContractDetails,
     environment?: Environment
-  ): Promise<GetApplicableActionsResponse> {
-    const contractDetails = await di.getContractDetails(contractId);
+  ): Promise<ApplicableAction[]> {
     // If the contract is closed there are no applicable actions
-    if (contractDetails.type === "closed")
-      return { contractDetails, actions: [] };
+    if (contractDetails.type === "closed") return [];
 
     const env =
       environment ??
@@ -584,10 +560,7 @@ export function getApplicableActions(di: GetApplicableActionsDI) {
         )
       );
     }
-    return {
-      contractDetails,
-      actions: applicableActions,
-    };
+    return applicableActions;
   };
 }
 
