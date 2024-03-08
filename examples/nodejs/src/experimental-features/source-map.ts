@@ -7,6 +7,7 @@ import {
   stripAnnotations,
 } from "@marlowe.io/marlowe-object";
 import {
+  ContractInstanceAPI,
   CreateContractRequestBase,
   RuntimeLifecycle,
 } from "@marlowe.io/runtime-lifecycle/api";
@@ -182,7 +183,7 @@ export interface SourceMap<T> {
   playHistory(history: SingleInputTx[]): TransactionOutput;
   createContract(
     options: CreateContractRequestBase
-  ): Promise<[ContractId, TxId]>;
+  ): Promise<ContractInstanceAPI>;
   contractInstanceOf(contractId: ContractId): Promise<boolean>;
 }
 
@@ -205,7 +206,7 @@ export async function mkSourceMap<T>(
     },
     createContract: (options: CreateContractRequestBase) => {
       const contract = stripAnnotations(closure.contracts.get(closure.main)!);
-      return lifecycle.deprecatedContractAPI.createContract({
+      return lifecycle.newContractAPI.createContract({
         ...options,
         contract,
       });
