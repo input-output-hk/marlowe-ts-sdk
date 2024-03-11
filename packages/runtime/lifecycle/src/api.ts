@@ -22,13 +22,63 @@ import {
 import { Next } from "@marlowe.io/language-core-v1/next";
 import { SingleInputTx } from "@marlowe.io/language-core-v1/transaction.js";
 import { ContractBundleList } from "@marlowe.io/marlowe-object";
+import {
+  ApplicableActionsAPI,
+  ApplicableAction,
+  ApplicableInput,
+  ApplicableActionsFilter,
+  ApplicableActionsWithDetailsFilter,
+  ApplyApplicableInputRequest,
+  CanAdvance,
+  CanChoose,
+  CanDeposit,
+  CanNotify,
+  GetApplicableActionsResponse,
+  ActiveContract,
+  ClosedContract,
+  ContractDetails,
+} from "./generic/applicable-actions.js";
+export {
+  ApplicableActionsAPI,
+  ApplicableAction,
+  ApplicableInput,
+  ApplicableActionsFilter,
+  ApplicableActionsWithDetailsFilter,
+  ApplyApplicableInputRequest,
+  CanAdvance,
+  CanChoose,
+  CanDeposit,
+  CanNotify,
+  GetApplicableActionsResponse,
+  ActiveContract,
+  ClosedContract,
+  ContractDetails,
+};
 
-export type RuntimeLifecycle = {
+/**
+ * This is the main entry point of the @marlowe.io/runtime-lifecycle package. It provides a set of APIs to
+ * interact with the Marlowe Runtime.
+ *
+ * This interface can be created from {@link @marlowe.io/runtime-lifecycle!index | a wallet API instance } or if you are in the browser
+ * from a {@link @marlowe.io/runtime-lifecycle!browser | wallet name}.
+ * @category RuntimeLifecycle
+ */
+export interface RuntimeLifecycle {
+  /**
+   * The wallet API as defined in the {@link @marlowe.io/wallet! } package. It is re-exported here for convenience.
+   */
   wallet: WalletAPI;
+  /**
+   * Access to the low-level REST API as defined in the {@link @marlowe.io/runtime-rest-client! } package. It is re-exported here for convenience.
+   */
   restClient: RestClient;
+  /**
+   * The contracts API is a high level API that lets you create and interact with Marlowe contracts.
+   */
   contracts: ContractsAPI;
   payouts: PayoutsAPI;
-};
+  applicableActions: ApplicableActionsAPI;
+}
 
 /**
  *
@@ -42,12 +92,15 @@ export type ContractsDI = WalletDI & RestDI;
  * If the contract is "small", you can create it directly with a {@link CreateContractRequestFromContract| core contract},
  * if the contract is "large" you can use a {@link CreateContractRequestFromBundle | contract bundle} instead.
  * Both options share the same {@link CreateContractRequestBase | request parameters}.
-
+ * @category ContractsAPI
  */
 export type CreateContractRequest =
   | CreateContractRequestFromContract
   | CreateContractRequestFromBundle;
 
+/**
+ * @category ContractsAPI
+ */
 export interface CreateContractRequestFromContract
   extends CreateContractRequestBase {
   /**
@@ -56,6 +109,9 @@ export interface CreateContractRequestFromContract
   contract: Contract;
 }
 
+/**
+ * @category ContractsAPI
+ */
 export interface CreateContractRequestFromBundle
   extends CreateContractRequestBase {
   /**
@@ -64,6 +120,9 @@ export interface CreateContractRequestFromBundle
   bundle: ContractBundleList<undefined>;
 }
 
+/**
+ * @category ContractsAPI
+ */
 export interface CreateContractRequestBase {
   /**
    * Marlowe contracts can have staking rewards for the ADA locked in the contract.
@@ -234,6 +293,9 @@ export interface CreateContractRequestBase {
   minimumLovelaceUTxODeposit?: number;
 }
 
+/**
+ * @category ContractsAPI
+ */
 export type ApplyInputsRequest = {
   inputs: Input[];
   tags?: Tags;
@@ -241,8 +303,10 @@ export type ApplyInputsRequest = {
   invalidBefore?: ISO8601;
   invalidHereafter?: ISO8601;
 };
+
 /**
  * This Interface provides capabilities for runnning a Contract over Cardano.
+ * @category ContractsAPI
  */
 export interface ContractsAPI {
   /**
@@ -267,15 +331,7 @@ export interface ContractsAPI {
   ): Promise<TxId>;
 
   /**
-   * @experimental
-   * Provide Applicability and Reducibility Information moving forward for a given contract connected to a wallet.
-   * @description
-   *  This piece of information should help you :
-   *  - 1) Deciding which inputs to provide for the current state of the given contract
-   *  - 2) Constructing the inputs to apply for a given contract
-   * @param contractId Contract Id of a created contract
-   * @param environement Time interval in which inputs would like to be applied
-   * @throws DecodingError
+   * @deprecated Deprecated in favour of {@link @marlowe.io/runtime-lifecycle!api.ApplicableActionsAPI}
    */
   getApplicableInputs(
     contractId: ContractId,
@@ -295,8 +351,15 @@ export interface ContractsAPI {
    */
   getInputHistory(contractId: ContractId): Promise<SingleInputTx[]>;
 }
+
+/**
+ * @hidden
+ */
 export type PayoutsDI = WalletDI & RestDI;
 
+/**
+ * @category PayoutsAPI
+ */
 export interface PayoutsAPI {
   /**
    * Provide All the availaible payouts for the connected Wallet
@@ -323,6 +386,7 @@ export interface PayoutsAPI {
  * Provide filtering capabilities on the payouts returned only by ContractIds
  * @param byContractIds filters the payouts by contract Ids
  * @throws DecodingError
+ * @category PayoutsAPI
  */
 export const onlyByContractIds = (contractIds: ContractId[]) =>
   ({
@@ -335,6 +399,7 @@ export const onlyByContractIds = (contractIds: ContractId[]) =>
  * @param byContractIds filters the payouts by contract Ids
  * @param byMyRoleTokens filters the payouts by role tokens owned in the connected wallet
  * @throws DecodingError
+ * @category PayoutsAPI
  */
 export type Filters = {
   byContractIds: ContractId[];

@@ -1,5 +1,15 @@
 {
   "entryPointStrategy": "expand",
   "entryPoints": ["./src/api.ts", "./src/browser/index.ts", "./src/index.ts"],
-  "tsconfig": "./src/tsconfig.json"
+  "tsconfig": "./src/tsconfig.json",
+  "categorizeByGroup": false,
+  "defaultCategory": "General",
+  "categoryOrder": [
+    "RuntimeLifecycle",
+    "ContractsAPI",
+    "PayoutsAPI",
+    "ApplicableActionsAPI",
+    "New ContractsAPI",
+    "*"
+  ]
 }

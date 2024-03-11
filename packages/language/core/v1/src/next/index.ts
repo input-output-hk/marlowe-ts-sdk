@@ -1,3 +1,7 @@
+/**
+ * @deprecated Deprecated in favour of {@link @marlowe.io/runtime-lifecycle!api.ApplicableActionsAPI}
+ * @packageDocumentation
+ */
 import * as t from "io-ts/lib/index.js";
 import { ApplicableInputs } from "./applicables/index.js";
 import { isNone, none } from "fp-ts/lib/Option.js";
@@ -7,8 +11,12 @@ export * as Notify from "./applicables/canNotify.js";
 
 /**
  * Provides reducibility and input applicability information for a contract
+ * @deprecated Deprecated in favour of {@link @marlowe.io/runtime-lifecycle!api.ApplicableActionsAPI}
  */
 export type Next = t.TypeOf<typeof Next>;
+/**
+ * @deprecated Deprecated in favour of {@link @marlowe.io/runtime-lifecycle!api.ApplicableActionsAPI}
+ */
 export const Next = t.type({
   can_reduce: t.boolean,
   applicable_inputs: ApplicableInputs,
@@ -16,6 +24,7 @@ export const Next = t.type({
 
 /**
  * empty Applicables indicates if the contract is in a state where no inputs can be applied.
+ * @deprecated Deprecated in favour of {@link @marlowe.io/runtime-lifecycle!api.ApplicableActionsAPI}
  */
 export const emptyApplicables = (next: Next) => {
   return (
@@ -27,6 +36,7 @@ export const emptyApplicables = (next: Next) => {
 
 /**
  * noNext is a state where no apply or reduce on a contract
+ * @deprecated Deprecated in favour of {@link @marlowe.io/runtime-lifecycle!api.ApplicableActionsAPI}
  */
 export const noNext: Next = {
   can_reduce: false,

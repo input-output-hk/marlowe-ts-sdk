@@ -1,8 +1,8 @@
 /**
  * This module provides {@link @marlowe.io/wallet!api.WalletAPI} extended capabilities for
  * testing purposes. It is used for E2E testing in 2 paricular `@marlowe.io` packages :
- *   - {@link @marlowe.io/runtime-rest-client}
- *   - {@link @marlowe.io/runtime-lifecycle}
+ *   - {@link @marlowe.io/runtime-rest-client!}
+ *   - {@link @marlowe.io/runtime-lifecycle!}
  * @packageDocumentation
  */
 
