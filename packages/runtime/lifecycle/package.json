@@ -1,6 +1,6 @@
 {
   "name": "@marlowe.io/runtime-lifecycle",
-  "version": "0.3.0-beta",
+  "version": "0.4.0-beta-rc1",
   "description": "Entry Point for Running remotely Marlowe Contracts over a backend instance of the runtime using a connected wallet.",
   "repository": "https://github.com/input-output-hk/marlowe-ts-sdk",
   "publishConfig": {
@@ -49,17 +49,17 @@
     }
   },
   "dependencies": {
-    "@marlowe.io/wallet": "0.3.0-beta",
-    "@marlowe.io/runtime-core": "0.3.0-beta",
-    "@marlowe.io/runtime-rest-client": "0.3.0-beta",
-    "@marlowe.io/adapter": "0.3.0-beta",
-    "@marlowe.io/language-core-v1": "0.3.0-beta",
+    "@marlowe.io/wallet": "0.4.0-beta-rc1",
+    "@marlowe.io/runtime-core": "0.4.0-beta-rc1",
+    "@marlowe.io/runtime-rest-client": "0.4.0-beta-rc1",
+    "@marlowe.io/adapter": "0.4.0-beta-rc1",
+    "@marlowe.io/language-core-v1": "0.4.0-beta-rc1",
     "fp-ts": "^2.16.1",
     "io-ts": "2.2.21",
     "newtype-ts": "0.3.5",
     "monocle-ts": "2.3.13"
   },
   "devDependencies": {
-    "@marlowe.io/testing-kit": "0.3.0-beta"
+    "@marlowe.io/testing-kit": "0.4.0-beta-rc1"
   }
 }

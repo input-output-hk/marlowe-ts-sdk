@@ -1,6 +1,6 @@
 {
   "name": "@marlowe.io/language-core-v1",
-  "version": "0.3.0-beta",
+  "version": "0.4.0-beta-rc1",
   "description": "Library to manipulate Marlowe Core contracts",
   "repository": "https://github.com/input-output-hk/marlowe-ts-sdk",
   "publishConfig": {
@@ -64,6 +64,6 @@
     "newtype-ts": "0.3.5",
     "json-bigint": "^1.0.0",
     "jsonbigint-io-ts-reporters": "2.0.1",
-    "@marlowe.io/adapter": "0.3.0-beta"
+    "@marlowe.io/adapter": "0.4.0-beta-rc1"
   }
 }
