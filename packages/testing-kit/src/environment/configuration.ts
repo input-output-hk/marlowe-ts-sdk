@@ -46,9 +46,7 @@ const rootDir = findRootDir(process.cwd());
  * Read Test Configurations from an env file
  * @returns
  */
-export async function readTestConfiguration(
-  filepath?: string
-): Promise<TestConfiguration> {
+export async function readTestConfiguration(filepath?: string): Promise<TestConfiguration> {
   if (!filepath) {
     filepath = `${rootDir}/env/.test-env.json`;
   }
